@@ -10,6 +10,8 @@
     android:layout_marginBottom="4dp"
     app:cardCornerRadius="10dp"
     app:cardElevation="1dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line"
     app:cardBackgroundColor="@color/posterita_paper">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -38,18 +40,18 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="44dp"
             app:layout_constraintStart_toEndOf="@id/image_view_product"
-            app:layout_constraintEnd_toStartOf="@id/button_remove_line"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Orange cake" />
 
-        <!-- Product price -->
+        <!-- Product price (blue) -->
         <TextView
             android:id="@+id/text_view_product_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="122"
+            android:text="0.00"
             style="@style/TextAppearance.Posterita.Subheading"
             android:textColor="@color/posterita_primary"
             android:layout_marginStart="10dp"
@@ -57,7 +59,7 @@
             app:layout_constraintStart_toEndOf="@id/image_view_product"
             app:layout_constraintTop_toBottomOf="@id/text_view_product_name" />
 
-        <!-- Remove button -->
+        <!-- Remove/delete button (top-right, clearly visible) -->
         <ImageView
             android:id="@+id/button_remove_line"
             android:layout_width="40dp"
@@ -70,58 +72,58 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Quantity controls: minus / count / plus -->
-        <FrameLayout
-            android:id="@+id/cons_remove"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/circle_drawable"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@id/text_view_qty"
-            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount">
-
-            <ImageView
-                android:id="@+id/button_decrease_qty"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_gravity="center"
-                android:contentDescription="Decrease quantity"
-                android:src="@drawable/ic_remove"
-                app:tint="@color/posterita_ink" />
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/text_view_qty"
+        <!-- Quantity controls row (bottom-right, below delete) -->
+        <LinearLayout
+            android:id="@+id/layout_qty_controls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"
-            android:minWidth="32dp"
-            android:gravity="center"
-            style="@style/TextAppearance.Posterita.Heading"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@id/cons_add"
-            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount"
-            app:layout_constraintTop_toTopOf="@id/cons_remove"
-            tools:text="2" />
-
-        <FrameLayout
-            android:id="@+id/cons_add"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/circle_drawable"
-            android:layout_marginEnd="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount">
+            app:layout_constraintTop_toBottomOf="@id/button_remove_line">
 
-            <ImageView
-                android:id="@+id/button_increase_qty"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_gravity="center"
-                android:contentDescription="Increase quantity"
-                android:src="@drawable/ic_add"
-                app:tint="@color/posterita_ink" />
-        </FrameLayout>
+            <FrameLayout
+                android:id="@+id/cons_remove"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/circle_drawable">
+
+                <ImageView
+                    android:id="@+id/button_decrease_qty"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Decrease quantity"
+                    android:src="@drawable/ic_remove"
+                    app:tint="@color/posterita_ink" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/text_view_qty"
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:gravity="center"
+                style="@style/TextAppearance.Posterita.Heading"
+                tools:text="2" />
+
+            <FrameLayout
+                android:id="@+id/cons_add"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/circle_drawable">
+
+                <ImageView
+                    android:id="@+id/button_increase_qty"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Increase quantity"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/posterita_ink" />
+            </FrameLayout>
+        </LinearLayout>
 
         <!-- Discount row (hidden by default) -->
         <TextView
@@ -137,7 +139,8 @@
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_qty_controls" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

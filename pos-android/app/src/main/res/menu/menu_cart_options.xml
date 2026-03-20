@@ -9,7 +9,4 @@
     <item
         android:id="@+id/menu_add_tips"
         android:title="Add Tips" />
-    <item
-        android:id="@+id/menu_discount_total"
-        android:title="Discount on Total" />
 </menu>

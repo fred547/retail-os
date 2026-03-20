@@ -127,18 +127,20 @@ class CartActivity : BaseDrawerActivity() {
         binding = ActivityCartBinding.bind(drawerLayout.getChildAt(0))
         supportActionBar?.hide()
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar?.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar?.setNavigationOnClickListener { openDrawer() }
-
-        setupDrawerNavigation()
+        // Back button — no drawer on cart screen
+        binding.toolbar?.setNavigationIcon(R.drawable.ic_arrow_back)
+        binding.toolbar?.setNavigationOnClickListener { finish() }
 
         isFromKitchen = intent.getBooleanExtra("FROM_KITCHEN", false)
 
         setupRecyclerView()
         setupButtons()
         setupMoreMenu()
+        setupCustomerBar()
         observeViewModel()
+
+        // Tap on total to show discount dialog
+        binding.textViewGrandTotal?.setOnClickListener { showDiscountOnTotalDialog() }
     }
 
     override fun onDestroy() {
@@ -211,10 +213,6 @@ class CartActivity : BaseDrawerActivity() {
                         showTipsDialog()
                         true
                     }
-                    R.id.menu_discount_total -> {
-                        showDiscountOnTotalDialog()
-                        true
-                    }
                     else -> false
                 }
             }
@@ -226,15 +224,7 @@ class CartActivity : BaseDrawerActivity() {
             showCustomerNumpadDialog()
         }
 
-        // Customer icon in top bar — also open numpad
-        binding.imageViewSearchCustomer.setOnClickListener {
-            showCustomerNumpadDialog()
-        }
-
-        // Customer name click — also open numpad
-        binding.textViewCustomerName.setOnClickListener {
-            showCustomerNumpadDialog()
-        }
+        // Customer search is handled by setupCustomerBar()
 
         // NOTE button (visible in restaurant mode)
         if (prefsManager.isRestaurant) {
@@ -255,34 +245,76 @@ class CartActivity : BaseDrawerActivity() {
         }
     }
 
-    private fun setupMoreMenu() {
-        binding.buttonMore.setOnClickListener { view ->
-            val popup = PopupMenu(this, view)
-            popup.menuInflater.inflate(R.menu.menu_cart_options, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.menu_clear_cart -> {
-                        shoppingCartViewModel.clearCart()
-                        Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
-                        true
+    private fun showMorePopup(anchorView: View) {
+        val popup = PopupMenu(this, anchorView)
+        popup.menuInflater.inflate(R.menu.menu_cart_options, popup.menu)
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_clear_cart -> {
+                    if (shoppingCartViewModel.shoppingCart.isEmpty()) {
+                        Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                    } else {
+                        AlertDialog.Builder(this)
+                            .setTitle("Clear Cart")
+                            .setMessage("Remove all items from the cart?")
+                            .setPositiveButton("Clear") { _, _ ->
+                                shoppingCartViewModel.clearCart()
+                                Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
                     }
-                    R.id.menu_add_note -> {
-                        showAddNoteDialog()
-                        true
-                    }
-                    R.id.menu_add_tips -> {
-                        showTipsDialog()
-                        true
-                    }
-                    R.id.menu_discount_total -> {
-                        showDiscountOnTotalDialog()
-                        true
-                    }
-                    else -> false
+                    true
                 }
+                R.id.menu_add_note -> {
+                    showAddNoteDialog()
+                    true
+                }
+                R.id.menu_add_tips -> {
+                    showTipsDialog()
+                    true
+                }
+                else -> false
             }
-            popup.show()
         }
+        popup.show()
+    }
+
+    private fun setupCustomerBar() {
+        // Tapping the customer bar opens the customer numpad dialog (phone + name search)
+        binding.layoutCustomerBar?.setOnClickListener {
+            showCustomerNumpadDialog()
+        }
+        binding.imageViewSearchCustomer?.setOnClickListener {
+            showCustomerNumpadDialog()
+        }
+
+        // Clear cart bin icon
+        binding.buttonClearCart?.setOnClickListener {
+            if (shoppingCartViewModel.shoppingCart.isEmpty()) return@setOnClickListener
+            AlertDialog.Builder(this)
+                .setTitle("Clear Cart")
+                .setMessage("Remove all items from the cart?")
+                .setPositiveButton("Clear") { _, _ ->
+                    shoppingCartViewModel.clearCart()
+                    Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        // Note chip
+        binding.chipNote?.setOnClickListener { showAddNoteDialog() }
+
+        // Tips chip
+        binding.chipTips?.setOnClickListener { showTipsDialog() }
+    }
+
+    private fun setupMoreMenu() {
+        // Toolbar MORE icon
+        binding.buttonMore.setOnClickListener { view -> showMorePopup(view) }
+        // Bottom bar MORE button
+        binding.buttonMoreBar?.setOnClickListener { view -> showMorePopup(view) }
     }
 
     // ==================== PAYMENT DIALOG ====================
@@ -2526,6 +2558,7 @@ class CartActivity : BaseDrawerActivity() {
                     phone.isNotEmpty() -> "$name - $phone"
                     else -> name
                 }
+                binding.textViewCustomerName?.setTextColor(resources.getColor(R.color.posterita_ink, null))
                 // Fetch and display loyalty points if customer has a phone number
                 if (phone.isNotEmpty() && loyaltyRepository.isEnabled) {
                     fetchLoyaltyBalance(phone)
@@ -2533,7 +2566,8 @@ class CartActivity : BaseDrawerActivity() {
                     binding.textViewLoyaltyPoints?.visibility = View.GONE
                 }
             } else {
-                binding.textViewCustomerName?.text = ""
+                binding.textViewCustomerName?.text = "Walk-in customer"
+                binding.textViewCustomerName?.setTextColor(resources.getColor(R.color.posterita_muted, null))
                 binding.textViewLoyaltyPoints?.visibility = View.GONE
             }
         }

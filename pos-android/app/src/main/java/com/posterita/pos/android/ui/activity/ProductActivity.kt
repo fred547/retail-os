@@ -1408,10 +1408,6 @@ class ProductActivity : BaseDrawerActivity() {
                         showTipsDialog()
                         true
                     }
-                    R.id.menu_discount_total -> {
-                        showDiscountOnTotalDialog()
-                        true
-                    }
                     else -> false
                 }
             }
