@@ -127,9 +127,8 @@ class CartActivity : BaseDrawerActivity() {
         binding = ActivityCartBinding.bind(drawerLayout.getChildAt(0))
         supportActionBar?.hide()
 
-        // Back button — no drawer on cart screen
-        binding.toolbar?.setNavigationIcon(R.drawable.ic_arrow_back)
-        binding.toolbar?.setNavigationOnClickListener { finish() }
+        // Back button
+        binding.buttonBack?.setOnClickListener { finish() }
 
         isFromKitchen = intent.getBooleanExtra("FROM_KITCHEN", false)
 
