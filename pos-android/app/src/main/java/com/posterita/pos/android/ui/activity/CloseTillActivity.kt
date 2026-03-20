@@ -1,12 +1,20 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.text.Editable
 import android.text.InputType
-import android.view.Gravity
+import android.text.TextWatcher
+import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Till
 import com.posterita.pos.android.data.local.entity.TillAdjustment
@@ -24,6 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -41,14 +50,154 @@ class CloseTillActivity : AppCompatActivity() {
     private var currentTill: Till? = null
     private var denominationTotal: Double = 0.0
 
+    // Expected totals calculated from orders
+    private var expectedCashSales: Double = 0.0
+    private var expectedCardSales: Double = 0.0
+    private var expectedVoucherSales: Double = 0.0
+    private var expectedBlinkSales: Double = 0.0
+    private var expectedAdjustmentNet: Double = 0.0
+    private var expectedCashInDrawer: Double = 0.0
+    private var totalSalesAmount: Double = 0.0
+    private var orderCount: Int = 0
+
+    // Denomination fields: value -> (qtyEditText, subtotalTextView)
+    private data class DenomField(val value: Double, val qtyEditText: EditText?, val subtotalTextView: TextView?)
+    private val denomFields = mutableListOf<DenomField>()
+
+    // Evidence photo URIs
+    private var photoTillUri: Uri? = null
+    private var photoBankSlipUri: Uri? = null
+    private var photoZReportUri: Uri? = null
+    private var currentPhotoTarget: Int = 0 // 1=till, 2=bank slip, 3=z-report
+    private var currentPhotoUri: Uri? = null
+
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && currentPhotoUri != null) {
+            when (currentPhotoTarget) {
+                1 -> {
+                    photoTillUri = currentPhotoUri
+                    binding.textPhotoTillStatus?.text = "Captured"
+                    binding.textPhotoTillStatus?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+                }
+                2 -> {
+                    photoBankSlipUri = currentPhotoUri
+                    binding.textPhotoBankSlipStatus?.text = "Captured"
+                    binding.textPhotoBankSlipStatus?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+                }
+                3 -> {
+                    photoZReportUri = currentPhotoUri
+                    binding.textPhotoZReportStatus?.text = "Captured"
+                    binding.textPhotoZReportStatus?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCloseTillBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupDenominationFields()
+        setupDenominationListeners()
         loadTillInfo()
         setupClickListeners()
     }
+
+    // ---- DENOMINATION FIELD SETUP -------------------------------------------
+
+    private fun setupDenominationFields() {
+        denomFields.clear()
+        denomFields.add(DenomField(2000.0, binding.denom2000Qty, binding.denom2000Sub))
+        denomFields.add(DenomField(1000.0, binding.denom1000Qty, binding.denom1000Sub))
+        denomFields.add(DenomField(500.0, binding.denom500Qty, binding.denom500Sub))
+        denomFields.add(DenomField(200.0, binding.denom200Qty, binding.denom200Sub))
+        denomFields.add(DenomField(100.0, binding.denom100Qty, binding.denom100Sub))
+        denomFields.add(DenomField(50.0, binding.denom50Qty, binding.denom50Sub))
+        denomFields.add(DenomField(25.0, binding.denom25Qty, binding.denom25Sub))
+        denomFields.add(DenomField(20.0, binding.denom20Qty, binding.denom20Sub))
+        denomFields.add(DenomField(10.0, binding.denom10Qty, binding.denom10Sub))
+        denomFields.add(DenomField(5.0, binding.denom5Qty, binding.denom5Sub))
+    }
+
+    private fun setupDenominationListeners() {
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                recalculateDenominationTotal()
+            }
+        }
+
+        for (field in denomFields) {
+            field.qtyEditText?.addTextChangedListener(watcher)
+        }
+
+        // Coins field is special: user enters the total coin amount directly
+        binding.denomCoinsQty?.addTextChangedListener(watcher)
+    }
+
+    private fun recalculateDenominationTotal() {
+        var total = 0.0
+
+        for (field in denomFields) {
+            val qty = field.qtyEditText?.text?.toString()?.toIntOrNull() ?: 0
+            val sub = field.value * qty
+            field.subtotalTextView?.text = NumberUtils.formatPrice(sub)
+            total += sub
+        }
+
+        // Coins: user enters the total coin amount (not a count)
+        val coinsAmount = NumberUtils.parseDouble(binding.denomCoinsQty?.text?.toString() ?: "0")
+        binding.denomCoinsSub?.text = NumberUtils.formatPrice(coinsAmount)
+        total += coinsAmount
+
+        denominationTotal = total
+        binding.textCountedTotal?.text = NumberUtils.formatPrice(total)
+
+        // Update Step 3: Discrepancy
+        updateDiscrepancy()
+    }
+
+    private fun updateDiscrepancy() {
+        binding.textDiscExpected?.text = NumberUtils.formatPrice(expectedCashInDrawer)
+        binding.textDiscCounted?.text = NumberUtils.formatPrice(denominationTotal)
+
+        val diff = denominationTotal - expectedCashInDrawer
+        binding.textDiscDifference?.text = NumberUtils.formatPrice(diff)
+
+        val rowDifference = binding.rowDifference
+        val labelView = binding.textDiscLabel
+        val diffView = binding.textDiscDifference
+        val headerView = binding.step3Header
+
+        if (diff == 0.0) {
+            // Perfect match — green
+            rowDifference?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_secondary_light))
+            labelView?.text = "Difference (Exact)"
+            labelView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+            diffView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+            headerView?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_secondary_light))
+        } else if (diff > 0) {
+            // Over — green
+            rowDifference?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_secondary_light))
+            labelView?.text = "Difference (Over)"
+            labelView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+            diffView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_secondary))
+            headerView?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_secondary_light))
+        } else {
+            // Short — red
+            rowDifference?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_error_light))
+            labelView?.text = "Difference (Short)"
+            labelView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_error))
+            diffView?.setTextColor(ContextCompat.getColor(this, R.color.posterita_error))
+            headerView?.setBackgroundColor(ContextCompat.getColor(this, R.color.posterita_error_light))
+        }
+    }
+
+    // ---- LOAD TILL INFO + EXPECTED TOTALS -----------------------------------
 
     private fun loadTillInfo() {
         val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
@@ -58,25 +207,93 @@ class CloseTillActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val openTill = db.tillDao().getOpenTillByTerminalId(terminalId)
 
-            withContext(Dispatchers.Main) {
-                if (openTill != null) {
-                    currentTill = openTill
-                    binding.textViewStoreNameValue?.text = prefsManager.storeName
-                    binding.textViewTerminalNameValue?.text = prefsManager.terminalName
-                    binding.txtdate?.text = currentDate
-                    binding.textViewDocumentNoValue?.text = openTill.documentno ?: ""
-                    binding.textViewOpeningDateValue?.text = openTill.dateOpened?.let {
-                        SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault()).format(it)
-                    } ?: ""
-                    binding.textViewOpeningAmountValue?.text = NumberUtils.formatPrice(openTill.openingAmt)
-                    binding.textViewOpenedByNameValue?.text = prefsManager.userName
-                } else {
+            if (openTill == null) {
+                withContext(Dispatchers.Main) {
                     Toast.makeText(this@CloseTillActivity, "No open till found", Toast.LENGTH_SHORT).show()
                     finish()
                 }
+                return@launch
+            }
+
+            // Compute expected totals from orders
+            val orders = db.orderDao().getOrdersByTillId(openTill.tillId)
+            var cashTotal = 0.0
+            var cardTotal = 0.0
+            var voucherTotal = 0.0
+            var blinkTotal = 0.0
+            var salesTotal = 0.0
+
+            for (order in orders) {
+                val details = order.json?.let { OrderDetails.fromJson(it.toString()) } ?: continue
+                for (payment in details.payments) {
+                    when (payment.paymenttype) {
+                        "CASH" -> cashTotal += payment.amount
+                        "CARD" -> cardTotal += payment.amount
+                        "Voucher" -> voucherTotal += payment.amount
+                        "BLINK" -> blinkTotal += payment.amount
+                        "FOREX" -> cashTotal += payment.amount // forex is cash equivalent
+                    }
+                }
+                salesTotal += details.grandtotal
+            }
+
+            // Get adjustments
+            val adjustments = db.tillAdjustmentDao().getAdjustmentsByTillId(openTill.tillId)
+            var adjustmentNet = 0.0
+            for (adj in adjustments) {
+                if (adj.pay_type == "payin") adjustmentNet += adj.amount
+                else adjustmentNet -= adj.amount
+            }
+
+            val expectedCash = openTill.openingAmt + cashTotal + adjustmentNet
+
+            withContext(Dispatchers.Main) {
+                currentTill = openTill
+
+                // Till info header
+                binding.textViewStoreNameValue?.text = prefsManager.storeName
+                binding.textViewTerminalNameValue?.text = prefsManager.terminalName
+                binding.txtdate?.text = currentDate
+                binding.textViewDocumentNoValue?.text = openTill.documentno ?: ""
+                binding.textViewOpeningDateValue?.text = openTill.dateOpened?.let {
+                    SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault()).format(it)
+                } ?: ""
+                binding.textViewOpeningAmountValue?.text = NumberUtils.formatPrice(openTill.openingAmt)
+                binding.textViewOpenedByNameValue?.text = prefsManager.userName
+
+                // Step 1: Expected Totals
+                expectedCashSales = cashTotal
+                expectedCardSales = cardTotal + blinkTotal
+                expectedVoucherSales = voucherTotal
+                expectedBlinkSales = blinkTotal
+                expectedAdjustmentNet = adjustmentNet
+                expectedCashInDrawer = expectedCash
+                totalSalesAmount = salesTotal
+                orderCount = orders.size
+
+                binding.textCashSales?.text = NumberUtils.formatPrice(cashTotal)
+                binding.textCardSales?.text = NumberUtils.formatPrice(cardTotal + blinkTotal)
+
+                if (voucherTotal > 0) {
+                    binding.rowVoucherSales?.visibility = View.VISIBLE
+                    binding.textVoucherSales?.text = NumberUtils.formatPrice(voucherTotal)
+                }
+
+                binding.textAdjustments?.text = NumberUtils.formatPrice(adjustmentNet)
+                binding.textExpectedCash?.text = NumberUtils.formatPrice(expectedCash)
+                binding.textOrderCount?.text = orders.size.toString()
+                binding.textTotalSales?.text = NumberUtils.formatPrice(salesTotal)
+
+                // Pre-fill card amount with expected card total
+                binding.editCardAmount?.setText(NumberUtils.formatPrice(cardTotal + blinkTotal))
+
+                // Initial discrepancy update
+                updateDiscrepancy()
             }
         }
     }
+
+    // ---- CLICK LISTENERS ----------------------------------------------------
 
     private fun setupClickListeners() {
         binding.back?.setOnClickListener { finish() }
@@ -91,10 +308,44 @@ class CloseTillActivity : AppCompatActivity() {
         binding.buttonPrintItemsDetails?.setOnClickListener { printItemsDetails() }
         binding.buttonPrintStockByCategory?.setOnClickListener { printStockByCategory() }
 
-        // Close Till actions
+        // Open Drawer (moved to Step 2 header)
         binding.buttonOpenDrawer?.setOnClickListener { openDrawer() }
-        binding.buttonDenomination?.setOnClickListener { showDenominationDialog() }
+
+        // Evidence photo buttons
+        binding.buttonPhotoTill?.setOnClickListener { capturePhoto(1) }
+        binding.buttonPhotoBankSlip?.setOnClickListener { capturePhoto(2) }
+        binding.buttonPhotoZReport?.setOnClickListener { capturePhoto(3) }
+
+        // Submit Reconciliation (replaces old Close Till button)
         binding.buttonCloseTill?.setOnClickListener { showCloseTillDialog() }
+    }
+
+    // ---- EVIDENCE PHOTOS ----------------------------------------------------
+
+    private fun capturePhoto(target: Int) {
+        currentPhotoTarget = target
+        val label = when (target) {
+            1 -> "till"
+            2 -> "bank_slip"
+            3 -> "z_report"
+            else -> "photo"
+        }
+        try {
+            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val photoFile = File.createTempFile(
+                "close_till_${label}_",
+                ".jpg",
+                storageDir
+            )
+            currentPhotoUri = FileProvider.getUriForFile(
+                this,
+                "${packageName}.fileprovider",
+                photoFile
+            )
+            currentPhotoUri?.let { takePictureLauncher.launch(it) }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Cannot open camera: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // ---- ADJUSTMENTS --------------------------------------------------------
@@ -156,6 +407,9 @@ class CloseTillActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 val msg = if (isPayIn) "Added" else "Removed"
                 Toast.makeText(this@CloseTillActivity, "$msg ${NumberUtils.formatPrice(amount)}", Toast.LENGTH_SHORT).show()
+
+                // Reload to refresh expected totals
+                loadTillInfo()
             }
         }
     }
@@ -377,227 +631,43 @@ class CloseTillActivity : AppCompatActivity() {
         }
     }
 
-    // ---- DENOMINATION --------------------------------------------------------
-
-    private fun showDenominationDialog() {
-        val denominations = listOf(
-            5000.0, 2000.0, 1000.0, 500.0, 200.0, 100.0,
-            50.0, 25.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.50, 0.25
-        )
-
-        val scrollView = ScrollView(this)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 32, 48, 16)
-        }
-
-        val totalText = TextView(this).apply {
-            text = "Total: 0.00"
-            textSize = 18f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 16)
-        }
-        layout.addView(totalText)
-
-        val countFields = mutableListOf<Pair<Double, EditText>>()
-
-        for (denom in denominations) {
-            val row = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                setPadding(0, 4, 0, 4)
-                gravity = Gravity.CENTER_VERTICAL
-            }
-
-            val label = TextView(this).apply {
-                text = NumberUtils.formatPrice(denom)
-                textSize = 14f
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-
-            val countField = EditText(this).apply {
-                hint = "0"
-                inputType = InputType.TYPE_CLASS_NUMBER
-                textSize = 14f
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                gravity = Gravity.CENTER
-            }
-
-            val subtotalLabel = TextView(this).apply {
-                text = "0.00"
-                textSize = 14f
-                gravity = Gravity.END
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-
-            countField.addTextChangedListener(object : android.text.TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: android.text.Editable?) {
-                    val cnt = s.toString().toIntOrNull() ?: 0
-                    subtotalLabel.text = NumberUtils.formatPrice(denom * cnt)
-                    // Recalculate total
-                    var total = 0.0
-                    for ((d, field) in countFields) {
-                        val c = field.text.toString().toIntOrNull() ?: 0
-                        total += d * c
-                    }
-                    totalText.text = "Total: ${NumberUtils.formatPrice(total)}"
-                    denominationTotal = total
-                }
-            })
-
-            countFields.add(Pair(denom, countField))
-            row.addView(label)
-            row.addView(countField)
-            row.addView(subtotalLabel)
-            layout.addView(row)
-        }
-
-        scrollView.addView(layout)
-
-        AlertDialog.Builder(this)
-            .setTitle("Denomination")
-            .setView(scrollView)
-            .setPositiveButton("Print") { _, _ ->
-                printDenomination(countFields)
-            }
-            .setNeutralButton("Use Total") { _, _ ->
-                Toast.makeText(this, "Denomination total: ${NumberUtils.formatPrice(denominationTotal)}", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun printDenomination(countFields: List<Pair<Double, EditText>>) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val width = 32
-            val sb = StringBuilder()
-            sb.appendLine("DENOMINATION")
-            sb.appendLine("Store: ${prefsManager.storeName}")
-            sb.appendLine("Terminal: ${prefsManager.terminalName}")
-            sb.appendLine("-".repeat(width))
-            sb.appendLine(padLine3("Denom", "Count", "Amount", width))
-            sb.appendLine("-".repeat(width))
-
-            var total = 0.0
-            for ((denom, field) in countFields) {
-                val count = field.text.toString().toIntOrNull() ?: 0
-                if (count > 0) {
-                    val amount = denom * count
-                    total += amount
-                    sb.appendLine(padLine3(NumberUtils.formatPrice(denom), count.toString(), NumberUtils.formatPrice(amount), width))
-                }
-            }
-            sb.appendLine("-".repeat(width))
-            sb.appendLine(padLine("TOTAL:", NumberUtils.formatPrice(total), width))
-
-            printRawToAllPrinters(sb.toString())
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@CloseTillActivity, "Denomination printed", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     // ---- CLOSE TILL ----------------------------------------------------------
 
     private fun showCloseTillDialog() {
         val till = currentTill ?: return
 
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 32, 48, 0)
+        val cashAmt = denominationTotal
+        val cardAmt = NumberUtils.parseDouble(binding.editCardAmount?.text.toString())
+
+        val diff = cashAmt - expectedCashInDrawer
+        val diffLabel = when {
+            diff > 0 -> "Over by ${NumberUtils.formatPrice(diff)}"
+            diff < 0 -> "Short by ${NumberUtils.formatPrice(kotlin.math.abs(diff))}"
+            else -> "Exact match"
         }
 
-        layout.addView(TextView(this).apply {
-            text = "Cash Amount"
-            textSize = 14f
-            setPadding(0, 0, 0, 4)
-        })
-
-        val edtCash = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            hint = "0.00"
-            if (denominationTotal > 0) {
-                setText(NumberUtils.formatPrice(denominationTotal))
-            }
-        }
-        layout.addView(edtCash)
-
-        layout.addView(TextView(this).apply {
-            text = "Card Amount"
-            textSize = 14f
-            setPadding(0, 16, 0, 4)
-        })
-
-        val edtCard = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            hint = "0.00"
-        }
-        layout.addView(edtCard)
-
-        // Forex section
-        layout.addView(TextView(this).apply {
-            text = "Foreign Currency (optional)"
-            textSize = 14f
-            setPadding(0, 24, 0, 4)
-        })
-
-        val edtForexCurrency = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-            hint = "e.g. USD, EUR"
-            filters = arrayOf(android.text.InputFilter.LengthFilter(3))
-        }
-        layout.addView(edtForexCurrency)
-
-        layout.addView(TextView(this).apply {
-            text = "Forex Cash Amount"
-            textSize = 14f
-            setPadding(0, 8, 0, 4)
-        })
-
-        val edtForexAmt = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            hint = "0.00"
-        }
-        layout.addView(edtForexAmt)
-
-        AlertDialog.Builder(this)
-            .setTitle("Close Till")
-            .setView(layout)
-            .setPositiveButton("Close Till") { _, _ ->
-                val cash = NumberUtils.parseDouble(edtCash.text.toString())
-                val card = NumberUtils.parseDouble(edtCard.text.toString())
-                val forexCurr = edtForexCurrency.text.toString().trim().uppercase().ifEmpty { null }
-                val forexAmt = NumberUtils.parseDouble(edtForexAmt.text.toString())
-                confirmCloseTill(cash, card, forexCurr, forexAmt)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun confirmCloseTill(cashAmt: Double, cardAmt: Double, forexCurrency: String? = null, forexAmt: Double = 0.0) {
         val msg = buildString {
             append("Are you sure you want to close this till?\n\n")
-            append("Cash: ${NumberUtils.formatPrice(cashAmt)}\n")
-            append("Card: ${NumberUtils.formatPrice(cardAmt)}")
-            if (forexCurrency != null && forexAmt > 0) {
-                append("\nForex ($forexCurrency): ${NumberUtils.formatPrice(forexAmt)}")
-            }
-            append("\n\nThis action cannot be undone.")
+            append("Cash Counted: ${NumberUtils.formatPrice(cashAmt)}\n")
+            append("Expected Cash: ${NumberUtils.formatPrice(expectedCashInDrawer)}\n")
+            append("Discrepancy: $diffLabel\n")
+            append("Card Amount: ${NumberUtils.formatPrice(cardAmt)}\n")
+            val photoCount = listOfNotNull(photoTillUri, photoBankSlipUri, photoZReportUri).size
+            append("Photos: $photoCount / 3\n")
+            append("\nThis action cannot be undone.")
         }
+
         AlertDialog.Builder(this)
             .setTitle("Confirm Close Till")
             .setMessage(msg)
             .setPositiveButton("Yes, Close Till") { _, _ ->
-                executeCloseTill(cashAmt, cardAmt, forexCurrency, forexAmt)
+                executeCloseTill(cashAmt, cardAmt)
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun executeCloseTill(cashAmt: Double, cardAmt: Double, forexCurrency: String? = null, forexAmt: Double = 0.0) {
+    private fun executeCloseTill(cashAmt: Double, cardAmt: Double) {
         val till = currentTill ?: return
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -610,7 +680,7 @@ class CloseTillActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                val closedDetails = tillService.closeTill(user, till, cashAmt, cardAmt, forexCurrency, forexAmt)
+                val closedDetails = tillService.closeTill(user, till, cashAmt, cardAmt)
 
                 // Print close till receipt
                 val printers = db.printerDao().getAllPrinters()
@@ -648,10 +718,6 @@ class CloseTillActivity : AppCompatActivity() {
         sb.appendLine("Card Sales: $currency ${NumberUtils.formatPrice(details.cardAmt)}")
         if (details.voucherAmt > 0) sb.appendLine("Voucher: $currency ${NumberUtils.formatPrice(details.voucherAmt)}")
         if (details.blinkAmt > 0) sb.appendLine("Blink: $currency ${NumberUtils.formatPrice(details.blinkAmt)}")
-        if (details.forexCurrency != null && details.forexAmt > 0) {
-            sb.appendLine("Forex (${details.forexCurrency}): ${NumberUtils.formatPrice(details.forexAmt)}")
-            if (details.forexSalesTotal > 0) sb.appendLine("Forex Sales Total: ${details.forexCurrency} ${NumberUtils.formatPrice(details.forexSalesTotal)}")
-        }
         if (details.adjustmentTotal != 0.0) sb.appendLine("Adjustments: $currency ${NumberUtils.formatPrice(details.adjustmentTotal)}")
         sb.appendLine("")
         sb.appendLine("Expected Cash: $currency ${NumberUtils.formatPrice(details.expectedCash)}")

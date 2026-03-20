@@ -3,7 +3,6 @@ package com.posterita.pos.android.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +14,6 @@ import com.posterita.pos.android.databinding.ActivityHoldOrdersBinding
 import com.posterita.pos.android.domain.model.ShoppingCart
 import com.posterita.pos.android.ui.adapter.HoldOrderAdapter
 import com.posterita.pos.android.util.SessionManager
-import com.posterita.pos.android.util.SharedPreferencesManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -39,10 +37,8 @@ class HoldOrderActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClic
         setContentViewWithDrawer(R.layout.activity_hold_orders)
         binding = ActivityHoldOrdersBinding.bind(drawerLayout.getChildAt(0))
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar?.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar?.setNavigationOnClickListener { openDrawer() }
-        binding.toolbar?.let { expandToolbarNavigationTouchTarget(it, extraPaddingDp = 20) }
+        // Back button
+        binding.btnBack?.setOnClickListener { finish() }
 
         setupDrawerNavigation()
         setupRecyclerView()
@@ -76,6 +72,15 @@ class HoldOrderActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClic
                 holdOrderAdapter.setHoldOrders(holdOrders)
                 binding.layoutEmptyHold?.visibility = if (holdOrders.isEmpty()) View.VISIBLE else View.GONE
                 binding.orderrecycle.visibility = if (holdOrders.isEmpty()) View.GONE else View.VISIBLE
+
+                // Update subtitle with count
+                if (holdOrders.isEmpty()) {
+                    binding.textSubtitle?.visibility = View.GONE
+                } else {
+                    val count = holdOrders.size
+                    binding.textSubtitle?.text = "$count order${if (count != 1) "s" else ""} on hold"
+                    binding.textSubtitle?.visibility = View.VISIBLE
+                }
             }
         }
     }

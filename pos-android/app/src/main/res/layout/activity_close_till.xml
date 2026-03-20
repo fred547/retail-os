@@ -24,7 +24,7 @@
         android:id="@+id/textServer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Till"
+        android:text="Close Till"
         style="@style/TextAppearance.Posterita.Title"
         android:layout_marginTop="@dimen/_12sdp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,12 +44,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Till Info Card -->
+            <!-- Till Info Card (collapsed header) -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
                 android:layout_marginBottom="12dp">
 
                 <LinearLayout
@@ -58,14 +59,30 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Till Information"
-                        android:textColor="@color/posterita_ink"
-                        android:fontFamily="@font/lexend_medium"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Till Information"
+                            android:textColor="@color/posterita_ink"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/text_view_document_no_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="@color/posterita_muted"
+                            android:textSize="13sp"/>
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/txtdate"
@@ -74,21 +91,21 @@
                         android:textColor="@color/posterita_muted"
                         android:text="Thursday, 24 Feb 2024"
                         android:textSize="13sp"
-                        android:layout_marginBottom="12dp"/>
+                        android:layout_marginBottom="8dp"/>
 
-                    <!-- Store Name -->
+                    <!-- Store / Terminal / Opened row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
+                        android:layout_marginBottom="4dp">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Store"
                             android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
                         <TextView
                             android:id="@+id/text_view_store_name_value"
                             android:layout_width="0dp"
@@ -96,23 +113,22 @@
                             android:layout_weight="2"
                             android:text=""
                             android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:gravity="end"/>
                     </LinearLayout>
 
-                    <!-- Terminal Name -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
+                        android:layout_marginBottom="4dp">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Terminal"
                             android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
                         <TextView
                             android:id="@+id/text_view_terminal_name_value"
                             android:layout_width="0dp"
@@ -120,47 +136,22 @@
                             android:layout_weight="2"
                             android:text=""
                             android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:gravity="end"/>
                     </LinearLayout>
 
-                    <!-- Document No -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Document No"
-                            android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
-                        <TextView
-                            android:id="@+id/text_view_document_no_value"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:text=""
-                            android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
-                            android:gravity="end"/>
-                    </LinearLayout>
-
-                    <!-- Opening Date -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
+                        android:layout_marginBottom="4dp">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Opened"
                             android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
                         <TextView
                             android:id="@+id/text_view_opening_date_value"
                             android:layout_width="0dp"
@@ -168,23 +159,22 @@
                             android:layout_weight="2"
                             android:text=""
                             android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:gravity="end"/>
                     </LinearLayout>
 
-                    <!-- Opening Amount -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
+                        android:layout_marginBottom="4dp">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Opening Amount"
                             android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
                         <TextView
                             android:id="@+id/text_view_opening_amount_value"
                             android:layout_width="0dp"
@@ -192,12 +182,11 @@
                             android:layout_weight="2"
                             android:text=""
                             android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:fontFamily="@font/lexend_medium"
                             android:gravity="end"/>
                     </LinearLayout>
 
-                    <!-- Opened By -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -208,7 +197,7 @@
                             android:layout_weight="1"
                             android:text="Opened By"
                             android:textColor="@color/posterita_muted"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
                         <TextView
                             android:id="@+id/text_view_opened_by_name_value"
                             android:layout_width="0dp"
@@ -216,19 +205,1175 @@
                             android:layout_weight="2"
                             android:text=""
                             android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:gravity="end"/>
                     </LinearLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Adjustments Card -->
+            <!-- ================================================================ -->
+            <!-- STEP 1: EXPECTED TOTALS                                          -->
+            <!-- ================================================================ -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_step1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Step header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@color/posterita_primary_light"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="1"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/lexend_medium"
+                            android:gravity="center"
+                            android:background="@drawable/btn_rounded"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Expected Totals"
+                            android:textColor="@color/posterita_ink"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textSize="15sp"
+                            android:layout_marginStart="10dp"/>
+                    </LinearLayout>
+
+                    <!-- Step 1 content -->
+                    <LinearLayout
+                        android:id="@+id/step1_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Cash Sales -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Cash Sales"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_cash_sales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Card / Blink Sales -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Card / Blink Sales"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_card_sales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Voucher Sales -->
+                        <LinearLayout
+                            android:id="@+id/row_voucher_sales"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp"
+                            android:visibility="gone">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Voucher Sales"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_voucher_sales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Adjustments (Pay In / Pay Out) -->
+                        <LinearLayout
+                            android:id="@+id/row_adjustments"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Adjustments (net)"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_adjustments"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Refunds -->
+                        <LinearLayout
+                            android:id="@+id/row_refunds"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp"
+                            android:visibility="gone">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Refunds"
+                                android:textColor="@color/posterita_error"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_refunds"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_error"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/posterita_line"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <!-- Expected Cash in Drawer -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/posterita_primary_light"
+                            android:padding="10dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Expected Cash in Drawer"
+                                android:textColor="@color/posterita_primary_dark"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                            <TextView
+                                android:id="@+id/text_expected_cash"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_primary_dark"
+                                android:textSize="16sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Orders / Items summary -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="10dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Orders"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="13sp"/>
+                            <TextView
+                                android:id="@+id/text_order_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="13sp"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Total Sales"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="13sp"/>
+                            <TextView
+                                android:id="@+id/text_total_sales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="13sp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- STEP 2: COUNT CASH                                               -->
+            <!-- ================================================================ -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_step2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Step header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@color/posterita_primary_light"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="2"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/lexend_medium"
+                            android:gravity="center"
+                            android:background="@drawable/btn_rounded"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Count Cash"
+                            android:textColor="@color/posterita_ink"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textSize="15sp"
+                            android:layout_marginStart="10dp"/>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/button_open_drawer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/stroke_btn">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Open Drawer"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="12sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"/>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </LinearLayout>
+
+                    <!-- Step 2 content: denomination rows -->
+                    <LinearLayout
+                        android:id="@+id/step2_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Column headers -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="8dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Denomination"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.5"
+                                android:text="Qty"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/lexend_medium"
+                                android:gravity="center"/>
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Subtotal"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/lexend_medium"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 2000 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 2,000"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_2000_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_2000_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 1000 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 1,000"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_1000_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_1000_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 500 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 500"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_500_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_500_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 200 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 200"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_200_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_200_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 100 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 100"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_100_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_100_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 50 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 50"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_50_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_50_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 25 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 25"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_25_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_25_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 20 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 20"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_20_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_20_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 10 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 10"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_10_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_10_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Rs 5 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Rs 5"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_5_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0"
+                                android:inputType="number"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_5_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Coins -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Coins"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"/>
+                            <EditText
+                                android:id="@+id/denom_coins_qty"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.5"
+                                android:hint="0.00"
+                                android:inputType="numberDecimal"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="@drawable/stroke_btn"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:importantForAutofill="no"/>
+                            <TextView
+                                android:id="@+id/denom_coins_sub"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/posterita_line"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <!-- Counted Total -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/posterita_primary_light"
+                            android:padding="10dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Counted Total"
+                                android:textColor="@color/posterita_primary_dark"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                            <TextView
+                                android:id="@+id/text_counted_total"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_primary_dark"
+                                android:textSize="16sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- STEP 3: DISCREPANCY                                              -->
+            <!-- ================================================================ -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_step3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Step header -->
+                    <LinearLayout
+                        android:id="@+id/step3_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@color/posterita_warning_light"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="3"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/lexend_medium"
+                            android:gravity="center"
+                            android:background="@drawable/btn_rounded"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Discrepancy"
+                            android:textColor="@color/posterita_ink"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textSize="15sp"
+                            android:layout_marginStart="10dp"/>
+                    </LinearLayout>
+
+                    <!-- Step 3 content -->
+                    <LinearLayout
+                        android:id="@+id/step3_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Expected -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Expected Cash"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_disc_expected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Counted -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Counted Cash"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="14sp"/>
+                            <TextView
+                                android:id="@+id/text_disc_counted"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/posterita_line"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <!-- Difference -->
+                        <LinearLayout
+                            android:id="@+id/row_difference"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/posterita_secondary_light"
+                            android:padding="10dp">
+                            <TextView
+                                android:id="@+id/text_disc_label"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Difference"
+                                android:textColor="@color/posterita_secondary"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                            <TextView
+                                android:id="@+id/text_disc_difference"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00"
+                                android:textColor="@color/posterita_secondary"
+                                android:textSize="16sp"
+                                android:fontFamily="@font/lexend_medium"/>
+                        </LinearLayout>
+
+                        <!-- Card amount entry -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Card / Blink Amount"
+                            android:textColor="@color/posterita_muted"
+                            android:textSize="13sp"
+                            android:layout_marginTop="14dp"
+                            android:layout_marginBottom="4dp"/>
+
+                        <EditText
+                            android:id="@+id/edit_card_amount"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:hint="0.00"
+                            android:inputType="numberDecimal"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:background="@drawable/stroke_btn"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:importantForAutofill="no"/>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- STEP 4: EVIDENCE                                                 -->
+            <!-- ================================================================ -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_step4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Step header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@color/posterita_primary_light"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="4"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/lexend_medium"
+                            android:gravity="center"
+                            android:background="@drawable/btn_rounded"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Evidence (optional)"
+                            android:textColor="@color/posterita_ink"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textSize="15sp"
+                            android:layout_marginStart="10dp"/>
+                    </LinearLayout>
+
+                    <!-- Step 4 content -->
+                    <LinearLayout
+                        android:id="@+id/step4_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Capture photos for reconciliation records"
+                            android:textColor="@color/posterita_muted"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="12dp"/>
+
+                        <!-- Till Photo -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/button_photo_till"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/_35sdp"
+                                android:layout_weight="1"
+                                android:background="@drawable/stroke_btn">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Till Photo"
+                                    android:textColor="@color/posterita_ink"
+                                    android:textSize="13sp"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"/>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <TextView
+                                android:id="@+id/text_photo_till_status"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Not captured"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:layout_marginStart="12dp"/>
+                        </LinearLayout>
+
+                        <!-- Bank Slip -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/button_photo_bank_slip"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/_35sdp"
+                                android:layout_weight="1"
+                                android:background="@drawable/stroke_btn">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Bank Slip"
+                                    android:textColor="@color/posterita_ink"
+                                    android:textSize="13sp"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"/>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <TextView
+                                android:id="@+id/text_photo_bank_slip_status"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Not captured"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:layout_marginStart="12dp"/>
+                        </LinearLayout>
+
+                        <!-- Z-Report -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/button_photo_z_report"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/_35sdp"
+                                android:layout_weight="1"
+                                android:background="@drawable/stroke_btn">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Z-Report"
+                                    android:textColor="@color/posterita_ink"
+                                    android:textSize="13sp"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"/>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <TextView
+                                android:id="@+id/text_photo_z_report_status"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Not captured"
+                                android:textColor="@color/posterita_muted"
+                                android:textSize="12sp"
+                                android:layout_marginStart="12dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- Adjustments + Reports (collapsible utilities)                    -->
+            <!-- ================================================================ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
                 android:layout_marginBottom="12dp">
 
                 <LinearLayout
@@ -240,16 +1385,18 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjustments"
+                        android:text="Adjustments &amp; Reports"
                         android:textColor="@color/posterita_ink"
                         android:fontFamily="@font/lexend_medium"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="8dp"/>
+                        android:textSize="14sp"
+                        android:layout_marginBottom="10dp"/>
 
+                    <!-- Adjustment buttons -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/button_add_money"
@@ -288,132 +1435,9 @@
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"/>
                         </androidx.constraintlayout.widget.ConstraintLayout>
-
                     </LinearLayout>
 
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Reports Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Reports"
-                        android:textColor="@color/posterita_ink"
-                        android:fontFamily="@font/lexend_medium"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="8dp"/>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/button_view_payments"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_35sdp"
-                        android:layout_marginBottom="8dp"
-                        android:background="@drawable/stroke_btn">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="View Payments"
-                            android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/button_print_category_summary"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_35sdp"
-                        android:layout_marginBottom="8dp"
-                        android:background="@drawable/stroke_btn">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Print Category Summary"
-                            android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/button_print_items_details"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_35sdp"
-                        android:layout_marginBottom="8dp"
-                        android:background="@drawable/stroke_btn">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Print Items Details"
-                            android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/button_print_stock_by_category"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_35sdp"
-                        android:background="@drawable/stroke_btn">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Print Stock by Category"
-                            android:textColor="@color/posterita_ink"
-                            android:textSize="14sp"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Close Till Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Close Till"
-                        android:textColor="@color/posterita_ink"
-                        android:fontFamily="@font/lexend_medium"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="8dp"/>
-
+                    <!-- Report buttons -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -421,7 +1445,7 @@
                         android:layout_marginBottom="8dp">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/button_open_drawer"
+                            android:id="@+id/button_view_payments"
                             android:layout_width="0dp"
                             android:layout_height="@dimen/_35sdp"
                             android:layout_weight="1"
@@ -430,9 +1454,9 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Open Drawer"
+                                android:text="View Payments"
                                 android:textColor="@color/posterita_ink"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
                                 app:layout_constraintTop_toTopOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -440,7 +1464,7 @@
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
                         <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/button_denomination"
+                            android:id="@+id/button_print_category_summary"
                             android:layout_width="0dp"
                             android:layout_height="@dimen/_35sdp"
                             android:layout_weight="1"
@@ -449,37 +1473,85 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Denomination"
+                                android:text="Category Summary"
                                 android:textColor="@color/posterita_ink"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"/>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/button_print_items_details"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/_35sdp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/stroke_btn">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Items Details"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="12sp"
                                 app:layout_constraintTop_toTopOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"/>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/button_print_stock_by_category"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/_35sdp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/stroke_btn">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Stock by Category"
+                                android:textColor="@color/posterita_ink"
+                                android:textSize="12sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"/>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
                     </LinearLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/button_close_till"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_40sdp"
-                        android:background="@drawable/btn_rounded">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Close Till"
-                            android:textColor="@color/white"
-                            android:fontFamily="@font/lexend_medium"
-                            android:textSize="15sp"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- SUBMIT RECONCILIATION button                                     -->
+            <!-- ================================================================ -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_close_till"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45sdp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/btn_rounded">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SUBMIT RECONCILIATION"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="15sp"
+                    android:letterSpacing="0.05"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
     </ScrollView>

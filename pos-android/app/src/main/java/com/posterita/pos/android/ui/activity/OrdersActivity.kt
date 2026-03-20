@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.LinearLayout
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.posterita.pos.android.R
@@ -41,9 +40,8 @@ class OrdersActivity : BaseDrawerActivity() {
         )
         supportActionBar?.hide()
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar.setNavigationOnClickListener { openDrawer() }
+        // Back button (← arrow, consistent with Cart/Products)
+        binding.buttonBack.setOnClickListener { finish() }
 
         setupDrawerNavigation()
         setupRecyclerView()

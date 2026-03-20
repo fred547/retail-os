@@ -1,11 +1,12 @@
 package com.posterita.pos.android.ui.adapter
 
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ItemOrderRecycleBinding
 import com.posterita.pos.android.domain.model.OrderDetails
 import com.posterita.pos.android.util.NumberUtils
@@ -44,8 +45,14 @@ class OrderHistoryChildRecyclerAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: OrderDetails) {
-            // Order number
-            binding.textViewDocumentno.text = order.documentno ?: ""
+            val context = itemView.context
+
+            // Order number with time inline: "#0000130 · 14:32"
+            val orderNum = order.documentno ?: ""
+            val timeStr = if (order.dateordered > 0) {
+                " \u00B7 ${timeFormat.format(Date(order.dateordered))}"
+            } else ""
+            binding.textViewDocumentno.text = "$orderNum$timeStr"
 
             // Customer name
             binding.textViewCustomer.text = order.customer_name ?: "Walk-in"
@@ -56,7 +63,7 @@ class OrderHistoryChildRecyclerAdapter(
             // Payment type
             binding.textViewPaymentType.text = order.paymenttype ?: ""
 
-            // Status badge with color
+            // Status badge with design system colors
             val status = order.status ?: ""
             binding.textViewStatus.text = when {
                 status.equals("VO", ignoreCase = true) -> "VOID"
@@ -65,38 +72,30 @@ class OrderHistoryChildRecyclerAdapter(
                 else -> status.uppercase()
             }
 
-            // Style the status badge
             val statusBg = GradientDrawable()
-            statusBg.cornerRadius = 12f
+            statusBg.cornerRadius = 16f
             when {
                 status.equals("VO", ignoreCase = true) -> {
-                    statusBg.setColor(Color.parseColor("#FFEBEE"))
-                    binding.textViewStatus.setTextColor(Color.parseColor("#D32F2F"))
+                    statusBg.setColor(ContextCompat.getColor(context, R.color.posterita_error_light))
+                    binding.textViewStatus.setTextColor(ContextCompat.getColor(context, R.color.posterita_error))
                 }
                 status.equals("CO", ignoreCase = true) -> {
-                    statusBg.setColor(Color.parseColor("#E8F5E9"))
-                    binding.textViewStatus.setTextColor(Color.parseColor("#2E7D32"))
+                    statusBg.setColor(ContextCompat.getColor(context, R.color.posterita_secondary_light))
+                    binding.textViewStatus.setTextColor(ContextCompat.getColor(context, R.color.posterita_secondary))
                 }
                 status.equals("IP", ignoreCase = true) -> {
-                    statusBg.setColor(Color.parseColor("#FFF3E0"))
-                    binding.textViewStatus.setTextColor(Color.parseColor("#E65100"))
+                    statusBg.setColor(ContextCompat.getColor(context, R.color.posterita_warning_light))
+                    binding.textViewStatus.setTextColor(ContextCompat.getColor(context, R.color.posterita_warning))
                 }
                 else -> {
-                    statusBg.setColor(Color.parseColor("#F5F5F5"))
-                    binding.textViewStatus.setTextColor(Color.parseColor("#666666"))
+                    statusBg.setColor(ContextCompat.getColor(context, R.color.posterita_panel))
+                    binding.textViewStatus.setTextColor(ContextCompat.getColor(context, R.color.posterita_muted))
                 }
             }
             binding.textViewStatus.background = statusBg
 
-            // Time
-            binding.textViewTime?.let { timeView ->
-                if (order.dateordered > 0) {
-                    timeView.text = timeFormat.format(Date(order.dateordered))
-                    timeView.visibility = View.VISIBLE
-                } else {
-                    timeView.visibility = View.GONE
-                }
-            }
+            // Time view is hidden — time is now shown inline with order number
+            binding.textViewTime?.visibility = View.GONE
 
             // Items count
             binding.textViewItemsCount?.let { itemsView ->
@@ -109,19 +108,19 @@ class OrderHistoryChildRecyclerAdapter(
                 }
             }
 
-            // Sync status
+            // Sync status with design system colors
             binding.iconSync?.let { syncIcon ->
                 binding.textViewSyncStatus?.let { syncText ->
                     syncIcon.visibility = View.VISIBLE
                     syncText.visibility = View.VISIBLE
                     if (order.issync) {
                         syncText.text = "Synced"
-                        syncIcon.setColorFilter(Color.parseColor("#4CAF50"))
-                        syncText.setTextColor(Color.parseColor("#4CAF50"))
+                        syncIcon.setColorFilter(ContextCompat.getColor(context, R.color.posterita_secondary))
+                        syncText.setTextColor(ContextCompat.getColor(context, R.color.posterita_secondary))
                     } else {
                         syncText.text = "Pending"
-                        syncIcon.setColorFilter(Color.parseColor("#FF9800"))
-                        syncText.setTextColor(Color.parseColor("#FF9800"))
+                        syncIcon.setColorFilter(ContextCompat.getColor(context, R.color.posterita_warning))
+                        syncText.setTextColor(ContextCompat.getColor(context, R.color.posterita_warning))
                     }
                 }
             }
