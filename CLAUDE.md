@@ -114,13 +114,36 @@ Real web app at `pos-android/server-side/posterita-cloud/web/`:
 
 ## Auth Flow
 
-- **First launch:** No account → SetupWizard (phone, name, brand, country, category)
-- **Setup creates:** Owner + 2 brands (live + demo) via `/api/auth/signup`
-- **Subsequent launches:**
-  - **1 user (owner only):** Auto-login, skip PIN → straight to Home
-  - **Multiple users (staff added):** Show user picker → PIN entry → Home
-- **Logout:** Clears session, goes back to user picker (not setup wizard)
-- **PIN is only required when multiple users exist** — the owner who just signed up should never see a PIN screen
+### First Launch (New User)
+1. No account → SetupWizard (phone → OTP → name → brand → country → category)
+2. Creates owner + 2 brands (live + demo) via `POST /api/auth/signup`
+3. Owner sets a password during signup (stored as PIN for quick re-entry)
+4. Goes straight to Home — NO PIN asked (just completed strong auth)
+
+### Subsequent Launches
+- **1 user (owner only):** Auto-login → Home (no PIN on cold start)
+- **Multiple users (staff added):** Staff picker → 4-digit PIN → Home
+
+### Session Timeout (30 min idle)
+- Every touch resets the idle timer
+- After 30 minutes of no interaction → Lock Screen
+- Lock Screen: logo + "Welcome back" + 4-digit PIN numpad
+- Correct PIN → returns to where you were (no data loss)
+- Wrong PIN → shake animation + error + retry
+- Back button → moves app to background (can't bypass)
+- If no PIN set → auto-unlock gracefully
+
+### Device Types
+- **Owner's phone (unenrolled):** Auto-login, PIN only after idle timeout
+- **Store tablet (enrolled):** Staff picker + PIN on every shift change, 5-min idle timeout
+- **Enrollment:** QR code scan links device to store + terminal (Phase 1)
+
+### Security Layers
+1. **OTP** — proves identity during signup (strong auth)
+2. **PIN** — quick re-entry after idle (light auth, 4 digits)
+3. **Biometric** — optional shortcut for PIN (fingerprint/face)
+4. **Role-based** — cashier can't void/refund without supervisor PIN
+5. **Audit log** — every action tracked with user + timestamp
 
 ## Android Navigation Architecture
 
