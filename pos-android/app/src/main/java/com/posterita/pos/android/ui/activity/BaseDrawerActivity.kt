@@ -270,6 +270,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 startActivity(Intent(this, KitchenOrdersActivity::class.java))
             }
         }
+        navClick(R.id.nav_terminal_info) {
+            startActivity(Intent(this, TerminalInfoActivity::class.java))
+        }
         navClick(R.id.nav_printers) {
             startActivity(Intent(this, PrintersActivity::class.java))
         }

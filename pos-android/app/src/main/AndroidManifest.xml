@@ -224,6 +224,9 @@
             android:name=".ui.activity.ManageBrandsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.TerminalInfoActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.ManageTablesActivity"
             android:exported="false" />
         <activity
