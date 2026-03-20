@@ -190,6 +190,10 @@ class PosCustomizationActivity : AppCompatActivity() {
         bindSwitch(R.id.switch_clear, prefsManager.showClearButton) { prefsManager.showClearButton = it }
         bindSwitch(R.id.switch_cust, prefsManager.showCustButton) { prefsManager.showCustButton = it }
         bindSwitch(R.id.switch_more, prefsManager.showMoreButton) { prefsManager.showMoreButton = it }
+
+        // Security
+        bindSwitch(R.id.switch_require_removal_note, prefsManager.cartRemovalRequireNote) { prefsManager.cartRemovalRequireNote = it }
+        bindSwitch(R.id.switch_require_removal_pin, prefsManager.cartRemovalRequirePin) { prefsManager.cartRemovalRequirePin = it }
     }
 
     private fun bindSwitch(id: Int, initialValue: Boolean, onChanged: (Boolean) -> Unit) {
