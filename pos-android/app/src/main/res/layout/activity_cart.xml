@@ -120,17 +120,12 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Clear cart bin icon -->
+        <!-- Hidden for binding compat (clear cart is in MORE menu) -->
         <ImageView
             android:id="@+id/button_clear_cart"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:padding="10dp"
-            android:layout_marginStart="4dp"
-            android:src="@drawable/ic_del"
-            android:contentDescription="Clear cart"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/posterita_muted" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Hidden for binding compat -->
