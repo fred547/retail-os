@@ -10,6 +10,7 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -33,6 +34,7 @@ import com.posterita.pos.android.data.local.entity.Customer
 import com.posterita.pos.android.data.local.entity.DiscountCode
 import com.posterita.pos.android.data.local.entity.HoldOrder
 import com.posterita.pos.android.data.local.entity.Modifier
+import com.posterita.pos.android.data.local.entity.Product
 import com.posterita.pos.android.data.remote.ApiService
 import com.posterita.pos.android.data.remote.BlinkApiService
 import com.posterita.pos.android.data.remote.model.request.BlinkTillQRCodeRequest
@@ -2810,5 +2812,57 @@ class CartActivity : BaseDrawerActivity() {
                 }
             }
             .show()
+    }
+
+    // Bluetooth HID barcode scanner support
+    private val hidBuffer = StringBuilder()
+    private var hidLastKeyTime = 0L
+    private val HID_TIMEOUT_MS = 500L
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Only process key-down events
+        if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
+
+        val now = System.currentTimeMillis()
+
+        // Clear buffer if too much time passed (manual typing, not scanner)
+        if (now - hidLastKeyTime > HID_TIMEOUT_MS && hidBuffer.isNotEmpty()) {
+            hidBuffer.clear()
+        }
+        hidLastKeyTime = now
+
+        return when {
+            event.keyCode == KeyEvent.KEYCODE_ENTER -> {
+                // Scanner sends Enter at end of barcode
+                val barcode = hidBuffer.toString().trim()
+                hidBuffer.clear()
+                if (barcode.length >= 3) {
+                    handleBarcodeScan(barcode)
+                    true
+                } else {
+                    super.dispatchKeyEvent(event)
+                }
+            }
+            event.isPrintingKey -> {
+                // Accumulate printable characters
+                hidBuffer.append(event.unicodeChar.toChar())
+                true // consume the event so it doesn't go to EditText
+            }
+            else -> super.dispatchKeyEvent(event)
+        }
+    }
+
+    private fun handleBarcodeScan(barcode: String) {
+        lifecycleScope.launch {
+            val product: Product? = withContext(Dispatchers.IO) {
+                db.productDao().getProductByUpc(barcode)
+            }
+            if (product != null) {
+                shoppingCartViewModel.addProduct(product)
+                Toast.makeText(this@CartActivity, "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this@CartActivity, "Product not found for barcode: $barcode", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

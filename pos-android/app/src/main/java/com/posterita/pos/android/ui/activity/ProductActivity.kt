@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
@@ -984,6 +985,47 @@ class ProductActivity : BaseDrawerActivity() {
         navView.findViewById<View>(R.id.nav_logout)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             performLogout()
+        }
+    }
+
+    // Bluetooth HID barcode scanner support
+    private val hidBuffer = StringBuilder()
+    private var hidLastKeyTime = 0L
+    private val HID_TIMEOUT_MS = 500L
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Only process key-down events
+        if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
+
+        // If the search EditText has focus, let it handle input normally
+        if (binding.editTextSearch?.hasFocus() == true) return super.dispatchKeyEvent(event)
+
+        val now = System.currentTimeMillis()
+
+        // Clear buffer if too much time passed (manual typing, not scanner)
+        if (now - hidLastKeyTime > HID_TIMEOUT_MS && hidBuffer.isNotEmpty()) {
+            hidBuffer.clear()
+        }
+        hidLastKeyTime = now
+
+        return when {
+            event.keyCode == KeyEvent.KEYCODE_ENTER -> {
+                // Scanner sends Enter at end of barcode
+                val barcode = hidBuffer.toString().trim()
+                hidBuffer.clear()
+                if (barcode.length >= 3) {
+                    handleBarcodeScan(barcode)
+                    true
+                } else {
+                    super.dispatchKeyEvent(event)
+                }
+            }
+            event.isPrintingKey -> {
+                // Accumulate printable characters
+                hidBuffer.append(event.unicodeChar.toChar())
+                true // consume the event so it doesn't go to EditText
+            }
+            else -> super.dispatchKeyEvent(event)
         }
     }
 

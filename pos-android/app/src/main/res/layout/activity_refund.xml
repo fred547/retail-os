@@ -6,123 +6,226 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/posterita_bg"
-    tools:context=".Activities.RefundActivity">
+    tools:context=".ui.activity.RefundActivity">
 
-
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Top bar: ← back + "Refund" (consistent LinearLayout pattern) -->
+    <LinearLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:background="@color/posterita_paper"
+        android:elevation="1dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <ImageView
+            android:id="@+id/button_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="10dp"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/posterita_ink" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refund"
+            style="@style/TextAppearance.Posterita.Heading" />
+    </LinearLayout>
+
+    <!-- Order info card (visible after lookup) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_order_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        style="@style/Widget.Posterita.Card"
+        tools:visibility="visible">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/posterita_paper"
-            android:textAlignment="center"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/button_back"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_back_cart" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/toolbarTitle"
+                    android:id="@+id/text_order_number"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="@style/TextAppearance.Posterita.Subheading"
+                    tools:text="Order #10042" />
+
+                <TextView
+                    android:id="@+id/text_order_total"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Refund"
-                    android:layout_centerInParent="true"
-                    android:textColor="@color/posterita_ink"
-                    android:textSize="@dimen/_17ssp"
-                    android:fontFamily="@font/lexend_medium" />
+                    style="@style/TextAppearance.Posterita.Subheading"
+                    tools:text="Rs 2,450.00" />
+            </LinearLayout>
 
-            </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
 
+                <TextView
+                    android:id="@+id/text_order_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    tools:text="20 Mar 2026, 14:30" />
 
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
+                <TextView
+                    android:id="@+id/text_order_customer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    tools:text="Walk-In Customer" />
+            </LinearLayout>
 
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Select items label -->
+    <TextView
+        android:id="@+id/label_select_items"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="6dp"
+        android:text="Select items to refund"
+        android:visibility="gone"
+        style="@style/TextAppearance.Posterita.Label"
+        tools:visibility="visible" />
+
+    <!-- Item list with checkboxes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_cart_line_items"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:visibility="visible" />
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+    <!-- Empty state (shown before order is loaded) -->
+    <LinearLayout
+        android:id="@+id/layout_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order loaded"
+            android:textColor="@color/posterita_muted"
+            android:textSize="16sp"
+            android:fontFamily="@font/lexend_medium" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Select items below to process a refund"
+            style="@style/TextAppearance.Posterita.Body.Muted" />
+    </LinearLayout>
+
+    <!-- Bottom panel: reason + total + refund button -->
+    <LinearLayout
+        android:id="@+id/panel_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="@color/posterita_paper"
-        >
+        android:elevation="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp">
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_15sdp"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/lexend_medium"
-            android:text="Total"
-            android:textColor="@color/posterita_ink"
-            android:textSize="@dimen/_20ssp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/text_view_grand_total"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="@dimen/_15sdp"
-            android:fontFamily="@font/lexend_medium"
-            android:text="RS"
-            android:textColor="@color/posterita_ink"
-            android:textSize="@dimen/_20ssp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/button_refund_order"
+        <!-- Reason field -->
+        <EditText
+            android:id="@+id/edit_refund_reason"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_40sdp"
-            android:layout_marginStart="19dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="19dp"
-            android:layout_marginBottom="@dimen/_15sdp"
-            android:background="@drawable/btn_rounded"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView3">
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_bar"
+            android:hint="Reason for refund (required)"
+            android:textColorHint="@color/posterita_muted"
+            android:textColor="@color/posterita_ink"
+            android:textSize="14sp"
+            android:fontFamily="@font/lexend_medium"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:inputType="text"
+            android:maxLines="1"
+            android:imeOptions="actionDone" />
+
+        <!-- Total row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical">
 
             <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Refund Total"
+                style="@style/TextAppearance.Posterita.Subheading" />
+
+            <TextView
+                android:id="@+id/text_view_grand_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Refund"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_17ssp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                android:textColor="@color/posterita_error"
+                style="@style/TextAppearance.Posterita.Heading"
+                tools:text="Rs 1,250.00" />
+        </LinearLayout>
 
+        <!-- Refund button (danger style) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_refund_order"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:text="REFUND"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:fontFamily="@font/lexend_bold"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/posterita_error"
+            app:cornerRadius="14dp"
+            android:enabled="false"
+            android:alpha="0.5" />
 
+    </LinearLayout>
 
 </LinearLayout>

@@ -1,6 +1,5 @@
 package com.posterita.pos.android.ui.adapter
 
-import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -8,23 +7,30 @@ import com.bumptech.glide.Glide
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ItemProductCartRefundBinding
 import com.posterita.pos.android.domain.model.CartItem
-import com.posterita.pos.android.ui.viewmodel.ShoppingCartViewModel
 import com.posterita.pos.android.util.NumberUtils
 
 class RefundCartAdapter(
-    private val shoppingCartViewModel: ShoppingCartViewModel,
-    private val listener: OnCartItemClickListener
+    private val listener: OnRefundSelectionListener
 ) : RecyclerView.Adapter<RefundCartAdapter.RefundCartViewHolder>() {
 
-    interface OnCartItemClickListener {
-        fun onCartItemClick(cartItem: CartItem)
+    interface OnRefundSelectionListener {
+        fun onSelectionChanged(selectedItems: List<CartItem>)
     }
 
     private var cartItems: List<CartItem> = emptyList()
+    private val selectedLineNos: MutableSet<String> = mutableSetOf()
 
     fun setProductList(list: List<CartItem>) {
         cartItems = list
+        // Select all items by default
+        selectedLineNos.clear()
+        selectedLineNos.addAll(list.map { it.lineNo })
         notifyDataSetChanged()
+        notifySelectionChanged()
+    }
+
+    fun getSelectedItems(): List<CartItem> {
+        return cartItems.filter { it.lineNo in selectedLineNos }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RefundCartViewHolder {
@@ -40,6 +46,10 @@ class RefundCartAdapter(
 
     override fun getItemCount(): Int = cartItems.size
 
+    private fun notifySelectionChanged() {
+        listener.onSelectionChanged(getSelectedItems())
+    }
+
     inner class RefundCartViewHolder(
         private val binding: ItemProductCartRefundBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -47,44 +57,52 @@ class RefundCartAdapter(
         fun bind(cartItem: CartItem) {
             val product = cartItem.product
             val context = itemView.context
+            val isSelected = cartItem.lineNo in selectedLineNos
 
             // Product name
             binding.textViewProductName.text = product.name ?: ""
 
-            // Product price (underlined)
-            binding.textViewProductPrice.text = NumberUtils.formatPrice(cartItem.priceEntered)
-            binding.textViewProductPrice.paintFlags =
-                binding.textViewProductPrice.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-
             // Quantity
             binding.textViewQty.text = NumberUtils.formatQuantity(cartItem.qty)
+
+            // Unit price
+            binding.textViewUnitPrice?.text = NumberUtils.formatPrice(cartItem.priceEntered)
+
+            // Line total
+            binding.textViewLineTotal?.text = NumberUtils.formatPrice(cartItem.lineNetAmt)
 
             // Load product image
             Glide.with(context)
                 .load(product.image)
-                .placeholder(R.drawable.ic_splash)
-                .error(R.drawable.ic_splash)
+                .placeholder(R.drawable.ic_product_placeholder)
+                .error(R.drawable.ic_product_placeholder)
                 .into(binding.imageViewProduct)
 
-            // Increase qty button
-            binding.consAdd.setOnClickListener {
-                shoppingCartViewModel.increaseQty(cartItem.lineNo)
+            // Checkbox state
+            binding.checkboxSelect?.isChecked = isSelected
+
+            // Background highlight
+            binding.rowRoot.setBackgroundResource(
+                if (isSelected) R.drawable.bg_refund_item_selected
+                else R.drawable.bg_refund_item_default
+            )
+
+            // Alpha for deselected items
+            binding.rowRoot.alpha = if (isSelected) 1.0f else 0.5f
+
+            // Toggle selection on checkbox or row click
+            val toggleSelection = {
+                if (cartItem.lineNo in selectedLineNos) {
+                    selectedLineNos.remove(cartItem.lineNo)
+                } else {
+                    selectedLineNos.add(cartItem.lineNo)
+                }
+                notifyItemChanged(adapterPosition)
+                notifySelectionChanged()
             }
 
-            // Decrease qty button
-            binding.consRemove.setOnClickListener {
-                shoppingCartViewModel.decreaseQty(cartItem.lineNo)
-            }
-
-            // Remove line button
-            binding.buttonRemoveLine.setOnClickListener {
-                shoppingCartViewModel.removeLine(cartItem.lineNo)
-            }
-
-            // Click on price to trigger listener
-            binding.textViewProductPrice.setOnClickListener {
-                listener.onCartItemClick(cartItem)
-            }
+            binding.checkboxSelect?.setOnClickListener { toggleSelection() }
+            binding.rowRoot.setOnClickListener { toggleSelection() }
         }
     }
 }
