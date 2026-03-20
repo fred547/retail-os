@@ -35,16 +35,26 @@ data class User(
     companion object {
         const val ROLE_OWNER = "owner"
         const val ROLE_ADMIN = "admin"
+        const val ROLE_SUPERVISOR = "supervisor"
+        const val ROLE_CASHIER = "cashier"
         const val ROLE_STAFF = "staff"
     }
 
     val isOwner: Boolean get() = role == ROLE_OWNER
+    val isSupervisor: Boolean get() = role == ROLE_SUPERVISOR || role == ROLE_ADMIN || role == ROLE_OWNER || isadmin == "Y"
+    val isCashier: Boolean get() = role == ROLE_CASHIER || role == ROLE_STAFF || (!isSupervisor && !isOwner)
     val isAdminOrOwner: Boolean get() = role == ROLE_OWNER || role == ROLE_ADMIN || isadmin == "Y"
+
+    /** Supervisors and above can remove items, open cash drawer, void orders without PIN */
+    val canRemoveItemsWithoutPin: Boolean get() = isSupervisor
+
     val displayRole: String get() = when (role) {
         ROLE_OWNER -> "Owner"
         ROLE_ADMIN -> "Admin"
+        ROLE_SUPERVISOR -> "Supervisor"
+        ROLE_CASHIER -> "Cashier"
         ROLE_STAFF -> "Staff"
-        else -> if (isadmin == "Y") "Admin" else "Staff"
+        else -> if (isadmin == "Y") "Admin" else "Cashier"
     }
 
     override fun toString(): String = username ?: ""

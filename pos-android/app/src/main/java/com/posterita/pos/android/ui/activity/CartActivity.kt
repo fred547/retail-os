@@ -291,6 +291,13 @@ class CartActivity : BaseDrawerActivity() {
         removalType: CartProductAdapter.RemovalType,
         proceed: () -> Unit
     ) {
+        // Supervisors, admins, and owners bypass removal security
+        val currentUser = sessionManager.user
+        if (currentUser?.canRemoveItemsWithoutPin == true) {
+            proceed()
+            return
+        }
+
         val requireNote = prefsManager.cartRemovalRequireNote
         val requirePin = prefsManager.cartRemovalRequirePin
 
