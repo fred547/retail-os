@@ -250,6 +250,8 @@ class SearchCustomerActivity : AppCompatActivity(), CustomerAdapter.OnCustomerCl
         binding = ActivitySearchCustomerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.buttonBack?.setOnClickListener { finish() }
+
         setupRecyclerView()
         setupSearch()
         setupButtons()
