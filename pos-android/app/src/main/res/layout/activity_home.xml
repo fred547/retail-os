@@ -15,7 +15,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="24dp"
-        android:paddingEnd="24dp"
+        android:paddingEnd="16dp"
         android:paddingTop="48dp"
         android:paddingBottom="8dp"
         app:layout_constraintTop_toTopOf="parent">
@@ -60,65 +60,42 @@
             android:id="@+id/connectivity_dot"
             android:layout_width="8dp"
             android:layout_height="8dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/bg_internet_dot" />
-
-        <!-- Logout -->
-        <ImageView
-            android:id="@+id/buttonLogout"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:padding="10dp"
-            android:src="@drawable/logout"
-            android:contentDescription="Log out"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/posterita_error" />
-
-        <!-- Notification bell -->
-        <FrameLayout
-            android:id="@+id/layoutNotificationBell"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_notification"
-                android:contentDescription="Notifications"
-                app:tint="@color/posterita_ink" />
-
-            <!-- Badge -->
-            <TextView
-                android:id="@+id/textNotificationBadge"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_gravity="top|end"
-                android:gravity="center"
-                android:background="@drawable/badge_background_red"
-                android:textColor="@color/white"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:text="3"
-                tools:visibility="visible" />
-        </FrameLayout>
     </LinearLayout>
 
-    <!-- Summary card (glassmorphism feel) -->
+    <!-- Hidden views for binding compat -->
+    <ImageView
+        android:id="@+id/buttonLogout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <FrameLayout
+        android:id="@+id/layoutNotificationBell"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/textNotificationBadge"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Summary card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="16dp"
-        app:cardCornerRadius="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="14dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="@color/posterita_line"
@@ -144,8 +121,8 @@
                     android:id="@+id/textOrderCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/TextAppearance.Posterita.Heading"
-                    tools:text="12" />
+                    android:text="0"
+                    style="@style/TextAppearance.Posterita.Heading" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -154,7 +131,6 @@
                     style="@style/TextAppearance.Posterita.Nano" />
             </LinearLayout>
 
-            <!-- Divider -->
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -172,9 +148,9 @@
                     android:id="@+id/textRevenue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="0.00"
                     style="@style/TextAppearance.Posterita.Heading"
-                    android:textColor="@color/posterita_primary"
-                    tools:text="Rs 4,250" />
+                    android:textColor="@color/posterita_primary" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -183,13 +159,12 @@
                     style="@style/TextAppearance.Posterita.Nano" />
             </LinearLayout>
 
-            <!-- Divider -->
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="@color/posterita_line" />
 
-            <!-- Loyalty -->
+            <!-- Customers -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -201,14 +176,14 @@
                     android:id="@+id/textLoyaltySignups"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="0"
                     style="@style/TextAppearance.Posterita.Heading"
-                    android:textColor="@color/posterita_purple"
-                    tools:text="3" />
+                    android:textColor="@color/posterita_purple" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign-ups"
+                    android:text="Customers"
                     style="@style/TextAppearance.Posterita.Nano" />
             </LinearLayout>
         </LinearLayout>
@@ -225,6 +200,133 @@
         android:paddingEnd="12dp"
         android:paddingBottom="12dp"
         app:layout_constraintTop_toBottomOf="@id/cardSummary"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/bottomNav" />
+
+    <!-- Bottom Navigation: Home | POS | Orders | More -->
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:background="@color/posterita_paper"
+        android:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Home (active) -->
+        <LinearLayout
+            android:id="@+id/navHome"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_drawer"
+                app:tint="@color/posterita_primary"
+                android:contentDescription="Home" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="10sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_primary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- POS -->
+        <LinearLayout
+            android:id="@+id/navPOS"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/pos"
+                app:tint="@color/posterita_muted"
+                android:contentDescription="POS" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="POS"
+                android:textSize="10sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Orders -->
+        <LinearLayout
+            android:id="@+id/navOrders"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/order"
+                app:tint="@color/posterita_muted"
+                android:contentDescription="Orders" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Orders"
+                android:textSize="10sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- More (Settings + Logout) -->
+        <LinearLayout
+            android:id="@+id/navMore"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/settings"
+                app:tint="@color/posterita_muted"
+                android:contentDescription="More" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="More"
+                android:textSize="10sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

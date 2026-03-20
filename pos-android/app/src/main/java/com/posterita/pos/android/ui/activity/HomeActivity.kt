@@ -74,7 +74,7 @@ class HomeActivity : AppCompatActivity() {
         setupGreeting()
         setupAppGrid()
         loadTodaySummary()
-        setupLogout()
+        setupBottomNav()
     }
 
     override fun onResume() {
@@ -110,20 +110,55 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupLogout() {
-        binding.buttonLogout?.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Log Out")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Log Out") { _, _ ->
-                    sessionManager.resetSession()
-                    val intent = Intent(this, SelectUserLoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
+    private fun setupBottomNav() {
+        // Home — already here, no-op
+        binding.navHome?.setOnClickListener { /* already on home */ }
+
+        // POS — launch till/product
+        binding.navPOS?.setOnClickListener {
+            startActivity(Intent(this, TillActivity::class.java))
+        }
+
+        // Orders
+        binding.navOrders?.setOnClickListener {
+            startActivity(Intent(this, OrdersActivity::class.java))
+        }
+
+        // More — show popup with Settings + Logout
+        binding.navMore?.setOnClickListener { view ->
+            val popup = android.widget.PopupMenu(this, view)
+            popup.menu.add(0, 1, 0, "Settings")
+            popup.menu.add(0, 2, 1, "About")
+            popup.menu.add(0, 3, 2, "Log Out")
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    1 -> {
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                        true
+                    }
+                    2 -> {
+                        startActivity(Intent(this, AboutActivity::class.java))
+                        true
+                    }
+                    3 -> {
+                        androidx.appcompat.app.AlertDialog.Builder(this)
+                            .setTitle("Log Out")
+                            .setMessage("Are you sure you want to log out?")
+                            .setPositiveButton("Log Out") { _, _ ->
+                                sessionManager.resetSession()
+                                val intent = Intent(this, SelectUserLoginActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                startActivity(intent)
+                                finish()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                        true
+                    }
+                    else -> false
                 }
-                .setNegativeButton("Cancel", null)
-                .show()
+            }
+            popup.show()
         }
     }
 
