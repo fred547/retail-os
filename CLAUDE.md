@@ -7,8 +7,9 @@ Unified retail management platform: one Android app, one web console, one NestJS
 | Directory | What it is |
 |-----------|-----------|
 | `pos-android/` | Production Android POS app (Kotlin, Gradle, Hilt, Room) — 58 Activities, offline-first |
-| `manus-retail-os/` | NestJS backend + Next.js web console prototype (React+TS, tRPC, Drizzle) |
-| `manus-retail-os-prototype/` | Earlier Manus prototype variant |
+| `manus-retail-os/` | Manus prototype — inspiration only, NOT the production codebase |
+| `manus-retail-os-prototype/` | Earlier Manus prototype variant — inspiration only |
+| `pos-android/server-side/posterita-cloud/web/` | **Production web console** (Next.js on Vercel) — the actual web app |
 | `posterita-loyalty/` | Legacy loyalty Flask API + Zoho scripts (being retired) |
 | `posterita-prototype/` | Latest interactive UI prototype (React JSX, 1,242 lines) |
 | `specs/` | AI-optimized specification files (split from master plan v3.9) |

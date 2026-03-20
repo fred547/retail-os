@@ -23,12 +23,12 @@ class SettingsActivity : BaseDrawerActivity() {
 
         setupDrawerNavigation()
 
-        // Data — tap opens local view, long press opens web console for editing
+        // Data — opens web console embedded in app
         binding.storesOption.setOnClickListener { openWebConsole("/stores", "Stores") }
-        binding.terminalsOption.setOnClickListener { openWebConsole("/devices", "Terminals") }
-        binding.usersOption?.setOnClickListener { openWebConsole("/staff", "Users") }
+        binding.terminalsOption.setOnClickListener { openWebConsole("/terminals", "Terminals") }
+        binding.usersOption?.setOnClickListener { openWebConsole("/users", "Users") }
         binding.taxesOption?.setOnClickListener { openWebConsole("/settings", "Taxes") }
-        binding.categoriesOption?.setOnClickListener { openWebConsole("/products", "Categories") }
+        binding.categoriesOption?.setOnClickListener { openWebConsole("/categories", "Categories") }
         binding.productsOption?.setOnClickListener { openWebConsole("/products", "Products") }
 
         // System

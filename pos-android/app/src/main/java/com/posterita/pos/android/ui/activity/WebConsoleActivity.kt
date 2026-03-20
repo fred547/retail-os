@@ -79,21 +79,23 @@ class WebConsoleActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 binding.progressLoading.visibility = View.GONE
 
-                // Inject CSS to hide the web console's sidebar nav (we provide our own nav)
+                // Inject CSS to hide the web console's sidebar and make content full-width
                 view?.evaluateJavascript("""
                     (function() {
                         var style = document.createElement('style');
                         style.textContent = `
-                            /* Hide sidebar navigation — Android provides its own */
-                            [data-sidebar], nav, .sidebar, aside { display: none !important; }
-                            /* Make main content full width */
-                            main, [role="main"], .main-content {
-                                margin-left: 0 !important;
-                                width: 100% !important;
-                                max-width: 100% !important;
-                            }
-                            /* Hide any top nav/header from the web console */
-                            header.top-bar, .top-navigation { display: none !important; }
+                            /* Hide the fixed sidebar — Android provides its own navigation */
+                            .fixed.inset-y-0, aside, nav.fixed { display: none !important; }
+                            /* Hide mobile hamburger menu button */
+                            button[aria-label="Open sidebar"], button[aria-label="Close sidebar"] { display: none !important; }
+                            /* Make main content full width (remove sidebar margin) */
+                            main, .flex-1 { margin-left: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
+                            .lg\\:ml-64 { margin-left: 0 !important; }
+                            /* Reduce top padding since Android has its own top bar */
+                            .pt-16 { padding-top: 8px !important; }
+                            .lg\\:pt-8 { padding-top: 8px !important; }
+                            /* Mobile overlay backdrop */
+                            .fixed.inset-0.bg-black\\/50 { display: none !important; }
                         `;
                         document.head.appendChild(style);
                     })();
