@@ -113,13 +113,27 @@ class LockScreenActivity : AppCompatActivity() {
         binding.textError.visibility = View.GONE
     }
 
+    @Inject lateinit var accountRegistry: com.posterita.pos.android.util.LocalAccountRegistry
+    @Inject lateinit var prefsManager: com.posterita.pos.android.util.SharedPreferencesManager
+
     private fun checkPin() {
         if (pinBuffer == correctPin) {
-            // Success — unlock and go to Home
+            // Success — unlock
             SessionTimeoutManager.unlock()
-            val intent = android.content.Intent(this, HomeActivity::class.java)
-            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+
+            val accounts = accountRegistry.getAllAccounts()
+            val lastBrand = prefsManager.getString("last_brand_id", "")
+
+            val target = if (accounts.size > 1 && lastBrand.isEmpty()) {
+                // Multiple brands, never selected one → brand picker
+                android.content.Intent(this, BrandSelectorActivity::class.java)
+            } else {
+                // Single brand or already selected → Home
+                android.content.Intent(this, HomeActivity::class.java)
+            }
+
+            target.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(target)
             finish()
         } else {
             // Wrong PIN

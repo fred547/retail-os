@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line"
+    app:cardBackgroundColor="@color/posterita_paper"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <!-- Brand icon -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+
+            <View
+                android:id="@+id/icon_bg"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_tile_icon" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_splash"
+                android:scaleType="fitCenter"
+                android:contentDescription="Brand" />
+        </FrameLayout>
+
+        <!-- Brand info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
+
+            <TextView
+                android:id="@+id/text_brand_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.Posterita.Subheading" />
+
+            <TextView
+                android:id="@+id/text_brand_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                style="@style/TextAppearance.Posterita.Tiny"
+                android:textColor="@color/posterita_muted" />
+        </LinearLayout>
+
+        <!-- Type badge -->
+        <TextView
+            android:id="@+id/badge_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textSize="10sp"
+            android:fontFamily="@font/lexend_medium" />
+
+        <!-- Arrow -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="›"
+            android:textSize="22sp"
+            android:textColor="@color/posterita_muted"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
