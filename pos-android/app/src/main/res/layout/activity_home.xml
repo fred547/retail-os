@@ -39,9 +39,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="retailOS"
                 style="@style/TextAppearance.Posterita.Tiny"
-                android:letterSpacing="0.06" />
+                android:textColor="@color/posterita_muted"
+                tools:text="Grand Baie store · Cashier" />
         </LinearLayout>
 
         <!-- Notification bell -->

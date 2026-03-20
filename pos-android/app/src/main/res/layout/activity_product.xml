@@ -23,7 +23,7 @@
             android:paddingEnd="8dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:background="@color/white"
+            android:background="@color/posterita_panel"
             android:elevation="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -219,7 +219,7 @@
             android:gravity="center"
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
-            android:background="@color/white"
+            android:background="@color/posterita_panel"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@+id/layout_top_bar">
 
@@ -304,39 +304,50 @@
             android:paddingBottom="4dp"
             android:clipToPadding="false"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="3"
+            app:spanCount="2"
             app:layout_constraintTop_toBottomOf="@id/divider_categories"
             app:layout_constraintBottom_toTopOf="@+id/layout_bottom_buttons" />
 
-        <!-- Bottom bar — MORE + MY CART -->
+        <!-- Bottom bar — SCAN + CUST + MORE + MY CART -->
         <LinearLayout
             android:id="@+id/layout_bottom_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="12dp"
-            android:background="@color/white"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="10dp"
+            android:background="@color/posterita_paper"
             android:elevation="4dp"
             app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- CUST button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_customer"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="CUST"
+                android:visibility="visible" />
 
             <!-- MORE button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_more_bottom"
                 style="@style/Widget.Posterita.Button.Outlined"
                 android:layout_width="0dp"
-                android:layout_height="52dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 android:text="MORE" />
 
             <!-- MY CART button -->
             <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="3"
+                android:layout_height="48dp"
+                android:layout_weight="2"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
@@ -344,7 +355,7 @@
                     android:id="@+id/button_my_cart"
                     style="@style/Widget.Posterita.Button.Pay"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     app:icon="@drawable/ic_shopping_cart"
                     app:iconGravity="textStart"
                     app:iconSize="20dp"
@@ -410,13 +421,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/button_add_customer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        <!-- button_add_customer is now in layout_bottom_buttons -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

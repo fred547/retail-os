@@ -46,10 +46,18 @@ For UI work, also read:
 
 ## Brand Colors
 
-- Primary: `#007AFF` (posterita_primary)
-- Secondary/Success: `#34C759`
-- Error: `#FF3B30`
-- Warning: `#FF9500`
+- Primary: `#1976D2` (posterita_primary — blue)
+- Primary Light: `#DCEBFF` (posterita_primary_light)
+- Primary Dark: `#0D5DB3` (posterita_primary_dark)
+- Secondary/Success: `#2E7D32` (posterita_secondary — green)
+- Error: `#E53935` (posterita_error — red)
+- Warning: `#F57F17` (posterita_warning — amber)
+- Purple: `#5E35B1` (posterita_purple — loyalty/points)
+- Background: `#F5F2EA` (posterita_bg — warm cream canvas)
+- Paper: `#FFFFFF` (posterita_paper — cards/panels)
+- Ink: `#141414` (posterita_ink — primary text)
+- Muted: `#6C6F76` (posterita_muted — secondary text)
+- Line: `#E6E2DA` (posterita_line — borders/dividers)
 
 ## Current Phase
 

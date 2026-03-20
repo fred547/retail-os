@@ -79,6 +79,15 @@ class HomeActivity : AppCompatActivity() {
             else -> "Good evening"
         }
         binding.textGreeting.text = "$greeting, $displayName"
+
+        // Show store name + role under greeting (matches prototype)
+        val storeName = prefsManager.storeName.ifEmpty { null }
+        val roleName = user?.displayRole
+        val subtitle = listOfNotNull(
+            storeName?.let { "$it store" },
+            roleName
+        ).joinToString(" · ")
+        binding.textBranding.text = subtitle.ifEmpty { "retailOS" }
     }
 
     private fun setupAppGrid() {

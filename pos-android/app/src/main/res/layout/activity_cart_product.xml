@@ -185,108 +185,116 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/product"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/_10sdp"
-            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:background="@color/white">
+            android:background="@color/posterita_paper"
+            android:paddingTop="8dp">
+
+            <!-- Subtotal row -->
             <TextView
                 android:id="@+id/txt_sub_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_ink"
                 android:text="Sub total"
                 app:layout_constraintBottom_toTopOf="@id/text_view_tax_total"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
-            <TextView
-                android:id="@+id/txt_tex_totoal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="@color/black"
-                android:text="Tax total"
-                app:layout_constraintBottom_toTopOf="@id/text_view_grand_total"
-
-                android:layout_marginEnd="@dimen/_15sdp"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="6dp"/>
             <TextView
                 android:id="@+id/text_view_subtotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="@color/black"
-                android:text="rs 11"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_ink"
+                android:text="0.00"
                 app:layout_constraintBottom_toTopOf="@id/text_view_tax_total"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- Tax row -->
+            <TextView
+                android:id="@+id/txt_tex_totoal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_ink"
+                android:text="Tax total"
+                app:layout_constraintBottom_toTopOf="@id/txt_discount_total"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="6dp"/>
             <TextView
                 android:id="@+id/text_view_tax_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="@color/black"
-                android:text="00.00"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_ink"
+                android:text="0.00"
                 app:layout_constraintBottom_toTopOf="@id/txt_discount_total"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- Discount row (hidden by default) -->
             <TextView
                 android:id="@+id/txt_discount_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="#E53935"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_error"
                 android:text="Discount"
                 android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="@id/text_view_grand_total"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="6dp"/>
             <TextView
                 android:id="@+id/text_view_discount_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/_14ssp"
-                android:textColor="#E53935"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_error"
                 android:text="-0.00"
                 android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="@id/text_view_grand_total"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_5sdp"/>
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- Total row (bold) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Total"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:fontFamily="@font/lexend_medium"
                 app:layout_constraintBottom_toTopOf="@+id/button_pay_order"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginBottom="@dimen/_5sdp"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:textSize="@dimen/_18ssp"/>
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:textSize="18sp"/>
             <TextView
                 android:id="@+id/text_view_grand_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="RS"
-                android:textColor="@color/black"
+                android:text="0.00"
+                android:textColor="@color/posterita_ink"
                 android:fontFamily="@font/lexend_medium"
                 app:layout_constraintBottom_toTopOf="@+id/button_pay_order"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginBottom="@dimen/_5sdp"
-                android:layout_marginEnd="@dimen/_15sdp"
-                android:textSize="@dimen/_18ssp"/>
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="16dp"
+                android:textSize="18sp"/>
+
+            <!-- Hold Order button -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/button_hold_order"
                 android:layout_width="0dp"
-                android:layout_marginBottom="@dimen/_15sdp"
-                android:layout_marginStart="@dimen/_35sdp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="16dp"
                 android:layout_height="48dp"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintEnd_toStartOf="@+id/button_pay_order"
@@ -298,20 +306,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Hold Order"
-                    android:textSize="@dimen/_11ssp"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/lexend_medium"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:textColor="@color/black"/>
+                    android:textColor="@color/posterita_ink"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Pay button -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/button_pay_order"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:layout_marginEnd="@dimen/_50sdp"
-                android:layout_marginBottom="@dimen/_15sdp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="12dp"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/button_hold_order"
@@ -321,7 +332,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Pay"
-                    android:textSize="@dimen/_11ssp"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/lexend_medium"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
