@@ -235,7 +235,25 @@ class ManageStoreActivity : AppCompatActivity() {
             val count = terminalCounts[s.storeId] ?: 0
             holder.tvTerminalCount.text = "$count terminal${if (count != 1) "s" else ""}"
 
-            // Read-only — managed via web console
+            // Read-only detail view
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${s.name ?: "N/A"}")
+                    appendLine("Address: ${s.address ?: "N/A"}")
+                    appendLine("City: ${s.city ?: "N/A"}")
+                    appendLine("State: ${s.state ?: "N/A"}")
+                    appendLine("Zip: ${s.zip ?: "N/A"}")
+                    appendLine("Country: ${s.country ?: "N/A"}")
+                    appendLine("Currency: ${s.currency ?: "N/A"}")
+                    appendLine("Active: ${if (s.isactive == "Y") "Yes" else "No"}")
+                    appendLine("Terminals: ${terminalCounts[s.storeId] ?: 0}")
+                }
+                androidx.appcompat.app.AlertDialog.Builder(this@ManageStoreActivity)
+                    .setTitle(s.name ?: "Store Details")
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
 
         override fun getItemCount() = stores.size

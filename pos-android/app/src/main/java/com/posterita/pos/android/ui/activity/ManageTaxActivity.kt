@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,8 +34,8 @@ class ManageTaxActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Taxes"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.tvTitle.text = "Manage Taxes"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.visibility = View.GONE
@@ -78,6 +79,19 @@ class ManageTaxActivity : AppCompatActivity() {
             val t = taxes[position]
             holder.tvName.text = "${t.name} (${t.rate}%)"
             holder.tvDetails.text = "Code: ${t.taxcode ?: "N/A"}"
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${t.name ?: "N/A"}")
+                    appendLine("Rate: ${t.rate}%")
+                    appendLine("Tax Code: ${t.taxcode ?: "N/A"}")
+                    appendLine("Active: ${if (t.isactive == "Y") "Yes" else "No"}")
+                }
+                AlertDialog.Builder(this@ManageTaxActivity)
+                    .setTitle(t.name ?: "Tax Details")
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
         override fun getItemCount() = taxes.size
     }

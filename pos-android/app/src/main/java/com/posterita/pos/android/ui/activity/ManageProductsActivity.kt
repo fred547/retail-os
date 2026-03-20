@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,8 +38,8 @@ class ManageProductsActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Products"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.tvTitle.text = "Manage Products"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.visibility = View.GONE
@@ -89,6 +90,22 @@ class ManageProductsActivity : AppCompatActivity() {
             holder.tvName.text = p.name ?: "Unknown"
             val catName = categories.find { it.productcategory_id == p.productcategory_id }?.name ?: ""
             holder.tvDetails.text = "Price: ${p.sellingprice ?: 0.0} | ${catName.ifEmpty { "No category" }}"
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${p.name ?: "N/A"}")
+                    appendLine("Price: ${p.sellingprice}")
+                    appendLine("UPC/Barcode: ${p.upc ?: "N/A"}")
+                    appendLine("Item Code: ${p.itemcode ?: "N/A"}")
+                    appendLine("Category: ${catName.ifEmpty { "N/A" }}")
+                    appendLine("Description: ${p.description ?: "N/A"}")
+                    appendLine("Active: ${if (p.isactive == "Y") "Yes" else "No"}")
+                }
+                AlertDialog.Builder(this@ManageProductsActivity)
+                    .setTitle(p.name ?: "Product Details")
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
         override fun getItemCount() = products.size
     }

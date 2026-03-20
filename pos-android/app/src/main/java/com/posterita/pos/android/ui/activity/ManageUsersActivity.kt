@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,8 +34,8 @@ class ManageUsersActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Users"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.tvTitle.text = "Manage Users"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.visibility = View.GONE
@@ -78,6 +79,21 @@ class ManageUsersActivity : AppCompatActivity() {
             val u = users[position]
             holder.tvName.text = "${u.firstname ?: ""} ${u.lastname ?: ""} (${u.username ?: ""})"
             holder.tvDetails.text = u.displayRole
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${u.firstname ?: ""} ${u.lastname ?: ""}")
+                    appendLine("Username: ${u.username ?: "N/A"}")
+                    appendLine("Email: ${u.email ?: "N/A"}")
+                    appendLine("Phone: ${u.phone1 ?: "N/A"}")
+                    appendLine("Role: ${u.displayRole}")
+                    appendLine("Active: ${if (u.isactive == "Y") "Yes" else "No"}")
+                }
+                AlertDialog.Builder(this@ManageUsersActivity)
+                    .setTitle("${u.firstname ?: ""} ${u.lastname ?: ""}".trim().ifEmpty { "User Details" })
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
         override fun getItemCount() = users.size
     }

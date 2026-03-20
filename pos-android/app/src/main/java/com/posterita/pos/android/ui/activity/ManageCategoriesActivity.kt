@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,8 +36,8 @@ class ManageCategoriesActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Categories"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.tvTitle.text = "Manage Categories"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.visibility = View.GONE
@@ -84,6 +85,20 @@ class ManageCategoriesActivity : AppCompatActivity() {
             holder.tvName.text = c.name ?: "Unknown"
             val taxName = taxes.find { it.tax_id.toString() == c.tax_id }?.let { "${it.name} (${it.rate}%)" } ?: "No Tax"
             holder.tvDetails.text = "Tax: $taxName"
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${c.name ?: "N/A"}")
+                    appendLine("Active: ${if (c.isactive == "Y") "Yes" else "No"}")
+                    appendLine("Tax: $taxName")
+                    appendLine("Display: ${c.display ?: "N/A"}")
+                    appendLine("Position: ${c.position}")
+                }
+                AlertDialog.Builder(this@ManageCategoriesActivity)
+                    .setTitle(c.name ?: "Category Details")
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
         override fun getItemCount() = categories.size
     }

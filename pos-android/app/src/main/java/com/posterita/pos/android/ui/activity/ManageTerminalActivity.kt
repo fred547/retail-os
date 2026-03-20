@@ -137,8 +137,22 @@ class ManageTerminalActivity : AppCompatActivity() {
             // Float amount
             holder.tvFloat.text = "Float: %.2f".format(t.floatamt)
 
-            // Click to edit
-            holder.card.setOnClickListener { launchEditTerminal(t) }
+            // Read-only detail view
+            holder.card.setOnClickListener {
+                val details = buildString {
+                    appendLine("Name: ${t.name ?: "N/A"}")
+                    appendLine("Store: ${storeName ?: "N/A"}")
+                    appendLine("Prefix: ${t.prefix ?: "N/A"}")
+                    appendLine("Float: %.2f".format(t.floatamt))
+                    appendLine("Active: ${if (t.isactive == "Y") "Yes" else "No"}")
+                    appendLine("Sequence: ${t.sequence}")
+                }
+                androidx.appcompat.app.AlertDialog.Builder(this@ManageTerminalActivity)
+                    .setTitle(t.name ?: "Terminal Details")
+                    .setMessage(details)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
         }
 
         override fun getItemCount() = terminals.size
