@@ -398,10 +398,22 @@ class ProductActivity : BaseDrawerActivity() {
     }
 
     private fun setupBottomButtons() {
-        // Search bar in top bar (phone layout) — tapping opens search dialog
-        binding.layoutSearchBar?.setOnClickListener {
-            showSearchProductDialog()
-        }
+        // Inline search field — filter as user types
+        binding.editTextSearch?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val term = s?.toString()?.trim() ?: ""
+                if (term.isNotEmpty()) {
+                    productViewModel.searchProductsByTerm(term)
+                } else {
+                    // Reset to current category or all products
+                    productViewModel.allProducts.value?.let {
+                        productAdapter.setProductList(it)
+                    }
+                }
+            }
+        })
 
         // SCAN button (now in top bar on phone, still bottom on tablet)
         binding.buttonScan?.setOnClickListener {
