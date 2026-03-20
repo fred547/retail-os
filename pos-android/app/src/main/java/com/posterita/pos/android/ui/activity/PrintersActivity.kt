@@ -58,14 +58,12 @@ class PrintersActivity : AppCompatActivity(), PrintersAdapter.OnDeleteClickListe
         lifecycleScope.launch(Dispatchers.IO) {
             val printers = db.printerDao().getAllPrinters()
             withContext(Dispatchers.Main) {
-                if (printers.isEmpty()) {
-                    binding.printersRecyclerView.visibility = View.GONE
-                    binding.printerIcon.visibility = View.VISIBLE
-                    binding.noPrintersText.visibility = View.VISIBLE
-                } else {
-                    binding.printersRecyclerView.visibility = View.VISIBLE
-                    binding.printerIcon.visibility = View.GONE
-                    binding.noPrintersText.visibility = View.GONE
+                val isEmpty = printers.isEmpty()
+                binding.printersRecyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                binding.layoutEmpty?.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                binding.textSectionConnected?.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                binding.layoutTestButtons?.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                if (!isEmpty) {
                     printersAdapter.setPrinters(printers)
                 }
             }

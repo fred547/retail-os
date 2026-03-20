@@ -1,59 +1,81 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:layout_marginBottom="6dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line"
+    app:cardBackgroundColor="@color/posterita_paper">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="14dp">
 
+        <!-- Printer icon -->
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp">
+
+            <View
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_prop_icon_green" />
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_menu_print"
+                app:tint="@color/posterita_secondary"
+                android:contentDescription="Printer" />
+        </FrameLayout>
+
+        <!-- Printer info -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
 
             <TextView
                 android:id="@+id/printer_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Printer Name"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                style="@style/TextAppearance.Posterita.Body"
+                android:fontFamily="@font/lexend_medium"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/printer_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Printer Type"
-                android:textSize="14sp" />
+                android:layout_marginTop="2dp"
+                android:text="Bluetooth · Connected"
+                style="@style/TextAppearance.Posterita.Tiny"
+                android:textColor="@color/posterita_muted" />
         </LinearLayout>
 
-        <LinearLayout
+        <!-- Delete button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_delete_printer"
+            style="@style/Widget.Posterita.Button.Danger"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical">
-
-            <Button
-                android:id="@+id/button_delete_printer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/btn_rounded"
-                android:padding="8dp"
-                android:text="Delete"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
-
+            android:layout_height="36dp"
+            android:text="Remove"
+            android:textSize="11sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
     </LinearLayout>
 
-    <!-- Divider below the content -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="#CCCCCC" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

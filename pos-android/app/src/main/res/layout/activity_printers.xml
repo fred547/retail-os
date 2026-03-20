@@ -1,89 +1,175 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:padding="16dp"
+    android:background="@color/posterita_bg"
     tools:context=".Activities.PrintersActivity">
 
+    <!-- Top bar -->
     <LinearLayout
-        android:id="@+id/printers_header"
+        android:id="@+id/layout_top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        >
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/posterita_paper"
+        android:elevation="1dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_back_cart"
-            android:layout_marginBottom="@dimen/_15sdp"
-            android:layout_marginTop="@dimen/_5sdp"
-            />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="10dp"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/posterita_ink" />
 
         <TextView
             android:id="@+id/printers_title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="@dimen/_5ssp"
+            android:layout_weight="1"
             android:text="Printers"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            style="@style/TextAppearance.Posterita.Heading" />
 
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_internet_dot" />
     </LinearLayout>
 
-
-    <ImageView
-        android:id="@+id/printer_icon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_menu_print" />
-
+    <!-- Subtitle -->
     <TextView
-        android:id="@+id/no_printers_text"
-        android:layout_width="wrap_content"
+        android:id="@+id/text_subtitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="You have no printers yet"
-        android:layout_below="@id/printer_icon"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
+        android:text="Manage receipt and label printers for this device"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp"
+        style="@style/TextAppearance.Posterita.Tiny"
+        android:textColor="@color/posterita_muted"
+        app:layout_constraintTop_toBottomOf="@id/layout_top_bar" />
 
+    <!-- Connected printer section -->
+    <TextView
+        android:id="@+id/text_section_connected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CONNECTED"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="6dp"
+        style="@style/TextAppearance.Posterita.Label"
+        android:textColor="@color/posterita_muted"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/text_subtitle" />
+
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/layout_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        app:layout_constraintTop_toBottomOf="@id/text_section_connected"
+        app:layout_constraintBottom_toTopOf="@id/button_add_printer">
+
+        <ImageView
+            android:id="@+id/printer_icon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:alpha="0.3"
+            android:src="@drawable/ic_menu_print"
+            app:tint="@color/posterita_muted"
+            android:contentDescription="No printers" />
+
+        <TextView
+            android:id="@+id/no_printers_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No printers configured"
+            style="@style/TextAppearance.Posterita.Heading"
+            android:textColor="@color/posterita_muted" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Add a Bluetooth or network printer\nto print receipts and labels"
+            style="@style/TextAppearance.Posterita.Body.Muted" />
+    </LinearLayout>
+
+    <!-- Printer list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/printers_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/printers_header"
-        android:layout_above="@id/button_add_printer"
-        android:layout_marginTop="4dp"
-        android:visibility="gone"/>
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="80dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/text_section_connected"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/button_add_printer"
+    <!-- Test buttons row -->
+    <LinearLayout
+        android:id="@+id/layout_test_buttons"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_40sdp"
-        android:layout_marginStart="@dimen/_50sdp"
-        android:layout_marginEnd="@dimen/_50sdp"
-        android:layout_marginBottom="@dimen/_15sdp"
-        android:background="@drawable/btn_rounded"
-        android:layout_alignParentBottom="true">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/button_add_printer">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:layout_marginBottom="@dimen/_8sdp"
-            android:fontFamily="@font/lexend_medium"
-            android:text="Add Printer"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_17ssp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</RelativeLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_test_receipt"
+            style="@style/Widget.Posterita.Button.Outlined"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="Test Receipt"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_test_label"
+            style="@style/Widget.Posterita.Button.Outlined"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="Test Label"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Add Printer button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_add_printer"
+        style="@style/Widget.Posterita.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="14dp"
+        android:text="+ Add Printer"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
