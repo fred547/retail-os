@@ -279,6 +279,16 @@ class SharedPreferencesManager @Inject constructor(
         get() = prefs.getBoolean("account_switching_enabled", true)
         set(value) = prefs.edit().putBoolean("account_switching_enabled", value).apply()
 
+    // Cart item removal security — require note/reason when removing items (default: false)
+    var cartRemovalRequireNote: Boolean
+        get() = prefs.getBoolean(Constants.CART_REMOVAL_REQUIRE_NOTE, false)
+        set(value) = prefs.edit().putBoolean(Constants.CART_REMOVAL_REQUIRE_NOTE, value).apply()
+
+    // Cart item removal security — require supervisor PIN when removing items (default: false)
+    var cartRemovalRequirePin: Boolean
+        get() = prefs.getBoolean(Constants.CART_REMOVAL_REQUIRE_PIN, false)
+        set(value) = prefs.edit().putBoolean(Constants.CART_REMOVAL_REQUIRE_PIN, value).apply()
+
     // Checkout — require customer number before checkout (default: true)
     var requireCustomerBeforeCheckout: Boolean
         get() = prefs.getBoolean(Constants.REQUIRE_CUSTOMER_BEFORE_CHECKOUT, true)

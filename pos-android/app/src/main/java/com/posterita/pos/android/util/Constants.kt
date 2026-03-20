@@ -48,6 +48,10 @@ object Constants {
     const val POS_SHOW_PRODUCT_PRICE = "pos_show_product_price"
     const val POS_BUSINESS_TYPE = "pos_business_type" // "retail" or "restaurant"
 
+    // Cart item removal security
+    const val CART_REMOVAL_REQUIRE_NOTE = "cart_removal_require_note"
+    const val CART_REMOVAL_REQUIRE_PIN = "cart_removal_require_pin"
+
     // Checkout
     const val REQUIRE_CUSTOMER_BEFORE_CHECKOUT = "require_customer_before_checkout"
 

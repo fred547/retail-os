@@ -157,6 +157,9 @@ class CartActivity : BaseDrawerActivity() {
             },
             onProductImageClick = { cartItem ->
                 showProductDetailDialog(cartItem.product)
+            },
+            onRemovalRequested = { cartItem, removalType, proceed ->
+                handleCartRemoval(cartItem, removalType, proceed)
             }
         )
         binding.recyclerViewCartLines.apply {
@@ -277,6 +280,139 @@ class CartActivity : BaseDrawerActivity() {
             }
         }
         popup.show()
+    }
+
+    /**
+     * Handles cart item removal/decrease with optional security checks.
+     * Settings control whether a note and/or supervisor PIN is required.
+     */
+    private fun handleCartRemoval(
+        cartItem: CartItem,
+        removalType: CartProductAdapter.RemovalType,
+        proceed: () -> Unit
+    ) {
+        val requireNote = prefsManager.cartRemovalRequireNote
+        val requirePin = prefsManager.cartRemovalRequirePin
+
+        if (!requireNote && !requirePin) {
+            proceed()
+            return
+        }
+
+        val actionLabel = when (removalType) {
+            CartProductAdapter.RemovalType.REMOVE_LINE -> "Remove ${cartItem.product.name}"
+            CartProductAdapter.RemovalType.DECREASE_QTY -> "Decrease qty of ${cartItem.product.name}"
+        }
+
+        if (requirePin) {
+            showRemovalPinDialog(actionLabel, requireNote, proceed)
+        } else if (requireNote) {
+            showRemovalNoteDialog(actionLabel, proceed)
+        }
+    }
+
+    private fun showRemovalNoteDialog(actionLabel: String, proceed: () -> Unit) {
+        val editText = EditText(this).apply {
+            hint = "Reason for removal"
+            setPadding(48, 24, 48, 24)
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(actionLabel)
+            .setMessage("Please provide a reason:")
+            .setView(editText)
+            .setPositiveButton("Confirm") { _, _ ->
+                val reason = editText.text.toString().trim()
+                if (reason.isEmpty()) {
+                    Toast.makeText(this, "Reason is required", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                // TODO: Log removal reason to audit trail
+                proceed()
+                Toast.makeText(this, "Removed — $reason", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showRemovalPinDialog(actionLabel: String, alsoRequireNote: Boolean, proceed: () -> Unit) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_numpad, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val txtTitle = dialogView.findViewById<TextView>(R.id.txt_title)
+        val txtDisplay = dialogView.findViewById<TextView>(R.id.txt_price_display)
+        val txtProductName = dialogView.findViewById<TextView>(R.id.txt_product_name)
+        val btnCancel = dialogView.findViewById<View>(R.id.button_cancel)
+        val btnDone = dialogView.findViewById<View>(R.id.button_add)
+
+        txtTitle?.text = "Supervisor PIN"
+        txtProductName?.text = actionLabel
+        txtDisplay?.text = ""
+
+        var pinStr = ""
+
+        val updateDisplay = {
+            txtDisplay?.text = "•".repeat(pinStr.length)
+        }
+
+        val appendDigit = fun(digit: String) {
+            if (pinStr.length >= 6) return
+            pinStr += digit
+            updateDisplay()
+        }
+
+        // Numpad buttons
+        dialogView.findViewById<View>(R.id.btn_1)?.setOnClickListener { appendDigit("1") }
+        dialogView.findViewById<View>(R.id.btn_2)?.setOnClickListener { appendDigit("2") }
+        dialogView.findViewById<View>(R.id.btn_3)?.setOnClickListener { appendDigit("3") }
+        dialogView.findViewById<View>(R.id.btn_4)?.setOnClickListener { appendDigit("4") }
+        dialogView.findViewById<View>(R.id.btn_5)?.setOnClickListener { appendDigit("5") }
+        dialogView.findViewById<View>(R.id.btn_6)?.setOnClickListener { appendDigit("6") }
+        dialogView.findViewById<View>(R.id.btn_7)?.setOnClickListener { appendDigit("7") }
+        dialogView.findViewById<View>(R.id.btn_8)?.setOnClickListener { appendDigit("8") }
+        dialogView.findViewById<View>(R.id.btn_9)?.setOnClickListener { appendDigit("9") }
+        dialogView.findViewById<View>(R.id.btn_0)?.setOnClickListener { appendDigit("0") }
+
+        dialogView.findViewById<View>(R.id.btn_clear)?.setOnClickListener {
+            if (pinStr.isNotEmpty()) {
+                pinStr = pinStr.dropLast(1)
+                updateDisplay()
+            }
+        }
+
+        btnCancel?.setOnClickListener { dialog.dismiss() }
+
+        btnDone?.setOnClickListener {
+            if (pinStr.isEmpty()) {
+                Toast.makeText(this, "Enter supervisor PIN", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // Verify PIN against any admin/owner user
+            lifecycleScope.launch(Dispatchers.IO) {
+                val users = db.userDao().getAllUsers()
+                val validUser = users.find { it.pin == pinStr && it.isAdminOrOwner }
+                withContext(Dispatchers.Main) {
+                    if (validUser != null) {
+                        dialog.dismiss()
+                        if (alsoRequireNote) {
+                            showRemovalNoteDialog(actionLabel, proceed)
+                        } else {
+                            proceed()
+                        }
+                    } else {
+                        Toast.makeText(this@CartActivity, "Invalid supervisor PIN", Toast.LENGTH_SHORT).show()
+                        pinStr = ""
+                        updateDisplay()
+                    }
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     private fun setupCustomerBar() {

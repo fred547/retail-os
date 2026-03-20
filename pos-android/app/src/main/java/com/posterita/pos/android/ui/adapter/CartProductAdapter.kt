@@ -17,8 +17,11 @@ import com.posterita.pos.android.util.NumberUtils
 class CartProductAdapter(
     private val shoppingCartViewModel: ShoppingCartViewModel,
     private val listener: OnCartItemClickListener,
-    private val onProductImageClick: ((CartItem) -> Unit)? = null
+    private val onProductImageClick: ((CartItem) -> Unit)? = null,
+    private val onRemovalRequested: ((CartItem, RemovalType, () -> Unit) -> Unit)? = null
 ) : RecyclerView.Adapter<CartProductAdapter.CartProductViewHolder>() {
+
+    enum class RemovalType { REMOVE_LINE, DECREASE_QTY }
 
     interface OnCartItemClickListener {
         fun onCartItemClick(cartItem: CartItem)
@@ -116,14 +119,26 @@ class CartProductAdapter(
             // Decrease qty button
             binding.consRemove.setOnClickListener {
                 if (!isCoupon) {
-                    shoppingCartViewModel.decreaseQty(cartItem.lineNo)
+                    if (onRemovalRequested != null) {
+                        onRemovalRequested.invoke(cartItem, RemovalType.DECREASE_QTY) {
+                            shoppingCartViewModel.decreaseQty(cartItem.lineNo)
+                        }
+                    } else {
+                        shoppingCartViewModel.decreaseQty(cartItem.lineNo)
+                    }
                 }
             }
 
             // Remove line button (bin icon)
             binding.buttonRemoveLine.setOnClickListener {
                 if (!isCoupon) {
-                    shoppingCartViewModel.removeLine(cartItem.lineNo)
+                    if (onRemovalRequested != null) {
+                        onRemovalRequested.invoke(cartItem, RemovalType.REMOVE_LINE) {
+                            shoppingCartViewModel.removeLine(cartItem.lineNo)
+                        }
+                    } else {
+                        shoppingCartViewModel.removeLine(cartItem.lineNo)
+                    }
                 }
             }
 

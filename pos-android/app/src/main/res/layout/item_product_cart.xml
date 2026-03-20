@@ -59,27 +59,28 @@
             app:layout_constraintStart_toEndOf="@id/image_view_product"
             app:layout_constraintTop_toBottomOf="@id/text_view_product_name" />
 
-        <!-- Remove/delete button (top-right, clearly visible) -->
+        <!-- Remove/delete button (top-right, separated from qty) -->
         <ImageView
             android:id="@+id/button_remove_line"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="10dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
             android:src="@drawable/ic_del"
             android:contentDescription="Remove item"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/btn_outline_rounded"
             app:tint="@color/posterita_error"
+            android:layout_marginEnd="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Quantity controls row (bottom-right, below delete) -->
+        <!-- Quantity controls row (bottom-right, clear gap from delete) -->
         <LinearLayout
             android:id="@+id/layout_qty_controls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/button_remove_line">
 
