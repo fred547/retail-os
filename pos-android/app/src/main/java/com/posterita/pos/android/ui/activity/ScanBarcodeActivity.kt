@@ -206,6 +206,22 @@ class ScanBarcodeActivity : AppCompatActivity() {
             updateStatusText()
         }
 
+        // Scan button — freeze frame and attempt decode, show error if nothing found
+        binding.buttonTakePicture?.setOnClickListener {
+            binding.cameraPreview.pause()
+            binding.textScanStatus?.text = "Scanning..."
+            val countBefore = scannedCount
+
+            handler.postDelayed({
+                if (scannedCount == countBefore) {
+                    // No barcode was decoded during the freeze
+                    showProductToast("No barcode found", "Point camera at a barcode and try again")
+                }
+                binding.cameraPreview.resume()
+                updateStatusText()
+            }, 1500)
+        }
+
         // My Cart — go back to POS
         binding.buttonMyCart?.setOnClickListener {
             finish()
