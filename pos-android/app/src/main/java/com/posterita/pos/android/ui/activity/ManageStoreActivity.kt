@@ -1,6 +1,7 @@
 package com.posterita.pos.android.ui.activity
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -11,8 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.databinding.ActivityManageListBinding
@@ -31,14 +34,16 @@ class ManageStoreActivity : AppCompatActivity() {
     @Inject lateinit var prefsManager: SharedPreferencesManager
 
     private var stores = mutableListOf<Store>()
+    private var terminalCounts = mutableMapOf<Int, Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Stores"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        // Top bar setup
+        binding.tvTitle.text = "Stores"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.setOnClickListener { showStoreDialog(null) }
@@ -49,11 +54,20 @@ class ManageStoreActivity : AppCompatActivity() {
     private fun loadData() {
         binding.progressLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
-            stores = withContext(Dispatchers.IO) {
-                db.storeDao().getAllStores().toMutableList()
+            val result = withContext(Dispatchers.IO) {
+                val allStores = db.storeDao().getAllStores().toMutableList()
+                val counts = mutableMapOf<Int, Int>()
+                for (s in allStores) {
+                    counts[s.storeId] = db.terminalDao().getTerminalCountForStore(s.storeId)
+                }
+                Pair(allStores, counts)
             }
+            stores = result.first
+            terminalCounts = result.second
             binding.progressLoading.visibility = View.GONE
-            binding.tvEmpty.visibility = if (stores.isEmpty()) View.VISIBLE else View.GONE
+            val isEmpty = stores.isEmpty()
+            binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
             binding.recyclerView.adapter = StoreAdapter()
         }
     }
@@ -61,14 +75,22 @@ class ManageStoreActivity : AppCompatActivity() {
     private fun showStoreDialog(store: Store?) {
         val isEdit = store != null
 
+        // Build dialog content with MaterialCardView wrapping the fields
+        val scrollView = android.widget.ScrollView(this)
         val container = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 16)
+            setPadding(48, 24, 48, 16)
         }
+        scrollView.addView(container)
 
         fun addField(hint: String, value: String?): TextInputEditText {
-            val til = TextInputLayout(this).apply {
+            val til = TextInputLayout(
+                this,
+                null,
+                com.google.android.material.R.attr.textInputOutlinedStyle
+            ).apply {
                 this.hint = hint
+                boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
                 layoutParams = android.widget.LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply { topMargin = 16 }
@@ -87,9 +109,9 @@ class ManageStoreActivity : AppCompatActivity() {
         val etZip = addField("ZIP / Postal Code", store?.zip)
         val etCountry = addField("Country", store?.country)
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(if (isEdit) "Edit Store" else "Add Store")
-            .setView(container)
+            .setView(scrollView)
             .setPositiveButton("Save", null)
             .setNegativeButton("Cancel", null)
             .apply {
@@ -100,6 +122,11 @@ class ManageStoreActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            // Style the positive button
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(getColor(R.color.posterita_primary))
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(getColor(R.color.posterita_muted))
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(getColor(R.color.posterita_error))
+
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val name = etName.text?.toString()?.trim() ?: ""
                 if (name.isEmpty()) {
@@ -151,7 +178,7 @@ class ManageStoreActivity : AppCompatActivity() {
             Toast.makeText(this, "Cannot delete the active store", Toast.LENGTH_SHORT).show()
             return
         }
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Delete Store")
             .setMessage("Are you sure you want to delete '${store.name}'?")
             .setPositiveButton("Delete") { _, _ ->
@@ -166,36 +193,62 @@ class ManageStoreActivity : AppCompatActivity() {
     }
 
     inner class StoreAdapter : RecyclerView.Adapter<StoreAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-                card.setOnClickListener { showStoreDialog(stores[adapterPosition]) }
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardStore)
+            val tvName: TextView = itemView.findViewById(R.id.tvStoreName)
+            val tvAddress: TextView = itemView.findViewById(R.id.tvStoreAddress)
+            val tvCityCountry: TextView = itemView.findViewById(R.id.tvStoreCityCountry)
+            val tvCurrency: TextView = itemView.findViewById(R.id.tvStoreCurrency)
+            val tvTerminalCount: TextView = itemView.findViewById(R.id.tvTerminalCount)
+            val tvActiveBadge: TextView = itemView.findViewById(R.id.tvActiveBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_store, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val s = stores[position]
             val isActive = s.storeId == prefsManager.storeId
-            holder.tvName.text = buildString {
-                append(s.name ?: "Unnamed Store")
-                if (isActive) append(" (Active)")
+
+            holder.tvName.text = s.name ?: "Unnamed Store"
+
+            // Active badge
+            holder.tvActiveBadge.visibility = if (isActive) View.VISIBLE else View.GONE
+
+            // Highlight active store card
+            if (isActive) {
+                holder.card.strokeColor = getColor(R.color.posterita_primary)
+                holder.card.strokeWidth = 2
+            } else {
+                holder.card.strokeColor = getColor(R.color.posterita_line)
+                holder.card.strokeWidth = 0
             }
-            holder.tvDetails.text = listOfNotNull(s.address, s.city, s.country)
-                .filter { it.isNotBlank() }.joinToString(", ").ifEmpty { "No address" }
+
+            // Address
+            val address = s.address?.takeIf { it.isNotBlank() }
+            holder.tvAddress.text = address ?: "No address"
+            holder.tvAddress.visibility = View.VISIBLE
+
+            // City, Country
+            val cityCountry = listOfNotNull(s.city, s.country)
+                .filter { it.isNotBlank() }.joinToString(", ")
+            holder.tvCityCountry.text = cityCountry
+            holder.tvCityCountry.visibility = if (cityCountry.isNotEmpty()) View.VISIBLE else View.GONE
+
+            // Currency
+            holder.tvCurrency.text = if (!s.currency.isNullOrBlank()) "Currency: ${s.currency}" else ""
+
+            // Terminal count
+            val count = terminalCounts[s.storeId] ?: 0
+            holder.tvTerminalCount.text = "$count terminal${if (count != 1) "s" else ""}"
+
+            // Click to edit
+            holder.card.setOnClickListener { showStoreDialog(s) }
         }
+
         override fun getItemCount() = stores.size
     }
 }

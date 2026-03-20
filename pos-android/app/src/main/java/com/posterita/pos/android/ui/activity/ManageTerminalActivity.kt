@@ -1,6 +1,8 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -11,9 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
+import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.data.local.entity.Terminal
 import com.posterita.pos.android.databinding.ActivityManageListBinding
 import com.posterita.pos.android.util.SharedPreferencesManager
@@ -31,14 +36,16 @@ class ManageTerminalActivity : AppCompatActivity() {
     @Inject lateinit var prefsManager: SharedPreferencesManager
 
     private var terminals = mutableListOf<Terminal>()
+    private var storeNames = mutableMapOf<Int, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = "Manage Terminals"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        // Top bar setup
+        binding.tvTitle.text = "Terminals"
+        binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.fabAdd.setOnClickListener { showTerminalDialog(null) }
@@ -49,11 +56,21 @@ class ManageTerminalActivity : AppCompatActivity() {
     private fun loadData() {
         binding.progressLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
-            terminals = withContext(Dispatchers.IO) {
-                db.terminalDao().getAllTerminals().toMutableList()
+            val result = withContext(Dispatchers.IO) {
+                val allTerminals = db.terminalDao().getAllTerminals().toMutableList()
+                val names = mutableMapOf<Int, String>()
+                val stores = db.storeDao().getAllStores()
+                for (store in stores) {
+                    names[store.storeId] = store.name ?: "Unknown Store"
+                }
+                Pair(allTerminals, names)
             }
+            terminals = result.first
+            storeNames = result.second
             binding.progressLoading.visibility = View.GONE
-            binding.tvEmpty.visibility = if (terminals.isEmpty()) View.VISIBLE else View.GONE
+            val isEmpty = terminals.isEmpty()
+            binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
             binding.recyclerView.adapter = TerminalAdapter()
         }
     }
@@ -61,39 +78,38 @@ class ManageTerminalActivity : AppCompatActivity() {
     private fun showTerminalDialog(terminal: Terminal?) {
         val isEdit = terminal != null
 
+        val scrollView = android.widget.ScrollView(this)
         val container = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 16)
+            setPadding(48, 24, 48, 16)
+        }
+        scrollView.addView(container)
+
+        fun addField(hint: String, value: String?): TextInputEditText {
+            val til = TextInputLayout(
+                this,
+                null,
+                com.google.android.material.R.attr.textInputOutlinedStyle
+            ).apply {
+                this.hint = hint
+                boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = 16 }
+            }
+            val et = TextInputEditText(this)
+            et.setText(value ?: "")
+            til.addView(et)
+            container.addView(til)
+            return et
         }
 
-        val tilName = TextInputLayout(this).apply {
-            hint = "Terminal Name *"
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-        val etName = TextInputEditText(this)
-        tilName.addView(etName)
-        container.addView(tilName)
+        val etName = addField("Terminal Name *", terminal?.name)
+        val etPrefix = addField("Receipt Prefix", terminal?.prefix)
 
-        val tilPrefix = TextInputLayout(this).apply {
-            hint = "Receipt Prefix"
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 16 }
-        }
-        val etPrefix = TextInputEditText(this)
-        tilPrefix.addView(etPrefix)
-        container.addView(tilPrefix)
-
-        if (isEdit) {
-            etName.setText(terminal!!.name)
-            etPrefix.setText(terminal.prefix ?: "")
-        }
-
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(if (isEdit) "Edit Terminal" else "Add Terminal")
-            .setView(container)
+            .setView(scrollView)
             .setPositiveButton("Save", null)
             .setNegativeButton("Cancel", null)
             .apply {
@@ -104,6 +120,10 @@ class ManageTerminalActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(getColor(R.color.posterita_primary))
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(getColor(R.color.posterita_muted))
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(getColor(R.color.posterita_error))
+
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val name = etName.text?.toString()?.trim() ?: ""
                 val prefix = etPrefix.text?.toString()?.trim() ?: ""
@@ -149,7 +169,7 @@ class ManageTerminalActivity : AppCompatActivity() {
             Toast.makeText(this, "Cannot delete the active terminal", Toast.LENGTH_SHORT).show()
             return
         }
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Delete Terminal")
             .setMessage("Are you sure you want to delete '${terminal.name}'?")
             .setPositiveButton("Delete") { _, _ ->
@@ -164,38 +184,53 @@ class ManageTerminalActivity : AppCompatActivity() {
     }
 
     inner class TerminalAdapter : RecyclerView.Adapter<TerminalAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-                card.setOnClickListener { showTerminalDialog(terminals[adapterPosition]) }
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardTerminal)
+            val tvName: TextView = itemView.findViewById(R.id.tvTerminalName)
+            val tvStore: TextView = itemView.findViewById(R.id.tvTerminalStore)
+            val tvPrefix: TextView = itemView.findViewById(R.id.tvTerminalPrefix)
+            val tvFloat: TextView = itemView.findViewById(R.id.tvTerminalFloat)
+            val tvActiveBadge: TextView = itemView.findViewById(R.id.tvActiveBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_terminal, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val t = terminals[position]
             val isActive = t.terminalId == prefsManager.terminalId
-            holder.tvName.text = buildString {
-                append(t.name ?: "Unnamed Terminal")
-                if (isActive) append(" (Active)")
+
+            holder.tvName.text = t.name ?: "Unnamed Terminal"
+
+            // Active badge
+            holder.tvActiveBadge.visibility = if (isActive) View.VISIBLE else View.GONE
+
+            // Highlight active terminal card
+            if (isActive) {
+                holder.card.strokeColor = getColor(R.color.posterita_primary)
+                holder.card.strokeWidth = 2
+            } else {
+                holder.card.strokeColor = getColor(R.color.posterita_line)
+                holder.card.strokeWidth = 0
             }
-            holder.tvDetails.text = buildString {
-                if (!t.prefix.isNullOrBlank()) append("Prefix: ${t.prefix}")
-                else append("No prefix")
-            }
+
+            // Store name
+            val storeName = storeNames[t.store_id]
+            holder.tvStore.text = if (!storeName.isNullOrBlank()) "Store: $storeName" else "No store assigned"
+
+            // Prefix
+            holder.tvPrefix.text = if (!t.prefix.isNullOrBlank()) "Prefix: ${t.prefix}" else "No prefix"
+
+            // Float amount
+            holder.tvFloat.text = "Float: %.2f".format(t.floatamt)
+
+            // Click to edit
+            holder.card.setOnClickListener { showTerminalDialog(t) }
         }
+
         override fun getItemCount() = terminals.size
     }
 }

@@ -35,6 +35,14 @@ class SettingsActivity : BaseDrawerActivity() {
             startActivity(Intent(this, PrintersActivity::class.java))
         }
 
+        binding.storesOption.setOnClickListener {
+            startActivity(Intent(this, ManageStoreActivity::class.java))
+        }
+
+        binding.terminalsOption.setOnClickListener {
+            startActivity(Intent(this, ManageTerminalActivity::class.java))
+        }
+
         binding.about.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }

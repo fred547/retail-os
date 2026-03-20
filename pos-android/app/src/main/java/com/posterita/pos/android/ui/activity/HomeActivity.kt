@@ -74,6 +74,7 @@ class HomeActivity : AppCompatActivity() {
         setupGreeting()
         setupAppGrid()
         loadTodaySummary()
+        setupLogout()
     }
 
     override fun onResume() {
@@ -106,6 +107,23 @@ class HomeActivity : AppCompatActivity() {
         if (terminalName != null) {
             binding.textTerminalInfo?.text = "Terminal: $terminalName"
             binding.textTerminalInfo?.visibility = View.VISIBLE
+        }
+    }
+
+    private fun setupLogout() {
+        binding.buttonLogout?.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Log Out")
+                .setMessage("Are you sure you want to log out?")
+                .setPositiveButton("Log Out") { _, _ ->
+                    sessionManager.resetSession()
+                    val intent = Intent(this, SelectUserLoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 

@@ -28,4 +28,7 @@ interface TerminalDao {
 
     @Query("SELECT MAX(terminalid) FROM terminal")
     suspend fun getMaxTerminalId(): Int?
+
+    @Query("SELECT COUNT(*) FROM terminal WHERE store_id = :storeId AND isactive='Y'")
+    suspend fun getTerminalCountForStore(storeId: Int): Int
 }
