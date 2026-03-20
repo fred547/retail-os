@@ -115,8 +115,11 @@ class LockScreenActivity : AppCompatActivity() {
 
     private fun checkPin() {
         if (pinBuffer == correctPin) {
-            // Success
+            // Success — unlock and go to Home
             SessionTimeoutManager.unlock()
+            val intent = android.content.Intent(this, HomeActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
         } else {
             // Wrong PIN

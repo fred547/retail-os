@@ -46,28 +46,28 @@ class SplashActivity : AppCompatActivity() {
                 setupCompleted.isEmpty() && !hasAccount ->
                     Intent(this, SetupWizardActivity::class.java)
 
-                // Has account: check how many users exist
+                // Has account: load user into session, show lock screen
                 hasAccount -> {
-                    val userCount = runBlocking {
+                    // Load the last user into session (remember who they are)
+                    runBlocking {
                         withContext(Dispatchers.IO) {
-                            try { db.userDao().getAllUsers().size } catch (_: Exception) { 0 }
+                            try {
+                                val user = db.userDao().getAllUsers().firstOrNull()
+                                if (user != null) sessionManager.user = user
+                            } catch (_: Exception) {}
                         }
                     }
 
-                    if (userCount <= 1) {
-                        // Only owner — skip PIN, auto-login, go to Home
-                        runBlocking {
-                            withContext(Dispatchers.IO) {
-                                try {
-                                    val user = db.userDao().getAllUsers().firstOrNull()
-                                    if (user != null) sessionManager.user = user
-                                } catch (_: Exception) {}
-                            }
-                        }
-                        Intent(this, HomeActivity::class.java)
+                    val user = sessionManager.user
+                    val hasPin = !user?.pin.isNullOrEmpty()
+
+                    if (hasPin) {
+                        // Has PIN → lock screen (remembers last user, just asks for PIN)
+                        SessionTimeoutManager.lock()
+                        Intent(this, LockScreenActivity::class.java)
                     } else {
-                        // Multiple users — show user selection + PIN
-                        Intent(this, SelectUserLoginActivity::class.java)
+                        // No PIN set → go straight to Home
+                        Intent(this, HomeActivity::class.java)
                     }
                 }
 

@@ -154,8 +154,10 @@ class HomeActivity : AppCompatActivity() {
                             .setTitle("Log Out")
                             .setMessage("Are you sure you want to log out?")
                             .setPositiveButton("Log Out") { _, _ ->
-                                sessionManager.resetSession()
-                                val intent = Intent(this, SelectUserLoginActivity::class.java)
+                                // Lock the session — user must re-enter PIN
+                                // Don't clear session — remember who they are
+                                SessionTimeoutManager.lock()
+                                val intent = Intent(this, LockScreenActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
                                 finish()
