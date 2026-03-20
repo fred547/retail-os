@@ -455,7 +455,7 @@ class ProductActivity : BaseDrawerActivity() {
 
         // MORE button — anchored popup menu near the button
         binding.buttonMoreBottom?.setOnClickListener { anchor ->
-            val options = arrayOf("Open Cash Drawer", "Clear Cart", "Hold Order")
+            val options = arrayOf("Open Cash Drawer", "Clear Cart", "Hold Order", "Close Till")
             val popup = android.widget.ListPopupWindow(this)
             popup.anchorView = anchor
             popup.setAdapter(android.widget.ArrayAdapter(this, android.R.layout.simple_list_item_1, options))
@@ -489,6 +489,7 @@ class ProductActivity : BaseDrawerActivity() {
                         }
                     }
                     2 -> holdOrder()
+                    3 -> showCloseTillConfirmation()
                 }
             }
             popup.show()

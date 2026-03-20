@@ -188,32 +188,8 @@
                 style="@style/TextAppearance.Posterita.Body" />
         </LinearLayout>
 
-        <!-- Close Till -->
-        <LinearLayout
-            android:id="@+id/nav_close_till"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/chip_unselected_bg"
-            android:foreground="?attr/selectableItemBackground">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/till"
-                android:scaleType="fitCenter"
-                android:contentDescription="Close Till"
-                app:tint="@color/posterita_ink" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="Close Till"
-                style="@style/TextAppearance.Posterita.Body" />
-        </LinearLayout>
+        <!-- Close Till — moved to MORE menu on POS screen -->
+        <View android:id="@+id/nav_close_till" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
         <!-- Till History -->
         <LinearLayout
