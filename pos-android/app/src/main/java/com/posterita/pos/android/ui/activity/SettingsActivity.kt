@@ -23,29 +23,24 @@ class SettingsActivity : BaseDrawerActivity() {
 
         setupDrawerNavigation()
 
-        // Data from web (read-only)
-        binding.storesOption.setOnClickListener {
-            startActivity(Intent(this, ManageStoreActivity::class.java))
-        }
-        binding.terminalsOption.setOnClickListener {
-            startActivity(Intent(this, ManageTerminalActivity::class.java))
-        }
-        binding.usersOption?.setOnClickListener {
-            startActivity(Intent(this, ManageUsersActivity::class.java))
-        }
-        binding.taxesOption?.setOnClickListener {
-            startActivity(Intent(this, ManageTaxActivity::class.java))
-        }
-        binding.categoriesOption?.setOnClickListener {
-            startActivity(Intent(this, ManageCategoriesActivity::class.java))
-        }
-        binding.productsOption?.setOnClickListener {
-            startActivity(Intent(this, ManageProductsActivity::class.java))
-        }
+        // Data — tap opens local view, long press opens web console for editing
+        binding.storesOption.setOnClickListener { openWebConsole("/stores", "Stores") }
+        binding.terminalsOption.setOnClickListener { openWebConsole("/devices", "Terminals") }
+        binding.usersOption?.setOnClickListener { openWebConsole("/staff", "Users") }
+        binding.taxesOption?.setOnClickListener { openWebConsole("/settings", "Taxes") }
+        binding.categoriesOption?.setOnClickListener { openWebConsole("/products", "Categories") }
+        binding.productsOption?.setOnClickListener { openWebConsole("/products", "Products") }
 
         // System
         binding.about.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }
+    }
+
+    private fun openWebConsole(path: String, title: String) {
+        val intent = Intent(this, WebConsoleActivity::class.java)
+        intent.putExtra(WebConsoleActivity.EXTRA_PATH, path)
+        intent.putExtra(WebConsoleActivity.EXTRA_TITLE, title)
+        startActivity(intent)
     }
 }
