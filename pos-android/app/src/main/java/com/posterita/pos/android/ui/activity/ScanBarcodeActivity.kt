@@ -3,10 +3,11 @@ package com.posterita.pos.android.ui.activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.view.animation.AlphaAnimation
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.journeyapps.barcodescanner.BarcodeCallback
@@ -43,6 +44,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     private var lastBarcode: String? = null
     private val handler = Handler(Looper.getMainLooper())
     private var toastDismissRunnable: Runnable? = null
+    private var laserAnimator: ObjectAnimator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +58,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         updateStatusText()
         updateCartBadge()
         observeCart()
+        startLaserAnimation()
     }
 
     private fun setupBarcodeScanner() {
@@ -209,6 +212,21 @@ class ScanBarcodeActivity : AppCompatActivity() {
         }
     }
 
+    private fun startLaserAnimation() {
+        binding.viewLaserLine?.let { laser ->
+            laser.post {
+                val parent = laser.parent as? View ?: return@post
+                val maxTravel = (parent.height - laser.height).toFloat()
+                laserAnimator = ObjectAnimator.ofFloat(laser, "translationY", -maxTravel / 2, maxTravel / 2).apply {
+                    duration = 1500
+                    repeatMode = ValueAnimator.REVERSE
+                    repeatCount = ValueAnimator.INFINITE
+                    start()
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         binding.cameraPreview.resume()
@@ -218,6 +236,12 @@ class ScanBarcodeActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         binding.cameraPreview.pause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        laserAnimator?.cancel()
+        toastDismissRunnable?.let { handler.removeCallbacks(it) }
     }
 
     @Deprecated("Deprecated in Java")

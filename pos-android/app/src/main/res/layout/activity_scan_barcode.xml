@@ -173,7 +173,34 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Bottom: Cart button with badge -->
+    <!-- Scanner box overlay with red laser line -->
+    <FrameLayout
+        android:id="@+id/layout_scanner_overlay"
+        android:layout_width="240dp"
+        android:layout_height="160dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/camera_preview"
+        app:layout_constraintBottom_toBottomOf="@id/camera_preview">
+
+        <!-- Scanner box border -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/scanner_box_border" />
+
+        <!-- Red laser line -->
+        <View
+            android:id="@+id/view_laser_line"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@color/posterita_error" />
+    </FrameLayout>
+
+    <!-- Bottom: Take Picture + Cart button with badge -->
     <LinearLayout
         android:id="@+id/layout_bottom_controls"
         android:layout_width="match_parent"
@@ -186,6 +213,19 @@
         android:paddingBottom="14dp"
         android:background="@color/posterita_paper"
         app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Take Picture button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_take_picture"
+            style="@style/Widget.Posterita.Button.Outlined"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            app:icon="@drawable/ic_camera"
+            app:iconGravity="textStart"
+            app:iconSize="18dp"
+            android:text="Photo" />
 
         <!-- My Cart button with item count -->
         <FrameLayout
@@ -236,13 +276,7 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_take_picture"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    <!-- button_take_picture is now in layout_bottom_controls -->
     <TextView
         android:id="@+id/button_my_cart_text"
         android:layout_width="0dp"
