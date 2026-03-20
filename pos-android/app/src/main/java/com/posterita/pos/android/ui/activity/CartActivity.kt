@@ -133,6 +133,9 @@ class CartActivity : BaseDrawerActivity() {
         // Back button
         binding.buttonBack?.setOnClickListener { finish() }
 
+        // Browse Products button in empty cart state
+        binding.buttonBrowseProducts?.setOnClickListener { finish() }
+
         isFromKitchen = intent.getBooleanExtra("FROM_KITCHEN", false)
 
         setupRecyclerView()
@@ -180,7 +183,38 @@ class CartActivity : BaseDrawerActivity() {
             holdOrder()
         }
 
-        // CLEAR button
+        // MORE button — shows AlertDialog with Clear Cart, Hold Order
+        findViewById<View>(R.id.button_more_cart)?.setOnClickListener {
+            val options = arrayOf("Clear Cart", "Hold Order")
+            AlertDialog.Builder(this)
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> {
+                            // Clear Cart
+                            if (shoppingCartViewModel.shoppingCart.isEmpty()) {
+                                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                            } else {
+                                AlertDialog.Builder(this)
+                                    .setTitle("Clear Cart")
+                                    .setMessage("Are you sure you want to clear all items?")
+                                    .setPositiveButton("Clear") { _, _ ->
+                                        shoppingCartViewModel.clearCart()
+                                        Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .setNegativeButton("Cancel", null)
+                                    .show()
+                            }
+                        }
+                        1 -> {
+                            // Hold Order
+                            holdOrder()
+                        }
+                    }
+                }
+                .show()
+        }
+
+        // CLEAR button (bin icon in customer row)
         binding.buttonClearCart.setOnClickListener {
             if (shoppingCartViewModel.shoppingCart.isEmpty()) return@setOnClickListener
             AlertDialog.Builder(this)
@@ -1601,6 +1635,7 @@ class CartActivity : BaseDrawerActivity() {
                 intent.putExtra("ORDER_UUID", uuid)
                 intent.putExtra("CHANGE_DUE", payments.sumOf { it.change })
                 intent.putExtra("TIPS_AMOUNT", shoppingCartViewModel.shoppingCart.tipsAmount)
+                intent.putExtra(ReceiptActivity.EXTRA_FROM_CHECKOUT, true)
                 startActivity(intent)
                 finish()
             } catch (e: Exception) {

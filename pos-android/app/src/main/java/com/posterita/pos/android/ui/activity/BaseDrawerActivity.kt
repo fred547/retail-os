@@ -133,6 +133,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
         addNavDrawerPanel(drawerLayout)
 
         setContentView(drawerLayout)
+
+        // Auto-setup connectivity dot for all drawer screens
+        setupConnectivityDot()
     }
 
     /**
@@ -150,6 +153,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
         } else {
             addNavDrawerPanel(drawerLayout)
         }
+
+        // Auto-setup connectivity dot for all drawer screens
+        setupConnectivityDot()
     }
 
     private fun findNavPanel(drawer: DrawerLayout): View? {

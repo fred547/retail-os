@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,8 +43,16 @@ class ManageBrandsActivity : AppCompatActivity() {
         binding.tvTitle.text = "Brands"
         binding.buttonBack.setOnClickListener { finish() }
 
-        // Hide the FAB — brands are not user-created for now
-        binding.fabAdd.visibility = View.GONE
+        // Show FAB for new brand creation
+        binding.fabAdd.visibility = View.VISIBLE
+        binding.fabAdd.contentDescription = "New Brand"
+        binding.fabAdd.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("New Brand")
+                .setMessage("Brand creation with AI is coming in the next update.")
+                .setPositiveButton("OK", null)
+                .show()
+        }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
 

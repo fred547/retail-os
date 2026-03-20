@@ -152,24 +152,6 @@
                         android:textSize="14sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Currency -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilStoreCurrency"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:hint="Currency">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etStoreCurrency"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:fontFamily="@font/lexend_medium"
-                        android:textSize="14sp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"

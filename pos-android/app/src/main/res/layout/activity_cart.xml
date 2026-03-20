@@ -214,6 +214,16 @@
             android:gravity="center"
             android:text="Add products to get started"
             style="@style/TextAppearance.Posterita.Body.Muted" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_browse_products"
+            style="@style/Widget.Posterita.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginTop="16dp"
+            android:text="Browse Products"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp" />
     </LinearLayout>
 
     <!-- Cart items list -->
@@ -434,14 +444,21 @@
                 android:layout_height="0dp"
                 android:visibility="gone" />
 
+            <!-- Hidden for binding compat -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_hold_order"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_more_cart"
                 style="@style/Widget.Posterita.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="52dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="HOLD" />
+                android:text="MORE" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_pay_order"

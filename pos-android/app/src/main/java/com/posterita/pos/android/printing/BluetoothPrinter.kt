@@ -42,7 +42,7 @@ class BluetoothPrinter {
         socket = null
     }
 
-    fun printReceipt(orderDetails: OrderDetails, width: Int, deviceName: String) {
+    fun printReceipt(orderDetails: OrderDetails, width: Int, deviceName: String, whatsappNumber: String? = null) {
         connect(deviceName)
         try {
             val out = java.io.ByteArrayOutputStream()
@@ -63,19 +63,20 @@ class BluetoothPrinter {
             out.write("TOTAL: ${com.posterita.pos.android.util.NumberUtils.formatPrice(orderDetails.grandtotal)}\n".toByteArray())
 
             // WhatsApp QR code
-            try {
-                val whatsappNumber = "+23058000000" // TODO: Get from store config
-                val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${orderDetails.documentno}"
-                val qrBitmap = generateQRBitmap(url, 200)
-                if (qrBitmap != null) {
-                    out.write(ReceiptPrinter.LINE_FEED)
-                    out.write(ReceiptPrinter.CENTER_ALIGN)
-                    out.write(bitmapToEscPos(qrBitmap))
-                    out.write(ReceiptPrinter.FONT_SMALL)
-                    out.write("Scan for digital receipt\n".toByteArray())
-                    out.write(ReceiptPrinter.FONT_NORMAL)
-                }
-            } catch (_: Exception) { }
+            if (!whatsappNumber.isNullOrBlank()) {
+                try {
+                    val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${orderDetails.documentno}"
+                    val qrBitmap = generateQRBitmap(url, 200)
+                    if (qrBitmap != null) {
+                        out.write(ReceiptPrinter.LINE_FEED)
+                        out.write(ReceiptPrinter.CENTER_ALIGN)
+                        out.write(bitmapToEscPos(qrBitmap))
+                        out.write(ReceiptPrinter.FONT_SMALL)
+                        out.write("Scan for digital receipt\n".toByteArray())
+                        out.write(ReceiptPrinter.FONT_NORMAL)
+                    }
+                } catch (_: Exception) { }
+            }
 
             out.write(ReceiptPrinter.LINE_FEED)
             out.write(ReceiptPrinter.LINE_FEED)

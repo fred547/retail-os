@@ -11,7 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class PrinterManager @Inject constructor(
-    private val printerDao: PrinterDao
+    private val printerDao: PrinterDao,
+    private val sessionManager: com.posterita.pos.android.util.SessionManager
 ) {
 
     interface PrintResultCallback {
@@ -22,11 +23,12 @@ class PrinterManager @Inject constructor(
     suspend fun printReceipt(orderDetails: OrderDetails, printer: Printer, callback: PrintResultCallback) {
         withContext(Dispatchers.IO) {
             try {
+                val whatsappNumber = sessionManager.account?.whatsappNumber
                 if (printer.printerType == "Bluetooth") {
                     val btPrinter = BluetoothPrinter()
-                    btPrinter.printReceipt(orderDetails, printer.width, printer.deviceName ?: "")
+                    btPrinter.printReceipt(orderDetails, printer.width, printer.deviceName ?: "", whatsappNumber)
                 } else {
-                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width)
+                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width, whatsappNumber)
                     receiptPrinter.printReceipt(orderDetails)
                 }
                 withContext(Dispatchers.Main) { callback.onSuccess() }

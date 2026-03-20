@@ -21,5 +21,7 @@ data class Account(
     val state: String? = null,
     val fax: String? = null,
     val isactive: String? = null,
-    val currency: String? = null
+    val currency: String? = null,
+    val whatsappNumber: String? = null,
+    val headOfficeAddress: String? = null
 ) : Serializable

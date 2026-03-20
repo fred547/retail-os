@@ -19,6 +19,7 @@ import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivityHomeBinding
 import com.posterita.pos.android.util.DemoDataSeeder
 import com.posterita.pos.android.util.SessionManager
+import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.util.NumberUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,6 +44,9 @@ class HomeActivity : AppCompatActivity() {
 
     @Inject
     lateinit var db: AppDatabase
+
+    @Inject
+    lateinit var connectivityMonitor: ConnectivityMonitor
 
     enum class TileVisibility { ALL, SUPERVISOR_PLUS, ADMIN_OWNER, OWNER_ONLY }
 
@@ -75,6 +79,7 @@ class HomeActivity : AppCompatActivity() {
         setupAppGrid()
         loadTodaySummary()
         setupBottomNav()
+        setupConnectivityDot()
     }
 
     override fun onResume() {
@@ -191,6 +196,34 @@ class HomeActivity : AppCompatActivity() {
                 binding.textRevenue?.text = "$currency ${NumberUtils.formatPrice(revenue)}"
                 binding.textLoyaltySignups?.text = customerCount.toString()
             }
+        }
+    }
+
+    private fun setupConnectivityDot() {
+        val dot = findViewById<View>(R.id.connectivity_dot) ?: return
+        connectivityMonitor.isConnected.observe(this) { connected ->
+            val color = if (connected) {
+                resources.getColor(R.color.posterita_secondary, theme)
+            } else {
+                resources.getColor(R.color.posterita_error, theme)
+            }
+            val bg = dot.background
+            if (bg is GradientDrawable) {
+                bg.setColor(color)
+            } else {
+                val oval = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(color)
+                    setSize(
+                        (8 * resources.displayMetrics.density).toInt(),
+                        (8 * resources.displayMetrics.density).toInt()
+                    )
+                }
+                dot.background = oval
+            }
+        }
+        dot.setOnClickListener {
+            startActivity(Intent(this, DatabaseSynchonizerActivity::class.java))
         }
     }
 

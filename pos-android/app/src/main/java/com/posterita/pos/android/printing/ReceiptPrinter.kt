@@ -12,7 +12,8 @@ import java.net.Socket
 
 class ReceiptPrinter(
     private val printerIp: String,
-    private val lineWidth: Int
+    private val lineWidth: Int,
+    private val whatsappNumber: String? = null
 ) {
     companion object {
         private const val PORT = 9100
@@ -165,21 +166,21 @@ class ReceiptPrinter(
         }
 
         // WhatsApp QR code
-        try {
-            // TODO: Get WhatsApp number from store config once backend provides it
-            val whatsappNumber = "+23058000000"
-            val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${order.documentno}"
-            val qrBitmap = generateQRBitmap(url, 200) // ~25mm at 203 DPI
-            if (qrBitmap != null) {
-                out.write(LINE_FEED)
-                out.write(CENTER_ALIGN)
-                out.write(bitmapToEscPos(qrBitmap))
-                out.write(FONT_SMALL)
-                out.write("Scan for digital receipt\n".toByteArray())
-                out.write(FONT_NORMAL)
+        if (!whatsappNumber.isNullOrBlank()) {
+            try {
+                val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${order.documentno}"
+                val qrBitmap = generateQRBitmap(url, 200) // ~25mm at 203 DPI
+                if (qrBitmap != null) {
+                    out.write(LINE_FEED)
+                    out.write(CENTER_ALIGN)
+                    out.write(bitmapToEscPos(qrBitmap))
+                    out.write(FONT_SMALL)
+                    out.write("Scan for digital receipt\n".toByteArray())
+                    out.write(FONT_NORMAL)
+                }
+            } catch (_: Exception) {
+                // QR generation failed — not critical, skip
             }
-        } catch (_: Exception) {
-            // QR generation failed — not critical, skip
         }
 
         out.write(LINE_FEED)

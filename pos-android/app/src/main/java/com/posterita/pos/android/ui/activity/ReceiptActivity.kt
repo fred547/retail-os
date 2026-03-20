@@ -49,6 +49,11 @@ class ReceiptActivity : BaseDrawerActivity() {
 
     private var orderUuid: String? = null
     private var orderDetails: OrderDetails? = null
+    private var fromCheckout: Boolean = false
+
+    companion object {
+        const val EXTRA_FROM_CHECKOUT = "FROM_CHECKOUT"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,11 +65,25 @@ class ReceiptActivity : BaseDrawerActivity() {
         supportActionBar?.hide()
         setupConnectivityDot()
 
-        // No back button — sale is complete, user must go to New Sale
-
         orderUuid = intent.getStringExtra("ORDER_UUID")
+        fromCheckout = intent.getBooleanExtra(EXTRA_FROM_CHECKOUT, false)
         val changeDue = intent.getDoubleExtra("CHANGE_DUE", 0.0)
         val tipsAmount = intent.getDoubleExtra("TIPS_AMOUNT", 0.0)
+
+        // Configure UI based on entry point
+        if (fromCheckout) {
+            // From checkout: show success banner + change due, hide back button, show New Sale
+            binding.cardSuccessBanner?.visibility = View.VISIBLE
+            binding.buttonBack?.visibility = View.GONE
+            binding.buttonNewSale?.visibility = View.VISIBLE
+        } else {
+            // From order viewing: hide success banner, show back button, hide New Sale
+            binding.cardSuccessBanner?.visibility = View.GONE
+            binding.buttonBack?.visibility = View.VISIBLE
+            binding.buttonNewSale?.visibility = View.GONE
+        }
+
+        binding.buttonBack?.setOnClickListener { finish() }
 
         setupButtons()
         loadOrderDetails()
@@ -166,8 +185,8 @@ class ReceiptActivity : BaseDrawerActivity() {
     }
 
     private fun generateReceiptQR(orderRef: String) {
-        // TODO: Get WhatsApp number from store config once backend provides it
-        val whatsappNumber = "+23058000000"
+        val whatsappNumber = sessionManager.account?.whatsappNumber
+        if (whatsappNumber.isNullOrBlank()) return
         val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20$orderRef"
 
         try {
@@ -374,8 +393,13 @@ class ReceiptActivity : BaseDrawerActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // Don't go back to cart — go to new sale
-        navigateToProductActivity()
+        if (fromCheckout) {
+            // From checkout: go to new sale
+            navigateToProductActivity()
+        } else {
+            // From order viewing: just go back
+            finish()
+        }
     }
 
     private fun navigateToProductActivity() {

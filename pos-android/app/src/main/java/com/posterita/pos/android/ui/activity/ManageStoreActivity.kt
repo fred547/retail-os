@@ -17,6 +17,7 @@ import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.databinding.ActivityManageListBinding
+import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,7 @@ class ManageStoreActivity : AppCompatActivity() {
     private lateinit var binding: ActivityManageListBinding
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var prefsManager: SharedPreferencesManager
+    @Inject lateinit var sessionManager: SessionManager
 
     private var stores = mutableListOf<Store>()
     private var terminalCounts = mutableMapOf<Int, Int>()
@@ -90,7 +92,6 @@ class ManageStoreActivity : AppCompatActivity() {
         val etState = dialogView.findViewById<TextInputEditText>(R.id.etStoreState)
         val etZip = dialogView.findViewById<TextInputEditText>(R.id.etStoreZip)
         val etCountry = dialogView.findViewById<TextInputEditText>(R.id.etStoreCountry)
-        val etCurrency = dialogView.findViewById<TextInputEditText>(R.id.etStoreCurrency)
         val btnDelete = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteStore)
         val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelStore)
         val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveStore)
@@ -105,7 +106,6 @@ class ManageStoreActivity : AppCompatActivity() {
             etState.setText(store.state ?: "")
             etZip.setText(store.zip ?: "")
             etCountry.setText(store.country ?: "")
-            etCurrency.setText(store.currency ?: "")
             btnDelete.visibility = View.VISIBLE
         }
 
@@ -128,15 +128,13 @@ class ManageStoreActivity : AppCompatActivity() {
             val state = etState.text?.toString()?.trim()
             val zip = etZip.text?.toString()?.trim()
             val country = etCountry.text?.toString()?.trim()
-            val currency = etCurrency.text?.toString()?.trim()
 
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     if (isEdit) {
                         val updated = store!!.copy(
                             name = name, address = address, city = city,
-                            state = state, zip = zip, country = country,
-                            currency = currency
+                            state = state, zip = zip, country = country
                         )
                         db.storeDao().updateStore(updated)
                         if (store.storeId == prefsManager.storeId) {
@@ -149,7 +147,7 @@ class ManageStoreActivity : AppCompatActivity() {
                             storeId = maxId + 1,
                             name = name, address = address, city = city,
                             state = state, zip = zip, country = country,
-                            currency = currency, isactive = "Y"
+                            isactive = "Y"
                         )
                         db.storeDao().insertStore(newStore)
                     }
@@ -229,8 +227,9 @@ class ManageStoreActivity : AppCompatActivity() {
             holder.tvCityCountry.text = cityCountry
             holder.tvCityCountry.visibility = if (cityCountry.isNotEmpty()) View.VISIBLE else View.GONE
 
-            // Currency
-            holder.tvCurrency.text = if (!s.currency.isNullOrBlank()) "Currency: ${s.currency}" else ""
+            // Currency (from brand/account level, read-only)
+            val brandCurrency = sessionManager.account?.currency
+            holder.tvCurrency.text = if (!brandCurrency.isNullOrBlank()) "Currency: $brandCurrency" else ""
 
             // Terminal count
             val count = terminalCounts[s.storeId] ?: 0

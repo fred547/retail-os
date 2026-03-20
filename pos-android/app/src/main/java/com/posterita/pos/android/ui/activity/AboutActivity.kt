@@ -1,6 +1,7 @@
 package com.posterita.pos.android.ui.activity
 
 import android.os.Bundle
+import android.provider.Settings
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityAboutBinding
 import com.posterita.pos.android.util.SessionManager
@@ -20,31 +21,35 @@ class AboutActivity : BaseDrawerActivity() {
         setContentViewWithDrawer(R.layout.activity_about)
         binding = ActivityAboutBinding.bind(drawerLayout.getChildAt(0))
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar.setNavigationOnClickListener { openDrawer() }
+        // Top bar: hamburger menu to open drawer
+        binding.buttonBack.setImageResource(R.drawable.ic_drawer)
+        binding.buttonBack.setOnClickListener { openDrawer() }
 
         setupDrawerNavigation()
+        setupConnectivityDot()
         displayInfo()
     }
 
     private fun displayInfo() {
-        val account = sessionManager.account
-
-        binding.textViewAccountNameValue.text = account?.businessname ?: ""
-        binding.textViewCurrencyValue.text = account?.currency ?: ""
-        binding.textViewStoreNameValue.text = prefsManager.storeName
-        binding.textViewTerminalNameValue.text = prefsManager.terminalName
-
+        // Version info
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            binding.textViewVersionNameValue.text = packageInfo.versionName ?: "N/A"
             binding.textViewVersionCodeValue.text = packageInfo.longVersionCode.toString()
-            binding.textViewVersionNameValue.text = packageInfo.versionName ?: ""
         } catch (e: Exception) {
-            binding.textViewVersionCodeValue.text = "N/A"
             binding.textViewVersionNameValue.text = "N/A"
+            binding.textViewVersionCodeValue.text = "N/A"
         }
 
-        binding.textViewLastSyncDateValue.text = prefsManager.syncDate
+        // Device ID
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "N/A"
+        binding.textViewDeviceIdValue.text = deviceId
+
+        // Support info — website from account if available
+        val account = sessionManager.account
+        val website = account?.website
+        if (!website.isNullOrBlank()) {
+            binding.textViewWebsiteValue.text = website
+        }
     }
 }

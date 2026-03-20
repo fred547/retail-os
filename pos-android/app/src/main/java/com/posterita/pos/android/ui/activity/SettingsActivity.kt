@@ -21,9 +21,8 @@ class SettingsActivity : BaseDrawerActivity() {
         setContentViewWithDrawer(R.layout.activity_settings)
         binding = ActivitySettingsBinding.bind(drawerLayout.getChildAt(0))
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar.setNavigationOnClickListener { openDrawer() }
+        // Wire up the back button in the new top bar
+        binding.buttonBack.setOnClickListener { finish() }
 
         setupDrawerNavigation()
 
