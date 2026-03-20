@@ -101,6 +101,14 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 dot.background = oval
             }
         }
+
+        // Tap the dot to open the sync/database synchronizer screen
+        dot.setOnClickListener {
+            startActivity(Intent(this, DatabaseSynchonizerActivity::class.java))
+        }
+
+        // Expand touch area so the 8dp dot is easy to tap
+        expandTouchArea(dot, extraPaddingDp = 12)
     }
 
     /**

@@ -137,7 +137,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             binding.buttonMyCart?.text = if (count > 0) {
                 "MY CART  $currency ${NumberUtils.formatPrice(total)}"
             } else {
-                "MY CART"
+                ""
             }
         }
 
@@ -148,7 +148,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             binding.buttonMyCart?.text = if (count > 0) {
                 "MY CART  $currency ${NumberUtils.formatPrice(total)}"
             } else {
-                "MY CART"
+                ""
             }
         }
     }

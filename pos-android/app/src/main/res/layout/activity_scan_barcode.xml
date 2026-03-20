@@ -239,7 +239,7 @@
                 app:iconGravity="textStart"
                 app:iconSize="20dp"
                 app:iconTint="@color/white"
-                android:text="MY CART" />
+                android:text="" />
 
             <!-- Badge -->
             <TextView
