@@ -901,32 +901,65 @@ class ProductActivity : BaseDrawerActivity() {
         val txtDescription = dialogView.findViewById<TextView>(R.id.txt_product_description)
         val txtUpc = dialogView.findViewById<TextView>(R.id.txt_product_upc)
         val txtCategory = dialogView.findViewById<TextView>(R.id.txt_product_category)
+        val txtTax = dialogView.findViewById<TextView>(R.id.txt_product_tax)
+        val txtStockQty = dialogView.findViewById<TextView>(R.id.txt_stock_qty)
+        val txtSoldToday = dialogView.findViewById<TextView>(R.id.txt_sold_today)
         val btnClose = dialogView.findViewById<View>(R.id.button_close)
+        val btnAddToCart = dialogView.findViewById<View>(R.id.button_add_to_cart)
 
         // Load image
         Glide.with(this)
             .load(product.image)
-            .placeholder(R.drawable.ic_splash)
-            .error(R.drawable.ic_splash)
+            .placeholder(R.drawable.ic_product_placeholder)
+            .error(R.drawable.ic_product_placeholder)
             .into(imageProduct)
 
         val currency = sessionManager.account?.currency ?: ""
         txtName.text = product.name ?: ""
         txtPrice.text = "$currency ${NumberUtils.formatPrice(product.sellingprice)}"
 
+        // SKU + Category line
+        val skuParts = listOfNotNull(
+            product.itemcode?.let { "SKU: $it" }
+        )
+        if (skuParts.isNotEmpty()) {
+            txtCategory.text = skuParts.joinToString(" · ")
+            txtCategory.visibility = View.VISIBLE
+        }
+
+        // Description
         if (!product.description.isNullOrBlank()) {
             txtDescription.text = product.description
             txtDescription.visibility = View.VISIBLE
         }
 
+        // Barcode
         if (!product.upc.isNullOrBlank()) {
-            txtUpc.text = "UPC: ${product.upc}"
+            txtUpc.text = "Barcode: ${product.upc}"
             txtUpc.visibility = View.VISIBLE
         }
 
-        if (!product.itemcode.isNullOrBlank()) {
-            txtCategory.text = "Code: ${product.itemcode}"
-            txtCategory.visibility = View.VISIBLE
+        // VAT rate
+        val tax = sessionManager.taxCache[product.tax_id]
+        if (tax != null && tax.rate > 0) {
+            txtTax.text = "VAT: ${NumberUtils.formatQuantity(tax.rate)}% ${if (product.istaxincluded == "Y") "(included)" else ""}"
+            txtTax.visibility = View.VISIBLE
+        }
+
+        // Stock quantity
+        txtStockQty?.text = "—" // TODO: Stock qty from inventory module
+
+        // Sold today — count from today's orders
+        txtSoldToday?.text = "—" // TODO: Query from orders table
+
+        // Add to Cart
+        btnAddToCart?.setOnClickListener {
+            shoppingCartViewModel.addProduct(product)
+            lastAddedProduct = product
+            updateLastProductDisplay()
+            productAdapter.notifyDataSetChanged()
+            Toast.makeText(this, "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
         }
 
         btnClose.setOnClickListener { dialog.dismiss() }

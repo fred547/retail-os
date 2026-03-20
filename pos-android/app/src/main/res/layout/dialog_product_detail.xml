@@ -1,82 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/dialog_bg"
-    android:padding="20dp"
-    android:minWidth="320dp">
+    android:layout_height="wrap_content">
 
-    <!-- Product image (bigger) -->
-    <ImageView
-        android:id="@+id/image_product"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="12dp"
-        android:background="@color/posterita_panel" />
-
-    <!-- Product name -->
-    <TextView
-        android:id="@+id/txt_product_name"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/posterita_ink"
-        android:layout_marginBottom="6dp" />
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/posterita_paper">
 
-    <!-- Price -->
-    <TextView
-        android:id="@+id/txt_product_price"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textColor="@color/posterita_primary"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <!-- Description -->
-    <TextView
-        android:id="@+id/txt_product_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@color/posterita_muted"
-        android:visibility="gone"
-        android:layout_marginBottom="8dp" />
+            <!-- Product image (large) -->
+            <ImageView
+                android:id="@+id/image_product"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:background="@color/posterita_panel"
+                android:contentDescription="Product image" />
 
-    <!-- UPC / Barcode -->
-    <TextView
-        android:id="@+id/txt_product_upc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="@color/posterita_muted"
-        android:visibility="gone"
-        android:layout_marginBottom="4dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-    <!-- Category -->
-    <TextView
-        android:id="@+id/txt_product_category"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="@color/posterita_muted"
-        android:visibility="gone"
-        android:layout_marginBottom="8dp" />
+                <!-- Product name -->
+                <TextView
+                    android:id="@+id/txt_product_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Title"
+                    android:layout_marginBottom="2dp" />
 
-    <!-- Close button -->
-    <TextView
-        android:id="@+id/button_close"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:gravity="center"
-        android:text="CLOSE"
-        android:textColor="@color/posterita_ink"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:background="@drawable/stroke_btn"
-        android:layout_marginTop="8dp" />
+                <!-- SKU + Category -->
+                <TextView
+                    android:id="@+id/txt_product_category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Tiny"
+                    android:textColor="@color/posterita_muted"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp" />
 
-</LinearLayout>
+                <!-- Price (large, blue) -->
+                <TextView
+                    android:id="@+id/txt_product_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textColor="@color/posterita_primary"
+                    android:layout_marginBottom="14dp" />
+
+                <!-- Stats: In Stock + Sold Today -->
+                <LinearLayout
+                    android:id="@+id/layout_stats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="14dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/posterita_line"
+                        app:cardBackgroundColor="@color/posterita_panel">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="IN STOCK"
+                                style="@style/TextAppearance.Posterita.Label"
+                                android:textColor="@color/posterita_muted" />
+
+                            <TextView
+                                android:id="@+id/txt_stock_qty"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                style="@style/TextAppearance.Posterita.Heading"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/posterita_line"
+                        app:cardBackgroundColor="@color/posterita_panel">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SOLD TODAY"
+                                style="@style/TextAppearance.Posterita.Label"
+                                android:textColor="@color/posterita_muted" />
+
+                            <TextView
+                                android:id="@+id/txt_sold_today"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                style="@style/TextAppearance.Posterita.Heading"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Barcode -->
+                <TextView
+                    android:id="@+id/txt_product_upc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Tiny"
+                    android:textColor="@color/posterita_muted"
+                    android:visibility="gone"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- Description -->
+                <TextView
+                    android:id="@+id/txt_product_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- VAT rate -->
+                <TextView
+                    android:id="@+id/txt_product_tax"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Tiny"
+                    android:textColor="@color/posterita_muted"
+                    android:visibility="gone"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Buttons: ADD TO CART + CLOSE -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_close"
+                        style="@style/Widget.Posterita.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="Close" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_to_cart"
+                        style="@style/Widget.Posterita.Button.Pay"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="2"
+                        android:text="Add to Cart" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</ScrollView>
