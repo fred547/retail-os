@@ -14,6 +14,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.drawerlayout.widget.DrawerLayout
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityReceiptBinding
 import com.posterita.pos.android.domain.model.OrderDetails
@@ -51,12 +52,14 @@ class ReceiptActivity : BaseDrawerActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentViewWithDrawer(R.layout.activity_receipt)
-        binding = ActivityReceiptBinding.bind(drawerLayout.getChildAt(0))
+        // Receipt doesn't need a drawer — use direct layout
+        binding = ActivityReceiptBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        // Initialize drawerLayout for BaseDrawerActivity compat (won't be used)
+        drawerLayout = DrawerLayout(this)
         supportActionBar?.hide()
 
-        // Back button (no drawer on receipt)
-        binding.buttonBack?.setOnClickListener { navigateToProductActivity() }
+        // No back button — sale is complete, user must go to New Sale
 
         orderUuid = intent.getStringExtra("ORDER_UUID")
         val changeDue = intent.getDoubleExtra("CHANGE_DUE", 0.0)
@@ -367,6 +370,12 @@ class ReceiptActivity : BaseDrawerActivity() {
     }
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Don't go back to cart — go to new sale
+        navigateToProductActivity()
+    }
 
     private fun navigateToProductActivity() {
         val intent = Intent(this, ProductActivity::class.java)
