@@ -6,18 +6,43 @@
     android:orientation="vertical"
     android:background="?android:attr/colorBackground">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Top bar: ← back + Title -->
+    <LinearLayout
+        android:id="@+id/layout_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/posterita_paper"
+        android:elevation="1dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Admin Settings"
-            app:navigationIcon="?attr/homeAsUpIndicator"
-            app:titleTextColor="?android:attr/textColorPrimary" />
-    </com.google.android.material.appbar.AppBarLayout>
+        <ImageView
+            android:id="@+id/button_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="10dp"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/posterita_ink" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin Settings"
+            style="@style/TextAppearance.Posterita.Heading" />
+    </LinearLayout>
+
+    <!-- Hidden toolbar kept for binding compatibility (setNavigationIcon/setNavigationOnClickListener) -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -43,7 +68,7 @@
                 android:id="@+id/cardStoreConfig"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="8dp">
 
@@ -71,7 +96,7 @@
                 android:id="@+id/cardTerminalConfig"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -109,7 +134,7 @@
                 android:id="@+id/cardProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="8dp">
 
@@ -138,7 +163,7 @@
                 android:id="@+id/cardReviewPrices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"
@@ -190,7 +215,7 @@
                 android:id="@+id/cardCategories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="8dp">
 
@@ -218,7 +243,7 @@
                 android:id="@+id/cardBulkImport"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -256,7 +281,7 @@
                 android:id="@+id/cardTax"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -294,7 +319,7 @@
                 android:id="@+id/cardUsers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -334,7 +359,7 @@
                 android:id="@+id/cardTables"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone">
@@ -373,7 +398,7 @@
                 android:id="@+id/cardRequireCustomer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -426,7 +451,7 @@
                 android:id="@+id/cardAccountSwitching"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp">
 
@@ -469,7 +494,7 @@
                 android:id="@+id/cardDeleteAccount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/posterita_bg"
     android:id="@+id/conwhole"
     tools:context=".Activities.CloseTillPopUpActivity">
     <ImageView
@@ -116,48 +117,25 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_close_till"
+        style="@style/Widget.Posterita.Button.Primary"
         android:layout_width="@dimen/_100sdp"
         android:layout_height="48dp"
-        android:background="@drawable/btn_rounded"
         android:layout_marginTop="@dimen/_20sdp"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="@dimen/_15sdp"
-        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Close"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="@color/white"
-            android:fontFamily="@font/lexend_medium"
-            android:textSize="17sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
+        android:text="Close"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout" />
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/constCancel"
+        style="@style/Widget.Posterita.Button.Outlined"
         android:layout_width="@dimen/_100sdp"
         android:layout_height="48dp"
-        android:background="@drawable/stroke_btn"
         android:layout_marginTop="@dimen/_20sdp"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="@dimen/_15sdp"
-        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:text="Cancel"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="@color/black"
-            android:fontFamily="@font/lexend_medium"
-            android:textSize="17sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Cancel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

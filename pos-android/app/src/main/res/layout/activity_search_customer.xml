@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/posterita_bg"
     tools:context=".Activities.SearchCustomerActivity">
 
     <!-- Start of Search bar -->
@@ -28,27 +29,21 @@
             android:maxLines="1"
             android:paddingStart="@dimen/_10sdp"
             android:paddingEnd="@dimen/_10sdp"
-            android:textColor="@color/black" />
+            android:textColor="@color/posterita_ink" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button_search_customer"
+            style="@style/Widget.Posterita.Button.Primary"
             android:layout_width="@dimen/_50sdp"
             android:layout_height="48dp"
             android:layout_marginTop="@dimen/_15sdp"
             android:layout_marginEnd="@dimen/_15sdp"
-            android:background="@drawable/blue_end_corner">
-
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_search"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_search"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:cornerRadius="12dp" />
 
     </LinearLayout>
 
@@ -76,30 +71,15 @@
     <!-- End of RecyclerView -->
 
     <!-- Start of Action Buttons -->
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_add_customer"
+        style="@style/Widget.Posterita.Button.Primary"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginStart="@dimen/_50sdp"
         android:layout_marginEnd="@dimen/_50sdp"
         android:layout_marginBottom="@dimen/_15sdp"
-        android:background="@drawable/btn_rounded"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:layout_marginBottom="@dimen/_8sdp"
-            android:fontFamily="@font/lexend_medium"
-            android:text="Add Customer"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_17ssp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Add Customer" />
     <!-- End of Action Buttons -->
 
 </LinearLayout>

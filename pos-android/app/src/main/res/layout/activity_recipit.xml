@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/posterita_bg"
     tools:context=".Activities.RecipitActivity"
     tools:ignore="MissingDefaultResource">
     <ImageView
@@ -21,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Recipit #000013"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="@dimen/_10ssp"
         android:fontFamily="@font/lexend_medium"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Change Due"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="@dimen/_12ssp"
         app:layout_constraintTop_toBottomOf="@+id/txt_recip"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,7 +47,7 @@
         android:gravity="center"
         android:layout_height="wrap_content"
         android:text="Rs 00.00"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="@dimen/_15ssp"
         app:layout_constraintTop_toBottomOf="@+id/txtrecipiy"
         app:layout_constraintStart_toStartOf="parent"
@@ -57,79 +58,48 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="@dimen/_15ssp"
         app:layout_constraintTop_toBottomOf="@+id/txtanount"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="@dimen/_15sdp"/>
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/const_new"
+        style="@style/Widget.Posterita.Button.Primary"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_height="48dp"
         android:layout_marginStart="@dimen/_25sdp"
         android:layout_marginEnd="@dimen/_25sdp"
         android:layout_marginBottom="@dimen/_15sdp"
-        app:layout_constraintHorizontal_weight="1"
+        android:text="New Sale"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/const_pay"
-        android:background="@drawable/btn_rounded">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Sale"
-            android:textSize="@dimen/_8ssp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:textColor="@color/white"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
+        app:layout_constraintBottom_toTopOf="@+id/const_pay" />
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/const_hold"
+        style="@style/Widget.Posterita.Button.Outlined"
         android:layout_width="0dp"
+        android:layout_height="48dp"
         android:layout_marginBottom="@dimen/_10sdp"
         android:layout_marginStart="@dimen/_25sdp"
-        android:layout_height="@dimen/_25sdp"
+        android:text="Print"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintEnd_toStartOf="@+id/const_pay"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:background="@drawable/stroke_btn">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Print"
-            android:textSize="@dimen/_8ssp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:textColor="@color/black"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
+        app:layout_constraintStart_toStartOf="parent" />
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/const_pay"
+        style="@style/Widget.Posterita.Button.Outlined"
         android:layout_width="0dp"
-        android:layout_height="@dimen/_25sdp"
+        android:layout_height="48dp"
         android:layout_marginStart="@dimen/_15sdp"
         android:layout_marginEnd="@dimen/_25sdp"
         android:layout_marginBottom="@dimen/_10sdp"
+        android:text="View"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/const_hold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@drawable/stroke_btn">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View"
-            android:textSize="@dimen/_8ssp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:textColor="@color/black"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

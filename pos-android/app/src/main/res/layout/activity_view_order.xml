@@ -128,30 +128,18 @@
             android:layout_marginEnd="@dimen/_15sdp"
             android:textSize="20sp"/>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button_new_sale"
+            style="@style/Widget.Posterita.Button.Primary"
             android:layout_width="0dp"
-            android:layout_height="@dimen/_40sdp"
+            android:layout_height="48dp"
             android:layout_marginStart="19dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="@dimen/_15sdp"
-            android:background="@drawable/btn_rounded"
+            android:text="New Sale"
             app:layout_constraintBottom_toTopOf="@+id/linear_layout_buttons"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New Sale"
-                android:textColor="@color/white"
-                android:textSize="17sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <LinearLayout
             android:id="@+id/linear_layout_buttons"
@@ -165,71 +153,37 @@
             android:layout_marginBottom="@dimen/_15sdp"
             >
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_print_order"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/_40sdp"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_marginStart="2dp"
                 android:layout_marginEnd="2dp"
-                android:background="@drawable/stroke_btn">
+                android:text="Print" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Print"
-                    android:textColor="@color/posterita_ink"
-                    android:textSize="17sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_weight="1"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_refund_order"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/_40sdp"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="2dp"
                 android:layout_marginEnd="2dp"
                 android:layout_weight="1"
-                android:background="@drawable/stroke_btn"
-                android:visibility="visible">
+                android:text="Refund"
+                android:visibility="visible" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Refund"
-                    android:textColor="@color/posterita_ink"
-                    android:textSize="17sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_void_order"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/_40sdp"
+                style="@style/Widget.Posterita.Button.Danger"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="2dp"
                 android:layout_marginEnd="2dp"
                 android:layout_weight="1"
-                android:background="@drawable/stroke_btn"
-                android:visibility="visible">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Void"
-                    android:textColor="@color/posterita_ink"
-                    android:textSize="17sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                android:text="Void"
+                android:visibility="visible" />
 
         </LinearLayout>
 
