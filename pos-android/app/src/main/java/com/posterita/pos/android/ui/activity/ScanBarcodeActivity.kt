@@ -59,6 +59,10 @@ class ScanBarcodeActivity : AppCompatActivity() {
         binding.buttonMyCart.setOnClickListener {
             finish()
         }
+        binding.buttonCancel?.setOnClickListener {
+            setResult(Activity.RESULT_CANCELED)
+            finish()
+        }
     }
 
     private fun returnBarcode(barcode: String) {

@@ -12,7 +12,7 @@
         android:background="@color/posterita_bg"
         tools:context=".Activities.ProductActivity">
 
-        <!-- Top bar: ☰ Menu | POS title | Search bar | Scan -->
+        <!-- Top bar: ☰ Menu | POS title | Scan -->
         <LinearLayout
             android:id="@+id/layout_top_bar"
             android:layout_width="match_parent"
@@ -22,9 +22,8 @@
             android:paddingStart="4dp"
             android:paddingEnd="8dp"
             android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingBottom="4dp"
             android:background="@color/posterita_paper"
-            android:elevation="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -42,13 +41,36 @@
 
             <!-- Screen name -->
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:text="POS"
                 style="@style/TextAppearance.Posterita.Heading" />
 
-            <!-- Search bar -->
+            <!-- Hidden for binding compatibility -->
+            <TextView
+                android:id="@+id/text_cart_total"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Search bar + scan (separate line) -->
+        <LinearLayout
+            android:id="@+id/layout_search_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/posterita_paper"
+            android:elevation="2dp"
+            app:layout_constraintTop_toBottomOf="@+id/layout_top_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
             <LinearLayout
                 android:id="@+id/layout_search_bar"
                 android:layout_width="0dp"
@@ -79,13 +101,6 @@
                     style="@style/TextAppearance.Posterita.Tiny"
                     android:textColor="@color/posterita_muted" />
             </LinearLayout>
-
-            <!-- Hidden for binding compatibility -->
-            <TextView
-                android:id="@+id/text_cart_total"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
 
             <!-- Scan button -->
             <ImageView
@@ -121,7 +136,7 @@
             android:paddingBottom="8dp"
             android:background="@color/posterita_primary_light"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
+            app:layout_constraintTop_toBottomOf="@id/layout_search_row"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -229,7 +244,7 @@
             android:paddingBottom="6dp"
             android:background="@color/posterita_panel"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/layout_top_bar">
+            app:layout_constraintTop_toBottomOf="@+id/layout_search_row">
 
             <TextView
                 android:id="@+id/btn_dine_in"
@@ -258,18 +273,18 @@
                 android:background="@drawable/stroke_btn" />
         </LinearLayout>
 
-        <!-- Category chips -->
+        <!-- Category chips (right under search) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:paddingTop="8dp"
+            android:paddingTop="6dp"
             android:paddingBottom="6dp"
             android:clipToPadding="false"
             android:background="@color/posterita_bg"
-            app:layout_constraintTop_toBottomOf="@+id/layout_order_type" />
+            app:layout_constraintTop_toBottomOf="@+id/layout_search_row" />
 
         <!-- Divider -->
         <View
