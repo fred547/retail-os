@@ -2436,14 +2436,19 @@ class CartActivity : BaseDrawerActivity() {
             return sb.toString()
         }
 
+        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.button_save)
+
         fun updateDisplay() {
             val length = currentCountry.mobileLength
             txtPhoneNumber.text = formatPhoneDisplay()
             txtPhoneNumber.setTextColor(
-                if (phoneStr.length == length) Color.BLACK else Color.parseColor("#333333")
+                if (phoneStr.length == length) resources.getColor(R.color.posterita_ink, null) else resources.getColor(R.color.posterita_muted, null)
             )
             txtDigitCount.text = "${phoneStr.length} / $length digits"
             txtValidation.visibility = View.GONE
+
+            // Dynamic button text: Skip when empty, Save when full
+            btnSave?.text = if (phoneStr.isEmpty()) "Skip" else "Save"
 
             if (phoneStr.length >= 3) {
                 customerViewModel.searchCustomersByPhone(phoneStr) { results ->
@@ -2543,8 +2548,8 @@ class CartActivity : BaseDrawerActivity() {
             dialog.dismiss()
         }
 
-        dialogView.findViewById<View>(R.id.button_save).setOnClickListener {
-            // If no phone entered, just dismiss and proceed (no customer created)
+        btnSave?.setOnClickListener {
+            // Skip — no phone entered, dismiss and proceed
             if (phoneStr.isEmpty()) {
                 dialog.dismiss()
                 if (pendingPayAfterCustomer) {
@@ -2554,10 +2559,11 @@ class CartActivity : BaseDrawerActivity() {
                 return@setOnClickListener
             }
 
+            // Partial number — show error, don't proceed
             val mobileLength = currentCountry.mobileLength
             if (phoneStr.length != mobileLength) {
-                txtValidation.text = "Mobile number must be $mobileLength digits"
-                txtValidation.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
+                txtValidation.text = "Enter all $mobileLength digits or clear to skip"
+                txtValidation.setTextColor(resources.getColor(R.color.posterita_error, null))
                 txtValidation.visibility = View.VISIBLE
                 return@setOnClickListener
             }

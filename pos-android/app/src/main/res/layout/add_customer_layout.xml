@@ -330,43 +330,30 @@
                 android:layout_marginTop="@dimen/_12sdp"
                 android:gravity="center">
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_cancel"
+                    style="@style/Widget.Posterita.Button.Outlined"
                     android:layout_width="0dp"
-                    android:layout_height="@dimen/_35sdp"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/stroke_btn"
-                    android:gravity="center"
-                    android:text="Cancel"
-                    android:textSize="14sp"
-                    android:textColor="@color/posterita_ink" />
+                    android:layout_marginEnd="6dp"
+                    android:text="Cancel" />
 
+                <!-- Hidden skip for binding compat -->
                 <TextView
                     android:id="@+id/button_skip"
                     android:layout_width="0dp"
-                    android:layout_height="@dimen/_35sdp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/stroke_btn"
-                    android:gravity="center"
-                    android:text="Skip"
-                    android:textSize="14sp"
-                    android:textColor="@color/posterita_ink"
+                    android:layout_height="0dp"
                     android:visibility="gone" />
 
-                <TextView
+                <!-- Dynamic: shows "Skip" when empty, "Save" when full -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_save"
+                    style="@style/Widget.Posterita.Button.Pay"
                     android:layout_width="0dp"
-                    android:layout_height="@dimen/_35sdp"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/btn_rounded"
-                    android:gravity="center"
-                    android:text="Save"
-                    android:textSize="14sp"
-                    android:textColor="@color/white" />
+                    android:text="Skip" />
             </LinearLayout>
 
         </LinearLayout>
