@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingHorizontal="24dp">
+
+    <TextView
+        android:id="@+id/tvAiBuildingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="Setting up your store"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:id="@+id/tvAiBuildingSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="AI is generating a starter catalogue based on your brand and category."
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp">
+
+        <!-- Status line 1: Creating store -->
+        <LinearLayout
+            android:id="@+id/layoutStatusStore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="12dp">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressStore"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminate="true"
+                app:indicatorColor="@color/posterita_primary"
+                app:indicatorSize="24dp"
+                app:trackThickness="3dp" />
+
+            <TextView
+                android:id="@+id/tvStatusStore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Creating your store..."
+                android:textSize="16sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </LinearLayout>
+
+        <!-- Status line 2: Building products -->
+        <LinearLayout
+            android:id="@+id/layoutStatusProducts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="12dp"
+            android:alpha="0.4">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressProducts"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminate="true"
+                app:indicatorColor="@color/posterita_primary"
+                app:indicatorSize="24dp"
+                app:trackThickness="3dp"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tvStatusProducts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Building products..."
+                android:textSize="16sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </LinearLayout>
+
+        <!-- Status line 3: Finishing up -->
+        <LinearLayout
+            android:id="@+id/layoutStatusFinish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="12dp"
+            android:alpha="0.4">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressFinish"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminate="true"
+                app:indicatorColor="@color/posterita_primary"
+                app:indicatorSize="24dp"
+                app:trackThickness="3dp"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tvStatusFinish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Finishing up..."
+                android:textSize="16sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Error text (hidden by default) -->
+    <TextView
+        android:id="@+id/tvAiBuildingError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/posterita_error"
+        android:visibility="gone" />
+
+</LinearLayout>

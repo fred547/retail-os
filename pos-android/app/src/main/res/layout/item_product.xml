@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="3dp"
+    android:layout_marginEnd="3dp"
+    android:layout_marginTop="3dp"
+    android:layout_marginBottom="3dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="1dp"
+    app:cardPreventCornerOverlap="false"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="68dp">
+
+        <!-- Product image -->
+        <ImageView
+            android:id="@+id/image_view_product"
+            android:layout_width="56dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_product_placeholder"
+            android:contentDescription="@string/app_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/stockBar" />
+
+        <!-- Product name -->
+        <TextView
+            android:id="@+id/text_view_product_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Product Name"
+            style="@style/TextAppearance.Posterita.Caption"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintStart_toEndOf="@id/image_view_product"
+            app:layout_constraintEnd_toStartOf="@id/text_view_product_quantity_badge"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/text_view_product_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.00"
+            style="@style/TextAppearance.Posterita.Caption.Price"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="6dp"
+            app:layout_constraintStart_toEndOf="@id/image_view_product"
+            app:layout_constraintTop_toBottomOf="@id/text_view_product_name"
+            app:layout_constraintBottom_toTopOf="@id/stockBar" />
+
+        <!-- Qty indicator next to price -->
+        <TextView
+            android:id="@+id/text_view_product_name_x"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            style="@style/TextAppearance.Posterita.Nano"
+            android:layout_marginStart="3dp"
+            app:layout_constraintStart_toEndOf="@id/text_view_product_price"
+            app:layout_constraintBaseline_toBaselineOf="@id/text_view_product_price" />
+
+        <!-- Quantity badge (top-right corner) -->
+        <TextView
+            android:id="@+id/text_view_product_quantity_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="22dp"
+            android:background="@drawable/badge_background"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:fontFamily="@font/lexend_extrabold"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Stock indicator bar at bottom -->
+        <View
+            android:id="@+id/stockBar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/stock_bar_in"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Hidden done icon -->
+        <ImageView
+            android:id="@+id/image_view_done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_done"
+            android:visibility="gone"
+            android:contentDescription="@string/app_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Hidden qty text (kept for binding compatibility) -->
+        <TextView
+            android:id="@+id/text_view_product_quantity"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

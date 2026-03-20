@@ -1,0 +1,66 @@
+// =============================================================================
+// ZOHO CREATOR - LIST FORM FIELDS (DEBUG)
+// =============================================================================
+//
+// PURPOSE: Fetch field metadata for the Product Catalogue form so you can see
+// the exact link_name for each field. Use these link names in the product image
+// plug (search_field_name and field_name). Run this once to fix 3330 "variable
+// does not exist" errors.
+//
+// PREREQUISITES: Connection "zoho_connector" with scope ZohoCreator.meta.form.READ
+// (or ZohoCreator.meta.application.READ). US DC = zohoapis.com, EU = zohoapis.eu
+// =============================================================================
+
+app_owner       = "fred_tamakgroup";
+app_link_name   = "product-catalogue";
+form_link_name  = "Product_Catalogue";   // form that backs report All_Product_Catalogues
+connection_name = "zoho_connector";
+base_url        = "https://www.zohoapis.com";
+
+fields_url = base_url + "/creator/v2.1/meta/" + app_owner + "/" + app_link_name + "/form/" + form_link_name + "/fields";
+
+fields_list = list();
+response = Map();
+response.put("action", "reply");
+
+try
+{
+	api_resp = invokeurl
+	[
+		url        : fields_url
+		type       : GET
+		connection : connection_name
+	];
+
+	info "Get Fields raw response: " + api_resp.toString();
+
+	if(api_resp.get("code") != null && api_resp.get("code") == 3000)
+	{
+		fields = api_resp.get("fields");
+		if(fields != null)
+		{
+			for each f in fields
+			{
+				display_name = f.get("display_name");
+				link_name    = f.get("link_name");
+				field_type   = f.get("type");
+				fields_list.add("display_name: \"" + display_name + "\"  →  link_name: " + link_name + "  (type=" + field_type + ")");
+				info "Field: " + display_name + "  →  link_name: " + link_name;
+			}
+		}
+		response.put("replies", {"Use the link_name values in the product image plug (search_field_name, field_name)."});
+		response.put("fields", fields_list);
+		response.put("form", form_link_name);
+	}
+	else
+	{
+		response.put("replies", {"Get Fields failed: code=" + api_resp.get("code") + " message=" + api_resp.get("message")});
+	}
+}
+catch(e)
+{
+	info "Exception: " + e.toString();
+	response.put("replies", {"Exception: " + e.toString() + " — Check connection scope (ZohoCreator.meta.form.READ)."});
+}
+
+return response;

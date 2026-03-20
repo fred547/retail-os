@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_scan_barcode"
+        android:title="Scan" />
+    <item
+        android:id="@+id/menu_issue_coupon"
+        android:title="Issue Coupon" />
+
+    <item
+        android:id="@+id/menu_open_cash_drawer"
+        android:title="Open Cash Drawer" />
+
+    <item
+        android:id="@+id/clear_cart"
+        android:title="Clear Cart" />
+
+    <item
+        android:id="@+id/menu_add_note"
+        android:title="Add Note" />
+
+</menu>

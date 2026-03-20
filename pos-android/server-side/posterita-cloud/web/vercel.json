@@ -1,0 +1,14 @@
+{
+  "regions": ["bom1", "fra1", "iad1"],
+  "functions": {
+    "src/app/api/sync/**/*.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/sync/register/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/ai-import/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme (Light) -->
+    <style name="Base.Theme.Posterita" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/posterita_primary</item>
+        <item name="colorPrimaryDark">@color/posterita_primary_dark</item>
+        <item name="colorSecondary">@color/posterita_secondary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorError">@color/posterita_error</item>
+        <!-- Warm status bar matching the brand bg -->
+        <item name="android:statusBarColor">@color/posterita_bg</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <!-- Default font -->
+        <item name="android:fontFamily">@font/lexend_medium</item>
+    </style>
+
+    <style name="Theme.Posterita" parent="Base.Theme.Posterita" />
+
+    <style name="Rounded" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- Dialog theme -->
+    <style name="Theme.Posterita.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/posterita_primary</item>
+    </style>
+
+    <!-- Splash theme — warm bg, dark status icons -->
+    <style name="Theme.Posterita.Splash" parent="Theme.Posterita">
+        <item name="android:windowBackground">@color/posterita_bg</item>
+        <item name="android:statusBarColor">@color/posterita_bg</item>
+    </style>
+
+    <!-- POS theme — white status bar for max product space -->
+    <style name="Theme.Posterita.POS" parent="Theme.Posterita">
+        <item name="android:statusBarColor">@color/white</item>
+    </style>
+</resources>

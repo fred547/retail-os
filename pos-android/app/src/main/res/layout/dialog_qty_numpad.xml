@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_bg"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/txt_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter Quantity"
+            android:textColor="@color/txt_color"
+            android:fontFamily="@font/lexend_medium"
+            android:textSize="20sp"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txt_product_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_title" />
+
+        <!-- Quantity display -->
+        <TextView
+            android:id="@+id/txt_qty_display"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/btn_outline_rounded"
+            android:gravity="center|end"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="0"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:fontFamily="@font/lexend_medium"
+            app:layout_constraintTop_toBottomOf="@+id/txt_product_name" />
+
+        <!-- Numpad grid -->
+        <GridLayout
+            android:id="@+id/grid_numpad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            android:columnCount="3"
+            android:rowCount="4"
+            app:layout_constraintTop_toBottomOf="@+id/txt_qty_display">
+
+            <Button
+                android:id="@+id/btn_1"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="1"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_2"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="2"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="3"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="4"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="5"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_6"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="6"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_7"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="7"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_8"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="8"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_9"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="9"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_clear"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="C"
+                android:textColor="#E53935"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_0"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="0"
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_dot"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="3dp"
+                android:background="@drawable/stroke_btn"
+                android:text="."
+                android:textColor="@color/black"
+                android:textSize="22sp" />
+        </GridLayout>
+
+        <!-- Action buttons -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_cancel"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/stroke_btn"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_add"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/grid_numpad">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_add"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/btn_rounded"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/button_cancel"
+            app:layout_constraintTop_toBottomOf="@+id/grid_numpad">
+
+            <TextView
+                android:id="@+id/txt_button_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

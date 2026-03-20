@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.CustomerDetailsActivity"
+    >
+
+    <!-- Back button -->
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_back_cart"
+        android:contentDescription="@string/app_name"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/view_text_customer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Customer Info"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:fontFamily="@font/lexend_medium"
+        android:layout_marginTop="@dimen/_12sdp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5" />
+
+    <!-- Content area (scrollable) -->
+    <ScrollView
+        android:id="@+id/scroll_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingStart="@dimen/_20sdp"
+        android:paddingEnd="@dimen/_20sdp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/top_bottom_cart_border"
+        android:translationZ="@dimen/_1ssp"
+        app:layout_constraintTop_toBottomOf="@id/view_text_customer"
+        app:layout_constraintBottom_toTopOf="@id/button_remove_customer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp">
+
+            <TableLayout
+                android:id="@+id/table_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:stretchColumns="1"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <!-- Customer ID -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Customer ID: "
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_id_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="customer id"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Name -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Name: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_name_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="name"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Address -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Address: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_address_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="address"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- City -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_city"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="City: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_city_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="city"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Phone -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_phone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Phone No: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_phone_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="phone"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Mobile -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_mobile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mobile No: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_mobile_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="mobile"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Email -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_email"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Email: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_email_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="email"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Open Balance -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_open_balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Open Balance: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_open_balance_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="open balance"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Credit Limit -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_credit_limit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Credit Limit: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_credit_limit_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="credit limit"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- Note -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Note: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_note_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="note"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- BRN -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_brn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Brn: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_brn_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="brn"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+                <!-- VAT no -->
+                <TableRow
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/text_view_customer_vatno"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vat No: "
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp"
+                        android:layout_marginStart="@dimen/_15sdp"
+                        android:layout_marginEnd="@dimen/_5sdp" />
+
+                    <TextView
+                        android:id="@+id/text_view_customer_vatno_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="vat no"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:textSize="20sp"
+                        android:layout_marginLeft="@dimen/_5ssp"
+                        android:layout_marginRight="@dimen/_5ssp" />
+                </TableRow>
+
+            </TableLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <!-- Remove button -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/button_remove_customer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="19dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="@dimen/_15sdp"
+        android:background="@drawable/btn_rounded"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:paddingLeft="@dimen/_10ssp"
+            android:paddingTop="@dimen/_2ssp"
+            android:paddingRight="@dimen/_10ssp"
+            android:paddingBottom="@dimen/_2ssp"
+            android:text="Remove"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_10ssp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

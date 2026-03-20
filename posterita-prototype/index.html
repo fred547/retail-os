@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Posterita — Interactive Prototype</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        min-height: 100%;
+        background: radial-gradient(circle at top left, rgba(25,118,210,0.08), transparent 20%),
+                    linear-gradient(180deg, #FAF7F0 0%, #F3EEE6 100%);
+        font-family: "Avenir Next","SF Pro Display","Segoe UI",system-ui,sans-serif;
+      }
+      body { padding: 0; }
+      button, input { font: inherit; }
+      button { border: 0; background: none; cursor: pointer; color: inherit; }
+      #root { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

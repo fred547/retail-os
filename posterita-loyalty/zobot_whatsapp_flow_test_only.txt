@@ -1,0 +1,98 @@
+// =============================================================================
+// WHATSAPP TEMPLATE TEST ONLY
+// =============================================================================
+//
+// PURPOSE: Test sending a WhatsApp message template via the Meta Cloud API
+// from Zoho SalesIQ. Template name: test_survey.
+//
+// CHANNEL:  WhatsApp only
+// PLATFORM: Zoho SalesIQ - SalesIQ Scripts (Deluge)
+//
+// USAGE:
+//   1. Create a Zobot (or duplicate) that uses this script.
+//   2. Assign it to your WhatsApp channel for testing.
+//   3. Open the chat and choose "Test Template" to send the template.
+//   4. Check the debug reply for API response or errors.
+//
+// CONFIG: Update META_* and TEMPLATE_NAME. Rotate META_ACCESS_TOKEN after testing.
+// =============================================================================
+
+response = Map();
+msg = message.get("text");
+
+// Channel guard - WhatsApp only
+channel = ifnull(visitor.get("channel"), "");
+if(!channel.equalsIgnoreCase("whatsapp"))
+{
+	return response;
+}
+
+// -----------------------------------------------------------------------------
+// Meta API config
+// -----------------------------------------------------------------------------
+META_PHONE_NUMBER_ID = "976564772214166";
+META_ACCESS_TOKEN    = "EAAR0ldcHGSoBQ2JgqfdjwjLTaglIkEDJ9CPbNZCcp5K0AlBD3vUZB79z8QcOI6s7EUmjzUCuuJZBcQJHnteYCfaDCqWLcEJjVjqnw5AyZBX5DPrS0iR4WdXyZBB4eeTulFXhYIzH9ToaMuEGkmCsZAtqCXBTQZCcDZCGyTA7wPJoL2s6mlTVZBclYfqjpa8x9agZDZD";
+TEMPLATE_NAME        = "test_survey";
+TEMPLATE_LANG        = "en";
+
+phone = visitor.get("phone");
+if(phone == null) { phone = ""; }
+phone_plain = phone;
+if(phone.startsWith("+")) { phone_plain = phone.substring(1); }
+
+// =============================================================================
+// TEST TEMPLATE  -  send template "test_survey" via Meta API and return debug
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("Test Template") || msg.equalsIgnoreCase("test template")))
+{
+	tpl_sent = false;
+	tpl_debug = "";
+	try
+	{
+		wa_recipient = phone_plain.replaceAll("[^0-9]", "");
+		tpl_headers = Map();
+		tpl_headers.put("Authorization", "Bearer " + META_ACCESS_TOKEN);
+		tpl_headers.put("Content-Type", "application/json");
+
+		// WhatsApp template message (no components; add "components" if template has buttons/variables)
+		tpl_payload = "{\"messaging_product\":\"whatsapp\",\"recipient_type\":\"individual\",\"to\":\"" + wa_recipient + "\",\"type\":\"template\",\"template\":{\"name\":\"" + TEMPLATE_NAME + "\",\"language\":{\"code\":\"" + TEMPLATE_LANG + "\"}}}";
+
+		tpl_resp = invokeurl
+		[
+			url        : "https://graph.facebook.com/v21.0/" + META_PHONE_NUMBER_ID + "/messages"
+			type       : POST
+			parameters : tpl_payload
+			headers    : tpl_headers
+		];
+
+		tpl_debug = "API response: " + tpl_resp.toString();
+		if(tpl_resp.get("messages") != null) { tpl_sent = true; }
+		else if(tpl_resp.get("error") != null) { tpl_debug = tpl_debug + " | error=" + tpl_resp.get("error").toString(); }
+	}
+	catch(e_tpl)
+	{
+		tpl_debug = "Exception: " + e_tpl.toString();
+		tpl_sent = false;
+	}
+
+	if(tpl_sent)
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Template sent. Check WhatsApp.", "[DEBUG] " + tpl_debug});
+		response.put("input", {"type":"select","options":{"Test Template"}});
+		return response;
+	}
+
+	response.put("action", "reply");
+	response.put("replies", {"Template send failed.", "[DEBUG] " + tpl_debug});
+	response.put("input", {"type":"select","options":{"Test Template"}});
+	return response;
+}
+
+// =============================================================================
+// DEFAULT  -  show welcome and single "Test Template" button
+// =============================================================================
+response.put("action", "reply");
+response.put("replies", {"WhatsApp template test. Tap the button to send test_survey."});
+response.put("input", {"type":"select","options":{"Test Template"}});
+return response;

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="What do you sell?"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="This helps us set up your starter catalogue"
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rbFashion"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Fashion &amp; Apparel"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbFootwear"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Footwear"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbElectronics"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Electronics"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbFood"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Food &amp; Beverage"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbHealth"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Health &amp; Beauty"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbSports"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Sports &amp; Outdoor"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbHome"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Home &amp; Living"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+
+        <RadioButton
+            android:id="@+id/rbOther"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Other"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:buttonTint="@color/posterita_primary" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilOtherCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etOtherCategory"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="What do you sell?"
+            android:inputType="textCapSentences"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

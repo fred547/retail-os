@@ -1,0 +1,161 @@
+========================================================================
+  DEPLOY INSTRUCTIONS — Push Data Endpoint for Posterita Back Office
+========================================================================
+
+This adds the "app/push-data" endpoint to your posteritabo server so
+the Android app can sync local data (stores, products, categories, etc.)
+to the cloud.
+
+FILES:
+  - PushDataAction.java  → The Struts 2 action handler
+
+------------------------------------------------------------------------
+STEP 1: Add the Java file
+------------------------------------------------------------------------
+Copy PushDataAction.java to your server source code:
+
+  src/main/java/com/posterita/bo/action/app/PushDataAction.java
+
+(Adjust the package path if your project uses a different structure)
+
+
+------------------------------------------------------------------------
+STEP 2: Register the action in struts.xml
+------------------------------------------------------------------------
+Find the <package> block for the "app" namespace in your struts.xml.
+It should look something like:
+
+  <package name="app" namespace="/app" extends="json-default">
+      <action name="login" class="com.posterita.bo.action.app.LoginAction">
+          <result type="json" />
+      </action>
+      <action name="pull-data" class="com.posterita.bo.action.app.PullDataAction">
+          <result type="json" />
+      </action>
+      ...
+  </package>
+
+Add this action inside that package:
+
+      <action name="push-data" class="com.posterita.bo.action.app.PushDataAction">
+          <result type="json" />
+      </action>
+
+
+------------------------------------------------------------------------
+STEP 3: Adapt the database connection
+------------------------------------------------------------------------
+In PushDataAction.java, find the getConnection() method at the bottom.
+Change it to match how your app gets database connections. Common options:
+
+  A) JNDI lookup (default in the file):
+     javax.sql.DataSource ds = (javax.sql.DataSource)
+         ctx.lookup("java:comp/env/jdbc/posterita");
+     return ds.getConnection();
+
+  B) Your custom ConnectionManager:
+     return com.posterita.bo.util.ConnectionManager.getConnection();
+
+  C) Whatever your other actions use (check LoginAction or PullDataAction)
+
+
+------------------------------------------------------------------------
+STEP 4: Adapt the authentication
+------------------------------------------------------------------------
+In the authenticateUser() method, the SQL checks:
+  SELECT a.account_id FROM account a
+  JOIN appuser u ON a.account_id = u.account_id
+  WHERE u.email = ? AND u.password = ?
+
+Adjust the:
+  - Table names (account, appuser) to match your schema
+  - Password field (if you use hashing, hash before comparing)
+  - Column names if they differ
+
+
+------------------------------------------------------------------------
+STEP 5: Adapt the table/column names
+------------------------------------------------------------------------
+Check that these table names match your database schema:
+  - account
+  - store
+  - terminal
+  - tax
+  - productcategory
+  - product
+  - modifier
+  - appuser (might be "user" in your DB — rename in the SQL)
+
+The column names should match the entity fields from the Android app.
+Compare with your pull-data action to verify the correct names.
+
+
+------------------------------------------------------------------------
+STEP 6: Build and deploy
+------------------------------------------------------------------------
+1. Rebuild the WAR:  mvn clean package  (or ant build, or your build tool)
+2. Deploy to Tomcat: copy the WAR to webapps/
+3. Restart Tomcat if needed
+
+Test:
+  curl -X POST https://my.posterita.com/posteritabo/app/push-data \
+    -d "account_key=test" \
+    -d "data={\"email\":\"test@test.com\",\"password\":\"test\"}"
+
+Expected response:
+  {"success":false,"message":"Authentication failed and could not create account"}
+  (because test credentials don't exist — but it confirms the endpoint works)
+
+
+------------------------------------------------------------------------
+EXPECTED JSON PAYLOAD FROM ANDROID APP
+------------------------------------------------------------------------
+{
+  "email": "user@posterita.com",
+  "password": "secret",
+  "business_name": "Demo Store",
+  "currency": "MUR",
+  "account": [
+    {"account_id": "demo_account", "businessname": "Demo Store", ...}
+  ],
+  "store": [
+    {"storeId": 1, "name": "Demo Store", "address": "123 Demo St", ...}
+  ],
+  "terminal": [
+    {"terminalId": 1, "name": "POS 1", "store_id": 1, "prefix": "INV", ...}
+  ],
+  "user": [
+    {"user_id": 1, "firstname": "Admin", "username": "admin", "pin": "000000", ...}
+  ],
+  "productcategory": [
+    {"productcategory_id": 1, "name": "Food", "position": 1, ...}
+  ],
+  "product": [
+    {"product_id": 1, "name": "Burger", "sellingprice": 8.99, ...}
+  ],
+  "tax": [
+    {"tax_id": 1, "name": "VAT 15%", "rate": 15.0, "taxcode": "VAT15", ...}
+  ],
+  "modifier": [
+    {"modifier_id": 1, "name": "Extra Cheese", "sellingprice": 1.50, ...}
+  ]
+}
+
+
+------------------------------------------------------------------------
+EXPECTED RESPONSE TO ANDROID APP
+------------------------------------------------------------------------
+{
+  "success": true,
+  "message": "Data imported successfully",
+  "account_id": "42",
+  "account_key": "42",
+  "stores_created": 1,
+  "terminals_created": 1,
+  "taxes_created": 2,
+  "categories_created": 4,
+  "products_created": 15,
+  "modifiers_created": 6,
+  "users_created": 1,
+  "customers_created": 0
+}

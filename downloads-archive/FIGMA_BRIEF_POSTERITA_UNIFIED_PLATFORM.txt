@@ -1,0 +1,290 @@
+Posterita Unified Platform
+Figma UX Brief
+
+Product Goal
+- Design one unified operational platform with one Android shell app for internal users and one web control console for admins and supervisors.
+- The MVP focuses on Retail POS, Loyalty at POS, Close Till Reconciliation, Inventory Basic, Staff Ops, and Supervisor workflows.
+- The platform is role-based and device-based. Users should only see modules enabled for their role and device.
+
+Primary Users
+- Cashier
+- Store Staff
+- Supervisor
+- Admin or Owner
+
+Core Product Principles
+- Fast, touch-first, low-friction UI
+- Role-based visibility
+- Device-aware behavior
+- Offline-friendly patterns
+- Clear sync and lock states
+- Safety-first for sensitive actions
+- Minimal training required
+
+Design Scope
+- Android shell app
+- Android POS workflows
+- Android Staff Ops workflows
+- Android Supervisor workflows
+- Android Inventory Basic workflows
+- Web control console
+
+Do Not Design Now
+- Full restaurant suite
+- Marketing campaign builder
+- Support inbox/chat platform
+- Staff map tracking
+- Advanced HR/payroll rules
+- Deliveroo, ABSA, SalesIQ, Facebook, Instagram integrations
+- Internal real-time chat
+
+Figma File Structure
+1. 00 Foundations
+2. 01 Navigation and Information Architecture
+3. 02 Android Shell
+4. 03 POS Core
+5. 04 Loyalty at POS
+6. 05 Close Till and Reconciliation
+7. 06 Inventory Basic
+8. 07 Staff Ops
+9. 08 Supervisor
+10. 09 Web Control Console
+11. 10 Components
+12. 11 Prototypes
+
+Foundations
+- Define color system
+- Define typography scale
+- Define spacing scale
+- Define elevation/shadows
+- Define icon style
+- Define status colors:
+  - success
+  - warning
+  - danger
+  - pending
+  - offline
+  - synced
+- Define form patterns
+- Define drawer, sheet, modal, and dialog patterns
+- Define minimum touch target sizes for Android
+
+Navigation Architecture
+
+Android App
+- Splash / bootstrap
+- Login / OTP / invite flow
+- QR device enrollment
+- Home / app switcher
+- POS
+- Staff Ops
+- Supervisor
+- Inventory
+- Settings
+- Locked or revoked device state
+
+Web Console
+- Dashboard
+- Devices
+- Users and Roles
+- Capabilities
+- Stores and Terminals
+- Reconciliations
+- Requests
+- Workforce
+- Assets
+- Loyalty
+- Audit
+- AI Task Center
+
+Android Shell Screens
+- Splash
+- Sign in
+- OTP verification
+- QR device enrollment
+- Device assigned state
+- Device unassigned state
+- Home / app switcher
+- Revoked / locked screen
+- Offline banner state
+- Sync status panel
+- Settings
+
+POS Core Screens
+- POS home with product grid
+- Product search
+- Product detail or modifier sheet
+- Cart
+- Customer lookup
+- Customer create
+- Payment method selection
+- Receipt success
+- Refund flow
+- Hold order flow
+- Order history
+- Open till
+- Close till entry point
+
+POS UX Requirements
+- Large touch targets
+- Fast cashier interaction
+- Clear cart summary
+- Visible sync state
+- Visible payment state
+- Visible printer state
+- Loyalty interaction should stay lightweight inside checkout
+
+Loyalty at POS
+- Phone entry
+- Customer lookup state
+- Wallet balance card
+- Active vouchers list
+- Validate voucher state
+- Redeem voucher confirmation
+- Marketing consent prompt
+- Post-sale points earned summary
+- Optional ask-for-review prompt
+
+Close Till and Reconciliation
+- Reconciliation dashboard
+- Expected vs counted summary
+- Counted cash/card/other inputs
+- Discrepancy capture
+- Discrepancy reason entry
+- Upload PDF/image evidence
+- Save draft
+- Submit for supervisor review
+- Resolution screen
+- Approved / flagged / returned states
+
+Inventory Basic
+- Inventory home
+- Start count session
+- Count list
+- Barcode scan for count
+- Item detail / count adjust
+- Submit count
+- Barcode request
+- Item naming request with photo
+- Stationery request
+- Pickup request
+- Customer item request
+
+Staff Ops
+- Staff Ops home with first cards:
+  - Attendance
+  - Leave
+  - Tasks
+  - Expenses
+  - Requests
+  - Assets
+  - Documents
+- Check in / check out
+- Leave request form
+- Task inbox
+- Task detail
+- Expense claim
+- Bus fare request
+- Emergency contact
+- Proof / document upload
+- Asset acceptance with signature
+- Maintenance request with photo
+- Basic profile
+
+Supervisor
+- Supervisor dashboard
+- Pending approvals
+- Leave approval
+- Attendance approval
+- Task assignment
+- Warning issuance
+- Checklist / inspection
+- Shift creation
+- Shift approval
+- Discrepancy resolution
+- Evidence review
+
+Web Control Console
+- Device allocation
+- User capability assignment
+- Revoke or reassign device
+- Terminal / store mapping
+- Reconciliation queue
+- Discrepancy detail view
+- Request management
+- Workforce approval queue
+- Loyalty / consent lookup
+- Audit trail
+- AI command review / approval
+
+Core Components
+- App tiles
+- Section cards
+- Stat cards
+- Searchable lists
+- Approval cards
+- Discrepancy cards
+- File upload blocks
+- Evidence gallery
+- Barcode input / scan state
+- Loyalty wallet card
+- Voucher card
+- Sync banner
+- Offline banner
+- Role badge
+- Device badge
+- Locked state screen
+- Confirmation dialogs
+- Approval dialogs
+- Signature capture container
+
+States to Design
+Each major screen should include:
+- loading
+- empty
+- success
+- error
+- offline
+- syncing
+- permission denied
+- revoked or locked
+- approval pending
+
+Prototype Flows
+1. Login -> device enrollment -> home
+2. POS sale -> loyalty lookup -> payment -> receipt
+3. POS close till -> discrepancy -> evidence upload -> submit
+4. Staff leave request -> supervisor approval
+5. Inventory count -> submit
+6. Device revoked from web -> app locked state
+
+Responsive Rules
+- Android is phone-first and tablet-aware
+- POS screens should also support tablet checkout comfortably
+- Web console is desktop-first and tablet-secondary
+- No need to fully optimize admin console for mobile in MVP
+
+Handoff Deliverables
+- Sitemap / information architecture
+- Annotated wireframes
+- Core component library
+- Priority prototypes
+- Role visibility matrix
+- State library
+- Notes for offline, sync, approval, and lock behaviors
+
+Priority Order for Design
+1. Android shell
+2. POS core
+3. Loyalty at POS
+4. Close till reconciliation
+5. Staff Ops
+6. Supervisor
+7. Inventory Basic
+8. Web control console
+
+Success Criteria
+- A designer can open the file and understand the platform structure immediately
+- The wireframes are sufficient for engineering handoff planning
+- Key operational flows are visible before backend implementation begins
+- Role-based and device-based behavior is explicit in the designs

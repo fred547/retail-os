@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/conwhole"
+    tools:context=".Activities.CloseTillPopUpActivity">
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_back_cart"
+        android:layout_marginStart="@dimen/_15sdp"
+        app:layout_constraintTop_toTopOf="@id/txt_order"
+        app:layout_constraintBottom_toBottomOf="@id/txt_order"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+    <TextView
+        android:id="@+id/txt_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Close Till"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:fontFamily="@font/lexend_medium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/_12sdp"/>
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:id="@+id/edtPsd"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginEnd="@dimen/_15sdp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/txt_order"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:hint="Enter Cash Amount"
+        app:shapeAppearance="@style/Rounded">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:id="@+id/edtPsdInput"
+            android:textColor="@color/black"
+            android:inputType="number"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:id="@+id/edtcard"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginEnd="@dimen/_15sdp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/edtPsd"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:hint="Enter Card Amount"
+        app:shapeAppearance="@style/Rounded">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:id="@+id/edtcrdInput"
+            android:textColor="@color/black"
+            android:inputType="number"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="0dp"
+        android:id="@+id/edtForexCurrencyLayout"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginEnd="4dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/edtcard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/edtForexAmtLayout"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:hint="Forex Currency"
+        app:shapeAppearance="@style/Rounded">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:id="@+id/edtForexCurrencyInput"
+            android:textColor="@color/black"
+            android:inputType="textCapCharacters"
+            android:maxLength="3"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="0dp"
+        android:id="@+id/edtForexAmtLayout"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="@dimen/_15sdp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/edtcard"
+        app:layout_constraintStart_toEndOf="@id/edtForexCurrencyLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:hint="Forex Amount"
+        app:shapeAppearance="@style/Rounded">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:id="@+id/edtForexAmtInput"
+            android:textColor="@color/black"
+            android:inputType="numberDecimal"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/button_close_till"
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="48dp"
+        android:background="@drawable/btn_rounded"
+        android:layout_marginTop="@dimen/_20sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/_15sdp"
+        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/white"
+            android:fontFamily="@font/lexend_medium"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constCancel"
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="48dp"
+        android:background="@drawable/stroke_btn"
+        android:layout_marginTop="@dimen/_20sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="@dimen/_15sdp"
+        app:layout_constraintTop_toBottomOf="@id/edtForexAmtLayout">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/black"
+            android:fontFamily="@font/lexend_medium"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

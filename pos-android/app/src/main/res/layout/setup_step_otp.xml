@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="32dp">
+
+    <TextView
+        android:id="@+id/tvOtpSentTo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="We sent a code to +230 5823 1102"
+        android:textSize="15sp"
+        android:textColor="@color/posterita_muted"
+        android:gravity="center" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:hint="6-digit code"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etOtpCode"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="number"
+            android:maxLength="6"
+            android:textSize="24sp"
+            android:letterSpacing="0.3"
+            android:gravity="center"
+            android:fontFamily="sans-serif-medium" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnResendOtp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:text="Resend code"
+        android:textAllCaps="false"
+        android:textSize="13sp"
+        android:textColor="@color/posterita_primary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="In dev mode, any 6-digit code works"
+        android:textSize="11sp"
+        android:textColor="@color/posterita_muted"
+        android:alpha="0.6" />
+
+</LinearLayout>

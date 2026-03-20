@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/posterita_paper"
+    tools:ignore="HardcodedText">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Logo header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_splash"
+                android:scaleType="fitCenter"
+                android:contentDescription="Posterita" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Posterita"
+                style="@style/TextAppearance.Posterita.Heading" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/posterita_line" />
+
+        <!-- Home -->
+        <LinearLayout
+            android:id="@+id/nav_home"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_drawer"
+                android:scaleType="fitCenter"
+                android:contentDescription="Home"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Home"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <!-- POS (highlighted/active) -->
+        <LinearLayout
+            android:id="@+id/nav_pos"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_selected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/pos"
+                android:scaleType="fitCenter"
+                android:tint="@color/white"
+                android:contentDescription="POS" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="POS"
+                style="@style/TextAppearance.Posterita.Body"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Orders -->
+        <LinearLayout
+            android:id="@+id/nav_orders"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/order"
+                android:scaleType="fitCenter"
+                android:contentDescription="Orders"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Orders"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <!-- Hold Orders -->
+        <LinearLayout
+            android:id="@+id/nav_hold_orders"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/holdorder"
+                android:scaleType="fitCenter"
+                android:contentDescription="Hold Orders"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Hold Orders"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <!-- Kitchen Orders (hidden) -->
+        <LinearLayout
+            android:id="@+id/nav_kitchen_orders"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground"
+            android:visibility="gone">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/holdorder"
+                android:scaleType="fitCenter"
+                android:contentDescription="Kitchen Orders"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Kitchen Orders"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <!-- Close Till -->
+        <LinearLayout
+            android:id="@+id/nav_close_till"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/till"
+                android:scaleType="fitCenter"
+                android:contentDescription="Close Till"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Close Till"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/posterita_line" />
+
+        <!-- Admin Settings — hidden, managed via Web Console per master plan v4.0 -->
+        <LinearLayout
+            android:id="@+id/nav_admin_settings"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <!-- Settings -->
+        <LinearLayout
+            android:id="@+id/nav_settings"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/settings"
+                android:scaleType="fitCenter"
+                android:contentDescription="Settings"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Settings"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <!-- Cloud Sync -->
+        <LinearLayout
+            android:id="@+id/nav_cloud_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/nav_sync_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_cloud_sync"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="Cloud Sync"
+                    app:tint="@color/posterita_ink" />
+
+                <TextView
+                    android:id="@+id/nav_sync_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:text="Cloud Sync"
+                    style="@style/TextAppearance.Posterita.Body" />
+
+                <ProgressBar
+                    android:id="@+id/nav_sync_spinner"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:indeterminateTint="@color/posterita_primary"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/nav_sync_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="38dp"
+                android:text="Never synced"
+                style="@style/TextAppearance.Posterita.Nano"
+                android:layout_marginTop="2dp" />
+
+            <LinearLayout
+                android:id="@+id/nav_sync_progress_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="38dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/nav_sync_progress_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Nano"
+                    android:textColor="@color/posterita_primary" />
+
+                <ProgressBar
+                    android:id="@+id/nav_sync_progress_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="4dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/posterita_primary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Get Update -->
+        <LinearLayout
+            android:id="@+id/nav_get_update"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/download"
+                android:scaleType="fitCenter"
+                android:contentDescription="Get Update"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Get Update"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/posterita_line" />
+
+        <!-- About -->
+        <LinearLayout
+            android:id="@+id/nav_about"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/info"
+                android:scaleType="fitCenter"
+                android:contentDescription="About"
+                app:tint="@color/posterita_muted" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="About"
+                style="@style/TextAppearance.Posterita.Body.Muted" />
+        </LinearLayout>
+
+        <!-- Help -->
+        <LinearLayout
+            android:id="@+id/nav_help"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_help"
+                android:scaleType="fitCenter"
+                android:contentDescription="Help"
+                app:tint="@color/posterita_muted" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Help"
+                style="@style/TextAppearance.Posterita.Body.Muted" />
+        </LinearLayout>
+
+        <!-- Log Out -->
+        <LinearLayout
+            android:id="@+id/nav_logout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/logout"
+                android:scaleType="fitCenter"
+                android:tint="@color/posterita_error"
+                android:contentDescription="Log Out" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Log Out"
+                style="@style/TextAppearance.Posterita.Body"
+                android:textColor="@color/posterita_error" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,138 @@
+================================================================
+POSTERITA POS CLOUD — SETUP GUIDE
+Supabase + Vercel + Cloudinary
+================================================================
+
+STEP 1: CREATE SUPABASE PROJECT
+--------------------------------
+1. Go to https://supabase.com → Create new project
+2. Choose a region close to Mauritius (e.g., eu-west-1 or ap-southeast-1)
+3. Set a strong database password
+4. Note down:
+   - Project URL: https://xxxxx.supabase.co
+   - Anon key: eyJ...
+   - Service role key: eyJ...
+
+STEP 2: RUN DATABASE MIGRATIONS
+---------------------------------
+Option A: Via Supabase Dashboard → SQL Editor
+  - Paste and run each file in order:
+    1. supabase/migrations/00001_initial_schema.sql
+    2. supabase/migrations/00002_row_level_security.sql
+    3. supabase/migrations/00003_realtime_and_views.sql
+
+Option B: Via Supabase CLI
+  npm install -g supabase
+  cd posterita-cloud
+  supabase login
+  supabase link --project-ref your-project-ref
+  supabase db push
+
+STEP 3: CONFIGURE SUPABASE EDGE FUNCTIONS
+-------------------------------------------
+1. Set secrets:
+   supabase secrets set CLAUDE_API_KEY=sk-ant-xxx
+   supabase secrets set CLOUDINARY_CLOUD_NAME=xxx
+   supabase secrets set CLOUDINARY_API_KEY=xxx
+   supabase secrets set CLOUDINARY_API_SECRET=xxx
+
+2. Deploy functions:
+   supabase functions deploy sync-terminal
+   supabase functions deploy ai-import
+
+STEP 4: SETUP CLOUDINARY
+--------------------------
+1. Go to https://cloudinary.com → Sign up (free tier)
+2. Dashboard → Note down:
+   - Cloud name
+   - API key
+   - API secret
+3. Create upload preset: "posterita_products" (unsigned, auto folder)
+
+STEP 5: DEPLOY NEXT.JS TO VERCEL
+----------------------------------
+1. Push posterita-cloud/web to a Git repo
+2. Go to https://vercel.com → Import project
+3. Set environment variables:
+   - NEXT_PUBLIC_SUPABASE_URL
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+   - SUPABASE_SERVICE_ROLE_KEY
+   - NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+   - CLOUDINARY_API_KEY
+   - CLOUDINARY_API_SECRET
+   - CLAUDE_API_KEY
+4. Deploy!
+
+STEP 6: CREATE FIRST OWNER ACCOUNT
+-------------------------------------
+1. Supabase Dashboard → Authentication → Users → Invite user
+2. Enter owner email, they'll receive a magic link
+3. Then in SQL Editor, link the auth user to a POS account:
+
+   -- Create the account
+   INSERT INTO account (account_id, businessname, currency)
+   VALUES ('ACC001', 'My Business', 'MUR');
+
+   -- Link auth user to POS user
+   INSERT INTO pos_user (account_id, auth_uid, username, firstname, lastname, role, isadmin, isactive)
+   VALUES ('ACC001', 'auth-uid-from-step-2', 'owner', 'John', 'Doe', 'OWNER', 'Y', 'Y');
+
+STEP 7: CONNECT ANDROID APP
+------------------------------
+In the Android app, add to SharedPreferencesManager or a config:
+  - SUPABASE_URL = https://xxxxx.supabase.co
+  - SUPABASE_ANON_KEY = eyJ...
+
+The Android sync service will call:
+  POST https://xxxxx.supabase.co/functions/v1/sync-terminal
+  Authorization: Bearer <user_jwt>
+  Body: { terminal_id, store_id, last_sync_at, orders: [...] }
+
+================================================================
+ARCHITECTURE OVERVIEW
+================================================================
+
+                    ┌─────────────────┐
+                    │   Vercel (Web)   │
+                    │  Next.js Admin   │
+                    │   Dashboard      │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │    Supabase     │
+                    │  ┌────────────┐ │
+                    │  │ PostgreSQL │ │  ← Central database
+                    │  ├────────────┤ │
+                    │  │ Auth + JWT │ │  ← User authentication
+                    │  ├────────────┤ │
+                    │  │  Realtime  │ │  ← Live sync to terminals
+                    │  ├────────────┤ │
+                    │  │Edge Funcs  │ │  ← AI import, sync, etc.
+                    │  └────────────┘ │
+                    └───────┬─┬───────┘
+                            │ │
+              ┌─────────────┘ └──────────────┐
+              │                              │
+    ┌─────────▼────────┐          ┌──────────▼─────────┐
+    │  Android POS #1  │          │  Android POS #2    │
+    │  (Room DB local) │          │  (Room DB local)   │
+    │  ← offline-first │          │  ← offline-first   │
+    └──────────────────┘          └────────────────────┘
+              │
+    ┌─────────▼────────┐
+    │   Cloudinary     │
+    │  Product images  │  ← CDN + transforms
+    └──────────────────┘
+
+================================================================
+COST ESTIMATE (Monthly)
+================================================================
+Supabase Pro:    $25/mo  (500MB DB, 5GB bandwidth, 500K edge invocations)
+Vercel Pro:      $20/mo  (unlimited builds, 1TB bandwidth)
+Cloudinary Free:  $0/mo  (25K transforms, 25GB storage)
+Claude API:      ~$10/mo (pay-per-use for AI imports)
+                 -------
+Total:           ~$55/mo for production-ready infrastructure
+
+Free tier covers development and small deployments.
+================================================================

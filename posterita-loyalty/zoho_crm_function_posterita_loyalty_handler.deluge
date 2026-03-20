@@ -1,0 +1,258 @@
+// Deluge function for Zoho CRM to handle Posterita Loyalty operations.
+// Create this as a CRM Function (Developer Space → Functions) with the name 'posterita_loyalty_handler'.
+// Configure a connection from Zoho SalesIQ Zobot to call this function via invokeurl.
+// Adjust module and field API names to match your CRM.
+
+// Expected input parameters (from Zobot):
+// - operation: ENROLL | GET_POINTS | OPT_OUT | REJOIN | ADD_POINTS
+// - phone: visitor phone (WhatsApp number) – mandatory for all
+// - name: full name (ENROLL)
+// - email: email (optional, ENROLL)
+// - channel: e.g. "WhatsApp"
+// - points_change: number of points to add (for ADD_POINTS)
+
+response_map = map();
+
+try
+{
+	operation = ifnull(param.get("operation"), "");
+	phone = ifnull(param.get("phone"), "");
+
+	if (phone == "")
+	{
+		response_map.put("error", "PHONE_MISSING");
+		return response_map;
+	}
+
+	// Helper: find or create contact by phone
+	contact = null;
+	contact_list = zoho.crm.searchRecords("Contacts","(Phone:equals:" + phone + ") or (Mobile:equals:" + phone + ")");
+	if (contact_list.isEmpty() == false)
+	{
+		contact = contact_list.get(0);
+	}
+
+	if (operation == "ENROLL")
+	{
+		// Create or update contact
+		contact_data = map();
+		contact_data.put("Phone", phone);
+		contact_data.put("Mobile", phone);
+
+		if (param.get("name") != null)
+		{
+			contact_data.put("Last_Name", param.get("name")); // Adjust if you want First/Last separately
+		}
+		if (param.get("email") != null)
+		{
+			contact_data.put("Email", param.get("email"));
+		}
+
+		// Consent fields (adjust API names)
+		contact_data.put("Posterita_Loyalty_Enrolled", true);
+		contact_data.put("WhatsApp_Marketing_Consent", "Granted");
+		contact_data.put("Consent_Timestamp", zoho.currenttime);
+		contact_data.put("Consent_Source", "WhatsApp Zobot");
+
+		if (contact == null)
+		{
+			create_resp = zoho.crm.create("Contacts", contact_data);
+			contact_id = create_resp.get("id");
+			contact = create_resp;
+		}
+		else
+		{
+			contact_id = contact.get("id");
+			update_resp = zoho.crm.update("Contacts", contact_id, contact_data);
+		}
+
+		// Create or get Loyalty Points record
+		loyalty_record = null;
+		lp_list = zoho.crm.searchRecords("Loyalty_Points","(Contact:equals:" + contact_id + ")");
+		if (lp_list.isEmpty() == false)
+		{
+			loyalty_record = lp_list.get(0);
+		}
+		else
+		{
+			lp_data = map();
+			lp_data.put("Contact", contact_id);
+			lp_data.put("Status", "Active");
+			lp_data.put("Total_Points", 0);
+			lp_data.put("Channel", param.get("channel"));
+			lp_create = zoho.crm.create("Loyalty_Points", lp_data);
+			loyalty_record = lp_create;
+		}
+
+		lp_id = loyalty_record.get("id");
+
+		// Award registration points (change value as needed)
+		reg_points = 100;
+		trans_data = map();
+		trans_data.put("Contact", contact_id);
+		trans_data.put("Loyalty_Points", lp_id);
+		trans_data.put("Points_Change", reg_points);
+		trans_data.put("Reason", "Registration");
+		trans_data.put("Channel", param.get("channel"));
+		trans_data.put("Description", "Signup via WhatsApp Zobot");
+		trans_create = zoho.crm.create("Loyalty_Transactions", trans_data);
+
+		// Recalculate total points
+		all_trans = zoho.crm.searchRecords("Loyalty_Transactions","(Loyalty_Points:equals:" + lp_id + ")");
+		total = 0;
+		for each  t in all_trans
+		{
+			pts = ifnull(t.get("Points_Change"),0);
+			if (pts != null)
+			{
+				total = total + pts;
+			}
+		}
+
+		lp_update = map();
+		lp_update.put("Total_Points", total);
+		lp_update.put("Last_Updated_On", zoho.currenttime);
+		zoho.crm.update("Loyalty_Points", lp_id, lp_update);
+
+		response_map.put("points", total);
+		response_map.put("status", "Active");
+	}
+	else if (operation == "GET_POINTS")
+	{
+		if (contact == null)
+		{
+			response_map.put("points", 0);
+			response_map.put("status", "Not Enrolled");
+		}
+		else
+		{
+			contact_id = contact.get("id");
+			lp_list = zoho.crm.searchRecords("Loyalty_Points","(Contact:equals:" + contact_id + ")");
+			if (lp_list.isEmpty())
+			{
+				response_map.put("points", 0);
+				response_map.put("status", "Not Enrolled");
+			}
+			else
+			{
+				lp = lp_list.get(0);
+				response_map.put("points", ifnull(lp.get("Total_Points"),0));
+				response_map.put("status", ifnull(lp.get("Status"),"Active"));
+			}
+		}
+	}
+	else if (operation == "OPT_OUT")
+	{
+		if (contact != null)
+		{
+			contact_id = contact.get("id");
+
+			// Update consent fields
+			cu = map();
+			cu.put("WhatsApp_Marketing_Consent", "Withdrawn");
+			cu.put("Posterita_Loyalty_Enrolled", false);
+			zoho.crm.update("Contacts", contact_id, cu);
+
+			// Update loyalty status
+			lp_list = zoho.crm.searchRecords("Loyalty_Points","(Contact:equals:" + contact_id + ")");
+			if (lp_list.isEmpty() == false)
+			{
+				lp = lp_list.get(0);
+				lp_id = lp.get("id");
+				lp_update = map();
+				lp_update.put("Status","Opted-out");
+				lp_update.put("Last_Updated_On", zoho.currenttime);
+				zoho.crm.update("Loyalty_Points", lp_id, lp_update);
+			}
+		}
+		response_map.put("success", true);
+	}
+	else if (operation == "REJOIN")
+	{
+		if (contact == null)
+		{
+			response_map.put("can_rejoin", false);
+		}
+		else
+		{
+			contact_id = contact.get("id");
+			// Update consent
+			cu = map();
+			cu.put("WhatsApp_Marketing_Consent", "Granted");
+			cu.put("Posterita_Loyalty_Enrolled", true);
+			zoho.crm.update("Contacts", contact_id, cu);
+
+			lp_list = zoho.crm.searchRecords("Loyalty_Points","(Contact:equals:" + contact_id + ")");
+			if (lp_list.isEmpty() == false)
+			{
+				lp = lp_list.get(0);
+				lp_id = lp.get("id");
+				lp_update = map();
+				lp_update.put("Status","Active");
+				lp_update.put("Last_Updated_On", zoho.currenttime);
+				zoho.crm.update("Loyalty_Points", lp_id, lp_update);
+				response_map.put("can_rejoin", true);
+			}
+			else
+			{
+				response_map.put("can_rejoin", false);
+			}
+		}
+	}
+	else if (operation == "ADD_POINTS")
+	{
+		if (contact != null)
+		{
+			contact_id = contact.get("id");
+			lp_list = zoho.crm.searchRecords("Loyalty_Points","(Contact:equals:" + contact_id + ")");
+			if (lp_list.isEmpty() == false)
+			{
+				lp = lp_list.get(0);
+				lp_id = lp.get("id");
+
+				points_change = ifnull(param.get("points_change"),0);
+				reason = ifnull(param.get("reason"),"Other");
+				desc = ifnull(param.get("description"),"");
+
+				trans_data = map();
+				trans_data.put("Contact", contact_id);
+				trans_data.put("Loyalty_Points", lp_id);
+				trans_data.put("Points_Change", points_change);
+				trans_data.put("Reason", reason);
+				trans_data.put("Channel", param.get("channel"));
+				trans_data.put("Description", desc);
+				trans_create = zoho.crm.create("Loyalty_Transactions", trans_data);
+
+				// Recalculate total
+				all_trans = zoho.crm.searchRecords("Loyalty_Transactions","(Loyalty_Points:equals:" + lp_id + ")");
+				total = 0;
+				for each  t in all_trans
+				{
+					pts = ifnull(t.get("Points_Change"),0);
+					if (pts != null)
+					{
+						total = total + pts;
+					}
+				}
+
+				lp_update = map();
+				lp_update.put("Total_Points", total);
+				lp_update.put("Last_Updated_On", zoho.currenttime);
+				zoho.crm.update("Loyalty_Points", lp_id, lp_update);
+
+				response_map.put("points", total);
+			}
+		}
+	}
+	else
+	{
+		response_map.put("error", "UNKNOWN_OPERATION");
+	}
+}
+catch (ex)
+{
+	response_map.put("exception", ex.toString());
+}
+
+return response_map;
+

@@ -1,0 +1,486 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.AboutActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="About"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:titleTextColor="?android:attr/textColorPrimary" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <TableLayout
+        android:id="@+id/table_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp">
+
+        <TableRow
+           android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_account_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Business Name: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_account_name_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="test Account"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_currency_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Currency: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_currency_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="currency"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_store_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Store Name: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_store_name_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="store"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_terminal_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Terminal Name: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_terminal_name_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="terminal"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_version_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Version Code: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_version_code_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="version code"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_version_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Version Name: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_version_name_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="version name"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+        <TableRow
+            android:padding="5dp">
+            <TextView
+                android:id="@+id/text_view_last_sync_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Last Sync: "
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_view_last_sync_date_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:text="last sync"
+                android:textSize="@dimen/_14sdp"
+                android:layout_marginLeft="@dimen/_5ssp"
+                android:layout_marginRight="@dimen/_5ssp"
+                />
+        </TableRow>
+
+
+
+    </TableLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+
+<!--
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.AboutActivity">
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_back_cart"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:layout_marginStart="@dimen/_15sdp"/>
+
+    <TextView
+        android:id="@+id/view_text_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="About"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:fontFamily="@font/lexend_medium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/_12sdp"/>
+
+    <TextView
+        android:id="@+id/text_view_account_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Business Name: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/_50sdp"
+        android:layout_marginLeft="@dimen/_5ssp"
+        android:layout_marginRight="@dimen/_5ssp"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginEnd="@dimen/_5sdp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/text_view_account_name_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="test Account"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        android:layout_marginTop="@dimen/_50sdp"
+        android:layout_marginLeft="@dimen/_5ssp"
+        android:layout_marginRight="@dimen/_5ssp"
+        app:layout_constraintStart_toEndOf="@id/text_view_account_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <TextView
+        android:id="@+id/text_view_currency_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Currency: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_account_name_value" />
+
+    <TextView
+        android:id="@+id/text_view_currency_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="currency"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_currency_name"
+        app:layout_constraintTop_toBottomOf="@id/text_view_account_name_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+    <TextView
+        android:id="@+id/text_view_store_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Store Name: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_currency_value" />
+
+    <TextView
+        android:id="@+id/text_view_store_name_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="store"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_store_name"
+        app:layout_constraintTop_toBottomOf="@id/text_view_currency_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/text_view_terminal_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Terminal Name: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/_20ssp"
+        android:layout_marginLeft="@dimen/_5ssp"
+        android:layout_marginRight="@dimen/_5ssp"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginEnd="@dimen/_5sdp"
+        app:layout_constraintTop_toBottomOf="@id/text_view_store_name_value"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/text_view_terminal_name_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="terminal"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_terminal_name"
+        app:layout_constraintTop_toBottomOf="@id/text_view_store_name_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/text_view_version_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Version Code: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_terminal_name_value" />
+
+    <TextView
+        android:id="@+id/text_view_version_code_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="version code"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_version_code"
+        app:layout_constraintTop_toBottomOf="@id/text_view_terminal_name_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+    <TextView
+        android:id="@+id/text_view_version_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Version Name: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_version_code_value" />
+
+    <TextView
+        android:id="@+id/text_view_version_name_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="version name"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_version_name"
+        app:layout_constraintTop_toBottomOf="@id/text_view_version_code_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/text_view_last_sync_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="24dp"
+        android:text="Last Sync: "
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_version_name_value" />
+
+    <TextView
+        android:id="@+id/text_view_last_sync_date_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="24dp"
+        android:text="last sync"
+        android:textSize="@dimen/_14sdp"
+        android:singleLine="false"
+        android:ellipsize="none"
+        app:layout_constraintStart_toEndOf="@id/text_view_last_sync_date"
+        app:layout_constraintTop_toBottomOf="@id/text_view_version_name_value"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+-->

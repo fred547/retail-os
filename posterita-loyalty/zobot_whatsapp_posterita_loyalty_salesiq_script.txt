@@ -1,0 +1,133 @@
+// Paste this into Zoho SalesIQ → Settings → Bots → Zobots → Add → SalesIQ Scripts → Script editor.
+// This version follows the standard "response / message / operation" pattern like the template you shared.
+// It wires to the same CRM function `posterita_loyalty_handler` using a connection named `loyalty_connection`.
+
+response = Map();
+msg = ifnull(message.get("text"),"");
+
+if(operation.equals("chat"))
+{
+	// Normalize
+	msgLower = msg.toLowerCase();
+
+	// If user sends POINTS
+		if(!msg.isNull() && msgLower.equalsIgnoreCase("points"))
+	{
+		phone = ifnull(message.get("phone"),"");
+
+		payload = Map();
+		payload.put("operation","GET_POINTS");
+		payload.put("phone",phone);
+
+		try
+		{
+			resp = invokeurl
+			[
+				url: "https://www.zohoapis.com/crm/v2/functions/posterita_loyalty_handler/actions/execute"
+				type: POST
+				parameters: payload
+				connection: "loyalty_connection"
+			];
+			points = ifnull(resp.get("points"),0);
+			status = ifnull(resp.get("status"),"Active");
+			response.put("action","reply");
+			response.put("replies",{"Your current Posterita Loyalty balance is " + points + " points. (Status: " + status + ")"});
+			return response;
+		}
+		catch(e)
+		{
+			response.put("action","reply");
+			response.put("replies",{"Sorry, I couldn't fetch your points right now. Please try again later."});
+			return response;
+		}
+	}
+
+	// If user sends SURVEY
+	if(!msg.isNull() && msgLower.equalsIgnoreCase("survey"))
+	{
+		survey_link = "https://example.com/posterita-loyalty-survey"; // replace with your real survey URL
+		response.put("action","reply");
+		response.put("replies",{"You can earn points by completing this survey:\n" + survey_link + "\n\nOnce you complete it, your points will be updated in your account."});
+		return response;
+	}
+
+	// If user sends STOP (opt out)
+	if(!msg.isNull() && msgLower.equalsIgnoreCase("stop"))
+	{
+		phone = ifnull(message.get("phone"),"");
+
+		payload = Map();
+		payload.put("operation","OPT_OUT");
+		payload.put("phone",phone);
+
+		try
+		{
+			resp = invokeurl
+			[
+				url: "https://www.zohoapis.com/crm/v2/functions/posterita_loyalty_handler/actions/execute"
+				type: POST
+				parameters: payload
+				connection: "loyalty_connection"
+			];
+			response.put("action","reply");
+			response.put("replies",{"You’ve been opted out of Posterita Loyalty and promotional WhatsApp messages. If you want to rejoin later, send JOIN."});
+			return response;
+		}
+		catch(e)
+		{
+			response.put("action","reply");
+			response.put("replies",{"Sorry, something went wrong while processing your opt-out request. Please try again later."});
+			return response;
+		}
+	}
+
+	// If user sends JOIN or I AGREE (consent + enroll)
+	if(!msg.isNull() && (msgLower.equalsIgnoreCase("join") || msgLower.equalsIgnoreCase("i agree")))
+	{
+		phone = ifnull(message.get("phone"),"");
+
+		enroll_payload = Map();
+		enroll_payload.put("operation","ENROLL");
+		// Name/email are optional; function will handle nulls
+		enroll_payload.put("phone",phone);
+		enroll_payload.put("channel","WhatsApp");
+
+		try
+		{
+			enroll_response = invokeurl
+			[
+				url: "https://www.zohoapis.com/crm/v2/functions/posterita_loyalty_handler/actions/execute"
+				type: POST
+				parameters: enroll_payload
+				connection: "loyalty_connection"
+			];
+			points = ifnull(enroll_response.get("points"),0);
+			response.put("action","reply");
+			response.put("replies",{
+				"You're enrolled! We've created your Posterita Loyalty account and credited your registration points.\n\nYour current balance is " + points + " points.\nWhen you reach 1000 points, you can contact support to receive a voucher redeemable at participating stores.",
+				"You can send these commands anytime:\n• POINTS – check your current points\n• SURVEY – get a points‑earning survey link\n• STOP – opt out of all programs and messages\n• JOIN – rejoin if you have opted out before."
+			});
+			return response;
+		}
+		catch(e)
+		{
+			response.put("action","reply");
+			response.put("replies",{"Something went wrong while setting up your loyalty account. Please try again later or contact support."});
+			return response;
+		}
+	}
+
+	// Default / first message: explain program and ask for consent
+	if(!msg.isNull())
+	{
+		response.put("action","reply");
+		response.put("replies",{
+			"Welcome to Posterita! This WhatsApp number is connected to the Posterita Loyalty App.\n\nBy joining, you can earn points from promotions, surveys, and registration, and redeem vouchers at participating stores.",
+			"We will store your details in our system (Zoho CRM) and may send you WhatsApp messages about your points, rewards, and offers.",
+			"If you agree to join Posterita Loyalty and receive WhatsApp messages, reply I AGREE or JOIN.\n\nYou can also send:\n• POINTS – check your current points\n• SURVEY – get a points‑earning survey link\n• STOP – opt out of all programs and messages"
+		});
+		return response;
+	}
+}
+
+return response;

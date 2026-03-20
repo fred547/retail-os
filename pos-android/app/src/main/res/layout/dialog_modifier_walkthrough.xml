@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_bg"
+    android:padding="20dp"
+    android:minWidth="320dp">
+
+    <!-- Product name -->
+    <TextView
+        android:id="@+id/txt_product_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Group title -->
+    <TextView
+        android:id="@+id/txt_group_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Step indicator -->
+    <TextView
+        android:id="@+id/txt_step_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#999999"
+        android:gravity="center"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Options grid (button-style modifier tiles) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:maxHeight="360dp">
+
+        <GridLayout
+            android:id="@+id/grid_options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:alignmentMode="alignBounds"
+            android:useDefaultMargins="false" />
+    </ScrollView>
+
+    <!-- Running total of selected modifier extras -->
+    <TextView
+        android:id="@+id/txt_extra_total"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="#1976D2"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
+
+    <!-- Buttons row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/button_skip"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:text="SKIP"
+            android:textColor="#999999"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/stroke_btn" />
+
+        <TextView
+            android:id="@+id/button_next"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="2"
+            android:layout_marginStart="4dp"
+            android:gravity="center"
+            android:text="NEXT"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/btn_rounded" />
+    </LinearLayout>
+</LinearLayout>

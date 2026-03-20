@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="product_grid_item_width">160dp</dimen>
+    <dimen name="discount_code_margin_end">40dp</dimen>
+</resources>

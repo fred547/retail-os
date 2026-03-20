@@ -1,0 +1,101 @@
+// =============================================================================
+// ZOHO CREATOR - LIST ALL REPORTS (DEBUG)
+// =============================================================================
+//
+// PURPOSE: Call Creator's "Get Reports" meta API and return the list of
+// report display_name and link_name for your app. Use this to find the exact
+// report link name (e.g. all_product_catalogues) for use in getRecords.
+//
+// PREREQUISITES:
+//   - Connection "zoho_connector" with OAuth scope that includes
+//     ZohoCreator.meta.application.READ (in addition to records read).
+//   - If the connection only has record scope, the meta API may return 403.
+//     Then: get a temporary token from https://api-console.zoho.com (Creator
+//     scope) or Creator Setup → OAuth and use the manual-token block below.
+//
+// USAGE: Run this in Zoho Flow / Creator workflow / or CRM function that
+// supports invokeurl and the same connection. Update app_owner and app_link_name.
+//
+// BASE URL: Use zohoapis.com (US DC) or zohoapis.eu (EU DC) as per your account.
+// =============================================================================
+
+app_owner     = "fred_tamakgroup";
+app_link_name = "product-catalogue";
+connection_name = "zoho_connector";
+
+// Creator Get Reports endpoint (US DC; use https://www.zohoapis.eu for EU)
+base_url = "https://www.zohoapis.com";
+reports_url = base_url + "/creator/v2/meta/" + app_owner + "/" + app_link_name + "/reports";
+
+reports_response = Map();
+reports_list = list();
+
+try
+{
+	// Option A: Use connection (connection must have scope ZohoCreator.meta.application.READ)
+	api_resp = invokeurl
+	[
+		url        : reports_url
+		type       : GET
+		connection : connection_name
+	];
+
+	info "Creator Meta API raw response: " + api_resp.toString();
+
+	if(api_resp.get("code") != null && api_resp.get("code") == 3000)
+	{
+		reports = api_resp.get("reports");
+		if(reports != null)
+		{
+			for each rec in reports
+			{
+				display_name = rec.get("display_name");
+				link_name   = rec.get("link_name");
+				report_type = rec.get("type");
+				reports_list.add("display_name: " + display_name + " | link_name: " + link_name + " | type: " + report_type);
+				info "Report -> " + display_name + " | link_name: " + link_name;
+			}
+		}
+	}
+	else
+	{
+		reports_list.add("API error: code=" + api_resp.get("code") + " message=" + api_resp.get("message"));
+	}
+}
+catch(e)
+{
+	info "Exception: " + e.toString();
+	reports_list.add("Exception: " + e.toString());
+	reports_list.add("Tip: If connection lacks ZohoCreator.meta.application.READ, add that scope or use manual token.");
+}
+
+// Build response so you can see the list (e.g. in Flow output or debug reply)
+response = Map();
+response.put("action", "reply");
+response.put("replies", {"Debug: List of Creator reports (link_name is what you use in getRecords):"});
+response.put("reports_found", reports_list);
+response.put("raw_count", reports_list.size());
+
+return response;
+
+
+// =============================================================================
+// OPTION B: Manual token (one-time debug)
+// If Option A fails with 403/401, get a token from:
+//   https://api-console.zoho.com → Creator → Generate token (scope: meta read),
+//   or Creator → Setup → Developer Space → OAuth.
+// Then uncomment the block below and comment out Option A (invokeurl with connection).
+// =============================================================================
+/*
+ACCESS_TOKEN = "1000.xxxx...your_token_here";
+headers = Map();
+headers.put("Authorization", "Zoho-oauthtoken " + ACCESS_TOKEN);
+api_resp = invokeurl
+[
+	url     : reports_url
+	type    : GET
+	headers : headers
+];
+info "Creator Meta API raw response: " + api_resp.toString();
+// ... then same parsing as above (code 3000, reports list) ...
+*/

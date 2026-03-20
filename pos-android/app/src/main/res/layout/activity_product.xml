@@ -1,0 +1,434 @@
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="HardcodedText">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/posterita_bg"
+        tools:context=".Activities.ProductActivity">
+
+        <!-- Top bar: menu + search field + scan -->
+        <LinearLayout
+            android:id="@+id/layout_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/white"
+            android:elevation="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Drawer menu icon -->
+            <ImageView
+                android:id="@+id/drawer"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
+                android:contentDescription="Open menu"
+                android:src="@drawable/ic_drawer"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/posterita_ink" />
+
+            <!-- Search bar -->
+            <LinearLayout
+                android:id="@+id/layout_search_bar"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_search_bar"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_search"
+                    android:contentDescription="Search"
+                    app:tint="@color/posterita_muted" />
+
+                <TextView
+                    android:id="@+id/text_cart_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="Search products..."
+                    style="@style/TextAppearance.Posterita.Body.Muted" />
+            </LinearLayout>
+
+            <!-- Hidden for binding compatibility -->
+            <TextView
+                android:id="@+id/text_cart_total"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Scan button -->
+            <ImageView
+                android:id="@+id/button_scan"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_barcode_scan"
+                android:contentDescription="Scan barcode"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/posterita_ink" />
+        </LinearLayout>
+
+        <!-- Hidden separator (binding compat) -->
+        <View
+            android:id="@+id/separator_top_bar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Last product added banner -->
+        <LinearLayout
+            android:id="@+id/layout_last_product"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/posterita_primary_light"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:id="@+id/image_last_product"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="Last added product" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="10dp">
+
+                <TextView
+                    android:id="@+id/text_last_product_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Caption"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/text_last_product_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Posterita.Micro"
+                    android:textColor="@color/posterita_primary" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/button_undo"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="UNDO"
+                android:textColor="@color/posterita_error"
+                style="@style/TextAppearance.Posterita.Micro"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp" />
+        </LinearLayout>
+
+        <!-- Hidden views kept for binding compatibility -->
+        <ImageView
+            android:id="@+id/search_customer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/button_more"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <EditText
+            android:id="@+id/textfield_search_product"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:importantForAutofill="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_search_product"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinner_select_product_category"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_customer_name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Order type toggle (restaurant mode only) -->
+        <LinearLayout
+            android:id="@+id/layout_order_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:background="@color/white"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/layout_top_bar">
+
+            <TextView
+                android:id="@+id/btn_dine_in"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="3dp"
+                android:gravity="center"
+                android:text="DINE IN"
+                style="@style/TextAppearance.Posterita.Caption"
+                android:textColor="@color/white"
+                android:background="@drawable/btn_rounded" />
+
+            <TextView
+                android:id="@+id/btn_take_away"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:text="TAKE AWAY"
+                style="@style/TextAppearance.Posterita.Caption"
+                android:textColor="@color/posterita_ink"
+                android:background="@drawable/stroke_btn" />
+        </LinearLayout>
+
+        <!-- Category chips -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="6dp"
+            android:clipToPadding="false"
+            android:background="@color/posterita_bg"
+            app:layout_constraintTop_toBottomOf="@+id/layout_order_type" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider_categories"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/posterita_line"
+            app:layout_constraintTop_toBottomOf="@id/recycler_view_categories" />
+
+        <!-- Loading spinner -->
+        <ProgressBar
+            android:id="@+id/progress_loading_products"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:indeterminateTint="@color/posterita_primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_categories"
+            app:layout_constraintBottom_toTopOf="@+id/layout_bottom_buttons" />
+
+        <!-- Empty state -->
+        <include
+            layout="@layout/empty_state"
+            android:id="@+id/empty_state_products"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/divider_categories"
+            app:layout_constraintBottom_toTopOf="@+id/layout_bottom_buttons" />
+
+        <!-- Product grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_search_product_result"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginTop="4dp"
+            android:paddingBottom="4dp"
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="3"
+            app:layout_constraintTop_toBottomOf="@id/divider_categories"
+            app:layout_constraintBottom_toTopOf="@+id/layout_bottom_buttons" />
+
+        <!-- Bottom bar — MORE + MY CART -->
+        <LinearLayout
+            android:id="@+id/layout_bottom_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="12dp"
+            android:background="@color/white"
+            android:elevation="4dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- MORE button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_more_bottom"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="MORE" />
+
+            <!-- MY CART button -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="3"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_my_cart"
+                    style="@style/Widget.Posterita.Button.Pay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:icon="@drawable/ic_shopping_cart"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/white"
+                    android:text="MY CART" />
+
+                <!-- Hidden text views for binding compatibility -->
+                <TextView
+                    android:id="@+id/button_my_cart_text"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/button_my_cart_arrow"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/icon_my_cart"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <!-- Quantity badge -->
+                <TextView
+                    android:id="@+id/cart_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:translationX="6dp"
+                    android:translationY="-6dp"
+                    android:minWidth="22dp"
+                    android:minHeight="22dp"
+                    android:gravity="center"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:background="@drawable/badge_background_red"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_extrabold"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Hidden buttons for binding compatibility -->
+        <TextView
+            android:id="@+id/button_clear_cart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/button_search_product_bottom"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/button_add_customer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/nav"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/white"
+        android:fitsSystemWindows="true">
+
+        <include layout="@layout/nav_drawer_content" />
+    </FrameLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>

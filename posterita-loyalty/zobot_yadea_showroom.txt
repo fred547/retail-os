@@ -1,0 +1,1220 @@
+// =============================================================================
+// POSTERITA LOYALTY - WHATSAPP ZOBOT SCRIPT
+// =============================================================================
+//
+// PURPOSE:
+//   This Zobot is dedicated exclusively to the Posterita Loyalty WhatsApp
+//   programme. It is designed to run on a WhatsApp channel connected to
+//   Zoho SalesIQ and should NOT be used or adapted for any other channel
+//   (web chat, Facebook, etc.).
+//
+// CHANNEL:  WhatsApp only
+// PLATFORM: Zoho SalesIQ - SalesIQ Scripts (Deluge)
+//
+// WHAT IT DOES:
+//   - Enrolls new WhatsApp users into the Posterita Loyalty programme
+//   - Creates/updates a Contact in Zoho CRM with loyalty and consent fields
+//   - Captures explicit marketing consent (WhatsApp_Marketing_Consent)
+//   - Allows members to check points, take surveys, and opt out of marketing
+//   - Looks up existing members by WhatsApp phone number
+//
+// PREREQUISITES:
+//   1. Connection "loyalty_connection" in:
+//      SalesIQ -> Settings -> Developer -> Connections
+//      (Type: Zoho OAuth, Scope: ZohoCRM.modules.ALL, ZohoCRM.functions.ALL)
+//
+//   2. CRM function "posterita_loyalty_handler" deployed in:
+//      Zoho CRM -> Developer Space -> Functions
+//
+//   3. Custom fields on the CRM Contacts module:
+//      - Posterita_Loyalty_Enrolled   (Checkbox)
+//      - WhatsApp_Marketing_Consent   (Picklist: None / Granted / Denied / Withdrawn)
+//      - Consent_Timestamp            (Date-Time)
+//      - Consent_Source               (Single Line Text)
+//      - Loyalty_Points               (Number)
+//
+//   NOTE: Field API names must match exactly what is configured in
+//   CRM -> Settings -> Modules -> Contacts -> Fields
+//
+// LAST UPDATED: 2026-03-05
+//
+// *** BUTTON LABEL RULE ***
+//   All options inside  response.put("input", {"type":"select","options":{...}})
+//   MUST be 20 characters or fewer.  WhatsApp rejects longer button labels and
+//   the button simply does not appear.  Count carefully before adding new ones.
+//
+// *** MESSAGE GROUPING RULE ***
+//   Whenever possible, group related information into a single reply instead of
+//   sending many short messages one by one.  This keeps the WhatsApp experience
+//   cleaner and avoids bothering the customer with extra notifications.
+//
+// *** MESSAGE READABILITY RULE ***
+//   Format customer-facing messages for quick scanning on a phone screen:
+//   - Prefer short section headers
+//   - Put each location or option on its own line
+//   - Avoid dense inline separators like "|" when a line break is clearer
+//   - Keep each reply focused on one topic
+//   - Light emojis are allowed only when they improve readability
+//
+// *** COMPACT REPLY RULE ***
+//   Reply as compactly as possible. Prefer fewer WhatsApp bubbles by grouping
+//   closely related details together, as long as the message stays easy to read.
+//
+// *** HEADER AND LIST RULE ***
+//   When a message contains a header, put the header on its own line.
+//   When a message contains a numbered list, each number must start its own line.
+//
+// *** SAME BUBBLE RULE ***
+//   Do not create a new reply bubble if a simple newline will do.
+//   Whenever possible, use "\n" to format content inside the same message.
+// =============================================================================
+
+
+response = Map();
+msg = message.get("text");
+
+// =============================================================================
+// CHANNEL GUARD  -  this bot is for WhatsApp only.
+// If the conversation is coming from any other channel (website, Facebook, etc.)
+// return an empty response so the Zobot stays completely silent and normal
+// SalesIQ routing takes over.
+// =============================================================================
+channel = ifnull(visitor.get("channel"), "");
+if(!channel.equalsIgnoreCase("whatsapp"))
+{
+	return response;
+}
+
+// =============================================================================
+// CATALOGUE CONFIG
+// File metadata sourced from the codeless bot export:
+//   action_data → rendering_config → replies → _url
+//
+// To update when a new catalogue is published:
+//   1. Upload the new PDF in Zobot Builder.
+//   2. Re-export the bot JSON and copy the new _url block values below.
+//
+// FLOW TEST CONFIG
+//   Temporary Meta API test for opening a WhatsApp Flow from the catalogue menu.
+//   Rotate the access token after testing.
+// =============================================================================
+SALESIQ_PORTAL             = "tamakgroup";
+META_PHONE_NUMBER_ID       = "976564772214166";
+META_FLOW_ID               = "1602263011097500";
+META_FLOW_CTA              = "Open";
+META_ACCESS_TOKEN          = "EAAR0ldcHGSoBQ2JgqfdjwjLTaglIkEDJ9CPbNZCcp5K0AlBD3vUZB79z8QcOI6s7EUmjzUCuuJZBcQJHnteYCfaDCqWLcEJjVjqnw5AyZBX5DPrS0iR4WdXyZBB4eeTulFXhYIzH9ToaMuEGkmCsZAtqCXBTQZCcDZCGyTA7wPJoL2s6mlTVZBclYfqjpa8x9agZDZD";
+CATALOGUE_FILE_ID          = "1772787286157";
+CATALOGUE_FILE_PATH        = "/bots/1100548000000035079/files/1772787286157";
+CATALOGUE_FILE_NAME        = "Yadea Catalogue 2026 Q1.pdf";
+CATALOGUE_FILE_SIZE        = "6694588";
+CATALOGUE_FILE_CONTENT_TYPE = "application/pdf";
+
+// On WhatsApp, the visitor's phone number is in the visitor object, not the message object.
+// visitor.get("phone") returns the WhatsApp number that initiated the conversation.
+phone = visitor.get("phone");
+if(phone == null) { phone = ""; }
+wa_name = visitor.get("name");
+if(wa_name == null) { wa_name = ""; }
+phone_encoded = phone.replaceAll("[+]", "%2B");
+phone_plain = phone;
+if(phone.startsWith("+")) { phone_plain = phone.substring(1); }
+phone_plain_encoded = phone_plain.replaceAll("[+]", "%2B");
+
+// =============================================================================
+// NAME: [new name]  -  rename handler
+// User sends "NAME: John Smith" after tapping Rename.
+// Using action:"context" was found to hand off to a different bot on WhatsApp,
+// so we use a simple prefix instead.
+// =============================================================================
+if(msg != null && msg.toLowerCase().startsWith("name:"))
+{
+	fb_name = msg.substring(msg.indexOf(":") + 1).trim();
+	fb_name = fb_name.replaceAll("\"", "'");
+
+	if(fb_name.equals(""))
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Name cannot be empty. Send: NAME: Your Name"});
+		return response;
+	}
+
+	fb_cid = "";
+	fb_error = "";
+	try
+	{
+		fb_s = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")&fields=id"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		fb_d = fb_s.get("data");
+		if(fb_d != null && fb_d.size() > 0) { fb_cid = fb_d.get(0).get("id"); }
+	}
+	catch(e_fb){}
+
+	if(!fb_cid.equals(""))
+	{
+		fb_hdr = Map();
+		fb_hdr.put("Content-Type", "application/json");
+		fb_json = "{\"data\":[{\"Last_Name\":\"" + fb_name + "\"}]}";
+		fb_put = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/" + fb_cid
+			type: PUT
+			parameters: fb_json
+			headers: fb_hdr
+			connection :"loyalty_connection"
+		];
+		fb_ok = false;
+		fb_data = fb_put.get("data");
+		if(fb_data != null && fb_data.size() > 0)
+		{
+			if(ifnull(fb_data.get(0).get("code"), "").equals("SUCCESS")) { fb_ok = true; }
+			else { fb_error = ifnull(fb_data.get(0).get("message"), fb_put.toString()); }
+		}
+		if(fb_ok)
+		{
+			response.put("action", "reply");
+			response.put("replies", {"Your name has been updated to: " + fb_name});
+			response.put("input", {"type":"select","options":{
+				"1. Update Details",
+				"2. Opt Out",
+				"3. Check Points",
+				"4. Main Menu"
+			}});
+		}
+		else
+		{
+			response.put("action", "reply");
+			response.put("replies", {"Could not update name. Error: " + fb_error});
+			response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+		}
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Could not find your account. Please contact support."});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// 1. CHAT WITH AGENT
+// Forward to a human agent using action "forward".
+// Hidden trigger keywords are supported anywhere in the user's message, e.g.
+// help, support, human, agent, representative.
+// To forward to a specific department, replace "YOUR_DEPARTMENT_ID" with the
+// numeric department ID from:
+//   SalesIQ -> Settings -> Departments -> (open department) -> the ID in the URL
+// To forward to any available agent (no specific department), remove the
+// department line entirely.
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("1. Chat with Agent") || msg.equalsIgnoreCase("5. Chat with Agent") || msg.equalsIgnoreCase("6. Chat with Agent") || msg.containsIgnoreCase("help") || msg.containsIgnoreCase("support") || msg.containsIgnoreCase("human") || msg.containsIgnoreCase("agent") || msg.containsIgnoreCase("representative") || msg.containsIgnoreCase("live agent") || msg.containsIgnoreCase("talk to agent")))
+{
+	// Transfers the conversation to a live operator.
+	// REQUIREMENT: at least one operator must be online in Zoho SalesIQ
+	// for the WhatsApp channel, otherwise the transfer queues silently.
+	// To route to a specific department, uncomment the line below and set
+	// the numeric department ID (SalesIQ → Settings → Departments → open → URL).
+	response.put("action", "forward");
+	// response.put("department", "YOUR_DEPARTMENT_ID");
+	response.put("replies", {"One moment — connecting you to a team member now. Please hold on."});
+	return response;
+}
+
+// =============================================================================
+// 2. STORE DETAILS
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("1. Store Details") || msg.equalsIgnoreCase("2. Store Details")))
+{
+	response.put("action", "reply");
+	response.put("replies", {
+		"📍 Showrooms\n1. Port Louis - Royal Road (Former Bata Shop)\n2. Tribeca Mall - Food Court Alley, opposite the pharmacy",
+		"🛠 Service Centre\nCoromandel - 2, Royal Road (Tamak Group Office)"
+	});
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// 4. POSTERITA LOYALTY  (also re-entered by "Cancel" from the opt-out screen)
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("3. Posterita Loyalty") || msg.equalsIgnoreCase("2. Posterita Loyalty") || msg.equalsIgnoreCase("4. Posterita Loyalty") || msg.equalsIgnoreCase("Cancel")))
+{
+	if(phone.equals(""))
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Could not detect your WhatsApp number. Please contact support."});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+		return response;
+	}
+
+	found_contact = null;
+	try
+	{
+		search_resp = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")&fields=id,Full_Name,Phone,Mobile,WhatsApp_Marketing_Consent"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		search_data = search_resp.get("data");
+		if(search_data != null && search_data.size() > 0)
+		{
+			found_contact = search_data.get(0);
+		}
+	}
+	catch(e_search)
+	{
+	}
+
+	if(found_contact != null)
+	{
+		stored_name = ifnull(found_contact.get("Full_Name"), "");
+		consent_status = ifnull(found_contact.get("WhatsApp_Marketing_Consent"), "");
+		response.put("action", "reply");
+		response.put("replies", {"Welcome back, " + stored_name + "!\nMobile: " + phone});
+		if(consent_status.equals("Withdrawn") || consent_status.equals("Denied"))
+		{
+			response.put("input", {"type":"select","options":{
+				"1. Update Details",
+				"2. Enable Promos",
+				"3. Check Points",
+				"4. Main Menu"
+			}});
+		}
+		else
+		{
+			response.put("input", {"type":"select","options":{
+				"1. Update Details",
+				"2. Opt Out",
+				"3. Check Points",
+				"4. Main Menu"
+			}});
+		}
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {"You are not yet enrolled in the Posterita Loyalty Programme. What would you like to do?"});
+		response.put("input", {"type":"select","options":{"1. Join Loyalty","2. Go back"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// 1. JOIN LOYALTY  -  show detected name + phone, ask to confirm
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("1. Join Loyalty") || msg.equalsIgnoreCase("ENROLL")))
+{
+	if(phone.equals(""))
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Could not detect your WhatsApp number. Please contact support."});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+		return response;
+	}
+
+	display_name = wa_name;
+	if(display_name.equals("")) { display_name = "(not available)"; }
+
+	response.put("action", "reply");
+	response.put("replies", {"Here are the details we detected from your WhatsApp:\nName: " + display_name + "\nMobile: " + phone + "\n\nWould you like to register with these details?"});
+	response.put("input", {"type":"select","options":{"YES - Register me","NO - Go back","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// YES - Register me: create Contact directly via Zoho CRM REST API
+// Then explicitly ask for marketing consent as a separate step.
+// NOTE: no CRM function is used here - we call /crm/v2/Contacts directly.
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("YES - Register me") || msg.equalsIgnoreCase("YES")))
+{
+	enroll_name = wa_name;
+	if(enroll_name.equals("")) { enroll_name = "WhatsApp User"; }
+	enroll_name = enroll_name.replaceAll("\"", "'");
+
+	crm_hdr = Map();
+	crm_hdr.put("Content-Type", "application/json");
+
+	// Step 1: check if a Contact already exists for this phone number
+	existing_id = "";
+	try
+	{
+		ex_resp = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		ex_data = ex_resp.get("data");
+		if(ex_data != null && ex_data.size() > 0)
+		{
+			existing_id = ex_data.get(0).get("id");
+		}
+	}
+	catch(e_ex){}
+
+	saved_id = "";
+	reg_error = "";
+
+	try
+	{
+		if(existing_id.equals(""))
+		{
+			// Create a new Contact (includes Posterita_Loyalty_Enrolled so the tick is set immediately)
+			crm_json = "{\"data\":[{\"Last_Name\":\"" + enroll_name + "\",\"Phone\":\"" + phone + "\",\"Mobile\":\"" + phone + "\",\"Lead_Source\":\"Posterita WhatsApp\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			cr = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts"
+				type: POST
+				parameters: crm_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+			cr_d = cr.get("data");
+			if(cr_d != null && cr_d.size() > 0)
+			{
+				cr_first = cr_d.get(0);
+				cr_code = ifnull(cr_first.get("code"), "");
+				if(cr_code.equals("SUCCESS"))
+				{
+					saved_id = cr_first.get("details").get("id");
+				}
+				else
+				{
+					reg_error = "code=" + cr_code + " | msg=" + ifnull(cr_first.get("message"), "") + " | raw=" + cr.toString();
+				}
+			}
+			else
+			{
+				reg_error = "no data array in response | raw=" + cr.toString();
+			}
+		}
+		else
+		{
+			// Contact already exists - update fields and mark as enrolled
+			saved_id = existing_id;
+			upd_json = "{\"data\":[{\"Last_Name\":\"" + enroll_name + "\",\"Lead_Source\":\"Posterita WhatsApp\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/" + saved_id
+				type: PUT
+				parameters: upd_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+		}
+	}
+	catch(e_cr)
+	{
+		reg_error = e_cr.toString();
+	}
+
+	if(!saved_id.equals(""))
+	{
+		response.put("action", "reply");
+		response.put("replies", {"You are now enrolled in the Posterita Loyalty Programme! Your details have been saved.\n\nWe would like to send you exclusive offers and promotions via WhatsApp. Do you consent to receive marketing messages from Posterita Loyalty?"});
+		response.put("input", {"type":"select","options":{"Yes, I consent","No, thanks","3. Posterita Loyalty"}});
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {
+			"Sorry, we were unable to complete your registration. Please contact our support team for assistance."
+		});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// YES, I CONSENT  -  explicit marketing consent granted
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("Yes, I consent"))
+{
+	crm_hdr = Map();
+	crm_hdr.put("Content-Type", "application/json");
+
+	consent_cid = "";
+	consent_debug = "";
+	consent_ok = false;
+
+	try
+	{
+		// --- Step 1: ?word= full-text search (finds new records before criteria index catches up) ---
+		if(consent_cid.equals(""))
+		{
+			gw = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?word=" + phone_plain_encoded
+				type: GET
+				connection :"loyalty_connection"
+			];
+			gw_raw = gw.toString();
+			gw_d = gw.get("data");
+			if(gw_d != null && gw_d.size() > 0) { consent_cid = gw_d.get(0).get("id"); }
+		}
+
+		// --- Step 3: ?phone= dedicated phone search ---
+		if(consent_cid.equals(""))
+		{
+			gp = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?phone=" + phone_plain_encoded
+				type: GET
+				connection :"loyalty_connection"
+			];
+			gp_raw = gp.toString();
+			gp_d = gp.get("data");
+			if(gp_d != null && gp_d.size() > 0) { consent_cid = gp_d.get(0).get("id"); }
+		}
+
+		// --- Step 4: criteria Mobile equals plain number ---
+		if(consent_cid.equals(""))
+		{
+			gc = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_plain_encoded + ")"
+				type: GET
+				connection :"loyalty_connection"
+			];
+			gc_d = gc.get("data");
+			if(gc_d != null && gc_d.size() > 0) { consent_cid = gc_d.get(0).get("id"); }
+		}
+
+		// --- Step 5: list 20 most recent contacts, match phone client-side ---
+		// This bypasses the search index entirely and finds contacts created moments ago.
+		if(consent_cid.equals(""))
+		{
+			lr = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts?fields=id,Phone,Mobile&sort_by=Created_Time&sort_order=desc&per_page=20"
+				type: GET
+				connection :"loyalty_connection"
+			];
+			lr_d = lr.get("data");
+			if(lr_d != null)
+			{
+				for each lr_c in lr_d
+				{
+					if(consent_cid.equals(""))
+					{
+						lr_ph = ifnull(lr_c.get("Phone"), "");
+						lr_mo = ifnull(lr_c.get("Mobile"), "");
+						if(lr_ph.equals(phone) || lr_mo.equals(phone) || lr_ph.equals(phone_plain) || lr_mo.equals(phone_plain))
+						{
+							consent_cid = lr_c.get("id");
+						}
+					}
+				}
+			}
+		}
+
+		if(!consent_cid.equals(""))
+		{
+			consent_ts = zoho.currenttime.toString("yyyy-MM-dd") + "T" + zoho.currenttime.toString("HH:mm:ss");
+			g_json = "{\"data\":[{\"WhatsApp_Marketing_Consent\":\"Granted\",\"Consent_Source\":\"WhatsApp Bot\",\"Consent_Timestamp\":\"" + consent_ts + "\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			g_put = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/" + consent_cid
+				type: PUT
+				parameters: g_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+			g_data = g_put.get("data");
+			if(g_data != null && g_data.size() > 0)
+			{
+				g_first = g_data.get(0);
+				g_code = ifnull(g_first.get("code"), "");
+				if(g_code.equals("SUCCESS"))
+				{
+					consent_ok = true;
+				}
+				else
+				{
+					consent_debug = consent_debug + "found_id=" + consent_cid + " | PUT code=" + g_code + " | msg=" + ifnull(g_first.get("message"), "") + " | details=" + ifnull(g_first.get("details"), "").toString();
+				}
+			}
+			else
+			{
+				consent_debug = consent_debug + "found_id=" + consent_cid + " | PUT raw=" + g_put.toString();
+			}
+		}
+		else
+		{
+			consent_debug = consent_debug + "no contact found by word, phone, or Mobile | phone=[" + phone + "] plain=[" + phone_plain + "] | word_raw=" + ifnull(gw_raw,"n/a") + " | phone_raw=" + ifnull(gp_raw,"n/a");
+		}
+	}
+	catch(e_grant)
+	{
+		consent_debug = consent_debug + "exception=" + e_grant.toString();
+	}
+
+	if(consent_ok)
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Thank you! Your consent has been recorded. You will receive exclusive offers and promotions from Posterita Loyalty on WhatsApp."});
+		response.put("input", {"type":"select","options":{
+			"1. Update Details",
+			"2. Opt Out",
+			"3. Check Points",
+			"4. Main Menu"
+		}});
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {
+			"Sorry, we were unable to record your consent. Please contact our support team for assistance."
+		});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// NO, THANKS  -  user declines marketing consent at registration
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("No, thanks"))
+{
+	crm_hdr = Map();
+	crm_hdr.put("Content-Type", "application/json");
+
+	consent_cid = "";
+	consent_debug = "";
+	consent_ok = false;
+
+	try
+	{
+		// Step 1: ?word= full-text search (finds new records before criteria index catches up)
+		if(consent_cid.equals(""))
+		{
+			dw = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?word=" + phone_plain_encoded
+				type: GET
+				connection :"loyalty_connection"
+			];
+			dw_raw = dw.toString();
+			dw_d = dw.get("data");
+			if(dw_d != null && dw_d.size() > 0) { consent_cid = dw_d.get(0).get("id"); }
+		}
+
+		// Step 3: ?phone= dedicated phone search
+		if(consent_cid.equals(""))
+		{
+			dp = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?phone=" + phone_plain_encoded
+				type: GET
+				connection :"loyalty_connection"
+			];
+			dp_raw = dp.toString();
+			dp_d = dp.get("data");
+			if(dp_d != null && dp_d.size() > 0) { consent_cid = dp_d.get(0).get("id"); }
+		}
+
+		// Step 4: criteria Mobile equals plain number
+		if(consent_cid.equals(""))
+		{
+			dc = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_plain_encoded + ")"
+				type: GET
+				connection :"loyalty_connection"
+			];
+			dc_d = dc.get("data");
+			if(dc_d != null && dc_d.size() > 0) { consent_cid = dc_d.get(0).get("id"); }
+		}
+
+		// Step 5: list 20 most recent contacts, match phone client-side
+		if(consent_cid.equals(""))
+		{
+			dlr = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts?fields=id,Phone,Mobile&sort_by=Created_Time&sort_order=desc&per_page=20"
+				type: GET
+				connection :"loyalty_connection"
+			];
+			dlr_d = dlr.get("data");
+			if(dlr_d != null)
+			{
+				for each dlr_c in dlr_d
+				{
+					if(consent_cid.equals(""))
+					{
+						dlr_ph = ifnull(dlr_c.get("Phone"), "");
+						dlr_mo = ifnull(dlr_c.get("Mobile"), "");
+						if(dlr_ph.equals(phone) || dlr_mo.equals(phone) || dlr_ph.equals(phone_plain) || dlr_mo.equals(phone_plain))
+						{
+							consent_cid = dlr_c.get("id");
+						}
+					}
+				}
+			}
+		}
+
+		if(!consent_cid.equals(""))
+		{
+			consent_ts = zoho.currenttime.toString("yyyy-MM-dd") + "T" + zoho.currenttime.toString("HH:mm:ss");
+			d_json = "{\"data\":[{\"WhatsApp_Marketing_Consent\":\"Denied\",\"Consent_Source\":\"WhatsApp Bot\",\"Consent_Timestamp\":\"" + consent_ts + "\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			d_put = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/" + consent_cid
+				type: PUT
+				parameters: d_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+			d_data = d_put.get("data");
+			if(d_data != null && d_data.size() > 0)
+			{
+				d_first = d_data.get(0);
+				d_code = ifnull(d_first.get("code"), "");
+				if(d_code.equals("SUCCESS"))
+				{
+					consent_ok = true;
+				}
+				else
+				{
+					consent_debug = consent_debug + "found_id=" + consent_cid + " | PUT code=" + d_code + " | msg=" + ifnull(d_first.get("message"), "") + " | details=" + ifnull(d_first.get("details"), "").toString();
+				}
+			}
+			else
+			{
+				consent_debug = consent_debug + "found_id=" + consent_cid + " | PUT raw=" + d_put.toString();
+			}
+		}
+		else
+		{
+			consent_debug = consent_debug + "no contact found by word, phone, or Mobile | phone=[" + phone + "] plain=[" + phone_plain + "] | word_raw=" + ifnull(dw_raw,"n/a") + " | phone_raw=" + ifnull(dp_raw,"n/a");
+		}
+	}
+	catch(e_decline)
+	{
+		consent_debug = consent_debug + "exception=" + e_decline.toString();
+	}
+
+	if(consent_ok)
+	{
+		response.put("action", "reply");
+		response.put("replies", {"No problem! You are still enrolled in Posterita Loyalty and will not receive promotional messages."});
+		response.put("input", {"type":"select","options":{
+			"1. Update Details",
+			"2. Opt Out",
+			"3. Check Points",
+			"4. Main Menu"
+		}});
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {
+			"Sorry, we were unable to record your consent. Please contact our support team for assistance."
+		});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// 2. RE-ENABLE PROMOTIONS  -  opt back in to marketing (consent previously Withdrawn)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("2. Enable Promos"))
+{
+	crm_hdr = Map();
+	crm_hdr.put("Content-Type", "application/json");
+
+	reopt_cid = "";
+	reopt_debug = "";
+	reopt_ok = false;
+
+	try
+	{
+		// Contact is not new here so the standard criteria search should work
+		ro1 = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		ro1_d = ro1.get("data");
+		if(ro1_d != null && ro1_d.size() > 0) { reopt_cid = ro1_d.get(0).get("id"); }
+
+		if(reopt_cid.equals(""))
+		{
+			ro2 = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_plain_encoded + ")"
+				type: GET
+				connection :"loyalty_connection"
+			];
+			ro2_d = ro2.get("data");
+			if(ro2_d != null && ro2_d.size() > 0) { reopt_cid = ro2_d.get(0).get("id"); }
+		}
+
+		if(!reopt_cid.equals(""))
+		{
+			reopt_ts = zoho.currenttime.toString("yyyy-MM-dd") + "T" + zoho.currenttime.toString("HH:mm:ss");
+			ro_json = "{\"data\":[{\"WhatsApp_Marketing_Consent\":\"Granted\",\"Consent_Source\":\"WhatsApp Bot - Re-enabled\",\"Consent_Timestamp\":\"" + reopt_ts + "\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			ro_put = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/" + reopt_cid
+				type: PUT
+				parameters: ro_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+			ro_data = ro_put.get("data");
+			if(ro_data != null && ro_data.size() > 0)
+			{
+				ro_first = ro_data.get(0);
+				if(ifnull(ro_first.get("code"), "").equals("SUCCESS"))
+				{
+					reopt_ok = true;
+				}
+				else
+				{
+					reopt_debug = "PUT code=" + ifnull(ro_first.get("code"),"") + " | msg=" + ifnull(ro_first.get("message"),"");
+				}
+			}
+			else
+			{
+				reopt_debug = "PUT raw=" + ro_put.toString();
+			}
+		}
+		else
+		{
+			reopt_debug = "contact not found for phone=" + phone;
+		}
+	}
+	catch(e_reopt)
+	{
+		reopt_debug = "exception=" + e_reopt.toString();
+	}
+
+	if(reopt_ok)
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Welcome back! Promotional messages from Posterita Loyalty have been re-enabled. You will now receive exclusive offers and updates via WhatsApp."});
+		response.put("input", {"type":"select","options":{
+			"1. Update Details",
+			"2. Opt Out",
+			"3. Check Points",
+			"4. Main Menu"
+		}});
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {
+			"Sorry, we were unable to re-enable your promotions. Please contact our support team for assistance."
+		});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	}
+	return response;
+}
+
+// =============================================================================
+// NO - back to main menu
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("NO - Go back") || msg.equalsIgnoreCase("NO")))
+{
+	response.put("action", "reply");
+	response.put("replies", {"No problem! How can we help you today?"});
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// 2. GO BACK  (from not-enrolled menu)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("2. Go back"))
+{
+	response.put("action", "reply");
+	response.put("replies", {"How can we help you today?"});
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// 1. UPDATE DETAILS  -  name only (mobile cannot be changed)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("1. Update Details"))
+{
+	ud_crm_name = "";
+	try
+	{
+		ud_resp = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")&fields=id,Full_Name"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		ud_data = ud_resp.get("data");
+		if(ud_data != null && ud_data.size() > 0)
+		{
+			ud_crm_name = ifnull(ud_data.get(0).get("Full_Name"), "");
+		}
+	}
+	catch(e_ud){}
+
+	display_wa = wa_name;
+	if(display_wa.equals("")) { display_wa = "(not available)"; }
+
+	ud_display_name = ud_crm_name;
+	if(ud_display_name.equals("")) { ud_display_name = "(none)"; }
+
+	response.put("action", "reply");
+	response.put("replies", {"Name on file: " + ud_display_name + "\nWhatsApp name: " + display_wa + "\n\nNote: mobile number cannot be changed here."});
+
+	if(!wa_name.equals("") && !wa_name.equalsIgnoreCase(ud_crm_name))
+	{
+		response.put("input", {"type":"select","options":{
+			"Rename",
+			"Use WA Name",
+			"Cancel",
+			"3. Posterita Loyalty"
+		}});
+	}
+	else
+	{
+		response.put("input", {"type":"select","options":{
+			"Rename",
+			"Cancel",
+			"3. Posterita Loyalty"
+		}});
+	}
+	return response;
+}
+
+// =============================================================================
+// Rename  -  button from Update Details; opens a context to capture the new name
+// The user's typed response arrives with operation = "rename_name" (handled above)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("Rename"))
+{
+	response.put("action", "reply");
+	response.put("replies", {"What would you like your new name to be?\nSend: NAME: John Smith\n(To cancel, send: CANCEL)"});
+	return response;
+}
+
+// =============================================================================
+// Use WA Name  -  quick name update using the WhatsApp profile name (11 chars)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("Use WA Name"))
+{
+	new_name = wa_name;
+	new_name = new_name.replaceAll("\"", "'");
+
+	un2_cid = "";
+	try
+	{
+		un2_s = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")&fields=id"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		un2_d = un2_s.get("data");
+		if(un2_d != null && un2_d.size() > 0) { un2_cid = un2_d.get(0).get("id"); }
+	}
+	catch(e_un2){}
+
+	if(!un2_cid.equals(""))
+	{
+		un2_hdr = Map();
+		un2_hdr.put("Content-Type", "application/json");
+		un2_json = "{\"data\":[{\"Last_Name\":\"" + new_name + "\"}]}";
+		un2_put = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/" + un2_cid
+			type: PUT
+			parameters: un2_json
+			headers: un2_hdr
+			connection :"loyalty_connection"
+		];
+		un2_ok = false;
+		if(un2_put.get("data") != null && un2_put.get("data").size() > 0)
+		{
+			if(ifnull(un2_put.get("data").get(0).get("code"), "").equals("SUCCESS")) { un2_ok = true; }
+		}
+		if(un2_ok)
+		{
+			response.put("action", "reply");
+			response.put("replies", {"Your name has been updated to: " + new_name});
+		}
+		else
+		{
+			response.put("action", "reply");
+			response.put("replies", {"Could not update name. Please try again or contact support."});
+		}
+	}
+	else
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Could not find your account. Please contact support."});
+	}
+	response.put("input", {"type":"select","options":{
+		"1. Update Details",
+		"2. Opt Out",
+		"3. Check Points",
+		"4. Main Menu"
+	}});
+	return response;
+}
+
+// =============================================================================
+// Cancel  -  from Update Details screen (6 chars)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("Cancel"))
+{
+	response.put("action", "reply");
+	response.put("replies", {"No changes made."});
+	response.put("input", {"type":"select","options":{
+		"1. Update Details",
+		"2. Opt Out",
+		"3. Check Points",
+		"4. Main Menu"
+	}});
+	return response;
+}
+
+// =============================================================================
+// 2. OPT OUT  -  confirmation screen
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("2. Opt Out"))
+{
+	response.put("action", "reply");
+	response.put("replies", {"Are you sure you want to opt out of Posterita Loyalty marketing? You will no longer receive promotional messages."});
+	response.put("input", {"type":"select","options":{"Confirm - Opt Out","Cancel","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// CONFIRM OPT OUT  -  set WhatsApp_Marketing_Consent = Declined on CRM Contact
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("Confirm - Opt Out"))
+{
+	crm_hdr = Map();
+	crm_hdr.put("Content-Type", "application/json");
+
+	try
+	{
+		os = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		os_d = os.get("data");
+		if(os_d != null && os_d.size() > 0)
+		{
+			o_cid = os_d.get(0).get("id");
+			consent_ts = zoho.currenttime.toString("yyyy-MM-dd") + "T" + zoho.currenttime.toString("HH:mm:ss");
+			o_json = "{\"data\":[{\"WhatsApp_Marketing_Consent\":\"Withdrawn\",\"Consent_Source\":\"WhatsApp Bot - Opt Out\",\"Consent_Timestamp\":\"" + consent_ts + "\",\"Posterita_Loyalty_Enrolled\":true}]}";
+			invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v2/Contacts/" + o_cid
+				type: PUT
+				parameters: o_json
+				headers: crm_hdr
+				connection :"loyalty_connection"
+			];
+		}
+	}
+	catch(e_opt_update){}
+
+	response.put("action", "reply");
+	response.put("replies", {"You have been opted out of Posterita Loyalty marketing. You are still an active loyalty member and can continue to earn and redeem points."});
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// 3. CHECK POINTS  -  read Loyalty_Points field from CRM Contact
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("3. Check Points"))
+{
+	points = "0";
+	try
+	{
+		pts_resp = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Contacts/search?criteria=(Mobile:equals:" + phone_encoded + ")"
+			type: GET
+			connection :"loyalty_connection"
+		];
+		pts_data = pts_resp.get("data");
+		if(pts_data != null && pts_data.size() > 0)
+		{
+			pts_rec = pts_data.get(0);
+			pts_val = pts_rec.get("Loyalty_Points");
+			if(pts_val != null)
+			{
+				points = pts_val.toString();
+			}
+		}
+	}
+	catch(e_points)
+	{
+	}
+
+	response.put("action", "reply");
+	response.put("replies", {"Your Posterita Loyalty Points Balance: " + points});
+	response.put("input", {"type":"select","options":{
+		"1. Update Details",
+		"2. Opt Out",
+		"3. Check Points",
+		"4. Main Menu"
+	}});
+	return response;
+}
+
+// =============================================================================
+// 4. TAKE SURVEY  (coming soon)
+// =============================================================================
+if(msg != null && msg.equalsIgnoreCase("4. Take Survey"))
+{
+	response.put("action", "reply");
+	response.put("replies", {"Our survey feature is coming soon! Stay tuned to earn bonus points."});
+	response.put("input", {"type":"select","options":{
+		"1. Update Details",
+		"2. Opt Out",
+		"3. Check Points",
+		"4. Main Menu"
+	}});
+	return response;
+}
+
+// =============================================================================
+// 5. GET CATALOGUE
+// First tries a WhatsApp Flow test via Meta API.
+// If the Flow send fails, falls back to the current Deluge attachment method.
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("2. Yadea Catalogue") || msg.equalsIgnoreCase("3. Yadea Catalogue") || msg.equalsIgnoreCase("5. Yadea Catalogue") || msg.equalsIgnoreCase("3. Get Catalogue") || msg.equalsIgnoreCase("5. Get Catalogue") || (msg.toLowerCase().trim().contains("catalogue"))))
+{
+	flow_sent = false;
+	flow_debug = "";
+	try
+	{
+		wa_recipient = phone_plain.replaceAll("[^0-9]", "");
+		flow_headers = Map();
+		flow_headers.put("Authorization", "Bearer " + META_ACCESS_TOKEN);
+		flow_headers.put("Content-Type", "application/json");
+
+		flow_payload = "{\"messaging_product\":\"whatsapp\",\"recipient_type\":\"individual\",\"to\":\"" + wa_recipient + "\",\"type\":\"interactive\",\"interactive\":{\"type\":\"flow\",\"body\":{\"text\":\"Open the Yadea catalogue flow\"},\"action\":{\"name\":\"flow\",\"parameters\":{\"flow_message_version\":\"3\",\"flow_token\":\"yadea_catalogue_test\",\"flow_id\":\"" + META_FLOW_ID + "\",\"flow_cta\":\"" + META_FLOW_CTA + "\",\"flow_action\":\"navigate\"}}}}";
+
+		flow_resp = invokeurl
+		[
+			url :"https://graph.facebook.com/v21.0/" + META_PHONE_NUMBER_ID + "/messages"
+			type: POST
+			parameters: flow_payload
+			headers: flow_headers
+		];
+
+		flow_debug = "API response: " + flow_resp.toString();
+		if(flow_resp.get("messages") != null) { flow_sent = true; }
+		else if(flow_resp.get("error") != null) { flow_debug = flow_debug + " | error=" + flow_resp.get("error").toString(); }
+	}
+	catch(e_flow)
+	{
+		flow_debug = "Exception: " + e_flow.toString();
+		flow_sent = false;
+	}
+
+	if(flow_sent)
+	{
+		response.put("action", "reply");
+		response.put("replies", {"Opening the Yadea catalogue flow now.", "[DEBUG] " + flow_debug});
+		response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+		return response;
+	}
+
+	cat_file_url = Map();
+	cat_file_url.put("path", CATALOGUE_FILE_PATH);
+	cat_file_url.put("size", CATALOGUE_FILE_SIZE);
+	cat_file_url.put("content_type", CATALOGUE_FILE_CONTENT_TYPE);
+	cat_file_url.put("name", CATALOGUE_FILE_NAME);
+	cat_file_url.put("id", CATALOGUE_FILE_ID);
+
+	cat_file_msg = Map();
+	cat_file_msg.put("text", CATALOGUE_FILE_NAME);
+	cat_file_msg.put("type", "file");
+	cat_file_msg.put("_url", cat_file_url);
+
+	cat_text_msg = Map();
+	cat_text_msg.put("text", "Here is the Yadea Catalogue 2026 Q1.");
+
+	cat_replies = list();
+	cat_replies.add(cat_text_msg);
+	cat_replies.add(cat_file_msg);
+	if(flow_debug != null && flow_debug.length() > 0)
+	{
+		cat_debug_msg = Map();
+		cat_debug_msg.put("text", "[DEBUG fallback] " + flow_debug);
+		cat_replies.add(cat_debug_msg);
+	}
+
+	response.put("action", "reply");
+	response.put("replies", cat_replies);
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// 6. MAIN MENU  -  returns from the loyalty menu to the initial welcome screen
+// =============================================================================
+if(msg != null && (msg.equalsIgnoreCase("4. Main Menu") || msg.equalsIgnoreCase("6. Main Menu")))
+{
+	response.put("action", "reply");
+	response.put("replies", {"Welcome back! How can we help you today?"});
+	response.put("input", {"type":"select","options":{"1. Store Details","2. Yadea Catalogue","3. Posterita Loyalty"}});
+	return response;
+}
+
+// =============================================================================
+// DEFAULT
+// - Greetings and empty/unknown first contact → show the welcome menu
+// - Any other free-form text that reached here → show invalid-option guidance
+// Support keywords like HELP / SUPPORT / AGENT still trigger a transfer above.
+// =============================================================================
+msg_lower = "";
+if(msg != null) { msg_lower = msg.toLowerCase().trim(); }
+
+// 1. Handle Generic Greetings
+if(msg_lower.matches("hi|hello|hey|start|help|menu|hola|bonjour") || msg_lower.startsWith("hi ")) 
+{
+    response.put("action", "reply");
+    response.put("replies", {"Welcome to Yadea! ⚡ How can we help you today?"});
+    response.put("suggestions", {"Store Details", "Yadea Catalogue", "Posterita Loyalty"});
+}
+// 2. Handle the "Showroom Scan" (The Emoji DNA)
+else if(msg_lower.contains("🛵") || msg_lower.contains("⚡"))
+{
+    // Redirect to your "Product Vault" logic
+    response.put("action", "reply");
+    response.put("replies", {"I see you're looking at our Electric Range! 🛵 Here is the G5 Specs Video:"});
+    // Add a button to download the PDF
+    response.put("suggestions", {"Download PDF", "Book Test Ride"});
+}
+// 3. Handle Menu Clicks (If they type the option name)
+else if(msg_lower.contains("catalogue"))
+{
+    response.put("action", "reply");
+    response.put("replies", {"You can view our full 2026 catalogue here: [Link]"});
+}
+// 4. The "Catch-All" Failure
+else 
+{
+    response.put("action", "reply");
+    response.put("replies", {"I'm not sure about that. Would you like to see our catalogue or find a store?"});
+    response.put("suggestions", {"Yadea Catalogue", "Store Details"});
+}
+
+return response;

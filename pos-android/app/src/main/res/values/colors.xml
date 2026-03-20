@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Brand action colors -->
+    <color name="posterita_primary">#1976D2</color>
+    <color name="posterita_primary_dark">#0D5DB3</color>
+    <color name="posterita_primary_light">#DCEBFF</color>
+
+    <!-- Semantic colors -->
+    <color name="posterita_secondary">#2E7D32</color>
+    <color name="posterita_secondary_light">#E8F5E9</color>
+    <color name="posterita_error">#E53935</color>
+    <color name="posterita_error_light">#FFF1F0</color>
+    <color name="posterita_warning">#F57F17</color>
+    <color name="posterita_warning_light">#FFF8E1</color>
+    <color name="posterita_purple">#5E35B1</color>
+    <color name="posterita_purple_light">#EDE7F6</color>
+
+    <!-- Extended colors (v3.8.1) -->
+    <color name="posterita_teal">#00838F</color>
+    <color name="posterita_teal_light">#E0F7FA</color>
+    <color name="posterita_orange">#FF6F00</color>
+    <color name="posterita_orange_light">#FFF3E0</color>
+    <color name="posterita_brown">#5D4037</color>
+    <color name="posterita_brown_light">#EFEBE9</color>
+    <color name="posterita_pink">#AD1457</color>
+    <color name="posterita_pink_light">#FCE4EC</color>
+
+    <!-- Brand surfaces — the Posterita warm palette -->
+    <color name="posterita_bg">#F5F2EA</color>
+    <color name="posterita_paper">#FFFFFF</color>
+    <color name="posterita_panel">#FAFAFA</color>
+    <color name="posterita_ink">#141414</color>
+    <color name="posterita_muted">#6C6F76</color>
+    <color name="posterita_line">#E6E2DA</color>
+
+    <color name="text_secondary">#6C6F76</color>
+
+    <!-- Legacy aliases (kept for backward compat) -->
+    <color name="colorAccent">@color/posterita_primary</color>
+    <color name="txt_color">@color/posterita_primary</color>
+    <color name="bg">#00FFFFFF</color>
+    <color name="blue">#0000FF</color>
+    <color name="red">#FF0000</color>
+
+    <!-- Category colors -->
+    <color name="category_bg">#5ac8fa96</color>
+    <color name="cat_white">#FFFFFF</color>
+    <color name="cat_light_grey">#EFEFEF</color>
+    <color name="cat_lighter_grey">#F7F7F7</color>
+    <color name="cat_selected">#91CCF1</color>
+
+    <!-- Surface colors for light theme -->
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_variant_light">#F5F5F5</color>
+    <color name="on_surface_light">#1C1C1E</color>
+    <color name="on_surface_secondary_light">#8E8E93</color>
+
+    <!-- Surface colors for dark theme -->
+    <color name="surface_dark">#1C1C1E</color>
+    <color name="surface_variant_dark">#2C2C2E</color>
+    <color name="on_surface_dark">#F2F2F7</color>
+    <color name="on_surface_secondary_dark">#8E8E93</color>
+
+    <!-- Kitchen order status badges -->
+    <color name="badge_new_bg">#1976D2</color>
+    <color name="badge_in_progress_bg">#FF6F00</color>
+    <color name="badge_ready_bg">#43A047</color>
+
+    <!-- Timer colors -->
+    <color name="timer_green">#43A047</color>
+    <color name="timer_orange">#FF6F00</color>
+    <color name="timer_red">#FF3B30</color>
+
+    <!-- Stock indicator colors -->
+    <color name="stock_in">#2E7D32</color>
+    <color name="stock_low">#F57F17</color>
+    <color name="stock_out">#E53935</color>
+</resources>

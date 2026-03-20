@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/posterita_paper">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+        <!-- Product image -->
+        <ImageView
+            android:id="@+id/image_view_product"
+            android:layout_width="50dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_product_placeholder"
+            android:contentDescription="@string/app_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Product name -->
+        <TextView
+            android:id="@+id/text_view_product_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Product"
+            style="@style/TextAppearance.Posterita.Subheading"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintStart_toEndOf="@id/image_view_product"
+            app:layout_constraintEnd_toStartOf="@id/button_remove_line"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Orange cake" />
+
+        <!-- Product price -->
+        <TextView
+            android:id="@+id/text_view_product_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="122"
+            style="@style/TextAppearance.Posterita.Subheading"
+            android:textColor="@color/posterita_primary"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="2dp"
+            app:layout_constraintStart_toEndOf="@id/image_view_product"
+            app:layout_constraintTop_toBottomOf="@id/text_view_product_name" />
+
+        <!-- Remove button -->
+        <ImageView
+            android:id="@+id/button_remove_line"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_del"
+            android:contentDescription="Remove item"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/posterita_error"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Quantity controls: minus / count / plus -->
+        <FrameLayout
+            android:id="@+id/cons_remove"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/circle_drawable"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/text_view_qty"
+            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount">
+
+            <ImageView
+                android:id="@+id/button_decrease_qty"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:contentDescription="Decrease quantity"
+                android:src="@drawable/ic_remove"
+                app:tint="@color/posterita_ink" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/text_view_qty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:minWidth="32dp"
+            android:gravity="center"
+            style="@style/TextAppearance.Posterita.Heading"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/cons_add"
+            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount"
+            app:layout_constraintTop_toTopOf="@id/cons_remove"
+            tools:text="2" />
+
+        <FrameLayout
+            android:id="@+id/cons_add"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/circle_drawable"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/text_view_discount_amount">
+
+            <ImageView
+                android:id="@+id/button_increase_qty"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:contentDescription="Increase quantity"
+                android:src="@drawable/ic_add"
+                app:tint="@color/posterita_ink" />
+        </FrameLayout>
+
+        <!-- Discount row (hidden by default) -->
+        <TextView
+            android:id="@+id/text_view_discount_amount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="6dp"
+            android:paddingBottom="4dp"
+            android:text="Discount: Rs 12.00"
+            style="@style/TextAppearance.Posterita.Tiny"
+            android:textColor="@color/posterita_error"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,50 @@
+// Reference SalesIQ Message Handler script that compiles in your account.
+// This is just a template for syntax and structure.
+
+response = Map();
+msg = message.get("text");
+if(operation.equals("chat"))
+{
+	if(!msg.equalsIgnoreCase("Just Browsing") && !msg.equalsIgnoreCase("I want to buy") && !msg.equalsIgnoreCase("I need assistance"))
+	{
+		response.put("action","reply");
+		response.put("replies",{"Hey there! Smart Bot here","Got a question? I can help."});
+		response.put("input",{"type":"select","options":{"Just Browsing","I want to buy","I need assistance"}});
+		return response;
+	}
+}
+if(!msg.isNull())
+{
+	response.put("action","context");
+	if(msg.equalsIgnoreCase("Just Browsing"))
+	{
+		response.put("context_id","browsing");
+		question = {"name":"product_type","replies":{"Okay, Great. Enjoy looking around. Would you like me to tell you about our products?","What would you like to know about?"},"input":{"type":"select","options":{"Recently launched products","Upcoming products"}}};
+		response.put("questions",{question});
+	}
+	else if(msg.equalsIgnoreCase("I want to buy"))
+	{
+		response.put("context_id","want_to_buy");
+		question = {"name":"auto_type","replies":{"Great! What would you like to have?"},"input":{"type":"select","options":{"SUV","Truck","Hatchback","Sedan","Compact Sedan"}}};
+		response.put("questions",{question});
+	}
+	else if(msg.equalsIgnoreCase("I need assistance"))
+	{
+		response.put("context_id","assistance");
+		question = {"name":"assistance","replies":{"How would you like me to assist you?"},"input":{"type":"select","options":{"Book a date for servicing","Raise a complaint","Roadside assistance"}}};
+		response.put("questions",{question});
+	}
+	else if(msg.containsIgnoreCase("Bye"))
+	{
+		response.put("action","end");
+		response.put("replies",{"Bye"});
+	}
+	else
+	{
+		response.put("action","reply");
+		response.put("replies",{"Hey there! Smart Bot here..","Got a question? I can help."});
+		response.put("input",{"type":"select","options":{"Just Browsing","I want to buy","I need assistance"}});
+	}
+}
+return response;
+

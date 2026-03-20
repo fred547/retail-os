@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ═══════════════════════════════════════════
+         TYPOGRAPHY — Posterita Design System
+         Font: Lexend | Weights: 400, 500, 600, 700, 800
+         ═══════════════════════════════════════════ -->
+
+    <!-- Base text appearance -->
+    <style name="TextAppearance.Posterita" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/lexend_medium</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Display: 38sp/800 — hero headings -->
+    <style name="TextAppearance.Posterita.Display">
+        <item name="android:textSize">38sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="android:letterSpacing">-0.04</item>
+    </style>
+
+    <!-- Title: 22sp/800 — screen titles -->
+    <style name="TextAppearance.Posterita.Title">
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- Heading: 18sp/800 — card titles, panel headers -->
+    <style name="TextAppearance.Posterita.Heading">
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Subheading: 16sp/700 — cart items, product detail -->
+    <style name="TextAppearance.Posterita.Subheading">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Body: 14sp/600 — default text -->
+    <style name="TextAppearance.Posterita.Body">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/lexend_semibold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Body Muted: 14sp/600 — descriptions -->
+    <style name="TextAppearance.Posterita.Body.Muted">
+        <item name="android:textColor">@color/posterita_muted</item>
+    </style>
+
+    <!-- Caption: 13sp/800 — product names, prices, buttons -->
+    <style name="TextAppearance.Posterita.Caption">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Caption Price: 13sp/800 in blue -->
+    <style name="TextAppearance.Posterita.Caption.Price">
+        <item name="android:textColor">@color/posterita_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- Micro: 12sp/800 — chips, badges, timestamps -->
+    <style name="TextAppearance.Posterita.Micro">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+    </style>
+
+    <!-- Tiny: 11sp/700 — auxiliary info -->
+    <style name="TextAppearance.Posterita.Tiny">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="android:textColor">@color/posterita_muted</item>
+    </style>
+
+    <!-- Nano: 10sp/700 — eyebrow labels -->
+    <style name="TextAppearance.Posterita.Nano">
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="android:textColor">@color/posterita_muted</item>
+    </style>
+
+    <!-- Uppercase label style -->
+    <style name="TextAppearance.Posterita.Label">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_muted</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- Large price: 44sp for till displays -->
+    <style name="TextAppearance.Posterita.PriceDisplay">
+        <item name="android:textSize">44sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════
+         BUTTON STYLES
+         ═══════════════════════════════════════════ -->
+
+    <!-- Primary button: 48dp, blue fill, 14dp radius -->
+    <style name="Widget.Posterita.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/btn_primary_bg</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- Pay button: 52dp, blue fill -->
+    <style name="Widget.Posterita.Button.Pay" parent="Widget.Posterita.Button.Primary">
+        <item name="android:minHeight">52dp</item>
+    </style>
+
+    <!-- Secondary/Outlined button -->
+    <style name="Widget.Posterita.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="strokeColor">@color/posterita_line</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- Danger button: red text outline -->
+    <style name="Widget.Posterita.Button.Danger" parent="Widget.Posterita.Button.Outlined">
+        <item name="android:textColor">@color/posterita_error</item>
+        <item name="strokeColor">@color/posterita_error</item>
+    </style>
+
+    <!-- Tonal button: for numpad keys -->
+    <style name="Widget.Posterita.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/lexend_bold</item>
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════
+         CARD STYLES
+         ═══════════════════════════════════════════ -->
+
+    <!-- Standard card: 10dp radius, 1dp stroke -->
+    <style name="Widget.Posterita.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardCornerRadius">10dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/posterita_line</item>
+        <item name="cardBackgroundColor">@color/posterita_paper</item>
+    </style>
+
+    <!-- Hero card: 20dp radius -->
+    <style name="Widget.Posterita.Card.Hero" parent="Widget.Posterita.Card">
+        <item name="cardCornerRadius">20dp</item>
+    </style>
+
+    <!-- Tile card: 14dp radius, subtle shadow -->
+    <style name="Widget.Posterita.Card.Tile" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="cardBackgroundColor">@color/posterita_paper</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════
+         CHIP STYLE
+         ═══════════════════════════════════════════ -->
+
+    <style name="Widget.Posterita.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="android:minHeight">38dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="chipCornerRadius">14dp</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════
+         LEGACY (backward compat)
+         ═══════════════════════════════════════════ -->
+
+    <style name="ToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textColor">@color/posterita_ink</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/lexend_extrabold</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="CustomDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+</resources>

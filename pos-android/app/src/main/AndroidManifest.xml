@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
+
+    <application
+        android:name=".PosteritaApp"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Posterita"
+        tools:targetApi="31">
+
+        <!-- Sentry DSN - loaded from BuildConfig for security -->
+        <meta-data
+            android:name="io.sentry.dsn"
+            android:value="${SENTRY_DSN}" />
+        <meta-data
+            android:name="io.sentry.traces.user-interaction.enable"
+            android:value="true" />
+        <meta-data
+            android:name="io.sentry.attach-screenshot"
+            android:value="true" />
+        <meta-data
+            android:name="io.sentry.attach-view-hierarchy"
+            android:value="true" />
+
+        <!-- Launcher Activity -->
+        <activity
+            android:name=".ui.activity.SplashActivity"
+            android:exported="true"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Auth Flow -->
+        <activity
+            android:name=".ui.activity.CheckServerEndPointActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.SignInActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.DatabaseSynchonizerActivity"
+            android:exported="false" />
+
+        <!-- Terminal & User Selection -->
+        <activity
+            android:name=".ui.activity.SelectTerminalActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.SelectUserLoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Home (super app grid) -->
+        <activity
+            android:name=".ui.activity.HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.LoginActivity"
+            android:exported="false" />
+
+        <!-- Till -->
+        <activity
+            android:name=".ui.activity.TillActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.CloseTillActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.CloseTillPopUpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.AdjustTillActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Main POS -->
+        <activity
+            android:name=".ui.activity.ProductActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.CartActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.ReceiptActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Orders -->
+        <activity
+            android:name=".ui.activity.OrdersActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.ViewOrderActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.HoldOrderActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.KitchenOrdersActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Refund -->
+        <activity
+            android:name=".ui.activity.RefundActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ReceiptRefundActivity"
+            android:exported="false" />
+
+        <!-- Customer -->
+        <activity
+            android:name=".ui.activity.SearchCustomerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.CustomerDetailsActivity"
+            android:exported="false" />
+
+        <!-- Printers -->
+        <activity
+            android:name=".ui.activity.PrintersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.CreatePrinterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.PrinterConfigurationActivity"
+            android:exported="false" />
+
+        <!-- Barcode & NFC -->
+        <activity
+            android:name=".ui.activity.ScanBarcodeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Posterita" />
+        <activity
+            android:name=".ui.activity.NfcActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Settings & Other -->
+        <activity
+            android:name=".ui.activity.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.PosCustomizationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.AboutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.HelpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.SetupWizardActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+
+        <!-- Admin / Standalone Management -->
+        <activity
+            android:name=".ui.activity.AdminSettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageProductsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageCategoriesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageTaxActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageUsersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageStoreActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageTerminalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.ManageTablesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.BulkProductImportActivity"
+            android:exported="false" />
+
+        <!-- AI Import background service -->
+        <service
+            android:name=".service.AiImportService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- FileProvider for camera image capture -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+    </application>
+
+</manifest>

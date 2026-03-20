@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f5f5f5"
+    tools:context=".Activities.ViewOrderActivity">
+
+    <!-- LEFT PANE : Header + Order Lines -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pane_left"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/pane_right"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintWidth_percent="0.65">
+
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_back_cart"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_order_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recipit #000013"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:fontFamily="@font/lexend_medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_customer_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_order_number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_date_ordered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date#"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_customer_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_order_lines"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/_8sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_date_ordered"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- RIGHT PANE : Totals + Actions -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pane_right"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="@dimen/_10sdp"
+
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:background="#f5f5f5"
+        app:layout_constraintStart_toEndOf="@id/pane_left"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintWidth_percent="0.35">
+
+        <TextView
+            android:id="@+id/text_view_subtotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sub total"
+            android:textSize="17sp"
+            android:layout_marginStart="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_subtotal_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="rs 11"
+            android:textSize="17sp"
+            android:layout_marginEnd="@dimen/_14sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_tax_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tax total"
+            android:textSize="14sp"
+            android:layout_marginStart="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_subtotal"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_tax_total_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00.00"
+            android:textSize="14sp"
+            android:layout_marginEnd="@dimen/_14sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_subtotal_amount"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_total_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total"
+            android:textSize="18sp"
+            android:fontFamily="@font/lexend_medium"
+            android:layout_marginStart="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_tax_total"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_grand_total_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RS"
+            android:textSize="18sp"
+            android:fontFamily="@font/lexend_medium"
+            android:layout_marginEnd="@dimen/_14sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_tax_total_amount"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/linear_layout_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/_14sdp"
+            android:layout_marginStart="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_grand_total_amount"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_new_sale"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/btn_rounded"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <TextView
+                    android:text="New Sale"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_print_order"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/stroke_btn">
+
+                <TextView
+                    android:text="Print"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_refund_order"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/stroke_btn">
+
+                <TextView
+                    android:text="Refund"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_void_order"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/stroke_btn">
+
+                <TextView
+                    android:text="Void"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    <!--<?xml version="1.0" encoding="utf-8"?> <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#f5f5f5" tools:context=".Activities.ViewOrderActivity"> <ImageView android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:contentDescription="@string/app_name" android:src="@drawable/ic_back_cart" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="@dimen/_15sdp" android:layout_marginStart="@dimen/_15sdp"/> <TextView android:id="@+id/text_view_order_number" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Recipit #000013" android:textColor="@color/black" android:textSize="20sp" android:fontFamily="@font/lexend_medium" android:layout_marginTop="@dimen/_8sdp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" /> <TextView android:id="@+id/text_view_customer_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Customer" android:textSize="14sp" android:layout_marginTop="@dimen/_4sdp" app:layout_constraintTop_toBottomOf="@id/text_view_order_number" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" /> <TextView android:id="@+id/text_view_date_ordered" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date#" android:textSize="14sp" android:layout_marginTop="@dimen/_4sdp" app:layout_constraintTop_toBottomOf="@id/text_view_customer_name" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" /> <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_view_order_lines" android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="@dimen/_6sdp" android:layout_marginBottom="@dimen/_6sdp" app:layout_constraintTop_toBottomOf="@id/text_view_date_ordered" app:layout_constraintBottom_toTopOf="@id/constbottom" tools:layout_editor_absoluteX="0dp" /> <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/constbottom" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/white" app:layout_constraintBottom_toBottomOf="parent"> <TextView android:id="@+id/text_view_subtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sub total" android:textSize="17sp" android:textColor="@color/black" android:layout_marginStart="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" /> <TextView android:id="@+id/text_view_subtotal_amount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="rs 11" android:textSize="13sp" android:textColor="@color/black" android:layout_marginEnd="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent" /> <TextView android:id="@+id/text_view_tax_total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tax total" android:textSize="13sp" android:textColor="@color/black" android:layout_marginStart="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toBottomOf="@id/text_view_subtotal" app:layout_constraintStart_toStartOf="parent" /> <TextView android:id="@+id/text_view_tax_total_amount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00.00" android:textSize="13sp" android:textColor="@color/black" android:layout_marginEnd="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toBottomOf="@id/text_view_subtotal_amount" app:layout_constraintEnd_toEndOf="parent" /> <TextView android:id="@+id/text_view_total_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textColor="@color/black" android:fontFamily="@font/lexend_medium" android:textSize="18sp" android:layout_marginStart="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toBottomOf="@id/text_view_tax_total" app:layout_constraintStart_toStartOf="parent" /> <TextView android:id="@+id/text_view_grand_total_amount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RS" android:textColor="@color/black" android:fontFamily="@font/lexend_medium" android:textSize="18sp" android:layout_marginEnd="@dimen/_12sdp" android:layout_marginTop="@dimen/_1sdp" app:layout_constraintTop_toBottomOf="@id/text_view_tax_total_amount" app:layout_constraintEnd_toEndOf="parent" /> <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/button_new_sale" android:layout_width="0dp" android:layout_height="40dp" android:layout_marginStart="16dp" android:layout_marginEnd="16dp" android:layout_marginTop="10dp" android:layout_marginBottom="20dp" android:background="@drawable/btn_rounded" app:layout_constraintTop_toBottomOf="@id/text_view_grand_total_amount" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"> <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Sale" android:textColor="@color/white" android:textSize="13sp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" /> </androidx.constraintlayout.widget.ConstraintLayout> <LinearLayout android:id="@+id/linear_layout_buttons" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/button_new_sale" android:layout_marginStart="17dp" android:layout_marginEnd="17dp" android:layout_marginTop="@dimen/_5ssp" android:layout_marginBottom="@dimen/_15sdp" > <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/button_print_order" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:background="@drawable/stroke_btn"> <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Print" android:textColor="@color/black" android:textSize="17sp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_weight="1" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" /> </androidx.constraintlayout.widget.ConstraintLayout> <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/button_refund_order" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:layout_weight="1" android:background="@drawable/stroke_btn" android:visibility="visible"> <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Refund" android:textColor="@color/black" android:textSize="17sp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" /> </androidx.constraintlayout.widget.ConstraintLayout> <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/button_void_order" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:layout_weight="1" android:background="@drawable/stroke_btn" android:visibility="visible"> <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Void" android:textColor="@color/black" android:textSize="17sp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" /> </androidx.constraintlayout.widget.ConstraintLayout> </LinearLayout> </androidx.constraintlayout.widget.ConstraintLayout> </androidx.constraintlayout.widget.ConstraintLayout>-->

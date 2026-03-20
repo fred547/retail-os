@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Posterita.Card.Tile"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:paddingBottom="14dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <!-- Icon with colored background (set programmatically) -->
+        <ImageView
+            android:id="@+id/imgTileIcon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:scaleType="center"
+            android:contentDescription="App icon"
+            tools:background="@drawable/bg_tile_icon" />
+
+        <!-- Label -->
+        <TextView
+            android:id="@+id/textTileLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            style="@style/TextAppearance.Posterita.Body"
+            tools:text="Point of Sale" />
+
+        <!-- Coming Soon badge -->
+        <TextView
+            android:id="@+id/textTileComingSoon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Coming Soon"
+            style="@style/TextAppearance.Posterita.Nano"
+            android:textColor="@color/posterita_warning"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

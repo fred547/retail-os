@@ -1,0 +1,136 @@
+// =============================================================================
+// ZOHO CREATOR PRODUCT IMAGE PLUG
+// =============================================================================
+// Flow: Search for product by name → get file_upload field → get public URL (permalink) → return it.
+// Input:  session.get("productid") = product name (e.g. "Yadea")
+// Output: productrecord = public file URL; display = { type, url, caption } for Zobot.
+// =============================================================================
+
+// --- 1. Product name from input (Flow may send { value: "Yadea" }) ---
+product_name_input = session.get("productid");
+clean_name = "";
+if(product_name_input != null)
+{
+	if(product_name_input.get("value") != null) { clean_name = product_name_input.get("value").toString().trim(); }
+	else { clean_name = product_name_input.toString().trim(); }
+	clean_name = clean_name.replaceAll("\"", "");
+}
+
+// --- 2. Config (Creator app / report / field names) ---
+app_owner        = "fred_tamakgroup";
+app_name         = "product-catalogue";
+report_name      = "All_Product_Catalogues";
+form_name        = "Product_Catalogue";
+search_field     = "ProductName";
+file_upload_field = "file_upload";
+
+// Optional: resolve link names from form meta (set search_field, file_upload_field from display/link names)
+try
+{
+	meta_url = "https://www.zohoapis.com/creator/v2.1/meta/" + app_owner + "/" + app_name + "/form/" + form_name + "/fields";
+	meta = invokeurl [ url: meta_url  type: GET  connection: "zoho_connector" ];
+	if(meta.get("code") == 3000 && meta.get("fields") != null)
+	{
+		for each f in meta.get("fields")
+		{
+			dn = ifnull(f.get("display_name"), "");
+			ln = f.get("link_name");
+			if(dn.equalsIgnoreCase("Product Name")) { search_field = ln; }
+			if(ln != null && ln.equalsIgnoreCase("file_upload")) { file_upload_field = ln; }
+		}
+	}
+}
+catch(e_meta) { }
+
+// --- 3. Search Creator for the product by name ---
+criteria = search_field + " == \"" + clean_name + "\"";
+records = zoho.creator.getRecords(app_owner, app_name, report_name, criteria, 1, 1, "zoho_connector");
+
+response = Map();
+response.put("action", "reply");
+
+if(records.get("code") != 3000 || records.get("data") == null || records.get("data").size() == 0)
+{
+	response.put("productrecord", "");
+	response.put("replies", {"No product found for: " + clean_name});
+	response.put("message", "No record found");
+	return response;
+}
+
+// --- 4. Get the file_upload field from the record ---
+record = records.get("data").get(0);
+file_upload_val = record.get(file_upload_field);
+
+if(file_upload_val == null)
+{
+	response.put("productrecord", "");
+	response.put("replies", {"Product found but no file_upload for: " + clean_name});
+	return response;
+}
+
+// --- 5. Get public URL (permalink) from the file ---
+// Zoho can return: object with permalink / url / file_id, or a string (URL or file_id).
+public_url = "";
+
+// 5a. Object: prefer permalink, then url, then build from file_id
+try
+{
+	if(file_upload_val.get("permalink") != null && file_upload_val.get("permalink").toString().length() > 0)
+	{
+		public_url = file_upload_val.get("permalink").toString().trim();
+	}
+	else if(file_upload_val.get("url") != null && file_upload_val.get("url").toString().length() > 0)
+	{
+		public_url = file_upload_val.get("url").toString().trim();
+	}
+	else if(file_upload_val.get("file_id") != null && file_upload_val.get("file_id").toString().length() > 0)
+	{
+		file_id = file_upload_val.get("file_id").toString().trim();
+		public_url = "https://workdrive.zoho.com/file/" + file_id;
+	}
+	else if(file_upload_val.get("zc_display_value") != null && file_upload_val.get("zc_display_value").toString().length() > 0)
+	{
+		public_url = file_upload_val.get("zc_display_value").toString().trim();
+	}
+}
+catch(e) { }
+
+// 5b. String: already a URL, or a file_id to turn into WorkDrive permalink
+if(public_url.length() == 0)
+{
+	str = file_upload_val.toString().trim();
+	if(str.toLowerCase().startsWith("http"))
+	{
+		public_url = str;
+	}
+	else if(str.length() >= 20 && str.indexOf(" ") < 0 && str.indexOf("/") < 0)
+	{
+		public_url = "https://workdrive.zoho.com/file/" + str;
+	}
+	else if(str.length() > 0)
+	{
+		public_url = str;
+	}
+}
+
+// --- 6. Return the link (ensure productrecord is always a string for Flow validation) ---
+productrecord_str = "";
+if(public_url != null && public_url.toString().length() > 0)
+{
+	productrecord_str = public_url.toString().trim();
+}
+response.put("productrecord", productrecord_str);
+response.put("_debug_url", productrecord_str);
+
+display = Map();
+display.put("type", "image");
+display.put("url", productrecord_str);
+display.put("caption", "Found: " + clean_name);
+response.put("display", display);
+
+replies_list = list();
+replies_list.add(display);
+replies_list.add("Found: " + clean_name + " — " + productrecord_str);
+response.put("replies", replies_list);
+
+return response;

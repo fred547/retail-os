@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "loyalty_api.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "loyalty_api.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "loyalty_api.py"
+    }
+  ]
+}

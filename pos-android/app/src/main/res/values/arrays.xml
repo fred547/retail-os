@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="paper_width_options">
+        <item>80 mm</item>
+        <item>48 mm</item>
+    </string-array>
+</resources>

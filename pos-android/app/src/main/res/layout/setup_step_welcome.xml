@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/posterita_bg">
+
+    <!-- Main content centered -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Top spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2" />
+
+        <!-- Logo mark -->
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_splash"
+            android:contentDescription="Posterita" />
+
+        <!-- Brand name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="posterita"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="-0.03"
+            android:textColor="@color/posterita_ink" />
+
+        <!-- Tagline -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:paddingHorizontal="40dp"
+            android:text="Retail OS"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="0.12"
+            android:textAllCaps="true"
+            android:textColor="@color/posterita_muted" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Value props -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="32dp"
+            android:layout_marginBottom="8dp">
+
+            <!-- Prop 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_prop_icon" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Set up in 60 seconds"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/posterita_ink" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="AI builds your catalogue automatically"
+                        android:textSize="13sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Prop 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_prop_icon_green" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Works offline"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/posterita_ink" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Sell without internet, sync when ready"
+                        android:textSize="13sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Prop 3 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_prop_icon_purple" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Loyalty built in"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/posterita_ink" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Points, vouchers, and WhatsApp rewards"
+                        android:textSize="13sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Bottom spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:layout_marginBottom="4dp">
+
+            <!-- Sign Up — new owner -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSignUp"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Sign Up"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/posterita_primary"
+                android:textColor="@color/white"
+                app:cornerRadius="14dp" />
+
+            <!-- Owner Log In -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogIn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:text="Owner Log In"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                app:strokeColor="@color/posterita_line"
+                android:textColor="@color/posterita_ink"
+                app:cornerRadius="14dp" />
+
+            <!-- Enroll Device — staff setup -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEnrollDevice"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:text="Enroll Device"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                app:strokeColor="@color/posterita_line"
+                android:textColor="@color/posterita_ink"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:iconGravity="textStart"
+                app:iconSize="18dp"
+                app:cornerRadius="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Scan a QR code from the store owner to set up this device"
+                android:textSize="11sp"
+                android:textColor="@color/posterita_muted" />
+
+            <!-- Try Demo -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTryDemo"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="6dp"
+                android:text="Try the demo"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="@color/posterita_muted" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

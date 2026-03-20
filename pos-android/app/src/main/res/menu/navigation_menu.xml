@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+
+    <item
+        android:id="@+id/produc"
+        android:icon="@drawable/pos"
+        android:title="POS"
+        />
+    <item
+        android:id="@+id/item_view_orders"
+        android:icon="@drawable/order"
+        android:title="Orders" />
+    <item
+        android:id="@+id/hold"
+        android:icon="@drawable/holdorder"
+        android:title="Hold Orders" />
+    <item
+        android:id="@+id/kitchen_orders"
+        android:icon="@drawable/holdorder"
+        android:title="Kitchen Orders" />
+    <item
+        android:id="@+id/CloseTill"
+        android:icon="@drawable/till"
+        android:title="Close Till" />
+
+    <item
+        android:id="@+id/setting"
+        android:icon="@drawable/settings"
+        android:title="Settings" />
+    <item
+        android:id="@+id/getupdate"
+        android:icon="@drawable/download"
+        android:title="Get Update" />
+    <item
+        android:id="@+id/about"
+        android:icon="@drawable/info"
+        android:title="About" />
+
+    <item
+        android:id="@+id/help"
+        android:icon="@drawable/ic_help"
+        android:title="Help" />
+
+    <item
+        android:id="@+id/cash_drawer"
+        android:icon="@drawable/settings"
+        android:title="Cash Drawer" />
+
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/logout"
+        android:title="Log Out" />
+</menu>

@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    tools:ignore="HardcodedText">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_back_cart" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="POS Customization"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="16dp" />
+
+        <!-- ======= BUSINESS TYPE SECTION ======= -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BUSINESS TYPE"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#757575"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Business Mode"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Restaurant shows Dine-in / Take-away"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_retail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="  Retail  "
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_restaurant"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="  Restaurant  "
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ======= DISPLAY SECTION ======= -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DISPLAY"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#757575"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Product Grid Columns -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Product Grid Columns"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Number of products per row"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_col_1"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_col_2"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_col_3"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_col_4"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="4"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Category Lines -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category Rows"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Max lines for category chips"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_cat_1"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_cat_2"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_cat_3"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Category Columns -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category Columns"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Number of columns for category buttons"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_catcol_2"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_catcol_3"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_catcol_4"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="4"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ======= LANDSCAPE DISPLAY SECTION ======= -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LANDSCAPE DISPLAY"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#757575"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Landscape Category Rows -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category Rows (Landscape)"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Max lines for categories in landscape"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_land_cat_row_1"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_land_cat_row_2"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Landscape Category Columns -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category Columns (Landscape)"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Number of columns in landscape mode"
+                    android:textSize="12sp"
+                    android:textColor="#999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_land_catcol_3"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_land_catcol_4"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="4"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_land_catcol_5"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="5"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btn_land_catcol_6"
+                    android:layout_width="40dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="6"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/stroke_btn" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Show Product Images -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show Product Images"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_product_images"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show Product Price -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show Product Price on Grid"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_product_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- ======= BUTTONS SECTION ======= -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BUTTONS"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#757575"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Show Categories -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show Categories"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show SCAN Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show SCAN Button"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_scan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show SEARCH Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show SEARCH Button"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show CLEAR Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show CLEAR Button"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show CUSTOMER Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show CUSTOMER Button"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_cust"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Show MORE Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show MORE Button"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Note about restart -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Changes will take effect when you return to the product screen."
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>
