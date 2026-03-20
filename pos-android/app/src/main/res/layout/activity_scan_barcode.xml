@@ -222,7 +222,7 @@
         android:background="@color/posterita_paper"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Take Picture button -->
+        <!-- Scan button — force capture/decode -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_take_picture"
             style="@style/Widget.Posterita.Button.Outlined"
@@ -230,15 +230,16 @@
             android:layout_height="52dp"
             android:layout_weight="1"
             android:layout_marginEnd="6dp"
-            app:icon="@drawable/ic_camera"
+            app:icon="@drawable/ic_barcode_scan"
             app:iconGravity="textStart"
-            app:iconSize="18dp"
-            android:text="Photo" />
+            app:iconSize="20dp"
+            android:text="Scan" />
 
         <!-- My Cart button with item count -->
         <FrameLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="52dp"
+            android:layout_weight="2"
             android:clipChildren="false"
             android:clipToPadding="false">
 
