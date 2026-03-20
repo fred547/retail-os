@@ -112,6 +112,16 @@ Real web app at `pos-android/server-side/posterita-cloud/web/`:
 | `/price-review` | Price review queue | ✅ |
 | `/brands` | Brand management | ❌ Needs building |
 
+## Auth Flow
+
+- **First launch:** No account → SetupWizard (phone, name, brand, country, category)
+- **Setup creates:** Owner + 2 brands (live + demo) via `/api/auth/signup`
+- **Subsequent launches:**
+  - **1 user (owner only):** Auto-login, skip PIN → straight to Home
+  - **Multiple users (staff added):** Show user picker → PIN entry → Home
+- **Logout:** Clears session, goes back to user picker (not setup wizard)
+- **PIN is only required when multiple users exist** — the owner who just signed up should never see a PIN screen
+
 ## Android Navigation Architecture
 
 - **Home screen:** Hub with bottom nav (Home | POS | Orders | More)
