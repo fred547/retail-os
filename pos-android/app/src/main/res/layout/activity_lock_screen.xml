@@ -99,4 +99,34 @@
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_backspace" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="⌫" android:textSize="20sp" />
     </GridLayout>
 
+    <!-- Enter button (for PINs longer than 4 digits) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_enter"
+        style="@style/Widget.Posterita.Button.Pay"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:text="Enter"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/grid_numpad"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- "Not me" link -->
+    <TextView
+        android:id="@+id/text_not_me"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Not me? Switch account"
+        android:textColor="@color/posterita_primary"
+        style="@style/TextAppearance.Posterita.Micro"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

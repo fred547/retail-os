@@ -55,11 +55,31 @@ class LockScreenActivity : AppCompatActivity() {
             }
         }
 
-        // If no PIN is set, just unlock
+        // If no PIN is set, just unlock and go to Home
         if (correctPin.isEmpty()) {
             SessionTimeoutManager.unlock()
+            val intent = android.content.Intent(this, HomeActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
             return
+        }
+
+        // If PIN is longer than 4, show Enter button
+        if (correctPin.length > 4) {
+            binding.btnEnter?.visibility = View.VISIBLE
+            binding.btnEnter?.setOnClickListener { checkPin() }
+        }
+
+        // "Not me" link
+        binding.textNotMe?.setOnClickListener {
+            // Clear session and go to setup wizard
+            sessionManager.resetSession()
+            prefsManager.setStringSync("last_brand_id", "")
+            val intent = android.content.Intent(this, SetupWizardActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
         }
 
         setupNumpad()
@@ -75,10 +95,11 @@ class LockScreenActivity : AppCompatActivity() {
 
         for ((id, digit) in buttons) {
             findViewById<View>(id).setOnClickListener {
-                if (pinBuffer.length < correctPin.length.coerceAtLeast(4)) {
+                if (pinBuffer.length < 10) { // max 10 digits
                     pinBuffer += digit
                     updateDots()
-                    if (pinBuffer.length >= correctPin.length.coerceAtLeast(4)) {
+                    // Auto-check at exact PIN length (for 4-digit PINs)
+                    if (correctPin.length <= 4 && pinBuffer.length >= correctPin.length) {
                         checkPin()
                     }
                 }
@@ -108,6 +129,11 @@ class LockScreenActivity : AppCompatActivity() {
             if (bg is GradientDrawable) {
                 bg.setColor(if (i < pinBuffer.length) filledColor else emptyColor)
             }
+        }
+
+        // For PINs > 4 digits, update Enter button visibility
+        if (correctPin.length > 4) {
+            binding.btnEnter?.isEnabled = pinBuffer.isNotEmpty()
         }
 
         binding.textError.visibility = View.GONE

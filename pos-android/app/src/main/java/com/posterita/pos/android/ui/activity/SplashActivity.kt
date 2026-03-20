@@ -59,7 +59,18 @@ class SplashActivity : AppCompatActivity() {
                     }
 
                     val user = sessionManager.user
-                    val hasPin = !user?.pin.isNullOrEmpty()
+                    // If PIN is a password (>4 chars), reset to default 0000
+                    if (user != null && (user.pin?.length ?: 0) > 4) {
+                        runBlocking {
+                            withContext(Dispatchers.IO) {
+                                try {
+                                    db.userDao().updateUserPin(user.user_id, "0000")
+                                    sessionManager.user = user.copy(pin = "0000")
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    }
+                    val hasPin = !sessionManager.user?.pin.isNullOrEmpty()
 
                     if (hasPin) {
                         // Has PIN → lock screen (remembers last user, just asks for PIN)

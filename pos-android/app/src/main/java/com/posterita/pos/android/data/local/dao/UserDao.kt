@@ -29,6 +29,9 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE pin = :pin")
     suspend fun getUserByPin(pin: String): User?
 
+    @Query("UPDATE user SET pin = :pin WHERE user_id = :userId")
+    suspend fun updateUserPin(userId: Int, pin: String)
+
     @Query("SELECT * FROM user WHERE role = 'owner' LIMIT 1")
     suspend fun getOwner(): User?
 }
