@@ -19,7 +19,7 @@ class ConnectivityMonitor @Inject constructor(
     val isConnected: LiveData<Boolean> = _isConnected
 
     private val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -36,15 +36,20 @@ class ConnectivityMonitor @Inject constructor(
     }
 
     init {
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-        connectivityManager.registerNetworkCallback(request, networkCallback)
+        try {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager?.registerNetworkCallback(request, networkCallback)
+        } catch (e: Exception) {
+            // Connectivity monitoring not available
+        }
     }
 
     private fun checkConnectivity(): Boolean {
-        val network = connectivityManager.activeNetwork ?: return false
-        val caps = connectivityManager.getNetworkCapabilities(network) ?: return false
+        val cm = connectivityManager ?: return false
+        val network = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(network) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }
