@@ -52,7 +52,7 @@ class ManageTerminalActivity : AppCompatActivity() {
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.fabAdd.setOnClickListener { launchEditTerminal(null) }
+        binding.fabAdd.visibility = View.GONE // Read-only — managed via web console
 
         loadData()
     }

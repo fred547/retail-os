@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:layout_marginTop="4dp"
-                android:text="Tap + to add one"
+                android:text="Use the web console to manage"
                 style="@style/TextAppearance.Posterita.Caption"
                 android:textColor="@color/posterita_muted" />
         </LinearLayout>

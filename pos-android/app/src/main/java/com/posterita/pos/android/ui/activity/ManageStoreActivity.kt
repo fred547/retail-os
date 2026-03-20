@@ -46,7 +46,7 @@ class ManageStoreActivity : AppCompatActivity() {
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.fabAdd.setOnClickListener { showStoreDialog(null) }
+        binding.fabAdd.visibility = View.GONE // Read-only — managed via web console
 
         loadData()
     }
@@ -235,8 +235,7 @@ class ManageStoreActivity : AppCompatActivity() {
             val count = terminalCounts[s.storeId] ?: 0
             holder.tvTerminalCount.text = "$count terminal${if (count != 1) "s" else ""}"
 
-            // Click to edit
-            holder.card.setOnClickListener { showStoreDialog(s) }
+            // Read-only — managed via web console
         }
 
         override fun getItemCount() = stores.size
