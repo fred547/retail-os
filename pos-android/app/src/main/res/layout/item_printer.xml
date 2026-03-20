@@ -44,22 +44,46 @@
             android:orientation="vertical"
             android:layout_marginStart="12dp">
 
-            <TextView
-                android:id="@+id/printer_name"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Printer Name"
-                style="@style/TextAppearance.Posterita.Body"
-                android:fontFamily="@font/lexend_medium"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/printer_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Printer Name"
+                    style="@style/TextAppearance.Posterita.Body"
+                    android:fontFamily="@font/lexend_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Role badge -->
+                <TextView
+                    android:id="@+id/role_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:textSize="9sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:letterSpacing="0.05"
+                    android:visibility="gone"
+                    android:text="" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/printer_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Bluetooth · Connected"
+                android:text="Bluetooth"
                 style="@style/TextAppearance.Posterita.Tiny"
                 android:textColor="@color/posterita_muted" />
         </LinearLayout>

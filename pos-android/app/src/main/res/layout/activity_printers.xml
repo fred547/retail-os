@@ -53,7 +53,7 @@
         android:id="@+id/text_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Manage receipt and label printers for this device"
+        android:text="Manage receipt, kitchen, bar, and label printers"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="10dp"
@@ -62,71 +62,150 @@
         android:textColor="@color/posterita_muted"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar" />
 
-    <!-- Connected printer section -->
-    <TextView
-        android:id="@+id/text_section_connected"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CONNECTED"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="6dp"
-        style="@style/TextAppearance.Posterita.Label"
-        android:textColor="@color/posterita_muted"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/text_subtitle" />
-
-    <!-- Empty state -->
-    <LinearLayout
-        android:id="@+id/layout_empty"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        app:layout_constraintTop_toBottomOf="@id/text_section_connected"
-        app:layout_constraintBottom_toTopOf="@id/button_add_printer">
-
-        <ImageView
-            android:id="@+id/printer_icon"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:alpha="0.3"
-            android:src="@drawable/ic_menu_print"
-            app:tint="@color/posterita_muted"
-            android:contentDescription="No printers" />
-
-        <TextView
-            android:id="@+id/no_printers_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="No printers configured"
-            style="@style/TextAppearance.Posterita.Heading"
-            android:textColor="@color/posterita_muted" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="Add a Bluetooth or network printer\nto print receipts and labels"
-            style="@style/TextAppearance.Posterita.Body.Muted" />
-    </LinearLayout>
-
-    <!-- Printer list -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/printers_recycler_view"
+    <!-- Scrollable printer sections -->
+    <ScrollView
+        android:id="@+id/scroll_printers"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
         android:paddingBottom="80dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/text_section_connected"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/text_subtitle"
+        app:layout_constraintBottom_toTopOf="@id/layout_test_buttons">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp">
+
+            <!-- RECEIPT PRINTER section -->
+            <LinearLayout
+                android:id="@+id/section_receipt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RECEIPT PRINTER"
+                    android:paddingBottom="6dp"
+                    style="@style/TextAppearance.Posterita.Label"
+                    android:textColor="@color/posterita_muted" />
+
+                <FrameLayout
+                    android:id="@+id/frame_receipt_printer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_receipt_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Not configured \u2014 tap + to add"
+                    android:padding="14dp"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- KITCHEN PRINTER section -->
+            <LinearLayout
+                android:id="@+id/section_kitchen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="KITCHEN PRINTER"
+                    android:paddingBottom="6dp"
+                    style="@style/TextAppearance.Posterita.Label"
+                    android:textColor="@color/posterita_muted" />
+
+                <FrameLayout
+                    android:id="@+id/frame_kitchen_printer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_kitchen_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Not configured \u2014 tap + to add"
+                    android:padding="14dp"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- BAR PRINTER section -->
+            <LinearLayout
+                android:id="@+id/section_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BAR PRINTER"
+                    android:paddingBottom="6dp"
+                    style="@style/TextAppearance.Posterita.Label"
+                    android:textColor="@color/posterita_muted" />
+
+                <FrameLayout
+                    android:id="@+id/frame_bar_printer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_bar_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Not configured \u2014 tap + to add"
+                    android:padding="14dp"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- BARCODE / LABEL PRINTER section -->
+            <LinearLayout
+                android:id="@+id/section_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BARCODE / LABEL PRINTER"
+                    android:paddingBottom="6dp"
+                    style="@style/TextAppearance.Posterita.Label"
+                    android:textColor="@color/posterita_muted" />
+
+                <FrameLayout
+                    android:id="@+id/frame_label_printer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_label_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Not configured \u2014 tap + to add"
+                    android:padding="14dp"
+                    style="@style/TextAppearance.Posterita.Body.Muted"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
     <!-- Test buttons row -->
     <LinearLayout

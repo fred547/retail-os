@@ -19,4 +19,10 @@ interface PrinterDao {
 
     @Query("DELETE FROM printer WHERE printer_id = :printerId")
     suspend fun deletePrinter(printerId: Int)
+
+    @Query("SELECT * FROM printer WHERE role = :role LIMIT 1")
+    suspend fun getPrinterByRole(role: String): Printer?
+
+    @Query("SELECT * FROM printer WHERE role = :role")
+    suspend fun getPrintersByRole(role: String): List<Printer>
 }

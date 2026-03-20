@@ -22,6 +22,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CreatePrinterActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_PRINTER_ROLE = "printer_role"
+    }
+
     private lateinit var binding: ActivityCreatePrinterBinding
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var printerManager: PrinterManager
@@ -29,11 +33,14 @@ class CreatePrinterActivity : AppCompatActivity() {
     private var selectedInterface = ""
     private var selectedBluetoothDevice = ""
     private var selectedWidth = 48
+    private var printerRole = Printer.ROLE_RECEIPT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCreatePrinterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        printerRole = intent.getStringExtra(EXTRA_PRINTER_ROLE) ?: Printer.ROLE_RECEIPT
 
         setupInterfaceSpinner()
         setupPaperWidthSpinner()
@@ -205,7 +212,8 @@ class CreatePrinterActivity : AppCompatActivity() {
             deviceName = deviceName,
             printReceipt = printReceipt,
             printKitchen = printKitchen,
-            cashDrawer = cashDrawer
+            cashDrawer = cashDrawer,
+            role = printerRole
         )
     }
 
