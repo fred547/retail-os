@@ -42,6 +42,17 @@
                 style="@style/TextAppearance.Posterita.Tiny"
                 android:textColor="@color/posterita_muted"
                 tools:text="Grand Baie store · Cashier" />
+
+            <TextView
+                android:id="@+id/textTerminalInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                style="@style/TextAppearance.Posterita.Nano"
+                android:textColor="@color/posterita_muted"
+                android:visibility="gone"
+                tools:text="Terminal: POS-GB-01"
+                tools:visibility="visible" />
         </LinearLayout>
 
         <!-- Connectivity indicator -->

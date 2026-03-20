@@ -20,10 +20,13 @@ import com.posterita.pos.android.databinding.ActivityHomeBinding
 import com.posterita.pos.android.util.DemoDataSeeder
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import com.posterita.pos.android.util.NumberUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -70,6 +73,12 @@ class HomeActivity : AppCompatActivity() {
 
         setupGreeting()
         setupAppGrid()
+        loadTodaySummary()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadTodaySummary()
     }
 
     private fun setupGreeting() {
@@ -91,6 +100,45 @@ class HomeActivity : AppCompatActivity() {
             roleName
         ).joinToString(" · ")
         binding.textBranding.text = subtitle.ifEmpty { "retailOS" }
+
+        // Show terminal info
+        val terminalName = prefsManager.terminalName.ifEmpty { null }
+        if (terminalName != null) {
+            binding.textTerminalInfo?.text = "Terminal: $terminalName"
+            binding.textTerminalInfo?.visibility = View.VISIBLE
+        }
+    }
+
+    private fun loadTodaySummary() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Get today's start timestamp (midnight)
+            val cal = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val todayStart = cal.timeInMillis
+
+            // Query today's orders
+            val allOrders = db.orderDao().getAllOrders()
+            val todayOrders = allOrders.filter { order ->
+                val orderTime = order.dateOrdered?.time ?: 0L
+                orderTime >= todayStart
+            }
+
+            val orderCount = todayOrders.size
+            val revenue = todayOrders.sumOf { it.grandTotal }
+            val customerCount = todayOrders.filter { it.customerId > 0 }.map { it.customerId }.distinct().size
+
+            val currency = sessionManager.account?.currency ?: "Rs"
+
+            withContext(Dispatchers.Main) {
+                binding.textOrderCount?.text = orderCount.toString()
+                binding.textRevenue?.text = "$currency ${NumberUtils.formatPrice(revenue)}"
+                binding.textLoyaltySignups?.text = customerCount.toString()
+            }
+        }
     }
 
     private fun setupAppGrid() {
