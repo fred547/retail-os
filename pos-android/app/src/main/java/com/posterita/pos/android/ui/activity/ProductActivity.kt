@@ -453,40 +453,45 @@ class ProductActivity : BaseDrawerActivity() {
             showCustomerNumpadDialog()
         }
 
-        // MORE button — shows action sheet
-        binding.buttonMoreBottom?.setOnClickListener {
+        // MORE button — anchored popup menu near the button
+        binding.buttonMoreBottom?.setOnClickListener { anchor ->
             val options = arrayOf("Open Cash Drawer", "Clear Cart", "Hold Order")
-            AlertDialog.Builder(this)
-                .setTitle("More Actions")
-                .setItems(options) { _, which ->
-                    when (which) {
-                        0 -> {
-                            lifecycleScope.launch {
-                                printerManager.openCashDrawer()
-                                Toast.makeText(this@ProductActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
-                            }
+            val popup = android.widget.ListPopupWindow(this)
+            popup.anchorView = anchor
+            popup.setAdapter(android.widget.ArrayAdapter(this, android.R.layout.simple_list_item_1, options))
+            popup.width = (200 * resources.displayMetrics.density).toInt()
+            popup.isModal = true
+            popup.setDropDownGravity(android.view.Gravity.END)
+            popup.setOnItemClickListener { _, _, position, _ ->
+                popup.dismiss()
+                when (position) {
+                    0 -> {
+                        lifecycleScope.launch {
+                            printerManager.openCashDrawer()
+                            Toast.makeText(this@ProductActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
                         }
-                        1 -> {
-                            if (shoppingCartViewModel.shoppingCart.isEmpty()) {
-                                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
-                            } else {
-                                AlertDialog.Builder(this)
-                                    .setTitle("Clear Cart")
-                                    .setMessage("Remove all items from the cart?")
-                                    .setPositiveButton("Clear") { _, _ ->
-                                        shoppingCartViewModel.clearCart()
-                                        lastAddedProduct = null
-                                        updateLastProductDisplay()
-                                        productAdapter.notifyDataSetChanged()
-                                    }
-                                    .setNegativeButton("Cancel", null)
-                                    .show()
-                            }
-                        }
-                        2 -> holdOrder()
                     }
+                    1 -> {
+                        if (shoppingCartViewModel.shoppingCart.isEmpty()) {
+                            Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                        } else {
+                            AlertDialog.Builder(this)
+                                .setTitle("Clear Cart")
+                                .setMessage("Remove all items from the cart?")
+                                .setPositiveButton("Clear") { _, _ ->
+                                    shoppingCartViewModel.clearCart()
+                                    lastAddedProduct = null
+                                    updateLastProductDisplay()
+                                    productAdapter.notifyDataSetChanged()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    }
+                    2 -> holdOrder()
                 }
-                .show()
+            }
+            popup.show()
         }
 
         // UNDO button - remove last added product from cart

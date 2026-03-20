@@ -227,6 +227,10 @@
             android:name=".ui.activity.TerminalInfoActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.EditTerminalActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".ui.activity.ManageTablesActivity"
             android:exported="false" />
         <activity

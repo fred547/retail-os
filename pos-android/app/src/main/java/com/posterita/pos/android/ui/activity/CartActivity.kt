@@ -183,35 +183,36 @@ class CartActivity : BaseDrawerActivity() {
             holdOrder()
         }
 
-        // MORE button — shows AlertDialog with Clear Cart, Hold Order
-        findViewById<View>(R.id.button_more_cart)?.setOnClickListener {
+        // MORE button — anchored popup menu near the button
+        findViewById<View>(R.id.button_more_cart)?.setOnClickListener { anchor ->
             val options = arrayOf("Clear Cart", "Hold Order")
-            AlertDialog.Builder(this)
-                .setItems(options) { _, which ->
-                    when (which) {
-                        0 -> {
-                            // Clear Cart
-                            if (shoppingCartViewModel.shoppingCart.isEmpty()) {
-                                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
-                            } else {
-                                AlertDialog.Builder(this)
-                                    .setTitle("Clear Cart")
-                                    .setMessage("Are you sure you want to clear all items?")
-                                    .setPositiveButton("Clear") { _, _ ->
-                                        shoppingCartViewModel.clearCart()
-                                        Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .setNegativeButton("Cancel", null)
-                                    .show()
-                            }
-                        }
-                        1 -> {
-                            // Hold Order
-                            holdOrder()
+            val popup = android.widget.ListPopupWindow(this)
+            popup.anchorView = anchor
+            popup.setAdapter(android.widget.ArrayAdapter(this, android.R.layout.simple_list_item_1, options))
+            popup.width = (180 * resources.displayMetrics.density).toInt()
+            popup.isModal = true
+            popup.setOnItemClickListener { _, _, position, _ ->
+                popup.dismiss()
+                when (position) {
+                    0 -> {
+                        if (shoppingCartViewModel.shoppingCart.isEmpty()) {
+                            Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                        } else {
+                            AlertDialog.Builder(this)
+                                .setTitle("Clear Cart")
+                                .setMessage("Are you sure you want to clear all items?")
+                                .setPositiveButton("Clear") { _, _ ->
+                                    shoppingCartViewModel.clearCart()
+                                    Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
                         }
                     }
+                    1 -> holdOrder()
                 }
-                .show()
+            }
+            popup.show()
         }
 
         // CLEAR button (bin icon in customer row)
