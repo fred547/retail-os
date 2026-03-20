@@ -91,8 +91,10 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
     private fun setupRecyclerView() {
         orderAdapter = OrderHistoryRecyclerAdapter(object : OrderHistoryRecyclerAdapter.OnItemClickListener {
             override fun onItemClick(order: OrderDetails) {
-                val intent = Intent(this@OrdersActivity, ViewOrderActivity::class.java)
+                // Use unified ReceiptActivity (same view as post-checkout, but without success banner)
+                val intent = Intent(this@OrdersActivity, ReceiptActivity::class.java)
                 intent.putExtra("ORDER_UUID", order.uuid)
+                intent.putExtra(ReceiptActivity.EXTRA_FROM_CHECKOUT, false)
                 startActivity(intent)
             }
         })
