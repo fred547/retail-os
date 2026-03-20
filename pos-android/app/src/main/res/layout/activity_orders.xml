@@ -98,85 +98,87 @@
             android:maxLines="1" />
     </LinearLayout>
 
-    <!-- Filter chips row -->
+    <!-- Date selector pill -->
+    <LinearLayout
+        android:id="@+id/layout_date_selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toBottomOf="@id/searchLayout">
+
+        <TextView
+            android:id="@+id/text_date_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="\uD83D\uDCC5 Today \u25BE"
+            android:textSize="13sp"
+            android:fontFamily="@font/lexend_medium"
+            android:textColor="@color/posterita_primary"
+            android:background="@drawable/btn_outline_rounded"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Status filter chips -->
     <HorizontalScrollView
-        android:id="@+id/chipScroll"
+        android:id="@+id/scroll_status_chips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:layout_marginTop="8dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        app:layout_constraintTop_toBottomOf="@id/searchLayout">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="6dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_date_selector">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="false">
+            app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAll"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.Posterita.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="All"
                 android:checked="true" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipToday"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:id="@+id/chipHeld"
+                style="@style/Widget.Posterita.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Today" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipYesterday"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Yesterday" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipThisWeek"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="This Week" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipThisMonth"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="This Month" />
+                android:text="Held"
+                app:chipBackgroundColor="@color/posterita_warning_light"
+                app:chipStrokeColor="@color/posterita_warning" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPaid"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.Posterita.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Paid" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chipRefunded"
+                style="@style/Widget.Posterita.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Refunded" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/chipVoided"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.Posterita.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Voided" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipHeld"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Held"
-                app:chipBackgroundColor="@color/posterita_warning_light"
-                app:chipStrokeColor="@color/posterita_warning"
-                app:chipStrokeWidth="1dp"
-                app:checkedIconVisible="false" />
-
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -189,7 +191,7 @@
         android:layout_marginTop="8dp"
         android:textSize="13sp"
         android:textColor="@color/posterita_muted"
-        app:layout_constraintTop_toBottomOf="@id/chipScroll"
+        app:layout_constraintTop_toBottomOf="@id/scroll_status_chips"
         app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Orders list -->
@@ -213,7 +215,7 @@
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chipScroll"
+        app:layout_constraintTop_toBottomOf="@id/scroll_status_chips"
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Empty state -->
@@ -225,7 +227,7 @@
         android:orientation="vertical"
         android:padding="32dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/chipScroll"
+        app:layout_constraintTop_toBottomOf="@id/scroll_status_chips"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView

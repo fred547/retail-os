@@ -73,6 +73,67 @@
                 style="@style/TextAppearance.Posterita.Body" />
         </LinearLayout>
 
+        <!-- Orders -->
+        <LinearLayout
+            android:id="@+id/nav_orders"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/order"
+                android:scaleType="fitCenter"
+                android:contentDescription="Orders"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Orders"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/posterita_line" />
+
+        <!-- Open Cash Drawer -->
+        <LinearLayout
+            android:id="@+id/nav_open_drawer"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/till"
+                android:scaleType="fitCenter"
+                android:contentDescription="Open Cash Drawer"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Open Cash Drawer"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
         <!-- Close Till -->
         <LinearLayout
             android:id="@+id/nav_close_till"
@@ -100,42 +161,9 @@
                 style="@style/TextAppearance.Posterita.Body" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="12dp"
-            android:background="@color/posterita_line" />
-
-        <!-- Log Out -->
-        <LinearLayout
-            android:id="@+id/nav_logout"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:foreground="?attr/selectableItemBackground">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/logout"
-                android:scaleType="fitCenter"
-                android:tint="@color/posterita_error"
-                android:contentDescription="Log Out" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="Log Out"
-                style="@style/TextAppearance.Posterita.Body"
-                android:textColor="@color/posterita_error" />
-        </LinearLayout>
-
         <!-- Hidden IDs for binding compat -->
         <View android:id="@+id/nav_pos" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-        <View android:id="@+id/nav_orders" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+        <View android:id="@+id/nav_logout" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/nav_hold_orders" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/nav_kitchen_orders" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/nav_settings" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />

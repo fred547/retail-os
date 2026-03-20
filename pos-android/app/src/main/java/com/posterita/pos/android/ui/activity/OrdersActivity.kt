@@ -1,10 +1,12 @@
 package com.posterita.pos.android.ui.activity
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -25,7 +27,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -43,12 +47,16 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
 
     private var allOrders: List<OrderDetails> = emptyList()
     private var currentSearchQuery: String = ""
-    private var currentDateFilter: DateFilter = DateFilter.ALL
+    private var currentDateFilter: DateFilter = DateFilter.TODAY
     private var currentStatusFilter: StatusFilter = StatusFilter.ALL
     private var isShowingHeld: Boolean = false
 
-    enum class DateFilter { ALL, TODAY, YESTERDAY, THIS_WEEK, THIS_MONTH }
-    enum class StatusFilter { ALL, PAID, VOIDED }
+    // Custom date range bounds (millis). Used when dateFilter == CUSTOM_RANGE
+    private var customDateStart: Long = 0L
+    private var customDateEnd: Long = 0L
+
+    enum class DateFilter { TODAY, YESTERDAY, THIS_WEEK, THIS_MONTH, ALL_TIME, CUSTOM_RANGE }
+    enum class StatusFilter { ALL, HELD, PAID, REFUNDED, VOIDED }
 
     override fun getDrawerHighlightId(): Int = R.id.nav_orders
 
@@ -60,13 +68,14 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
         )
         supportActionBar?.hide()
 
-        // Back button (← arrow, consistent with Cart/Products)
+        // Back button
         binding.buttonBack.setOnClickListener { finish() }
 
         setupDrawerNavigation()
         setupRecyclerView()
         setupSearch()
-        setupFilterChips()
+        setupDateSelector()
+        setupStatusChips()
         observeViewModel()
 
         // Show loading spinner while orders load
@@ -76,6 +85,7 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
 
         // Load held order count for badge
         updateHeldChipCount()
+        updateDatePillText()
     }
 
     private fun setupRecyclerView() {
@@ -108,55 +118,132 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
         })
     }
 
-    private fun setupFilterChips() {
+    // ── Date selector pill ──────────────────────────────────────────────
+
+    private fun setupDateSelector() {
+        binding.textDateFilter.setOnClickListener { view ->
+            val popup = PopupMenu(this, view)
+            popup.menu.add(0, 0, 0, "Today")
+            popup.menu.add(0, 1, 1, "Yesterday")
+            popup.menu.add(0, 2, 2, "This Week")
+            popup.menu.add(0, 3, 3, "This Month")
+            popup.menu.add(0, 4, 4, "All Time")
+            popup.menu.add(0, 5, 5, "Custom Range\u2026")
+
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    0 -> {
+                        currentDateFilter = DateFilter.TODAY
+                        onDateFilterChanged()
+                    }
+                    1 -> {
+                        currentDateFilter = DateFilter.YESTERDAY
+                        onDateFilterChanged()
+                    }
+                    2 -> {
+                        currentDateFilter = DateFilter.THIS_WEEK
+                        onDateFilterChanged()
+                    }
+                    3 -> {
+                        currentDateFilter = DateFilter.THIS_MONTH
+                        onDateFilterChanged()
+                    }
+                    4 -> {
+                        currentDateFilter = DateFilter.ALL_TIME
+                        onDateFilterChanged()
+                    }
+                    5 -> showCustomDateRangePicker()
+                }
+                true
+            }
+            popup.show()
+        }
+    }
+
+    private fun showCustomDateRangePicker() {
+        val now = Calendar.getInstance()
+
+        // Pick start date
+        val startPicker = DatePickerDialog(this, { _, year, month, day ->
+            val startCal = Calendar.getInstance().apply {
+                set(year, month, day, 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            customDateStart = startCal.timeInMillis
+
+            // Then pick end date
+            val endPicker = DatePickerDialog(this, { _, y2, m2, d2 ->
+                val endCal = Calendar.getInstance().apply {
+                    set(y2, m2, d2, 23, 59, 59)
+                    set(Calendar.MILLISECOND, 999)
+                }
+                customDateEnd = endCal.timeInMillis
+                currentDateFilter = DateFilter.CUSTOM_RANGE
+                onDateFilterChanged()
+            }, year, month, day)
+            endPicker.setTitle("End date")
+            endPicker.show()
+
+        }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
+        startPicker.setTitle("Start date")
+        startPicker.show()
+    }
+
+    private fun onDateFilterChanged() {
+        updateDatePillText()
+        if (isShowingHeld) {
+            // Stay on held view but refilter
+            loadHeldOrders()
+        } else {
+            applyFilters()
+        }
+    }
+
+    private fun updateDatePillText() {
+        val label = when (currentDateFilter) {
+            DateFilter.TODAY -> "\uD83D\uDCC5 Today \u25BE"
+            DateFilter.YESTERDAY -> "\uD83D\uDCC5 Yesterday \u25BE"
+            DateFilter.THIS_WEEK -> "\uD83D\uDCC5 This Week \u25BE"
+            DateFilter.THIS_MONTH -> "\uD83D\uDCC5 This Month \u25BE"
+            DateFilter.ALL_TIME -> "\uD83D\uDCC5 All Time \u25BE"
+            DateFilter.CUSTOM_RANGE -> {
+                val fmt = SimpleDateFormat("MMM d", Locale.getDefault())
+                val start = fmt.format(customDateStart)
+                val end = fmt.format(customDateEnd)
+                "\uD83D\uDCC5 $start \u2013 $end \u25BE"
+            }
+        }
+        binding.textDateFilter.text = label
+    }
+
+    // ── Status filter chips ─────────────────────────────────────────────
+
+    private fun setupStatusChips() {
         binding.chipAll.setOnClickListener {
-            currentDateFilter = DateFilter.ALL
             currentStatusFilter = StatusFilter.ALL
             switchToRegularOrders()
             applyFilters()
         }
-        binding.chipToday.setOnClickListener {
-            currentDateFilter = DateFilter.TODAY
-            currentStatusFilter = StatusFilter.ALL
-            switchToRegularOrders()
-            applyFilters()
-        }
-        binding.chipYesterday.setOnClickListener {
-            currentDateFilter = DateFilter.YESTERDAY
-            currentStatusFilter = StatusFilter.ALL
-            switchToRegularOrders()
-            applyFilters()
-        }
-        binding.chipThisWeek.setOnClickListener {
-            currentDateFilter = DateFilter.THIS_WEEK
-            currentStatusFilter = StatusFilter.ALL
-            switchToRegularOrders()
-            applyFilters()
-        }
-        binding.chipThisMonth.setOnClickListener {
-            currentDateFilter = DateFilter.THIS_MONTH
-            currentStatusFilter = StatusFilter.ALL
-            switchToRegularOrders()
-            applyFilters()
+        binding.chipHeld.setOnClickListener {
+            currentStatusFilter = StatusFilter.HELD
+            isShowingHeld = true
+            binding.recyclerViewOrders.adapter = holdOrderAdapter
+            loadHeldOrders()
         }
         binding.chipPaid.setOnClickListener {
             currentStatusFilter = StatusFilter.PAID
-            currentDateFilter = DateFilter.ALL
+            switchToRegularOrders()
+            applyFilters()
+        }
+        binding.chipRefunded.setOnClickListener {
+            currentStatusFilter = StatusFilter.REFUNDED
             switchToRegularOrders()
             applyFilters()
         }
         binding.chipVoided.setOnClickListener {
             currentStatusFilter = StatusFilter.VOIDED
-            currentDateFilter = DateFilter.ALL
             switchToRegularOrders()
             applyFilters()
-        }
-        binding.chipHeld.setOnClickListener {
-            currentDateFilter = DateFilter.ALL
-            currentStatusFilter = StatusFilter.ALL
-            isShowingHeld = true
-            binding.recyclerViewOrders.adapter = holdOrderAdapter
-            loadHeldOrders()
         }
     }
 
@@ -252,69 +339,35 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
         }
     }
 
+    // ── Combined date + status + search filtering ───────────────────────
+
     private fun applyFilters() {
         var filtered = allOrders
 
-        // Apply date filter
-        if (currentDateFilter != DateFilter.ALL) {
-            val now = Calendar.getInstance()
-            filtered = filtered.filter { order ->
-                val orderTime = order.dateordered
-                if (orderTime == 0L) return@filter false
+        // 1. Apply date filter
+        filtered = filterByDate(filtered)
 
-                val orderCal = Calendar.getInstance().apply { timeInMillis = orderTime }
-
-                when (currentDateFilter) {
-                    DateFilter.TODAY -> isSameDay(orderCal, now)
-                    DateFilter.YESTERDAY -> {
-                        val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
-                        isSameDay(orderCal, yesterday)
-                    }
-                    DateFilter.THIS_WEEK -> {
-                        val weekStart = Calendar.getInstance().apply {
-                            set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
-                            set(Calendar.HOUR_OF_DAY, 0)
-                            set(Calendar.MINUTE, 0)
-                            set(Calendar.SECOND, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }
-                        orderCal.timeInMillis >= weekStart.timeInMillis
-                    }
-                    DateFilter.THIS_MONTH -> {
-                        orderCal.get(Calendar.YEAR) == now.get(Calendar.YEAR) &&
-                                orderCal.get(Calendar.MONTH) == now.get(Calendar.MONTH)
-                    }
-                    else -> true
-                }
-            }
-        }
-
-        // Apply status filter
-        if (currentStatusFilter != StatusFilter.ALL) {
+        // 2. Apply status filter
+        if (currentStatusFilter != StatusFilter.ALL && currentStatusFilter != StatusFilter.HELD) {
             filtered = filtered.filter { order ->
                 when (currentStatusFilter) {
-                    StatusFilter.PAID -> order.ispaid
+                    StatusFilter.PAID -> order.ispaid && order.status?.lowercase() != "voided"
+                    StatusFilter.REFUNDED -> order.status?.lowercase() == "refunded"
                     StatusFilter.VOIDED -> order.status?.lowercase() == "voided"
                     else -> true
                 }
             }
         }
 
-        // Apply search query
+        // 3. Apply search query
         if (currentSearchQuery.isNotEmpty()) {
             filtered = filtered.filter { order ->
                 val query = currentSearchQuery
-                // Search by order number
                 (order.documentno?.lowercase()?.contains(query) == true) ||
-                // Search by customer name
                 (order.customer_name?.lowercase()?.contains(query) == true) ||
-                // Search by amount
                 (order.grandtotal.toString().contains(query)) ||
-                // Search by date text
                 (order.dateorderedtext?.lowercase()?.contains(query) == true) ||
-                // Search by user name
                 (order.user_name?.lowercase()?.contains(query) == true) ||
-                // Search by payment type
                 (order.paymenttype?.lowercase()?.contains(query) == true)
             }
         }
@@ -322,19 +375,79 @@ class OrdersActivity : BaseDrawerActivity(), HoldOrderAdapter.OnHoldOrderClickLi
         // Update UI
         orderAdapter.setOrderList(filtered)
         val count = filtered.size
-        binding.txtResultCount.text = if (allOrders.isEmpty()) "" else "$count order${if (count != 1) "s" else ""}"
+        val statusLabel = when (currentStatusFilter) {
+            StatusFilter.PAID -> "paid order"
+            StatusFilter.REFUNDED -> "refunded order"
+            StatusFilter.VOIDED -> "voided order"
+            else -> "order"
+        }
+        binding.txtResultCount.text = if (allOrders.isEmpty()) "" else "$count $statusLabel${if (count != 1) "s" else ""}"
 
         val showEmpty = filtered.isEmpty()
         binding.layoutEmptyOrders.visibility = if (showEmpty) View.VISIBLE else View.GONE
         binding.recyclerViewOrders.visibility = if (showEmpty) View.GONE else View.VISIBLE
 
-        // Update empty state subtitle based on context
         if (showEmpty) {
             binding.txtEmpty.text = if (allOrders.isEmpty()) "No orders yet" else "No orders found"
             binding.txtEmptySubtitle.text = if (allOrders.isEmpty())
                 "Completed orders will appear here"
             else
                 "Try adjusting your search or filters"
+        }
+    }
+
+    private fun filterByDate(orders: List<OrderDetails>): List<OrderDetails> {
+        if (currentDateFilter == DateFilter.ALL_TIME) return orders
+
+        val now = Calendar.getInstance()
+        val (rangeStart, rangeEnd) = when (currentDateFilter) {
+            DateFilter.TODAY -> {
+                val start = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                val end = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
+                }
+                start.timeInMillis to end.timeInMillis
+            }
+            DateFilter.YESTERDAY -> {
+                val start = Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_YEAR, -1)
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                val end = Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_YEAR, -1)
+                    set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
+                }
+                start.timeInMillis to end.timeInMillis
+            }
+            DateFilter.THIS_WEEK -> {
+                val start = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                start.timeInMillis to now.timeInMillis
+            }
+            DateFilter.THIS_MONTH -> {
+                val start = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                start.timeInMillis to now.timeInMillis
+            }
+            DateFilter.CUSTOM_RANGE -> customDateStart to customDateEnd
+            else -> return orders
+        }
+
+        return orders.filter { order ->
+            val t = order.dateordered
+            t in rangeStart..rangeEnd
         }
     }
 

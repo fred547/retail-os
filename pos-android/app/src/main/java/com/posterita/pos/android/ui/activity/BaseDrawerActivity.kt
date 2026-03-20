@@ -26,6 +26,7 @@ import com.posterita.pos.android.service.SyncStatusManager
 import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.worker.CloudSyncWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -261,6 +262,23 @@ abstract class BaseDrawerActivity : BaseActivity() {
         navClick(R.id.nav_kitchen_orders) {
             if (this !is KitchenOrdersActivity) {
                 startActivity(Intent(this, KitchenOrdersActivity::class.java))
+            }
+        }
+        navClick(R.id.nav_open_drawer) {
+            lifecycleScope.launch {
+                try {
+                    val printerManager = (this@BaseDrawerActivity as? ProductActivity)?.printerManager
+                    if (printerManager != null) {
+                        kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            printerManager.openCashDrawer()
+                        }
+                        Toast.makeText(this@BaseDrawerActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@BaseDrawerActivity, "Printer not available", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@BaseDrawerActivity, "Failed to open drawer", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         navClick(R.id.nav_close_till) {
