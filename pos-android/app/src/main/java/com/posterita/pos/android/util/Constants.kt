@@ -6,7 +6,9 @@ object Constants {
 
     // SharedPreferences keys
     const val KEY_BASE_URL = "baseUrl"
-    const val DEFAULT_BASE_URL = "https://my.posterita.com/posteritabo"
+    // Legacy base URL — will be replaced by NestJS backend on Render in Phase 1
+    // For now, cloud sync goes through posterita-cloud.vercel.app
+    const val DEFAULT_BASE_URL = "https://posterita-cloud.vercel.app/api"
     const val ACCOUNT_ID = "account_id"
     const val STORE_ID = "store_id"
     const val TERMINAL_ID = "terminal_id"
@@ -74,7 +76,8 @@ object Constants {
     const val CLOUD_LAST_SYNC_AT = "cloud_last_sync_at"
 
     // URLs
-    const val SIGN_UP_URL = "https://my.posterita.com/posteritabo/sign-up.do"
+    // TODO: Update to new signup URL when web console is ready
+    const val SIGN_UP_URL = "https://posterita-cloud.vercel.app/signup"
 
     // Demo mode — do NOT hardcode credentials in source code.
     // Configure demo account email via Settings > Demo Account.

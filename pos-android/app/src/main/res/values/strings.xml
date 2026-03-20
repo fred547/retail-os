@@ -2,7 +2,7 @@
     <string name="app_name">Posterita</string>
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
-    <string name="server_endpoint">https://my.posterita.com/bo</string>
+    <string name="server_endpoint">https://posterita-cloud.vercel.app/api</string>
     <string name="select_user_hint">Select User</string>
 
     <!-- Biometric login -->

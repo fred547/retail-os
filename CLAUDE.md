@@ -17,10 +17,18 @@ Unified retail management platform: one Android app, one web console, one NestJS
 ## Stack
 
 - **Android:** Kotlin, Gradle, Room, Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink payments
-- **Backend:** NestJS modular monolith on Render, BullMQ workers, Redis
-- **Web Console:** Next.js on Vercel
+- **Backend:** NestJS modular monolith on Render, BullMQ workers, Redis (Phase 1 — not yet deployed)
+- **Cloud Sync:** Vercel serverless functions at `posterita-cloud.vercel.app/api/` (current sync endpoint)
+- **Web Console:** Next.js on Vercel (in `manus-retail-os/`)
 - **Database:** Supabase Postgres (sole source of truth)
 - **Media:** Cloudinary | **WhatsApp:** Meta Cloud API via SalesIQ | **Payments:** Blink SDK
+
+## API Endpoints
+
+- **Cloud Sync (current):** `https://posterita-cloud.vercel.app/api/` — Android syncs here
+- **Legacy (being retired):** `https://my.posterita.com/posteritabo` — DO NOT USE
+- **Loyalty (legacy):** `https://loyalty.posterita.com/api/` — Flask API, being migrated to NestJS
+- **Backend (Phase 1):** TBD — NestJS on Render, will replace both legacy endpoints
 
 ## Key Architectural Rules
 
@@ -61,5 +69,14 @@ For UI work, also read:
 
 ## Current Phase
 
-Phase 0 — Android app cleanup, UI consistency, getting offline POS solid.
+Phase 0 — Android app cleanup, UI consistency, getting offline POS solid. (Nearly complete)
 Next: Phase 1 — NestJS backend on Render + Supabase database.
+
+## Navigation Architecture
+
+- **Home screen:** Hub for all modules (POS, Orders, Settings, etc.)
+- **POS drawer menu:** Only Home, Close Till, Logout (minimal — not a navigation hub)
+- **Connectivity dot:** Green/red indicator in every top bar, tapping opens sync screen
+- **Sync:** Automatic via CloudSyncWorker (5-min interval). Manual sync via connectivity dot.
+- **About, Help:** Accessible from Settings screen, not from POS drawer
+- **Logout:** From POS drawer or Settings
