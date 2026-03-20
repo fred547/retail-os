@@ -12,18 +12,18 @@
         android:background="@color/posterita_bg"
         tools:context=".Activities.ProductActivity">
 
-        <!-- Top bar: menu + search field + scan -->
+        <!-- Top bar: ☰ Menu | POS title | Search bar | Scan -->
         <LinearLayout
             android:id="@+id/layout_top_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="8dp"
+            android:paddingStart="4dp"
             android:paddingEnd="8dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:background="@color/posterita_panel"
+            android:background="@color/posterita_paper"
             android:elevation="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,25 +40,32 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 app:tint="@color/posterita_ink" />
 
+            <!-- Screen name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="POS"
+                style="@style/TextAppearance.Posterita.Heading" />
+
             <!-- Search bar -->
             <LinearLayout
                 android:id="@+id/layout_search_bar"
                 android:layout_width="0dp"
-                android:layout_height="42dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
                 android:layout_marginEnd="6dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:background="@drawable/bg_search_bar"
                 android:clickable="true"
                 android:focusable="true">
 
                 <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:src="@drawable/ic_search"
                     android:contentDescription="Search"
                     app:tint="@color/posterita_muted" />
@@ -67,9 +74,10 @@
                     android:id="@+id/text_cart_summary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="8dp"
                     android:text="Search products..."
-                    style="@style/TextAppearance.Posterita.Body.Muted" />
+                    style="@style/TextAppearance.Posterita.Tiny"
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <!-- Hidden for binding compatibility -->

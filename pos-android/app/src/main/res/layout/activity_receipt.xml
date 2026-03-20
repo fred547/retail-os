@@ -7,16 +7,14 @@
     android:background="@color/posterita_bg"
     tools:context=".Activities.ReceiptActivity">
 
-    <!-- Toolbar -->
+    <!-- Toolbar: back + Receipt title -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/posterita_bg"
-        app:elevation="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:background="@color/posterita_paper"
+        app:elevation="1dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -28,9 +26,10 @@
                 android:id="@+id/text_view_order_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
+                android:layout_marginStart="4dp"
                 android:text="Receipt"
-                style="@style/TextAppearance.Posterita.Title" />
+                style="@style/TextAppearance.Posterita.Heading" />
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -48,7 +47,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="16dp">
 
             <!-- Success indicator -->
             <LinearLayout
@@ -56,61 +58,69 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingBottom="20dp">
+                android:paddingBottom="16dp">
 
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_check_circle"
-                    android:contentDescription="Sale complete"
-                    app:tint="@color/posterita_secondary" />
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp">
+
+                    <View
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_success_card" />
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_check_circle"
+                        android:contentDescription="Sale complete"
+                        app:tint="@color/posterita_secondary" />
+                </FrameLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:text="Sale Complete"
                     style="@style/TextAppearance.Posterita.Heading"
                     android:textColor="@color/posterita_secondary" />
+
+                <!-- Change Due -->
+                <TextView
+                    android:id="@+id/txtrecipiy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Change Due"
+                    style="@style/TextAppearance.Posterita.Tiny"
+                    android:textColor="@color/posterita_muted" />
+
+                <TextView
+                    android:id="@+id/text_view_change_due"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Rs 0.00"
+                    android:textSize="32sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textColor="@color/posterita_secondary" />
+
+                <TextView
+                    android:id="@+id/text_view_tips_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    style="@style/TextAppearance.Posterita.Micro"
+                    android:textColor="@color/posterita_purple"
+                    android:visibility="gone"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
-
-            <!-- Change Due -->
-            <TextView
-                android:id="@+id/txtrecipiy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Change Due"
-                style="@style/TextAppearance.Posterita.Label"
-                android:gravity="center" />
-
-            <TextView
-                android:id="@+id/text_view_change_due"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Rs 0.00"
-                style="@style/TextAppearance.Posterita.PriceDisplay"
-                android:textColor="@color/posterita_secondary"
-                android:gravity="center" />
-
-            <TextView
-                android:id="@+id/text_view_tips_amount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                style="@style/TextAppearance.Posterita.Body"
-                android:textColor="@color/posterita_purple"
-                android:gravity="center"
-                android:visibility="gone"
-                android:layout_marginTop="4dp" />
 
             <!-- Receipt card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
@@ -129,6 +139,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/TextAppearance.Posterita.Tiny"
+                        android:textColor="@color/posterita_muted"
+                        android:gravity="center"
                         android:visibility="gone" />
 
                     <TextView
@@ -136,6 +148,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/TextAppearance.Posterita.Tiny"
+                        android:textColor="@color/posterita_muted"
+                        android:gravity="center"
                         android:layout_marginTop="2dp"
                         android:visibility="gone" />
 
@@ -144,6 +158,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/TextAppearance.Posterita.Tiny"
+                        android:textColor="@color/posterita_muted"
+                        android:gravity="center"
                         android:layout_marginTop="2dp"
                         android:visibility="gone" />
 
@@ -222,6 +238,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/TextAppearance.Posterita.Tiny"
+                        android:textColor="@color/posterita_muted"
                         android:visibility="gone"
                         android:layout_marginTop="8dp" />
 
@@ -250,7 +267,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="8dp" />
 
         </LinearLayout>
     </ScrollView>
@@ -261,10 +278,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="16dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="14dp"
         android:background="@color/posterita_paper"
         android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -275,9 +292,8 @@
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Void"
-            android:textSize="14sp" />
+            android:layout_marginEnd="6dp"
+            android:text="Void" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_print_order"
@@ -285,10 +301,8 @@
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:text="Print"
-            android:textSize="14sp" />
+            android:layout_marginEnd="6dp"
+            android:text="Print" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_new_sale"
@@ -296,9 +310,7 @@
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="2"
-            android:layout_marginStart="4dp"
-            android:text="New Sale"
-            android:textSize="16sp" />
+            android:text="New Sale" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
