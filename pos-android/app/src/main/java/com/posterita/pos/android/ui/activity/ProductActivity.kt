@@ -453,23 +453,40 @@ class ProductActivity : BaseDrawerActivity() {
             showCustomerNumpadDialog()
         }
 
-        // MORE button — shows additional actions
-        binding.buttonMoreBottom?.setOnClickListener { view ->
-            val popup = PopupMenu(this, view)
-            popup.menuInflater.inflate(R.menu.menu_product_options, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.menu_open_cash_drawer -> {
-                        lifecycleScope.launch {
-                            printerManager.openCashDrawer()
-                            Toast.makeText(this@ProductActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
+        // MORE button — shows action sheet
+        binding.buttonMoreBottom?.setOnClickListener {
+            val options = arrayOf("Open Cash Drawer", "Clear Cart", "Hold Order")
+            AlertDialog.Builder(this)
+                .setTitle("More Actions")
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> {
+                            lifecycleScope.launch {
+                                printerManager.openCashDrawer()
+                                Toast.makeText(this@ProductActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
+                            }
                         }
-                        true
+                        1 -> {
+                            if (shoppingCartViewModel.shoppingCart.isEmpty()) {
+                                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                            } else {
+                                AlertDialog.Builder(this)
+                                    .setTitle("Clear Cart")
+                                    .setMessage("Remove all items from the cart?")
+                                    .setPositiveButton("Clear") { _, _ ->
+                                        shoppingCartViewModel.clearCart()
+                                        lastAddedProduct = null
+                                        updateLastProductDisplay()
+                                        productAdapter.notifyDataSetChanged()
+                                    }
+                                    .setNegativeButton("Cancel", null)
+                                    .show()
+                            }
+                        }
+                        2 -> holdOrder()
                     }
-                    else -> false
                 }
-            }
-            popup.show()
+                .show()
         }
 
         // UNDO button - remove last added product from cart
@@ -968,17 +985,13 @@ class ProductActivity : BaseDrawerActivity() {
     }
 
     private fun updateMyCartButtonText(itemCount: Int) {
-        val currency = sessionManager.account?.currency ?: ""
-        val grandTotal = shoppingCartViewModel.grandTotalAmount.value ?: 0.0
-        // Cart button: show amount on the button text view
-        val cartLabel = if (itemCount > 0) {
-            "MY CART  $currency ${NumberUtils.formatPrice(grandTotal)}"
-        } else {
-            "MY CART"
+        // Icon-only cart button on phone — no text, just badge
+        // On tablet layouts, buttonMyCartText may show the label
+        binding.buttonMyCartText?.let {
+            val currency = sessionManager.account?.currency ?: ""
+            val grandTotal = shoppingCartViewModel.grandTotalAmount.value ?: 0.0
+            it.text = if (itemCount > 0) "$currency ${NumberUtils.formatPrice(grandTotal)}" else ""
         }
-        // buttonMyCart may be MaterialButton (phone) or LinearLayout (tablet) across configs
-        (binding.buttonMyCart as? android.widget.TextView)?.text = cartLabel
-        binding.buttonMyCartText?.let { it.text = cartLabel }
         // Top bar: on phones textCartSummary is the title, on tablets it's the qty counter
         // Only update if the layout uses it as a quantity counter (tablet layouts)
         if (resources.configuration.smallestScreenWidthDp >= 600) {
