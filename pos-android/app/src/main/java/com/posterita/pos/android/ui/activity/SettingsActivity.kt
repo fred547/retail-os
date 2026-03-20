@@ -2,12 +2,10 @@ package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
+import android.widget.Toast
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivitySettingsBinding
-import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : BaseDrawerActivity() {
@@ -21,76 +19,33 @@ class SettingsActivity : BaseDrawerActivity() {
         setContentViewWithDrawer(R.layout.activity_settings)
         binding = ActivitySettingsBinding.bind(drawerLayout.getChildAt(0))
 
-        // Wire up the back button in the new top bar
         binding.buttonBack.setOnClickListener { finish() }
 
         setupDrawerNavigation()
 
-        binding.posCustomization.setOnClickListener {
-            startActivity(Intent(this, PosCustomizationActivity::class.java))
-        }
-
-        binding.printersOption.setOnClickListener {
-            startActivity(Intent(this, PrintersActivity::class.java))
-        }
-
+        // Data from web (read-only)
         binding.storesOption.setOnClickListener {
             startActivity(Intent(this, ManageStoreActivity::class.java))
         }
-
         binding.terminalsOption.setOnClickListener {
             startActivity(Intent(this, ManageTerminalActivity::class.java))
         }
+        binding.usersOption?.setOnClickListener {
+            startActivity(Intent(this, ManageUsersActivity::class.java))
+        }
+        binding.taxesOption?.setOnClickListener {
+            startActivity(Intent(this, ManageTaxActivity::class.java))
+        }
+        binding.categoriesOption?.setOnClickListener {
+            startActivity(Intent(this, ManageCategoriesActivity::class.java))
+        }
+        binding.productsOption?.setOnClickListener {
+            startActivity(Intent(this, ManageProductsActivity::class.java))
+        }
 
+        // System
         binding.about.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }
-
-        binding.debugger.setOnClickListener {
-            // Navigate to debugger activity if available
-        }
-
-        binding.nfc.setOnClickListener {
-            startActivity(Intent(this, NfcActivity::class.java))
-        }
-
-        setupLoyaltySettings()
-    }
-
-    private fun setupLoyaltySettings() {
-        // Initialize loyalty toggle
-        binding.switchLoyaltyEnabled.isChecked = prefsManager.loyaltyEnabled
-        binding.switchLoyaltyEnabled.setOnCheckedChangeListener { _, isChecked ->
-            prefsManager.loyaltyEnabled = isChecked
-            updateLoyaltyFieldsVisibility(isChecked)
-        }
-
-        // Initialize loyalty API URL
-        binding.editLoyaltyApiUrl.setText(prefsManager.loyaltyApiBaseUrl)
-        binding.editLoyaltyApiUrl.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val url = binding.editLoyaltyApiUrl.text?.toString()?.trim()
-                if (!url.isNullOrEmpty()) {
-                    prefsManager.loyaltyApiBaseUrl = url
-                }
-            }
-        }
-
-        // Initialize loyalty account key
-        binding.editLoyaltyAccountKey.setText(prefsManager.loyaltyAccountKey)
-        binding.editLoyaltyAccountKey.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val key = binding.editLoyaltyAccountKey.text?.toString()?.trim() ?: ""
-                prefsManager.loyaltyAccountKey = key
-            }
-        }
-
-        updateLoyaltyFieldsVisibility(prefsManager.loyaltyEnabled)
-    }
-
-    private fun updateLoyaltyFieldsVisibility(enabled: Boolean) {
-        val visibility = if (enabled) View.VISIBLE else View.GONE
-        binding.layoutLoyaltyApiUrl.visibility = visibility
-        binding.layoutLoyaltyAccountKey.visibility = visibility
     }
 }
