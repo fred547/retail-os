@@ -2,6 +2,7 @@ package com.posterita.pos.android.ui.activity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -10,11 +11,19 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityWebConsoleBinding
 import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
 
 /**
@@ -116,7 +125,7 @@ class WebConsoleActivity : AppCompatActivity() {
             }
         }
 
-        // Load the URL
+        // Build the target URL
         val url = intent.getStringExtra(EXTRA_URL)
         val path = intent.getStringExtra(EXTRA_PATH)
 
@@ -127,7 +136,65 @@ class WebConsoleActivity : AppCompatActivity() {
         }
 
         binding.progressLoading.visibility = View.VISIBLE
-        binding.webView.loadUrl(targetUrl)
+
+        // Fetch OTT token then load URL with it appended
+        lifecycleScope.launch {
+            val ottToken = fetchOttToken()
+            val finalUrl = if (ottToken != null) {
+                val separator = if (targetUrl.contains("?")) "&" else "?"
+                "$targetUrl${separator}ott=$ottToken"
+            } else {
+                targetUrl
+            }
+            binding.webView.loadUrl(finalUrl)
+        }
+    }
+
+    /**
+     * Requests a One-Time Token from the web console API.
+     * Returns the token string on success, or null on any failure (offline, error, etc.).
+     */
+    private suspend fun fetchOttToken(): String? = withContext(Dispatchers.IO) {
+        try {
+            val accountId = prefsManager.accountId.ifEmpty { return@withContext null }
+            val userId = prefsManager.userId
+            val storeId = prefsManager.storeId
+            val terminalId = prefsManager.terminalId
+
+            val url = URL("$WEB_CONSOLE_BASE/api/auth/ott")
+            val conn = url.openConnection() as HttpURLConnection
+            conn.apply {
+                requestMethod = "POST"
+                setRequestProperty("Content-Type", "application/json")
+                connectTimeout = 5_000
+                readTimeout = 5_000
+                doOutput = true
+            }
+
+            val payload = JSONObject().apply {
+                put("account_id", accountId)
+                put("user_id", userId)
+                if (storeId > 0) put("store_id", storeId)
+                if (terminalId > 0) put("terminal_id", terminalId)
+            }
+
+            OutputStreamWriter(conn.outputStream).use { writer ->
+                writer.write(payload.toString())
+                writer.flush()
+            }
+
+            if (conn.responseCode == 200) {
+                val response = conn.inputStream.bufferedReader().readText()
+                val json = JSONObject(response)
+                json.optString("token", null)
+            } else {
+                Log.w("WebConsoleActivity", "OTT request failed: ${conn.responseCode}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.w("WebConsoleActivity", "OTT fetch failed (will load without auth)", e)
+            null
+        }
     }
 
     @Deprecated("Deprecated in Java")

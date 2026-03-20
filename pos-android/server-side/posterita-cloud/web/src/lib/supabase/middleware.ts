@@ -55,9 +55,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Allow OTT-bearing requests through — the client-side OttAuthBridge will validate
+  const hasOtt = request.nextUrl.searchParams.has("ott");
+
   // Redirect unauthenticated users to login
   if (
     !user &&
+    !hasOtt &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/customer/login") &&
     !request.nextUrl.pathname.startsWith("/manager/login") &&
