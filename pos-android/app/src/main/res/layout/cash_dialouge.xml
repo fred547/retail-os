@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cash"
-            android:textColor="@color/txt_color"
+            android:textColor="@color/posterita_primary"
             android:fontFamily="@font/lexend_medium"
             android:textSize="18sp"
             android:layout_marginTop="8dp"
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:text="Cancel"
                 android:textSize="13sp"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

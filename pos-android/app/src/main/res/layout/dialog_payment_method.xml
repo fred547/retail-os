@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:text="Amount Due"
             android:textSize="14sp"
-            android:textColor="#888888"
+            android:textColor="@color/posterita_muted"
             android:gravity="center" />
 
         <TextView
@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="28sp"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:fontFamily="@font/lexend_medium"
             android:gravity="center"
             android:layout_marginTop="4dp"
@@ -45,7 +45,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="💵  Cash"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
 
             <TextView
@@ -57,7 +57,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="💳  Card"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -78,7 +78,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="📋  On Credit"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
 
             <TextView
@@ -90,7 +90,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="📝  Check"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -111,7 +111,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="🍑  Peach"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
 
             <TextView
@@ -123,7 +123,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="🧃  Juice"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -144,7 +144,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="⚡  Blink"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
 
             <TextView
@@ -156,7 +156,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="🌐  Online"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -177,7 +177,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="🔀  Split / Mix"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
 
             <TextView
@@ -189,7 +189,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="💱  Forex Cash"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -197,7 +197,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#E0E0E0"
+            android:background="@color/posterita_line"
             android:layout_marginBottom="12dp" />
 
         <LinearLayout
@@ -213,7 +213,7 @@
                 android:layout_weight="1"
                 android:text="💡 Tips"
                 android:textSize="15sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <EditText
                 android:id="@+id/edit_tips_amount"
@@ -221,7 +221,7 @@
                 android:layout_height="40dp"
                 android:inputType="numberDecimal"
                 android:textSize="15sp"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:padding="8dp"
                 android:gravity="end|center_vertical"
                 android:background="@drawable/btn_outline_rounded"

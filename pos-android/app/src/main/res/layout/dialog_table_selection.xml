@@ -13,7 +13,7 @@
         android:text="Select Table"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:gravity="center"
         android:layout_marginBottom="16dp" />
 
@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:text=" Free  "
             android:textSize="11sp"
-            android:textColor="#666666" />
+            android:textColor="@color/posterita_muted" />
 
         <View
             android:layout_width="16dp"
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:text=" Occupied"
             android:textSize="11sp"
-            android:textColor="#666666" />
+            android:textColor="@color/posterita_muted" />
     </LinearLayout>
 
     <!-- Action buttons -->
@@ -76,7 +76,7 @@
             android:layout_marginEnd="4dp"
             android:gravity="center"
             android:text="SEND TO KITCHEN"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:textSize="12sp"
             android:textStyle="bold"
             android:background="@drawable/stroke_btn" />
@@ -89,7 +89,7 @@
             android:layout_marginStart="4dp"
             android:gravity="center"
             android:text="PAY NOW"
-            android:textColor="@color/white"
+            android:textColor="@color/posterita_paper"
             android:textSize="12sp"
             android:textStyle="bold"
             android:background="@drawable/btn_rounded" />

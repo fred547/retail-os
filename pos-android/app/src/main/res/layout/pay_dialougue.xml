@@ -18,7 +18,7 @@
             android:text="RS 315"
             android:layout_marginTop="@dimen/_15sdp"
             android:textSize="30sp"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:fontFamily="@font/lexend_medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:text="Cash"
                 android:id="@+id/text_view_cash"
                 app:layout_constraintTop_toBottomOf="@id/imgcrd"
@@ -77,7 +77,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:text="Card"
                 android:id="@+id/txt_crd"
                 app:layout_constraintTop_toBottomOf="@id/imgcash"
@@ -108,7 +108,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:text="On Credit"
                 android:id="@+id/text_view_credit"
                 app:layout_constraintTop_toBottomOf="@id/imgcredit"
@@ -140,7 +140,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:text="Check"
                 android:id="@+id/text_view_check"
                 app:layout_constraintTop_toBottomOf="@id/imgcheck"
@@ -200,7 +200,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:textColor="@color/black"/>
+                android:textColor="@color/posterita_ink"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/button_cancel_payment"

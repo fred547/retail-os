@@ -15,7 +15,7 @@
         <shape android:shape="rectangle">
 
             <gradient
-                android:startColor="#D8D8D8"
+                android:startColor="@color/posterita_line"
             android:endColor="#00FFFFFF"
             android:angle="0"/>
 

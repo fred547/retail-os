@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:id="@+id/consthole"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/posterita_paper"
     tools:context=".MainActivity">
 
     <TextView
@@ -15,7 +15,7 @@
         android:layout_marginTop="@dimen/_5sdp"
         android:fontFamily="@font/lexend_medium"
         android:text="Server endpoint"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="@dimen/_17ssp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/server_endpoint"
-            android:textColor="@color/black" />
+            android:textColor="@color/posterita_ink" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

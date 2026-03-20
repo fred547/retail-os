@@ -20,7 +20,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:textAlignment="center"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Select User"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="@dimen/_17ssp"
                 android:fontFamily="@font/lexend_medium" />
         </androidx.appcompat.widget.Toolbar>
@@ -86,7 +86,7 @@
                 android:id="@+id/text_selected_user_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/lexend_medium"
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Change user"
-                android:textColor="#1976D2"
+                android:textColor="@color/posterita_primary"
                 android:textSize="13sp"
                 android:layout_marginTop="4dp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -113,7 +113,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Enter PIN"
-                android:textColor="#666666"
+                android:textColor="@color/posterita_muted"
                 android:textSize="14sp"
                 android:layout_marginTop="20dp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -140,7 +140,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
                 <TextView
@@ -151,7 +151,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
                 <TextView
@@ -162,7 +162,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
                 <TextView
@@ -173,7 +173,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
                 <TextView
@@ -184,7 +184,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
                 <TextView
@@ -194,7 +194,7 @@
                     android:background="@drawable/btn_outline_rounded"
                     android:gravity="center"
                     android:textSize="24sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -205,7 +205,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Demo PIN: 000000"
-                android:textColor="#999999"
+                android:textColor="@color/posterita_muted"
                 android:textSize="13sp"
                 android:layout_marginTop="8dp"
                 android:visibility="gone"
@@ -219,7 +219,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forgot PIN?"
-                android:textColor="#1976D2"
+                android:textColor="@color/posterita_primary"
                 android:textSize="13sp"
                 android:layout_marginTop="8dp"
                 android:visibility="gone"
@@ -265,7 +265,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="1"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -276,7 +276,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="2"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -287,7 +287,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="3"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -298,7 +298,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="4"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -309,7 +309,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="5"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -320,7 +320,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="6"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -331,7 +331,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="7"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -342,7 +342,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="8"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -353,7 +353,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="9"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -364,7 +364,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="C"
-                    android:textColor="#E53935"
+                    android:textColor="@color/posterita_error"
                     android:textSize="20sp" />
 
                 <Button
@@ -375,7 +375,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="0"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="22sp" />
 
                 <Button
@@ -386,7 +386,7 @@
                     android:layout_margin="3dp"
                     android:background="@drawable/stroke_btn"
                     android:text="⌫"
-                    android:textColor="#E53935"
+                    android:textColor="@color/posterita_error"
                     android:textSize="20sp" />
             </GridLayout>
 
@@ -424,7 +424,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberPassword"
-            android:textColor="@color/black" />
+            android:textColor="@color/posterita_ink" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Hidden done button kept for binding compatibility -->

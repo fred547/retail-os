@@ -14,7 +14,7 @@
         android:gravity="top">
         <shape>
             <gradient
-                android:startColor="#D8D8D8"
+                android:startColor="@color/posterita_line"
                 android:endColor="#00FFFFFF"
                 android:angle="90"/>
         </shape>
@@ -26,7 +26,7 @@
         android:gravity="bottom">
         <shape>
             <gradient
-                android:startColor="#D8D8D8"
+                android:startColor="@color/posterita_line"
                 android:endColor="#00FFFFFF"
                 android:angle="270"/>
         </shape>
@@ -39,7 +39,7 @@
         <shape>
 
             <gradient
-                android:startColor="#D8D8D8"
+                android:startColor="@color/posterita_line"
                 android:endColor="#00FFFFFF"
                 android:angle="0"/>
 

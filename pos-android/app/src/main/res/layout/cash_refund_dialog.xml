@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cash "
-            android:textColor="@color/txt_color"
+            android:textColor="@color/posterita_primary"
             android:fontFamily="@font/lexend_medium"
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
                 android:id="@+id/text_input_cash_amount"
                 android:layout_width="match_parent"
                 android:inputType="number"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -69,7 +69,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:textColor="@color/black"/>
+                android:textColor="@color/posterita_ink"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/button_pay_order"

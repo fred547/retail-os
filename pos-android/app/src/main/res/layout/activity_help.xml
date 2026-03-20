@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:background="@color/white">
+    android:background="@color/posterita_paper">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

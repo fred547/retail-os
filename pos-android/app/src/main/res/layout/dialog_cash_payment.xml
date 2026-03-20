@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:text="Amount Due"
         android:textSize="14sp"
-        android:textColor="#888888"
+        android:textColor="@color/posterita_muted"
         android:gravity="center" />
 
     <TextView
@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="28sp"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:fontFamily="@font/lexend_medium"
         android:gravity="center"
         android:layout_marginTop="4dp"
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:text="Quick Amount"
         android:textSize="13sp"
-        android:textColor="#666666"
+        android:textColor="@color/posterita_muted"
         android:layout_marginBottom="8dp" />
 
     <HorizontalScrollView
@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:text="Amount Tendered"
         android:textSize="13sp"
-        android:textColor="#666666"
+        android:textColor="@color/posterita_muted"
         android:layout_marginBottom="6dp" />
 
     <EditText
@@ -61,7 +61,7 @@
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:textSize="22sp"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:padding="12dp"
         android:background="@drawable/btn_outline_rounded" />
 
@@ -70,7 +70,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:textColor="#4CAF50"
+        android:textColor="@color/posterita_secondary"
         android:fontFamily="@font/lexend_medium"
         android:gravity="center"
         android:layout_marginTop="16dp"

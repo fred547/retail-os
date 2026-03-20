@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textSize="14sp"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:layout_marginStart="8dp" />
 
     <TextView
@@ -26,6 +26,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:textColor="#666666" />
+        android:textColor="@color/posterita_muted" />
 
 </LinearLayout>

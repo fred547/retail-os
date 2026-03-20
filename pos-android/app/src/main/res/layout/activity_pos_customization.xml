@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA"
+    android:background="@color/posterita_panel"
     tools:ignore="HardcodedText">
 
     <LinearLayout
@@ -35,13 +35,13 @@
                 android:text="POS Customization"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#E0E0E0"
+            android:background="@color/posterita_line"
             android:layout_marginBottom="16dp" />
 
         <!-- ======= BUSINESS TYPE SECTION ======= -->
@@ -51,7 +51,7 @@
             android:text="BUSINESS TYPE"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#757575"
+            android:textColor="@color/posterita_muted"
             android:layout_marginBottom="12dp" />
 
         <LinearLayout
@@ -60,7 +60,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -74,14 +74,14 @@
                     android:layout_height="wrap_content"
                     android:text="Business Mode"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Restaurant shows Dine-in / Take-away"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -119,7 +119,7 @@
             android:text="DISPLAY"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#757575"
+            android:textColor="@color/posterita_muted"
             android:layout_marginBottom="12dp" />
 
         <!-- Product Grid Columns -->
@@ -129,7 +129,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <LinearLayout
@@ -143,14 +143,14 @@
                     android:layout_height="wrap_content"
                     android:text="Product Grid Columns"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Number of products per row"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -210,7 +210,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <LinearLayout
@@ -224,14 +224,14 @@
                     android:layout_height="wrap_content"
                     android:text="Category Rows"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Max lines for category chips"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -280,7 +280,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <LinearLayout
@@ -294,14 +294,14 @@
                     android:layout_height="wrap_content"
                     android:text="Category Columns"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Number of columns for category buttons"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -350,7 +350,7 @@
             android:text="LANDSCAPE DISPLAY"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#757575"
+            android:textColor="@color/posterita_muted"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="12dp" />
 
@@ -361,7 +361,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <LinearLayout
@@ -375,14 +375,14 @@
                     android:layout_height="wrap_content"
                     android:text="Category Rows (Landscape)"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Max lines for categories in landscape"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -420,7 +420,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -434,14 +434,14 @@
                     android:layout_height="wrap_content"
                     android:text="Category Columns (Landscape)"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Number of columns in landscape mode"
                     android:textSize="12sp"
-                    android:textColor="#999999" />
+                    android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
             <LinearLayout
@@ -501,7 +501,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -510,7 +510,7 @@
                 android:layout_weight="1"
                 android:text="Show Product Images"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_product_images"
@@ -525,7 +525,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="16dp">
 
             <TextView
@@ -534,7 +534,7 @@
                 android:layout_weight="1"
                 android:text="Show Product Price on Grid"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_product_price"
@@ -549,7 +549,7 @@
             android:text="BUTTONS"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#757575"
+            android:textColor="@color/posterita_muted"
             android:layout_marginBottom="12dp" />
 
         <!-- Show Categories -->
@@ -559,7 +559,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -568,7 +568,7 @@
                 android:layout_weight="1"
                 android:text="Show Categories"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_categories"
@@ -583,7 +583,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -592,7 +592,7 @@
                 android:layout_weight="1"
                 android:text="Show SCAN Button"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_scan"
@@ -607,7 +607,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -616,7 +616,7 @@
                 android:layout_weight="1"
                 android:text="Show SEARCH Button"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_search"
@@ -631,7 +631,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -640,7 +640,7 @@
                 android:layout_weight="1"
                 android:text="Show CLEAR Button"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_clear"
@@ -655,7 +655,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="1dp">
 
             <TextView
@@ -664,7 +664,7 @@
                 android:layout_weight="1"
                 android:text="Show CUSTOMER Button"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_cust"
@@ -679,7 +679,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:layout_marginBottom="16dp">
 
             <TextView
@@ -688,7 +688,7 @@
                 android:layout_weight="1"
                 android:text="Show MORE Button"
                 android:textSize="16sp"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_more"
@@ -702,7 +702,7 @@
             android:layout_height="wrap_content"
             android:text="Changes will take effect when you return to the product screen."
             android:textSize="12sp"
-            android:textColor="#999999"
+            android:textColor="@color/posterita_muted"
             android:gravity="center"
             android:layout_marginTop="8dp" />
 

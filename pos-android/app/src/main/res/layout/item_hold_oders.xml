@@ -7,8 +7,8 @@
     android:layout_marginTop="@dimen/_5sdp"
     android:layout_marginEnd="@dimen/_10sdp"
     android:layout_marginBottom="@dimen/_10sdp"
-    android:background="@color/white"
-    app:cardBackgroundColor="@color/white"
+    android:background="@color/posterita_paper"
+    app:cardBackgroundColor="@color/posterita_paper"
     app:cardCornerRadius="@dimen/_10sdp"
     app:cardElevation="@dimen/_1sdp">
 
@@ -23,7 +23,7 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:layout_marginTop="@dimen/_5sdp"
             android:text="Friday, 24 November 2023 "
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -37,7 +37,7 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:layout_marginTop="@dimen/_10sdp"
             android:layout_marginEnd="@dimen/_5sdp"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:maxLines="2"
             android:ellipsize="end"
             android:textSize="12sp"
@@ -52,7 +52,7 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:layout_marginTop="@dimen/_10sdp"
             android:layout_marginEnd="@dimen/_5sdp"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:maxLines="2"
             android:ellipsize="end"
             app:layout_constraintBottom_toBottomOf="parent"

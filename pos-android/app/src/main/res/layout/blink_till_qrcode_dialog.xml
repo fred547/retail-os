@@ -19,7 +19,7 @@
             android:layout_marginTop="@dimen/_15sdp"
             android:fontFamily="@font/lexend_medium"
             android:text="Blink Till QRCode "
-            android:textColor="@color/txt_color"
+            android:textColor="@color/posterita_primary"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -42,7 +42,7 @@
                 android:id="@+id/text_input_cash_amount"
                 android:layout_width="match_parent"
                 android:inputType="number"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>-->
@@ -55,7 +55,7 @@
             android:layout_marginTop="@dimen/_15sdp"
             android:fontFamily="@font/lexend_medium"
             android:text="Scan QRCode on device to proceed with the payment."
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/txt_cancel"
                 android:text="Cancel"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -256,7 +256,7 @@
         android:layout_marginTop="16dp"
         android:gravity="center"
         android:textSize="14sp"
-        android:textColor="#D32F2F"
+        android:textColor="@color/posterita_error"
         android:visibility="gone" />
 
     <!-- Divider -->
@@ -265,7 +265,7 @@
         android:layout_height="1dp"
         android:layout_marginTop="24dp"
         android:layout_marginHorizontal="24dp"
-        android:background="#E0E0E0" />
+        android:background="@color/posterita_line" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSkipWebsite"

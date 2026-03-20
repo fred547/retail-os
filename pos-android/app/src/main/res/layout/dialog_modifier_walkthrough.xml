@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:gravity="center"
         android:layout_marginBottom="4dp" />
 
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="15sp"
-        android:textColor="#666666"
+        android:textColor="@color/posterita_muted"
         android:gravity="center"
         android:layout_marginBottom="4dp" />
 
@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="12sp"
-        android:textColor="#999999"
+        android:textColor="@color/posterita_muted"
         android:gravity="center"
         android:layout_marginBottom="12dp" />
 
@@ -60,7 +60,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="13sp"
-        android:textColor="#1976D2"
+        android:textColor="@color/posterita_primary"
         android:gravity="center"
         android:visibility="gone"
         android:layout_marginTop="8dp" />
@@ -80,7 +80,7 @@
             android:layout_marginEnd="4dp"
             android:gravity="center"
             android:text="SKIP"
-            android:textColor="#999999"
+            android:textColor="@color/posterita_muted"
             android:textSize="14sp"
             android:textStyle="bold"
             android:background="@drawable/stroke_btn" />
@@ -93,7 +93,7 @@
             android:layout_marginStart="4dp"
             android:gravity="center"
             android:text="NEXT"
-            android:textColor="@color/white"
+            android:textColor="@color/posterita_paper"
             android:textSize="14sp"
             android:textStyle="bold"
             android:background="@drawable/btn_rounded" />

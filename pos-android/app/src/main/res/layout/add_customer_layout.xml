@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Add Customer"
-                android:textColor="@color/txt_color"
+                android:textColor="@color/posterita_primary"
                 android:fontFamily="@font/lexend_medium"
                 android:textSize="20sp"
                 android:layout_marginTop="@dimen/_15sdp" />
@@ -47,7 +47,7 @@
                     android:gravity="center"
                     android:text="+230"
                     android:textSize="18sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:fontFamily="@font/lexend_medium"
                     android:background="@drawable/btn_outline_rounded"
                     android:paddingStart="10dp"
@@ -62,12 +62,12 @@
                     android:layout_marginStart="8dp"
                     android:gravity="center"
                     android:textSize="22sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:fontFamily="@font/lexend_medium"
                     android:letterSpacing="0.3"
                     android:background="@drawable/btn_outline_rounded"
                     android:hint="_ _ _ _ _ _ _ _"
-                    android:textColorHint="#CCCCCC" />
+                    android:textColorHint="@color/posterita_muted" />
 
                 <!-- Hidden view for compat -->
                 <TextView
@@ -91,7 +91,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="#E53935"
+                    android:textColor="@color/posterita_error"
                     android:textSize="12sp"
                     android:visibility="gone" />
 
@@ -99,7 +99,7 @@
                     android:id="@+id/txt_digit_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#999999"
+                    android:textColor="@color/posterita_muted"
                     android:textSize="12sp"
                     android:text="0 / 8 digits" />
             </LinearLayout>
@@ -123,7 +123,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="1"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -134,7 +134,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="2"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -145,7 +145,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="3"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -156,7 +156,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="4"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -167,7 +167,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="5"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -178,7 +178,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="6"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -189,7 +189,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="7"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -200,7 +200,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="8"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -211,7 +211,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="9"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -222,7 +222,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="+"
-                    android:textColor="#666666"
+                    android:textColor="@color/posterita_muted"
                     android:textSize="16sp" />
 
                 <Button
@@ -233,7 +233,7 @@
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
                     android:text="0"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:textSize="20sp" />
 
                 <Button
@@ -243,7 +243,7 @@
                     android:layout_columnWeight="1"
                     android:layout_margin="2dp"
                     android:background="@drawable/stroke_btn"
-                    android:textColor="#E53935"
+                    android:textColor="@color/posterita_error"
                     android:textSize="18sp" />
             </GridLayout>
 
@@ -258,7 +258,7 @@
                 android:background="@drawable/stroke_btn"
                 android:gravity="center"
                 android:text="Or create by name only"
-                android:textColor="#666666"
+                android:textColor="@color/posterita_muted"
                 android:textSize="14sp" />
 
             <!-- Extra details section (hidden by default) -->
@@ -284,7 +284,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPersonName"
-                        android:textColor="@color/black" />
+                        android:textColor="@color/posterita_ink" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -300,7 +300,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
-                        android:textColor="@color/black" />
+                        android:textColor="@color/posterita_ink" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -316,7 +316,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPostalAddress"
-                        android:textColor="@color/black" />
+                        android:textColor="@color/posterita_ink" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -340,7 +340,7 @@
                     android:gravity="center"
                     android:text="Cancel"
                     android:textSize="14sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/posterita_ink" />
 
                 <TextView
                     android:id="@+id/button_skip"
@@ -353,7 +353,7 @@
                     android:gravity="center"
                     android:text="Skip"
                     android:textSize="14sp"
-                    android:textColor="@color/black"
+                    android:textColor="@color/posterita_ink"
                     android:visibility="gone" />
 
                 <TextView

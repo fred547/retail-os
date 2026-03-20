@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Adjust Till"
-        android:textColor="@color/black"
+        android:textColor="@color/posterita_ink"
         android:textSize="20sp"
         android:fontFamily="@font/lexend_medium"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,7 +72,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:text="Remove"
                 android:textSize="@dimen/_8ssp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -93,7 +93,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:id="@+id/edtPsdInput"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:inputType="number"
             android:layout_height="wrap_content" />
 
@@ -113,7 +113,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:id="@+id/edtcrdInput"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:gravity="start"
             android:inputType="text"
             android:layout_height="match_parent" />
@@ -159,7 +159,7 @@
             android:layout_marginBottom="@dimen/_8sdp"
             android:text="Cancel"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="@color/black"
+            android:textColor="@color/posterita_ink"
             android:fontFamily="@font/lexend_medium"
             android:textSize="@dimen/_14ssp"
             app:layout_constraintEnd_toEndOf="parent"

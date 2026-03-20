@@ -19,7 +19,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
+            android:background="@color/posterita_paper"
             android:textAlignment="center"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Select Terminal"
-                android:textColor="@color/black"
+                android:textColor="@color/posterita_ink"
                 android:textSize="@dimen/_17ssp"
                 android:fontFamily="@font/lexend_medium" />
         </androidx.appcompat.widget.Toolbar>

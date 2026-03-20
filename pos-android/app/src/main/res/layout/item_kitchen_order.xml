@@ -9,7 +9,7 @@
     android:layout_marginBottom="4dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="@color/posterita_paper">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +32,7 @@
                 android:text="Table 1"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/black" />
+                android:textColor="@color/posterita_ink" />
 
             <TextView
                 android:id="@+id/txt_status"
@@ -55,7 +55,7 @@
                 android:text="5m"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                android:textColor="#FF6F00"
+                android:textColor="@color/posterita_orange"
                 android:layout_marginEnd="8dp" />
 
             <TextView
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:text="14:30"
                 android:textSize="12sp"
-                android:textColor="#999999" />
+                android:textColor="@color/posterita_muted" />
         </LinearLayout>
 
         <!-- Order description / items summary -->
@@ -75,7 +75,7 @@
             android:layout_marginTop="4dp"
             android:text="2x Burger, 1x Fries"
             android:textSize="13sp"
-            android:textColor="#555555"
+            android:textColor="@color/posterita_muted"
             android:maxLines="3"
             android:ellipsize="end" />
 
@@ -89,7 +89,7 @@
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
-            android:background="#FFF9C4"
+            android:background="@color/posterita_warning_light"
             android:textSize="12sp"
             android:textColor="#F57F17"
             android:visibility="gone"
@@ -105,7 +105,7 @@
             android:text="Total: Rs 450.00"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#1976D2" />
+            android:textColor="@color/posterita_primary" />
 
         <!-- Action buttons row -->
         <LinearLayout
@@ -124,7 +124,7 @@
                 android:text="NOTE"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#666666"
+                android:textColor="@color/posterita_muted"
                 android:background="@drawable/stroke_btn" />
 
             <TextView
@@ -137,7 +137,7 @@
                 android:text="RECALL"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#666666"
+                android:textColor="@color/posterita_muted"
                 android:background="@drawable/stroke_btn" />
 
             <TextView
@@ -150,7 +150,7 @@
                 android:text="BILL"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#666666"
+                android:textColor="@color/posterita_muted"
                 android:background="@drawable/stroke_btn" />
 
             <TextView
@@ -163,7 +163,7 @@
                 android:text="SPLIT"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#7B1FA2"
+                android:textColor="@color/posterita_purple"
                 android:background="@drawable/stroke_btn" />
 
             <TextView
@@ -176,7 +176,7 @@
                 android:text="DELETE"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#E53935"
+                android:textColor="@color/posterita_error"
                 android:background="@drawable/stroke_btn" />
 
             <TextView
