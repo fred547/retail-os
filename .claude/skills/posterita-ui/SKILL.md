@@ -53,9 +53,11 @@ When designing or reviewing any UI, compare against the prototype and apply thes
 
 ### Consistent Top Bar
 Every screen follows this pattern:
-- **POS screen:** ☰ hamburger | "POS" title | (actions)
-- **Sub-screens:** ← back arrow | "Screen Name" | (actions)
+- **POS screen:** ☰ hamburger | "POS" title | (spacer) | 🟢 connectivity dot | (actions)
+- **Sub-screens:** ← back arrow | "Screen Name" | (spacer) | 🟢 connectivity dot | (actions)
+- **Receipt:** "Receipt #XXX" title only (no back, no drawer)
 - Background: `posterita_paper`, 1dp elevation
+- **Connectivity dot** (8dp circle, right side): green=online, red=offline, amber=syncing. Always visible in top bar.
 
 ### Bottom Buttons
 - Full-width, `posterita_paper` background, 4dp elevation

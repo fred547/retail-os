@@ -34,10 +34,19 @@
             app:tint="@color/posterita_ink" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Cart"
             style="@style/TextAppearance.Posterita.Heading" />
+
+        <!-- Connectivity indicator -->
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_internet_dot" />
     </LinearLayout>
 
     <!-- Hidden toolbar for binding compat -->

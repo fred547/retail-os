@@ -128,6 +128,7 @@ class CartActivity : BaseDrawerActivity() {
         setContentViewWithDrawer(R.layout.activity_cart)
         binding = ActivityCartBinding.bind(drawerLayout.getChildAt(0))
         supportActionBar?.hide()
+        setupConnectivityDot()
 
         // Back button
         binding.buttonBack?.setOnClickListener { finish() }

@@ -63,6 +63,14 @@
                 android:focusable="true" />
         </LinearLayout>
 
+        <!-- Connectivity indicator -->
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_internet_dot" />
+
         <ImageButton
             android:id="@+id/btn_switch_camera"
             android:layout_width="48dp"

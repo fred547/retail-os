@@ -58,6 +58,7 @@ class ReceiptActivity : BaseDrawerActivity() {
         // Initialize drawerLayout for BaseDrawerActivity compat (won't be used)
         drawerLayout = DrawerLayout(this)
         supportActionBar?.hide()
+        setupConnectivityDot()
 
         // No back button — sale is complete, user must go to New Sale
 

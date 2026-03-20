@@ -140,6 +140,7 @@ class ProductActivity : BaseDrawerActivity() {
         binding = ActivityProductBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.hide()
+        setupConnectivityDot()
 
         // Initialize drawer from existing DrawerLayout in the XML
         initExistingDrawer(binding.myDrawerLayout)

@@ -17,7 +17,9 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.ProgressBar
 import androidx.lifecycle.lifecycleScope
+import android.graphics.drawable.GradientDrawable
 import com.posterita.pos.android.R
+import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.service.AiImportService
 import com.posterita.pos.android.service.SyncStatusManager
@@ -55,6 +57,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
     @Inject
     lateinit var prefsManager: SharedPreferencesManager
 
+    @Inject
+    lateinit var connectivityMonitor: ConnectivityMonitor
+
     /**
      * Override this in subclasses to highlight the current nav item.
      * Return the resource ID of the nav item (e.g., R.id.nav_orders).
@@ -67,6 +72,36 @@ abstract class BaseDrawerActivity : BaseActivity() {
      * ProductActivity overrides this to return false.
      */
     open fun showBackButton(): Boolean = true
+
+    /**
+     * Sets up the connectivity dot (ID: connectivity_dot) in the current layout.
+     * Call this after setContentView/setContentViewWithDrawer.
+     * The dot is green when online, red when offline.
+     */
+    protected fun setupConnectivityDot() {
+        val dot = findViewById<View>(R.id.connectivity_dot) ?: return
+        connectivityMonitor.isConnected.observe(this) { connected ->
+            val color = if (connected) {
+                resources.getColor(R.color.posterita_secondary, theme) // green
+            } else {
+                resources.getColor(R.color.posterita_error, theme) // red
+            }
+            val bg = dot.background
+            if (bg is GradientDrawable) {
+                bg.setColor(color)
+            } else {
+                val oval = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(color)
+                    setSize(
+                        (8 * resources.displayMetrics.density).toInt(),
+                        (8 * resources.displayMetrics.density).toInt()
+                    )
+                }
+                dot.background = oval
+            }
+        }
+    }
 
     /**
      * Call this instead of setContentView() to wrap your layout in the drawer.
