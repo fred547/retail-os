@@ -205,7 +205,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             // Reset the default POS highlight to non-highlighted style
             nav.findViewById<View>(R.id.nav_pos)?.setBackgroundResource(R.drawable.stroke_btn)
             // Also reset text/icon colors on POS item
-            val posLayout = nav.findViewById<LinearLayout>(R.id.nav_pos)
+            val posLayout = nav.findViewById<View>(R.id.nav_pos) as? LinearLayout
             if (posLayout != null) {
                 for (i in 0 until posLayout.childCount) {
                     when (val child = posLayout.getChildAt(i)) {
@@ -217,7 +217,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
             // Highlight the current item
             nav.findViewById<View>(highlightId)?.setBackgroundResource(R.drawable.btn_rounded)
-            val highlightLayout = nav.findViewById<LinearLayout>(highlightId)
+            val highlightLayout = nav.findViewById<View>(highlightId) as? LinearLayout
             if (highlightLayout != null) {
                 for (i in 0 until highlightLayout.childCount) {
                     when (val child = highlightLayout.getChildAt(i)) {
