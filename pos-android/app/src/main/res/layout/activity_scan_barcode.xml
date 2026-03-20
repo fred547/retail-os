@@ -157,14 +157,18 @@
             android:layout_marginEnd="6dp"
             android:text="Cancel" />
 
-        <!-- My Cart button -->
+        <!-- Done / Go to Cart button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_my_cart"
             style="@style/Widget.Posterita.Button.Pay"
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="2"
-            android:text="My Cart" />
+            app:icon="@drawable/ic_shopping_cart"
+            app:iconGravity="textStart"
+            app:iconSize="20dp"
+            app:iconTint="@color/white"
+            android:text="Done" />
 
         <!-- Hidden for binding compat -->
         <TextView
