@@ -1,10 +1,10 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +15,7 @@ import com.posterita.pos.android.data.local.entity.Product
 import com.posterita.pos.android.data.local.entity.ProductCategory
 import com.posterita.pos.android.data.local.entity.Tax
 import com.posterita.pos.android.databinding.ActivityManageListBinding
+import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -91,20 +92,42 @@ class ManageProductsActivity : AppCompatActivity() {
             val catName = categories.find { it.productcategory_id == p.productcategory_id }?.name ?: ""
             holder.tvDetails.text = "Price: ${p.sellingprice ?: 0.0} | ${catName.ifEmpty { "No category" }}"
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${p.name ?: "N/A"}")
-                    appendLine("Price: ${p.sellingprice}")
-                    appendLine("UPC/Barcode: ${p.upc ?: "N/A"}")
-                    appendLine("Item Code: ${p.itemcode ?: "N/A"}")
-                    appendLine("Category: ${catName.ifEmpty { "N/A" }}")
-                    appendLine("Description: ${p.description ?: "N/A"}")
-                    appendLine("Active: ${if (p.isactive == "Y") "Yes" else "No"}")
-                }
-                AlertDialog.Builder(this@ManageProductsActivity)
-                    .setTitle(p.name ?: "Product Details")
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## GENERAL|",
+                    "Name|${p.name ?: ""}",
+                    "Item Code|${p.itemcode ?: ""}",
+                    "UPC / Barcode|${p.upc ?: ""}",
+                    "Barcode Type|${p.barcodetype ?: ""}",
+                    "Description|${p.description ?: ""}",
+                    "---|",
+                    "## PRICING|",
+                    "Selling Price|${NumberUtils.formatPrice(p.sellingprice)}",
+                    "Cost Price|${NumberUtils.formatPrice(p.costprice)}",
+                    "Wholesale Price|${if (p.iswholesaleprice == "Y") NumberUtils.formatPrice(p.wholesaleprice) else "N/A"}",
+                    "Tax Included|${if (p.istaxincluded == "Y") "Yes" else "No"}",
+                    "Tax Amount|${NumberUtils.formatPrice(p.taxamount)}",
+                    "---|",
+                    "## FLAGS|",
+                    "Stock Item|${if (p.isstock == "Y") "Yes" else "No"}",
+                    "Kitchen Item|${if (p.iskitchenitem == "Y") "Yes" else "No"}",
+                    "Favourite|${if (p.isfavourite == "Y") "Yes" else "No"}",
+                    "Modifier|${if (p.ismodifier == "Y") "Yes" else "No"}",
+                    "BOM|${if (p.isbom == "Y") "Yes" else "No"}",
+                    "Variable Item|${if (p.isvariableitem == "Y") "Yes" else "No"}",
+                    "Editable|${if (p.iseditable == "Y") "Yes" else "No"}",
+                    "Print Order Copy|${if (p.printordercopy == "Y") "Yes" else "No"}",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (p.isactive == "Y") "Yes" else "No"}",
+                    "Needs Price Review|${if (p.needs_price_review == "Y") "Yes" else "No"}",
+                    "Category ID|${p.productcategory_id}",
+                    "Tax ID|${p.tax_id}",
+                    "Product ID|${p.product_id}"
+                )
+                val intent = Intent(this@ManageProductsActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, p.name ?: "Product Details")
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
         override fun getItemCount() = products.size

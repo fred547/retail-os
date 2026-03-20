@@ -1,10 +1,10 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -80,19 +80,37 @@ class ManageUsersActivity : AppCompatActivity() {
             holder.tvName.text = "${u.firstname ?: ""} ${u.lastname ?: ""} (${u.username ?: ""})"
             holder.tvDetails.text = u.displayRole
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${u.firstname ?: ""} ${u.lastname ?: ""}")
-                    appendLine("Username: ${u.username ?: "N/A"}")
-                    appendLine("Email: ${u.email ?: "N/A"}")
-                    appendLine("Phone: ${u.phone1 ?: "N/A"}")
-                    appendLine("Role: ${u.displayRole}")
-                    appendLine("Active: ${if (u.isactive == "Y") "Yes" else "No"}")
-                }
-                AlertDialog.Builder(this@ManageUsersActivity)
-                    .setTitle("${u.firstname ?: ""} ${u.lastname ?: ""}".trim().ifEmpty { "User Details" })
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## IDENTITY|",
+                    "First Name|${u.firstname ?: ""}",
+                    "Last Name|${u.lastname ?: ""}",
+                    "Username|${u.username ?: ""}",
+                    "Email|${u.email ?: ""}",
+                    "---|",
+                    "## CONTACT|",
+                    "Phone 1|${u.phone1 ?: ""}",
+                    "Phone 2|${u.phone2 ?: ""}",
+                    "Address|${u.address1 ?: ""}",
+                    "Address 2|${u.address2 ?: ""}",
+                    "City|${u.city ?: ""}",
+                    "State|${u.state ?: ""}",
+                    "Zip|${u.zip ?: ""}",
+                    "Country|${u.country ?: ""}",
+                    "---|",
+                    "## ROLE & PERMISSIONS|",
+                    "Role|${u.displayRole}",
+                    "Admin|${if (u.isadmin == "Y") "Yes" else "No"}",
+                    "Sales Rep|${if (u.issalesrep == "Y") "Yes" else "No"}",
+                    "Discount Limit|${u.discountlimit}%",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (u.isactive == "Y") "Yes" else "No"}",
+                    "User ID|${u.user_id}"
+                )
+                val intent = Intent(this@ManageUsersActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, "${u.firstname ?: ""} ${u.lastname ?: ""}".trim().ifEmpty { "User Details" })
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
         override fun getItemCount() = users.size

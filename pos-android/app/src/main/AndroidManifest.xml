@@ -228,6 +228,9 @@
             android:name=".ui.activity.ManageBrandsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.DetailViewActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.TerminalInfoActivity"
             android:exported="false" />
         <activity

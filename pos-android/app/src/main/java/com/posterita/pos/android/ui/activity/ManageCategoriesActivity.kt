@@ -1,10 +1,10 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -86,18 +86,21 @@ class ManageCategoriesActivity : AppCompatActivity() {
             val taxName = taxes.find { it.tax_id.toString() == c.tax_id }?.let { "${it.name} (${it.rate}%)" } ?: "No Tax"
             holder.tvDetails.text = "Tax: $taxName"
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${c.name ?: "N/A"}")
-                    appendLine("Active: ${if (c.isactive == "Y") "Yes" else "No"}")
-                    appendLine("Tax: $taxName")
-                    appendLine("Display: ${c.display ?: "N/A"}")
-                    appendLine("Position: ${c.position}")
-                }
-                AlertDialog.Builder(this@ManageCategoriesActivity)
-                    .setTitle(c.name ?: "Category Details")
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## GENERAL|",
+                    "Name|${c.name ?: ""}",
+                    "Display|${c.display ?: ""}",
+                    "Position|${c.position}",
+                    "Tax ID|${c.tax_id ?: ""}",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (c.isactive == "Y") "Yes" else "No"}",
+                    "Category ID|${c.productcategory_id}"
+                )
+                val intent = Intent(this@ManageCategoriesActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, c.name ?: "Category Details")
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
         override fun getItemCount() = categories.size

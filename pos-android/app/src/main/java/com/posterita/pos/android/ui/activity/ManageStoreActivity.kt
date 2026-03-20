@@ -1,5 +1,6 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -237,22 +238,25 @@ class ManageStoreActivity : AppCompatActivity() {
 
             // Read-only detail view
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${s.name ?: "N/A"}")
-                    appendLine("Address: ${s.address ?: "N/A"}")
-                    appendLine("City: ${s.city ?: "N/A"}")
-                    appendLine("State: ${s.state ?: "N/A"}")
-                    appendLine("Zip: ${s.zip ?: "N/A"}")
-                    appendLine("Country: ${s.country ?: "N/A"}")
-                    appendLine("Currency: ${s.currency ?: "N/A"}")
-                    appendLine("Active: ${if (s.isactive == "Y") "Yes" else "No"}")
-                    appendLine("Terminals: ${terminalCounts[s.storeId] ?: 0}")
-                }
-                androidx.appcompat.app.AlertDialog.Builder(this@ManageStoreActivity)
-                    .setTitle(s.name ?: "Store Details")
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## GENERAL|",
+                    "Name|${s.name ?: ""}",
+                    "Address|${s.address ?: ""}",
+                    "City|${s.city ?: ""}",
+                    "State|${s.state ?: ""}",
+                    "Zip|${s.zip ?: ""}",
+                    "Country|${s.country ?: ""}",
+                    "Currency|${s.currency ?: ""}",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (s.isactive == "Y") "Yes" else "No"}",
+                    "Terminals|${terminalCounts[s.storeId] ?: 0}",
+                    "Store ID|${s.storeId}"
+                )
+                val intent = Intent(this@ManageStoreActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, s.name ?: "Store Details")
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
 

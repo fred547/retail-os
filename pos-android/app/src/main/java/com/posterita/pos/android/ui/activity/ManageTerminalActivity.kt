@@ -139,19 +139,34 @@ class ManageTerminalActivity : AppCompatActivity() {
 
             // Read-only detail view
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${t.name ?: "N/A"}")
-                    appendLine("Store: ${storeName ?: "N/A"}")
-                    appendLine("Prefix: ${t.prefix ?: "N/A"}")
-                    appendLine("Float: %.2f".format(t.floatamt))
-                    appendLine("Active: ${if (t.isactive == "Y") "Yes" else "No"}")
-                    appendLine("Sequence: ${t.sequence}")
-                }
-                androidx.appcompat.app.AlertDialog.Builder(this@ManageTerminalActivity)
-                    .setTitle(t.name ?: "Terminal Details")
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## GENERAL|",
+                    "Name|${t.name ?: ""}",
+                    "Store|${storeName ?: ""}",
+                    "Prefix|${t.prefix ?: ""}",
+                    "Float Amount|${"%.2f".format(t.floatamt)}",
+                    "Area Code|${t.areacode ?: ""}",
+                    "---|",
+                    "## SEQUENCES|",
+                    "Sequence|${t.sequence}",
+                    "Cash Up Seq|${t.cash_up_sequence}",
+                    "Last Invoice|${t.last_std_invoice_no}",
+                    "Last Credit Note|${t.last_crn_invoice_no}",
+                    "---|",
+                    "## INTEGRATION|",
+                    "Tax ID|${t.tax_id}",
+                    "EBS Counter|${t.ebs_counter}",
+                    "MRA EBS ID|${t.mraebs_id ?: ""}",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (t.isactive == "Y") "Yes" else "No"}",
+                    "Selected|${if (t.isselected == "Y") "Yes" else "No"}",
+                    "Terminal ID|${t.terminalId}"
+                )
+                val intent = Intent(this@ManageTerminalActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, t.name ?: "Terminal Details")
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
 

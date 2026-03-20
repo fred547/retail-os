@@ -1,10 +1,10 @@
 package com.posterita.pos.android.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -80,17 +80,20 @@ class ManageTaxActivity : AppCompatActivity() {
             holder.tvName.text = "${t.name} (${t.rate}%)"
             holder.tvDetails.text = "Code: ${t.taxcode ?: "N/A"}"
             holder.card.setOnClickListener {
-                val details = buildString {
-                    appendLine("Name: ${t.name ?: "N/A"}")
-                    appendLine("Rate: ${t.rate}%")
-                    appendLine("Tax Code: ${t.taxcode ?: "N/A"}")
-                    appendLine("Active: ${if (t.isactive == "Y") "Yes" else "No"}")
-                }
-                AlertDialog.Builder(this@ManageTaxActivity)
-                    .setTitle(t.name ?: "Tax Details")
-                    .setMessage(details)
-                    .setPositiveButton("Close", null)
-                    .show()
+                val fields = arrayListOf(
+                    "## GENERAL|",
+                    "Name|${t.name ?: ""}",
+                    "Rate|${t.rate}%",
+                    "Tax Code|${t.taxcode ?: ""}",
+                    "---|",
+                    "## STATUS|",
+                    "Active|${if (t.isactive == "Y") "Yes" else "No"}",
+                    "Tax ID|${t.tax_id}"
+                )
+                val intent = Intent(this@ManageTaxActivity, DetailViewActivity::class.java)
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, t.name ?: "Tax Details")
+                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
+                startActivity(intent)
             }
         }
         override fun getItemCount() = taxes.size
