@@ -370,12 +370,12 @@ abstract class BaseDrawerActivity : BaseActivity() {
      * Observe SyncStatusManager and update the nav drawer sync UI in real time.
      */
     private fun setupSyncStatusObserver(nav: View) {
-        val syncStatus = nav.findViewById<TextView>(R.id.nav_sync_status) ?: return
-        val syncSpinner = nav.findViewById<ProgressBar>(R.id.nav_sync_spinner)
+        val syncStatus = (nav.findViewById<View>(R.id.nav_sync_status) as? TextView) ?: return
+        val syncSpinner = nav.findViewById<View>(R.id.nav_sync_spinner) as? ProgressBar
         val syncProgressContainer = nav.findViewById<View>(R.id.nav_sync_progress_container)
-        val syncProgressText = nav.findViewById<TextView>(R.id.nav_sync_progress_text)
-        val syncProgressBar = nav.findViewById<ProgressBar>(R.id.nav_sync_progress_bar)
-        val syncLabel = nav.findViewById<TextView>(R.id.nav_sync_label)
+        val syncProgressText = nav.findViewById<View>(R.id.nav_sync_progress_text) as? TextView
+        val syncProgressBar = nav.findViewById<View>(R.id.nav_sync_progress_bar) as? ProgressBar
+        val syncLabel = nav.findViewById<View>(R.id.nav_sync_label) as? TextView
 
         // Initialize with last sync time from prefs
         val lastSyncStr = prefsManager.getString("cloud_last_sync_at", "")
