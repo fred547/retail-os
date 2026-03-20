@@ -403,21 +403,43 @@ class SetupWizardActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val accountId = "standalone_${System.currentTimeMillis()}"
                 val currency = selectedCountry.currency
 
+                // Try server signup first (creates 2 brands: live + demo)
+                var accountId: String? = null
+                var demoAccountId: String? = null
+
+                if (isOnline) {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val result = callSignupApi(currency)
+                            accountId = result?.optString("live_account_id")
+                            demoAccountId = result?.optString("demo_account_id")
+                        } catch (e: Exception) {
+                            android.util.Log.w("SetupWizard", "Server signup failed, falling back to local", e)
+                        }
+                    }
+                }
+
+                // Fallback to local if server signup failed
+                if (accountId.isNullOrEmpty()) {
+                    accountId = "standalone_${System.currentTimeMillis()}"
+                }
+
+                val finalAccountId = accountId!!
+
                 withContext(Dispatchers.IO) {
-                    prefsManager.setAccountIdSync(accountId)
+                    prefsManager.setAccountIdSync(finalAccountId)
                     AppDatabase.resetInstance()
-                    val freshDb = AppDatabase.getInstance(this@SetupWizardActivity, accountId)
+                    val freshDb = AppDatabase.getInstance(this@SetupWizardActivity, finalAccountId)
 
                     // Account
                     freshDb.accountDao().insertAccounts(listOf(
-                        Account(account_id = accountId, businessname = collectedBrand,
+                        Account(account_id = finalAccountId, businessname = collectedBrand,
                             address1 = collectedCountry, isactive = "Y", currency = currency)
                     ))
 
-                    // Demo store
+                    // Store
                     freshDb.storeDao().insertStore(
                         Store(storeId = 1, name = collectedBrand, address = "",
                             country = selectedCountry.name, currency = currency, isactive = "Y")
@@ -444,14 +466,29 @@ class SetupWizardActivity : AppCompatActivity() {
                     prefsManager.setStringSync("setup_mode", "standalone")
                     prefsManager.setStringSync("currency", currency)
 
-                    // Seed demo products — POS works immediately
+                    // Store demo account ID if we got one from server
+                    if (!demoAccountId.isNullOrEmpty()) {
+                        prefsManager.setStringSync("demo_account_id", demoAccountId!!)
+                    }
+
+                    // Seed demo products locally — POS works immediately
                     demoSeeder.seedDemoProducts(freshDb, collectedCategory)
 
                     accountRegistry.addAccount(
-                        id = accountId, name = collectedBrand, storeName = collectedBrand,
+                        id = finalAccountId, name = collectedBrand, storeName = collectedBrand,
                         ownerEmail = collectedEmail, ownerPhone = collectedPhone,
-                        type = "trial", status = "testing"
+                        type = "live", status = "onboarding"
                     )
+
+                    // Register demo brand too if server created it
+                    if (!demoAccountId.isNullOrEmpty()) {
+                        accountRegistry.addAccount(
+                            id = demoAccountId!!, name = "${collectedName}'s Demo",
+                            storeName = "${collectedName}'s Demo Store",
+                            ownerEmail = collectedEmail, ownerPhone = collectedPhone,
+                            type = "demo", status = "testing"
+                        )
+                    }
                 }
 
                 // Queue AI in background — don't wait
@@ -461,9 +498,9 @@ class SetupWizardActivity : AppCompatActivity() {
                             AiImportService.queueStart(
                                 prefs = prefsManager, urls = emptyList(),
                                 businessName = collectedBrand, businessLocation = collectedCountry,
-                                businessType = businessType, accountId = accountId,
+                                businessType = businessType, accountId = finalAccountId,
                                 ownerEmail = collectedEmail, ownerPhone = collectedPhone,
-                                accountType = "trial"
+                                accountType = "live"
                             )
                         } catch (e: Exception) {
                             android.util.Log.w("SetupWizard", "AI queue failed, continuing", e)
@@ -586,6 +623,43 @@ class SetupWizardActivity : AppCompatActivity() {
             .setPositiveButton("Cancel Setup") { _, _ -> finish() }
             .setNegativeButton("Continue", null)
             .show()
+    }
+
+    /**
+     * Calls the signup API to create 2 brands on the server (live + demo).
+     * Returns the JSON response or null on failure.
+     */
+    private fun callSignupApi(currency: String): org.json.JSONObject? {
+        val url = java.net.URL("https://posterita-cloud.vercel.app/api/auth/signup")
+        val conn = url.openConnection() as java.net.HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.connectTimeout = 10_000
+        conn.readTimeout = 10_000
+        conn.doOutput = true
+
+        val payload = org.json.JSONObject().apply {
+            put("phone", collectedPhone)
+            put("email", collectedEmail)
+            put("firstname", collectedName)
+            put("businessname", collectedBrand)
+            put("country", collectedCountry)
+            put("currency", currency)
+        }
+
+        java.io.OutputStreamWriter(conn.outputStream).use { writer ->
+            writer.write(payload.toString())
+            writer.flush()
+        }
+
+        return if (conn.responseCode == 200) {
+            val response = conn.inputStream.bufferedReader().readText()
+            org.json.JSONObject(response)
+        } else {
+            val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
+            android.util.Log.w("SetupWizard", "Signup API failed: ${conn.responseCode} $errorBody")
+            null
+        }
     }
 
     private fun finishWizard() {
