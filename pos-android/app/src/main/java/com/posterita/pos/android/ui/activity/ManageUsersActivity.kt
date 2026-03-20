@@ -34,7 +34,7 @@ class ManageUsersActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.tvTitle.text = "Manage Users"
+        binding.tvTitle.text = "Users"
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

@@ -39,7 +39,7 @@ class ManageProductsActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.tvTitle.text = "Manage Products"
+        binding.tvTitle.text = "Products"
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -61,7 +61,10 @@ class ManageProductsActivity : AppCompatActivity() {
                 db.taxDao().getAllTaxesSync()
             }
             binding.progressLoading.visibility = View.GONE
-            binding.tvEmpty.visibility = if (products.isEmpty()) View.VISIBLE else View.GONE
+            val isEmpty = products.isEmpty()
+            binding.tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.recyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
             binding.recyclerView.adapter = ProductAdapter()
         }
     }

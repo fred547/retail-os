@@ -36,7 +36,7 @@ class ManageCategoriesActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.tvTitle.text = "Manage Categories"
+        binding.tvTitle.text = "Categories"
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

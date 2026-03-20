@@ -34,7 +34,7 @@ class ManageTaxActivity : AppCompatActivity() {
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.tvTitle.text = "Manage Taxes"
+        binding.tvTitle.text = "Taxes"
         binding.buttonBack.setOnClickListener { finish() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
