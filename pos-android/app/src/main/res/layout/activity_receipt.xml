@@ -292,6 +292,27 @@
                         android:orientation="vertical"
                         android:visibility="gone" />
 
+                    <!-- Receipt QR Code -->
+                    <ImageView
+                        android:id="@+id/image_view_qr_code"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="12dp"
+                        android:contentDescription="Receipt QR code"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/text_view_qr_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginTop="4dp"
+                        android:text="Scan for digital receipt"
+                        style="@style/TextAppearance.Posterita.Nano"
+                        android:textColor="@color/posterita_muted"
+                        android:visibility="gone" />
+
                     <!-- Loyalty points badge -->
                     <TextView
                         android:id="@+id/text_view_loyalty_badge"

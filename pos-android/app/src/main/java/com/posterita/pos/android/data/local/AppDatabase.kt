@@ -21,9 +21,10 @@ import com.posterita.pos.android.util.Constants
         Order::class, OrderLine::class, Sequence::class, Printer::class,
         HoldOrder::class, Payment::class, RestaurantTable::class,
         LoyaltyCache::class, PendingLoyaltyAward::class,
-        PendingConsentUpdate::class
+        PendingConsentUpdate::class,
+        AuditEvent::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -53,6 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun pendingLoyaltyAwardDao(): PendingLoyaltyAwardDao
     abstract fun pendingConsentUpdateDao(): PendingConsentUpdateDao
     abstract fun paymentDao(): PaymentDao
+    abstract fun auditEventDao(): AuditEventDao
 
     companion object {
         @Volatile
@@ -71,7 +73,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
                         MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13,
                         MIGRATION_13_14, MIGRATION_14_15,
-                        MIGRATION_15_16, MIGRATION_16_17
+                        MIGRATION_15_16, MIGRATION_16_17,
+                        MIGRATION_17_18
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -182,6 +185,27 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE payment ADD COLUMN orderId INTEGER NOT NULL DEFAULT 0")
                 // Add subtotal to orders for direct analytics (avoids computing grand_total - tax_total)
                 db.execSQL("ALTER TABLE orders ADD COLUMN subtotal REAL NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `audit_event` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `timestamp` INTEGER NOT NULL DEFAULT 0,
+                        `userId` INTEGER NOT NULL DEFAULT 0,
+                        `userName` TEXT,
+                        `action` TEXT NOT NULL,
+                        `detail` TEXT,
+                        `reason` TEXT,
+                        `supervisorId` INTEGER,
+                        `storeId` INTEGER NOT NULL DEFAULT 0,
+                        `terminalId` INTEGER NOT NULL DEFAULT 0,
+                        `orderId` TEXT,
+                        `isSynced` TEXT NOT NULL DEFAULT 'N'
+                    )
+                """.trimIndent())
             }
         }
     }

@@ -2,6 +2,9 @@ package com.posterita.pos.android.printing
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.graphics.Bitmap
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.domain.model.OrderDetails
 import java.io.OutputStream
@@ -58,6 +61,22 @@ class BluetoothPrinter {
             }
             out.write(("-".repeat(width) + "\n").toByteArray())
             out.write("TOTAL: ${com.posterita.pos.android.util.NumberUtils.formatPrice(orderDetails.grandtotal)}\n".toByteArray())
+
+            // WhatsApp QR code
+            try {
+                val whatsappNumber = "+23058000000" // TODO: Get from store config
+                val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${orderDetails.documentno}"
+                val qrBitmap = generateQRBitmap(url, 200)
+                if (qrBitmap != null) {
+                    out.write(ReceiptPrinter.LINE_FEED)
+                    out.write(ReceiptPrinter.CENTER_ALIGN)
+                    out.write(bitmapToEscPos(qrBitmap))
+                    out.write(ReceiptPrinter.FONT_SMALL)
+                    out.write("Scan for digital receipt\n".toByteArray())
+                    out.write(ReceiptPrinter.FONT_NORMAL)
+                }
+            } catch (_: Exception) { }
+
             out.write(ReceiptPrinter.LINE_FEED)
             out.write(ReceiptPrinter.LINE_FEED)
             out.write(ReceiptPrinter.PAPER_CUT)
@@ -127,6 +146,56 @@ class BluetoothPrinter {
         } finally {
             disconnect()
         }
+    }
+
+    private fun generateQRBitmap(content: String, size: Int): Bitmap? {
+        return try {
+            val writer = QRCodeWriter()
+            val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
+            val w = bitMatrix.width
+            val h = bitMatrix.height
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565)
+            for (x in 0 until w) {
+                for (y in 0 until h) {
+                    bmp.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+                }
+            }
+            bmp
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun bitmapToEscPos(bitmap: Bitmap): ByteArray {
+        val width = bitmap.width
+        val height = bitmap.height
+        val bytesPerRow = (width + 7) / 8
+        val out = java.io.ByteArrayOutputStream()
+
+        // GS v 0 — print raster bit image
+        out.write(byteArrayOf(0x1D, 0x76, 0x30, 0x00))
+        out.write(byteArrayOf((bytesPerRow and 0xFF).toByte(), ((bytesPerRow shr 8) and 0xFF).toByte()))
+        out.write(byteArrayOf((height and 0xFF).toByte(), ((height shr 8) and 0xFF).toByte()))
+
+        for (y in 0 until height) {
+            for (byteX in 0 until bytesPerRow) {
+                var b = 0
+                for (bit in 0 until 8) {
+                    val x = byteX * 8 + bit
+                    if (x < width) {
+                        val pixel = bitmap.getPixel(x, y)
+                        val r = (pixel shr 16) and 0xFF
+                        val g = (pixel shr 8) and 0xFF
+                        val blue = pixel and 0xFF
+                        if (r < 128 || g < 128 || blue < 128) {
+                            b = b or (0x80 shr bit)
+                        }
+                    }
+                }
+                out.write(b)
+            }
+        }
+        return out.toByteArray()
     }
 
     fun printTestReceipt(width: Int, deviceName: String) {

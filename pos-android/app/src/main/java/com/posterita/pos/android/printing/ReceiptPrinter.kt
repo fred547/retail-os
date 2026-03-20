@@ -1,5 +1,8 @@
 package com.posterita.pos.android.printing
 
+import android.graphics.Bitmap
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.domain.model.OrderDetails
 import com.posterita.pos.android.util.DateUtils
@@ -161,6 +164,24 @@ class ReceiptPrinter(
             }
         }
 
+        // WhatsApp QR code
+        try {
+            // TODO: Get WhatsApp number from store config once backend provides it
+            val whatsappNumber = "+23058000000"
+            val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20${order.documentno}"
+            val qrBitmap = generateQRBitmap(url, 200) // ~25mm at 203 DPI
+            if (qrBitmap != null) {
+                out.write(LINE_FEED)
+                out.write(CENTER_ALIGN)
+                out.write(bitmapToEscPos(qrBitmap))
+                out.write(FONT_SMALL)
+                out.write("Scan for digital receipt\n".toByteArray())
+                out.write(FONT_NORMAL)
+            }
+        } catch (_: Exception) {
+            // QR generation failed — not critical, skip
+        }
+
         out.write(LINE_FEED)
         out.write(LINE_FEED)
         out.write(PAPER_CUT)
@@ -240,6 +261,65 @@ class ReceiptPrinter(
                 outputStream.flush()
             }
         }
+    }
+
+    /**
+     * Generate a QR code as a monochrome Bitmap.
+     */
+    private fun generateQRBitmap(content: String, size: Int): Bitmap? {
+        return try {
+            val writer = QRCodeWriter()
+            val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
+            val w = bitMatrix.width
+            val h = bitMatrix.height
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565)
+            for (x in 0 until w) {
+                for (y in 0 until h) {
+                    bmp.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+                }
+            }
+            bmp
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Convert a monochrome Bitmap to ESC/POS raster image bytes (GS v 0).
+     * Compatible with most 58mm/80mm thermal printers.
+     */
+    private fun bitmapToEscPos(bitmap: Bitmap): ByteArray {
+        val width = bitmap.width
+        val height = bitmap.height
+        // Bytes per row (each byte = 8 horizontal pixels)
+        val bytesPerRow = (width + 7) / 8
+        val out = ByteArrayOutputStream()
+
+        // GS v 0 command: print raster bit image
+        out.write(byteArrayOf(0x1D, 0x76, 0x30, 0x00)) // GS v 0 m=0 (normal)
+        out.write(byteArrayOf((bytesPerRow and 0xFF).toByte(), ((bytesPerRow shr 8) and 0xFF).toByte()))
+        out.write(byteArrayOf((height and 0xFF).toByte(), ((height shr 8) and 0xFF).toByte()))
+
+        for (y in 0 until height) {
+            for (byteX in 0 until bytesPerRow) {
+                var b = 0
+                for (bit in 0 until 8) {
+                    val x = byteX * 8 + bit
+                    if (x < width) {
+                        val pixel = bitmap.getPixel(x, y)
+                        // If pixel is dark (not white), set the bit
+                        val r = (pixel shr 16) and 0xFF
+                        val g = (pixel shr 8) and 0xFF
+                        val blue = pixel and 0xFF
+                        if (r < 128 || g < 128 || blue < 128) {
+                            b = b or (0x80 shr bit)
+                        }
+                    }
+                }
+                out.write(b)
+            }
+        }
+        return out.toByteArray()
     }
 
     private fun padLine(char: String, width: Int): String = char.repeat(width)

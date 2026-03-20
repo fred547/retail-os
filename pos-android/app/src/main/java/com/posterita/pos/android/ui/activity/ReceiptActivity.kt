@@ -1,6 +1,8 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
@@ -8,6 +10,8 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import com.posterita.pos.android.R
@@ -151,8 +155,33 @@ class ReceiptActivity : BaseDrawerActivity() {
                     binding.textViewReceiptNumber?.text = "#${details.documentno}"
                     binding.textViewReceiptNumber?.visibility = View.VISIBLE
                     displayOrderDetails(details)
+                    details.documentno?.let { generateReceiptQR(it) }
                 }
             }
+        }
+    }
+
+    private fun generateReceiptQR(orderRef: String) {
+        // TODO: Get WhatsApp number from store config once backend provides it
+        val whatsappNumber = "+23058000000"
+        val url = "https://wa.me/$whatsappNumber?text=RECEIPT%20$orderRef"
+
+        try {
+            val writer = QRCodeWriter()
+            val bitMatrix = writer.encode(url, BarcodeFormat.QR_CODE, 400, 400)
+            val width = bitMatrix.width
+            val height = bitMatrix.height
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                }
+            }
+            binding.imageViewQrCode?.setImageBitmap(bitmap)
+            binding.imageViewQrCode?.visibility = View.VISIBLE
+            binding.textViewQrLabel?.visibility = View.VISIBLE
+        } catch (e: Exception) {
+            // QR generation failed — not critical, skip silently
         }
     }
 

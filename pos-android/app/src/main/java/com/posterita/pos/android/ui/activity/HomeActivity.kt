@@ -41,13 +41,16 @@ class HomeActivity : AppCompatActivity() {
     @Inject
     lateinit var db: AppDatabase
 
+    enum class TileVisibility { ALL, SUPERVISOR_PLUS, ADMIN_OWNER }
+
     data class AppTile(
         val id: String,
         val label: String,
         val iconRes: Int,
         val color: Int,
         val enabled: Boolean,
-        val activityClass: Class<out Activity>?
+        val activityClass: Class<out Activity>?,
+        val visibility: TileVisibility = TileVisibility.ALL
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,20 +94,32 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupAppGrid() {
-        // Tiles match the Manus prototype ROLE_SCREENS for owner
-        val tiles = listOf(
-            AppTile("pos", "Point of Sale", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java),
-            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), false, null),
-            AppTile("loyalty", "Loyalty", R.drawable.ic_check_circle, 0xFF5E35B1.toInt(), false, null),
-            AppTile("catalogue", "Catalogue", R.drawable.ic_edit, 0xFFF57F17.toInt(), false, null),
-            AppTile("staff", "Staff", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), false, null),
-            AppTile("shifts", "Shifts", R.drawable.till, 0xFF1976D2.toInt(), false, null),
-            AppTile("chat", "AI Assistant", R.drawable.ic_splash, 0xFF1976D2.toInt(), false, null),
-            AppTile("whatsapp", "WhatsApp", R.drawable.ic_splash, 0xFF2E7D32.toInt(), false, null),
-            AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java)
+        // Capability-driven tiles — filtered by user role
+        val allTiles = listOf(
+            AppTile("pos", "Point of Sale", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java, TileVisibility.ALL),
+            AppTile("orders", "Orders", R.drawable.ic_check_circle, 0xFF5E35B1.toInt(), true, OrdersActivity::class.java, TileVisibility.ALL),
+            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), false, null, TileVisibility.SUPERVISOR_PLUS),
+            AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
+            AppTile("customers", "Customers", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), true, SearchCustomerActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
+            AppTile("staff", "Staff", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), false, null, TileVisibility.ADMIN_OWNER),
+            AppTile("reports", "Reports", R.drawable.ic_edit, 0xFFF57F17.toInt(), false, null, TileVisibility.ADMIN_OWNER)
         )
 
-        binding.recyclerAppGrid.layoutManager = GridLayoutManager(this, 3)
+        val user = sessionManager.user
+        val tiles = if (user == null) {
+            // Demo / no user — show all enabled tiles
+            allTiles.filter { it.enabled }
+        } else {
+            allTiles.filter { tile ->
+                when (tile.visibility) {
+                    TileVisibility.ALL -> true
+                    TileVisibility.SUPERVISOR_PLUS -> user.isSupervisor
+                    TileVisibility.ADMIN_OWNER -> user.isAdminOrOwner
+                }
+            }
+        }
+
+        binding.recyclerAppGrid.layoutManager = GridLayoutManager(this, 2)
         binding.recyclerAppGrid.adapter = AppTileAdapter(tiles) { tile ->
             if (tile.enabled && tile.activityClass != null) {
                 startActivity(Intent(this, tile.activityClass))
