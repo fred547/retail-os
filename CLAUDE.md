@@ -1,45 +1,155 @@
 # Posterita Retail OS
 
-Unified retail management platform: one Android app, one web console, one NestJS backend, one Supabase database.
+Unified retail management platform: one Android app, one web console, one backend, one Supabase database.
 
 ## Repository Map
 
 | Directory | What it is |
 |-----------|-----------|
-| `pos-android/` | Production Android POS app (Kotlin, Gradle, Hilt, Room) — 58 Activities, offline-first |
-| `manus-retail-os/` | Manus prototype — inspiration only, NOT the production codebase |
-| `manus-retail-os-prototype/` | Earlier Manus prototype variant — inspiration only |
-| `pos-android/server-side/posterita-cloud/web/` | **Production web console** (Next.js on Vercel) — the actual web app |
-| `posterita-loyalty/` | Legacy loyalty Flask API + Zoho scripts (being retired) |
-| `posterita-prototype/` | Latest interactive UI prototype (React JSX, 1,242 lines) |
+| `pos-android/` | Production Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
+| `pos-android/server-side/posterita-cloud/web/` | **Production web console** (Next.js on Vercel) — admin CRUD |
+| `pos-android/server-side/posterita-cloud/` | Vercel serverless API routes (sync, AI import, Blink payments) |
+| `pos-android/server-side/supabase/` | Supabase migrations and config |
+| `posterita-prototype/` | Interactive UI prototype (React JSX, 1,242 lines) — design reference |
 | `specs/` | AI-optimized specification files (split from master plan v3.9) |
-| `downloads-archive/` | Historical files, loose JSX prototypes, master plan PDF/MD |
+| `manus-retail-os/` | Manus prototype — **inspiration only, NOT production code** |
+| `manus-retail-os-prototype/` | Earlier Manus variant — **inspiration only** |
+| `posterita-loyalty/` | Legacy loyalty Flask API (being retired) |
+| `downloads-archive/` | Historical files, master plan PDF/MD |
 
 ## Stack
 
 - **Android:** Kotlin, Gradle, Room, Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink payments
-- **Backend:** NestJS modular monolith on Render, BullMQ workers, Redis (Phase 1 — not yet deployed)
-- **Cloud Sync:** Vercel serverless functions at `posterita-cloud.vercel.app/api/` (current sync endpoint)
-- **Web Console:** Next.js on Vercel (in `manus-retail-os/`)
+- **Web Console:** Next.js 14+ (App Router) on Vercel — at `pos-android/server-side/posterita-cloud/web/`
+- **Backend API:** Vercel serverless functions at `posterita-cloud.vercel.app/api/`
 - **Database:** Supabase Postgres (sole source of truth)
-- **Media:** Cloudinary | **WhatsApp:** Meta Cloud API via SalesIQ | **Payments:** Blink SDK
+- **Auth:** Supabase Auth (web console), JWT tokens (Android)
+- **Media:** Cloudinary | **WhatsApp:** Meta Cloud API | **Payments:** Blink SDK
 
 ## API Endpoints
 
-- **Cloud Sync (current):** `https://posterita-cloud.vercel.app/api/` — Android syncs here
-- **Legacy (being retired):** `https://my.posterita.com/posteritabo` — DO NOT USE
-- **Loyalty (legacy):** `https://loyalty.posterita.com/api/` — Flask API, being migrated to NestJS
-- **Backend (Phase 1):** TBD — NestJS on Render, will replace both legacy endpoints
+- **Production:** `https://posterita-cloud.vercel.app/api/` — sync, data, AI import, Blink
+- **Legacy (DO NOT USE):** `https://my.posterita.com/posteritabo`
+- **Loyalty (legacy):** `https://loyalty.posterita.com/api/` — being migrated
 
 ## Key Architectural Rules
 
-1. Android never talks to Supabase directly — all data flows through the backend API
-2. Web console mutations go through the backend API — Supabase Realtime is for live updates only
-3. One store per user per day — JWT carries store_id claim
-4. Inventory count is scan-only — no manual data entry
-5. Offline-first — every store-floor operation works without connectivity
-6. Capability-driven UI — role-based, not hardcoded screen lists
-7. Every mutation produces an audit event
+1. **Android never talks to Supabase directly** — all data flows through the API
+2. **Web console reads Supabase directly** (via Supabase client) — mutations go through API routes
+3. **One store per user per day** — JWT carries store_id claim
+4. **Inventory count is scan-only** — no manual data entry
+5. **Offline-first** — every store-floor operation works without connectivity
+6. **Capability-driven UI** — role-based, not hardcoded screen lists
+7. **Every mutation produces an audit event**
+8. **Three-layer feature rule** — see Feature Development Workflow below
+
+## Feature Development Workflow
+
+**CRITICAL: When implementing any feature, it must be built across all three layers:**
+
+### Layer 1: Database (Supabase)
+- Define the table/schema in `pos-android/server-side/supabase/`
+- Add migrations
+- This is the source of truth
+
+### Layer 2: Backend API (Vercel serverless)
+- Add API routes in `pos-android/server-side/posterita-cloud/web/src/app/api/`
+- CRUD endpoints that Android and Web Console both call
+- Validation, business logic, audit logging
+
+### Layer 3a: Web Console (Next.js)
+- Admin CRUD pages in `pos-android/server-side/posterita-cloud/web/src/app/(dashboard)/`
+- Used for: creating/editing products, stores, terminals, users, taxes, categories, brands
+- Embedded inside Android app via WebView for admin tasks
+
+### Layer 3b: Android App (Kotlin)
+- POS operations: sales, cart, payments, receipts, scanning, till management
+- Read-only views of web-managed data (synced from API)
+- WebView integration for admin tasks (opens web console embedded)
+- Offline Room DB with sync engine
+
+### When to build where:
+
+| Task | Android | Web Console | API |
+|------|---------|-------------|-----|
+| **POS checkout flow** | ✅ Native | ❌ | ✅ Sync orders |
+| **Create/edit products** | WebView embed | ✅ Native | ✅ CRUD |
+| **Create/edit stores** | WebView embed | ✅ Native | ✅ CRUD |
+| **Create/edit users** | WebView embed | ✅ Native | ✅ CRUD |
+| **Create brands** | WebView embed | ✅ Native | ✅ CRUD |
+| **View orders** | ✅ Native | ✅ Native | ✅ Query |
+| **Till management** | ✅ Native | ✅ View only | ✅ Sync |
+| **Printer config** | ✅ Native (local) | ❌ | ❌ |
+| **Barcode scanning** | ✅ Native | ❌ | ❌ |
+| **Reports/analytics** | WebView embed | ✅ Native | ✅ Query |
+
+### WebView Integration Pattern
+
+The Android app embeds the web console via `WebConsoleActivity`:
+- Settings items open web console pages (e.g., `/products`, `/stores`)
+- Sidebar is hidden via CSS injection — Android provides its own navigation
+- Auth token will be passed from Android to WebView (Phase 1)
+- After editing in web console, Android syncs to get updated data
+
+## Web Console Routes
+
+Real web app at `pos-android/server-side/posterita-cloud/web/`:
+
+| Route | Page | Status |
+|-------|------|--------|
+| `/` | Dashboard | ✅ |
+| `/products` | Products (CRUD) | ✅ |
+| `/categories` | Categories | ✅ |
+| `/stores` | Stores | ✅ |
+| `/terminals` | Terminals | ✅ |
+| `/users` | Users | ✅ |
+| `/orders` | Orders | ✅ |
+| `/customers` | Customers | ✅ |
+| `/settings` | Settings/Taxes | ✅ |
+| `/reports` | Reports | ✅ |
+| `/platform` | Account/Brand switcher | ✅ |
+| `/ai-import` | AI product import | ✅ |
+| `/price-review` | Price review queue | ✅ |
+| `/brands` | Brand management | ❌ Needs building |
+
+## Android Navigation Architecture
+
+- **Home screen:** Hub with bottom nav (Home | POS | Orders | More)
+- **POS drawer:** Home, Orders, Terminal Info, Printers, Till History
+- **POS MORE menu:** Open Cash Drawer, Clear Cart, Hold Order, Close Till
+- **Settings:** Opens web console pages via WebView
+- **Connectivity dot:** Green/red in every top bar, tap opens sync screen
+- **Sync:** Automatic (5-min CloudSyncWorker). Manual via connectivity dot.
+
+## Data Hierarchy
+
+```
+Brand (Account)
+├── Currency, WhatsApp number, head office address, website
+├── Store 1
+│   ├── Name, address, city, country
+│   ├── Terminal A (POS type)
+│   │   ├── POS config (columns, categories, security)
+│   │   └── Printers (receipt, kitchen, bar, label)
+│   └── Terminal B (Kitchen type)
+├── Store 2
+│   └── Terminal C
+└── Users (roles: owner, admin, supervisor, cashier, staff)
+```
+
+## Brand Colors
+
+- Primary: `#1976D2` | Light: `#DCEBFF` | Dark: `#0D5DB3`
+- Success: `#2E7D32` | Error: `#E53935` | Warning: `#F57F17`
+- Purple: `#5E35B1` | Background: `#F5F2EA` | Paper: `#FFFFFF`
+- Ink: `#141414` | Muted: `#6C6F76` | Line: `#E6E2DA`
+
+## Current Phase
+
+**Phase 0** — Android app cleanup, UI consistency, offline POS solid. ✅ Nearly complete.
+**Phase 1** — Web console CRUD + API routes + auth integration + sync engine.
+**Phase 2** — Inventory, loyalty, catalogue, logistics.
+**Phase 3** — Staff ops, supervisor, warehouse, AI assistant.
 
 ## Working with Specs
 
@@ -49,35 +159,6 @@ Before working on any module, always read:
 3. The relevant `specs/modules/XX-module-name.md`
 
 For UI work, also read:
-- `specs/ui/screens/screen-name.md` — layout and component spec
-- `specs/ui/component-inventory.md` — what's built vs needed
 - `specs/ui/design-system.md` — colors, typography, spacing tokens
-
-## Brand Colors
-
-- Primary: `#1976D2` (posterita_primary — blue)
-- Primary Light: `#DCEBFF` (posterita_primary_light)
-- Primary Dark: `#0D5DB3` (posterita_primary_dark)
-- Secondary/Success: `#2E7D32` (posterita_secondary — green)
-- Error: `#E53935` (posterita_error — red)
-- Warning: `#F57F17` (posterita_warning — amber)
-- Purple: `#5E35B1` (posterita_purple — loyalty/points)
-- Background: `#F5F2EA` (posterita_bg — warm cream canvas)
-- Paper: `#FFFFFF` (posterita_paper — cards/panels)
-- Ink: `#141414` (posterita_ink — primary text)
-- Muted: `#6C6F76` (posterita_muted — secondary text)
-- Line: `#E6E2DA` (posterita_line — borders/dividers)
-
-## Current Phase
-
-Phase 0 — Android app cleanup, UI consistency, getting offline POS solid. (Nearly complete)
-Next: Phase 1 — NestJS backend on Render + Supabase database.
-
-## Navigation Architecture
-
-- **Home screen:** Hub for all modules (POS, Orders, Settings, etc.)
-- **POS drawer menu:** Only Home, Close Till, Logout (minimal — not a navigation hub)
-- **Connectivity dot:** Green/red indicator in every top bar, tapping opens sync screen
-- **Sync:** Automatic via CloudSyncWorker (5-min interval). Manual sync via connectivity dot.
-- **About, Help:** Accessible from Settings screen, not from POS drawer
-- **Logout:** From POS drawer or Settings
+- `posterita-prototype/src/App.jsx` — visual reference (1,242 lines)
+- `.claude/skills/posterita-ui/SKILL.md` — design system quick reference

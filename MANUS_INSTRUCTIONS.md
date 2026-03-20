@@ -6,7 +6,19 @@
 2. **Live UI Prototype:** https://posterita-prototype.vercel.app/ — the target look & feel
 3. **Prototype Source:** `posterita-prototype/src/App.jsx` — 1,242-line React prototype with all screens
 4. **Specs:** `specs/` directory — architecture, data model, module specs, UI specs
-5. **Existing Android App:** `pos-android/` — the production codebase (Kotlin, 58 Activities)
+5. **Android App:** `pos-android/` — production POS app (Kotlin)
+6. **Web Console:** `pos-android/server-side/posterita-cloud/web/` — production admin web app (Next.js)
+7. **API Routes:** `pos-android/server-side/posterita-cloud/web/src/app/api/` — Vercel serverless functions
+8. **DO NOT USE:** `manus-retail-os/` — this is inspiration only, not production code
+
+## Three-Layer Feature Rule
+
+When implementing ANY feature, ensure all three layers are addressed:
+1. **Database** — Supabase schema/migration
+2. **API** — Vercel serverless route for CRUD
+3. **UI** — Android (native POS) + Web Console (admin CRUD)
+
+Admin CRUD (products, stores, users, etc.) is built in the Web Console and embedded in Android via WebView. POS operations (sales, scanning, till) are native Android only.
 
 ## Critical Rule: No Functionality Loss
 
