@@ -279,6 +279,11 @@ class SharedPreferencesManager @Inject constructor(
         get() = prefs.getBoolean("account_switching_enabled", true)
         set(value) = prefs.edit().putBoolean("account_switching_enabled", value).apply()
 
+    // Scanner — auto-scan mode (default: true)
+    var scannerAutoScan: Boolean
+        get() = prefs.getBoolean(Constants.SCANNER_AUTO_SCAN, true)
+        set(value) = prefs.edit().putBoolean(Constants.SCANNER_AUTO_SCAN, value).apply()
+
     // Cart item removal security — require note/reason when removing items (default: false)
     var cartRemovalRequireNote: Boolean
         get() = prefs.getBoolean(Constants.CART_REMOVAL_REQUIRE_NOTE, false)

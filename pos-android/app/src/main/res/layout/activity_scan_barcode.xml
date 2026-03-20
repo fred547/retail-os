@@ -58,7 +58,9 @@
                 android:layout_height="wrap_content"
                 android:text="Auto-scanning · Point at barcode"
                 android:textColor="#AAFFFFFF"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
         <ImageButton
@@ -157,18 +159,25 @@
             android:layout_marginEnd="6dp"
             android:text="Cancel" />
 
-        <!-- Done / Go to Cart button -->
+        <!-- Take Picture button -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_my_cart"
+            android:id="@+id/button_take_picture"
             style="@style/Widget.Posterita.Button.Pay"
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="2"
-            app:icon="@drawable/ic_shopping_cart"
+            app:icon="@drawable/ic_camera"
             app:iconGravity="textStart"
             app:iconSize="20dp"
             app:iconTint="@color/white"
-            android:text="Done" />
+            android:text="Take Picture" />
+
+        <!-- Hidden for binding compat -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_my_cart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
 
         <!-- Hidden for binding compat -->
         <TextView
