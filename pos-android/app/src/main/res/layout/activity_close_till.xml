@@ -258,6 +258,7 @@
             <!-- ================================================================ -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_step1"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
@@ -1110,7 +1111,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Discrepancy"
+                            android:text="Card / Other Payments"
                             android:textColor="@color/posterita_ink"
                             android:fontFamily="@font/lexend_medium"
                             android:textSize="15sp"
@@ -1126,11 +1127,13 @@
                         android:padding="16dp">
 
                         <!-- Expected -->
+                        <!-- Expected Cash — HIDDEN from cashier (anti-fraud) -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginBottom="6dp">
+                            android:layout_marginBottom="6dp"
+                            android:visibility="gone">
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -1179,9 +1182,10 @@
                             android:layout_marginTop="4dp"
                             android:layout_marginBottom="10dp"/>
 
-                        <!-- Difference -->
+                        <!-- Difference — HIDDEN until submission (anti-fraud) -->
                         <LinearLayout
                             android:id="@+id/row_difference"
+                            android:visibility="gone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
