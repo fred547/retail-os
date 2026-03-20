@@ -51,6 +51,35 @@
                 android:background="@drawable/bg_internet_dot" />
         </LinearLayout>
 
+        <!-- Web console banner -->
+        <LinearLayout
+            android:id="@+id/layout_web_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/posterita_primary_light">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/info"
+                app:tint="@color/posterita_primary_dark"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Info" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View only — use the web console to make changes"
+                style="@style/TextAppearance.Posterita.Tiny"
+                android:textColor="@color/posterita_primary_dark" />
+        </LinearLayout>
+
         <!-- Hidden toolbar kept for binding compatibility -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
