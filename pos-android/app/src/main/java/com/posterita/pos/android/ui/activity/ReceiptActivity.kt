@@ -51,12 +51,8 @@ class ReceiptActivity : BaseDrawerActivity() {
         binding = ActivityReceiptBinding.bind(drawerLayout.getChildAt(0))
         supportActionBar?.hide()
 
-        // Set up toolbar with hamburger menu
-        binding.toolbar?.title = ""
-        binding.toolbar?.setNavigationIcon(R.drawable.ic_drawer)
-        binding.toolbar?.setNavigationOnClickListener { openDrawer() }
-
-        setupDrawerNavigation()
+        // Back button (no drawer on receipt)
+        binding.buttonBack?.setOnClickListener { navigateToProductActivity() }
 
         orderUuid = intent.getStringExtra("ORDER_UUID")
         val changeDue = intent.getDoubleExtra("CHANGE_DUE", 0.0)
@@ -64,6 +60,13 @@ class ReceiptActivity : BaseDrawerActivity() {
 
         setupButtons()
         loadOrderDetails()
+
+        // Show store name in receipt card header
+        val storeName = prefsManager.storeName
+        if (storeName.isNotEmpty()) {
+            binding.textViewStoreName?.text = storeName
+            binding.textViewStoreName?.visibility = View.VISIBLE
+        }
 
         // Display change due
         val currency = sessionManager.account?.currency ?: ""
@@ -144,6 +147,9 @@ class ReceiptActivity : BaseDrawerActivity() {
 
                 orderDetails?.let { details ->
                     binding.textViewOrderNumber.text = "Receipt #${details.documentno}"
+                    // Also show receipt number inside the card
+                    binding.textViewReceiptNumber?.text = "#${details.documentno}"
+                    binding.textViewReceiptNumber?.visibility = View.VISIBLE
                     displayOrderDetails(details)
                 }
             }
@@ -157,21 +163,21 @@ class ReceiptActivity : BaseDrawerActivity() {
         val dateText = details.dateorderedtext
             ?: if (details.dateordered > 0) DateUtils.formatDateTime(details.dateordered) else null
         if (dateText != null) {
-            binding.textViewDate.text = "Date: $dateText"
+            binding.textViewDate.text = dateText
             binding.textViewDate.visibility = View.VISIBLE
         }
 
         // Customer
         val customerName = details.customer_name
         if (!customerName.isNullOrBlank()) {
-            binding.textViewCustomer.text = "Customer: $customerName"
+            binding.textViewCustomer.text = customerName
             binding.textViewCustomer.visibility = View.VISIBLE
         }
 
         // Sales rep
         val salesRep = details.user_name
         if (!salesRep.isNullOrBlank()) {
-            binding.textViewSalesRep.text = "Sales Rep: $salesRep"
+            binding.textViewSalesRep.text = "Served by $salesRep"
             binding.textViewSalesRep.visibility = View.VISIBLE
         }
 
@@ -199,7 +205,7 @@ class ReceiptActivity : BaseDrawerActivity() {
                     layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     text = line.name ?: "Item"
                     textSize = 14f
-                    setTextColor(getColor(R.color.black))
+                    setTextColor(getColor(R.color.posterita_ink))
                 }
                 itemRow.addView(tvName)
 
@@ -209,7 +215,7 @@ class ReceiptActivity : BaseDrawerActivity() {
                     text = NumberUtils.formatQuantity(line.qtyentered)
                     textSize = 14f
                     gravity = Gravity.CENTER
-                    setTextColor(getColor(R.color.black))
+                    setTextColor(getColor(R.color.posterita_ink))
                 }
                 itemRow.addView(tvQty)
 
@@ -219,7 +225,7 @@ class ReceiptActivity : BaseDrawerActivity() {
                     text = "$currency ${NumberUtils.formatPrice(line.linenetamt)}"
                     textSize = 14f
                     gravity = Gravity.END
-                    setTextColor(getColor(R.color.black))
+                    setTextColor(getColor(R.color.posterita_ink))
                 }
                 itemRow.addView(tvAmount)
 
@@ -314,7 +320,7 @@ class ReceiptActivity : BaseDrawerActivity() {
             text = label
             textSize = if (bold) 16f else 14f
             if (bold) setTypeface(null, Typeface.BOLD)
-            setTextColor(getColor(R.color.black))
+            setTextColor(getColor(R.color.posterita_ink))
         }
         row.addView(tvLabel)
 
@@ -324,7 +330,7 @@ class ReceiptActivity : BaseDrawerActivity() {
             textSize = if (bold) 16f else 14f
             gravity = Gravity.END
             if (bold) setTypeface(null, Typeface.BOLD)
-            setTextColor(getColor(R.color.black))
+            setTextColor(getColor(R.color.posterita_ink))
         }
         row.addView(tvValue)
 
