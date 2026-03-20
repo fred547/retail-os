@@ -1,13 +1,11 @@
 package com.posterita.pos.android.ui.activity
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
@@ -67,6 +64,9 @@ class ManageTerminalActivity : AppCompatActivity() {
             }
             terminals = result.first
             storeNames = result.second
+            allStores = storeNames.map { (id, name) ->
+                Store(storeId = id, name = name)
+            }
             binding.progressLoading.visibility = View.GONE
             val isEmpty = terminals.isEmpty()
             binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
@@ -75,92 +75,113 @@ class ManageTerminalActivity : AppCompatActivity() {
         }
     }
 
+    private var allStores = listOf<Store>()
+
     private fun showTerminalDialog(terminal: Terminal?) {
         val isEdit = terminal != null
 
-        val scrollView = android.widget.ScrollView(this)
-        val container = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 16)
-        }
-        scrollView.addView(container)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_terminal, null)
+        val dialog = android.app.Dialog(this)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
-        fun addField(hint: String, value: String?): TextInputEditText {
-            val til = TextInputLayout(
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvDialogTitle)
+        val etName = dialogView.findViewById<TextInputEditText>(R.id.etTerminalName)
+        val etPrefix = dialogView.findViewById<TextInputEditText>(R.id.etTerminalPrefix)
+        val etFloat = dialogView.findViewById<TextInputEditText>(R.id.etTerminalFloat)
+        val tilStore = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilTerminalStore)
+        val actvStore = dialogView.findViewById<android.widget.AutoCompleteTextView>(R.id.actvTerminalStore)
+        val btnDelete = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteTerminal)
+        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelTerminal)
+        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveTerminal)
+
+        tvTitle.text = if (isEdit) "Edit Terminal" else "Add Terminal"
+
+        // Store selector — show only if multiple stores
+        var selectedStoreId = terminal?.store_id ?: prefsManager.storeId
+        if (allStores.size > 1) {
+            tilStore.visibility = View.VISIBLE
+            val storeAdapter = android.widget.ArrayAdapter(
                 this,
-                null,
-                com.google.android.material.R.attr.textInputOutlinedStyle
-            ).apply {
-                this.hint = hint
-                boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = 16 }
+                android.R.layout.simple_dropdown_item_1line,
+                allStores.map { it.name ?: "Store ${it.storeId}" }
+            )
+            actvStore.setAdapter(storeAdapter)
+            val currentIndex = allStores.indexOfFirst { it.storeId == selectedStoreId }
+            if (currentIndex >= 0) {
+                actvStore.setText(allStores[currentIndex].name ?: "Store ${allStores[currentIndex].storeId}", false)
             }
-            val et = TextInputEditText(this)
-            et.setText(value ?: "")
-            til.addView(et)
-            container.addView(til)
-            return et
+            actvStore.setOnItemClickListener { _, _, position, _ ->
+                selectedStoreId = allStores[position].storeId
+            }
         }
 
-        val etName = addField("Terminal Name *", terminal?.name)
-        val etPrefix = addField("Receipt Prefix", terminal?.prefix)
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(if (isEdit) "Edit Terminal" else "Add Terminal")
-            .setView(scrollView)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .apply {
-                if (isEdit) {
-                    setNeutralButton("Delete") { _, _ -> deleteTerminal(terminal!!) }
-                }
+        // Pre-fill fields if editing
+        if (isEdit) {
+            etName.setText(terminal!!.name ?: "")
+            etPrefix.setText(terminal.prefix ?: "")
+            if (terminal.floatamt > 0) {
+                etFloat.setText("%.2f".format(terminal.floatamt))
             }
-            .create()
+            btnDelete.visibility = View.VISIBLE
+        }
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(getColor(R.color.posterita_primary))
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(getColor(R.color.posterita_muted))
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(getColor(R.color.posterita_error))
+        btnDelete.setOnClickListener {
+            dialog.dismiss()
+            deleteTerminal(terminal!!)
+        }
 
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val name = etName.text?.toString()?.trim() ?: ""
-                val prefix = etPrefix.text?.toString()?.trim() ?: ""
+        btnCancel.setOnClickListener { dialog.dismiss() }
 
-                if (name.isEmpty()) {
-                    Toast.makeText(this, "Terminal name is required", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+        btnSave.setOnClickListener {
+            val name = etName.text?.toString()?.trim() ?: ""
+            val prefix = etPrefix.text?.toString()?.trim() ?: ""
+            val floatAmt = etFloat.text?.toString()?.trim()?.toDoubleOrNull() ?: 0.0
 
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        if (isEdit) {
-                            val updated = terminal!!.copy(name = name, prefix = prefix)
-                            db.terminalDao().updateTerminal(updated)
-                            if (terminal.terminalId == prefsManager.terminalId) {
-                                prefsManager.setTerminalNameSync(name)
-                            }
-                            Unit
-                        } else {
-                            val maxId = db.terminalDao().getMaxTerminalId() ?: 0
-                            val newTerminal = Terminal(
-                                terminalId = maxId + 1,
-                                name = name,
-                                prefix = prefix,
-                                store_id = prefsManager.storeId,
-                                isactive = "Y"
-                            )
-                            db.terminalDao().insertTerminal(newTerminal)
+            if (name.isEmpty()) {
+                Toast.makeText(this, "Terminal name is required", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    if (isEdit) {
+                        val updated = terminal!!.copy(
+                            name = name,
+                            prefix = prefix,
+                            floatamt = floatAmt,
+                            store_id = selectedStoreId
+                        )
+                        db.terminalDao().updateTerminal(updated)
+                        if (terminal.terminalId == prefsManager.terminalId) {
+                            prefsManager.setTerminalNameSync(name)
                         }
+                        Unit
+                    } else {
+                        val maxId = db.terminalDao().getMaxTerminalId() ?: 0
+                        val newTerminal = Terminal(
+                            terminalId = maxId + 1,
+                            name = name,
+                            prefix = prefix,
+                            floatamt = floatAmt,
+                            store_id = selectedStoreId,
+                            isactive = "Y"
+                        )
+                        db.terminalDao().insertTerminal(newTerminal)
                     }
-                    dialog.dismiss()
-                    loadData()
-                    Toast.makeText(this@ManageTerminalActivity,
-                        if (isEdit) "Terminal updated" else "Terminal added", Toast.LENGTH_SHORT).show()
                 }
+                dialog.dismiss()
+                loadData()
+                Toast.makeText(this@ManageTerminalActivity,
+                    if (isEdit) "Terminal updated" else "Terminal added", Toast.LENGTH_SHORT).show()
             }
         }
+
         dialog.show()
     }
 

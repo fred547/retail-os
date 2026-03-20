@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardBrand"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/posterita_paper">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Row 1: Brand name + active badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_splash"
+                android:contentDescription="Brand logo"
+                android:layout_marginEnd="12dp"
+                app:tint="@color/posterita_primary" />
+
+            <TextView
+                android:id="@+id/tvBrandName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                style="@style/TextAppearance.Posterita.Subheading"
+                android:textColor="@color/posterita_ink" />
+
+            <TextView
+                android:id="@+id/tvActiveBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Active"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/posterita_primary"
+                android:background="@color/posterita_primary_light"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Row 2: Account ID -->
+        <TextView
+            android:id="@+id/tvBrandAccountId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="48dp"
+            style="@style/TextAppearance.Posterita.Body.Muted" />
+
+        <!-- Row 3: Address details -->
+        <TextView
+            android:id="@+id/tvBrandDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="48dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            style="@style/TextAppearance.Posterita.Caption"
+            android:textColor="@color/posterita_muted"
+            android:visibility="gone" />
+
+        <!-- Row 4: Website -->
+        <TextView
+            android:id="@+id/tvBrandWebsite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="48dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/TextAppearance.Posterita.Caption"
+            android:textColor="@color/posterita_primary"
+            android:visibility="gone" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/posterita_line" />
+
+        <!-- Row 5: Currency + Switch button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvBrandCurrency"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/TextAppearance.Posterita.Caption"
+                android:textColor="@color/posterita_muted" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSwitchBrand"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Switch"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -44,7 +44,7 @@ class HomeActivity : AppCompatActivity() {
     @Inject
     lateinit var db: AppDatabase
 
-    enum class TileVisibility { ALL, SUPERVISOR_PLUS, ADMIN_OWNER }
+    enum class TileVisibility { ALL, SUPERVISOR_PLUS, ADMIN_OWNER, OWNER_ONLY }
 
     data class AppTile(
         val id: String,
@@ -203,7 +203,8 @@ class HomeActivity : AppCompatActivity() {
             AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
             AppTile("customers", "Customers", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), true, SearchCustomerActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("staff", "Staff", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), false, null, TileVisibility.ADMIN_OWNER),
-            AppTile("reports", "Reports", R.drawable.ic_edit, 0xFFF57F17.toInt(), false, null, TileVisibility.ADMIN_OWNER)
+            AppTile("reports", "Reports", R.drawable.ic_edit, 0xFFF57F17.toInt(), false, null, TileVisibility.ADMIN_OWNER),
+            AppTile("brands", "Brands", R.drawable.ic_splash, 0xFF007AFF.toInt(), true, ManageBrandsActivity::class.java, TileVisibility.OWNER_ONLY)
         )
 
         val user = sessionManager.user
@@ -216,6 +217,7 @@ class HomeActivity : AppCompatActivity() {
                     TileVisibility.ALL -> true
                     TileVisibility.SUPERVISOR_PLUS -> user.isSupervisor
                     TileVisibility.ADMIN_OWNER -> user.isAdminOrOwner
+                    TileVisibility.OWNER_ONLY -> user.isOwner
                 }
             }
         }

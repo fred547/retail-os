@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
@@ -75,101 +73,94 @@ class ManageStoreActivity : AppCompatActivity() {
     private fun showStoreDialog(store: Store?) {
         val isEdit = store != null
 
-        // Build dialog content with MaterialCardView wrapping the fields
-        val scrollView = android.widget.ScrollView(this)
-        val container = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 16)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_store, null)
+        val dialog = android.app.Dialog(this)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvDialogTitle)
+        val etName = dialogView.findViewById<TextInputEditText>(R.id.etStoreName)
+        val etAddress = dialogView.findViewById<TextInputEditText>(R.id.etStoreAddress)
+        val etCity = dialogView.findViewById<TextInputEditText>(R.id.etStoreCity)
+        val etState = dialogView.findViewById<TextInputEditText>(R.id.etStoreState)
+        val etZip = dialogView.findViewById<TextInputEditText>(R.id.etStoreZip)
+        val etCountry = dialogView.findViewById<TextInputEditText>(R.id.etStoreCountry)
+        val etCurrency = dialogView.findViewById<TextInputEditText>(R.id.etStoreCurrency)
+        val btnDelete = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteStore)
+        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelStore)
+        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveStore)
+
+        tvTitle.text = if (isEdit) "Edit Store" else "Add Store"
+
+        // Pre-fill fields if editing
+        if (isEdit) {
+            etName.setText(store!!.name ?: "")
+            etAddress.setText(store.address ?: "")
+            etCity.setText(store.city ?: "")
+            etState.setText(store.state ?: "")
+            etZip.setText(store.zip ?: "")
+            etCountry.setText(store.country ?: "")
+            etCurrency.setText(store.currency ?: "")
+            btnDelete.visibility = View.VISIBLE
         }
-        scrollView.addView(container)
 
-        fun addField(hint: String, value: String?): TextInputEditText {
-            val til = TextInputLayout(
-                this,
-                null,
-                com.google.android.material.R.attr.textInputOutlinedStyle
-            ).apply {
-                this.hint = hint
-                boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = 16 }
-            }
-            val et = TextInputEditText(this)
-            et.setText(value ?: "")
-            til.addView(et)
-            container.addView(til)
-            return et
+        btnDelete.setOnClickListener {
+            dialog.dismiss()
+            deleteStore(store!!)
         }
 
-        val etName = addField("Store Name *", store?.name)
-        val etAddress = addField("Address", store?.address)
-        val etCity = addField("City", store?.city)
-        val etState = addField("State", store?.state)
-        val etZip = addField("ZIP / Postal Code", store?.zip)
-        val etCountry = addField("Country", store?.country)
+        btnCancel.setOnClickListener { dialog.dismiss() }
 
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(if (isEdit) "Edit Store" else "Add Store")
-            .setView(scrollView)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .apply {
-                if (isEdit) {
-                    setNeutralButton("Delete") { _, _ -> deleteStore(store!!) }
-                }
+        btnSave.setOnClickListener {
+            val name = etName.text?.toString()?.trim() ?: ""
+            if (name.isEmpty()) {
+                Toast.makeText(this, "Store name is required", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-            .create()
 
-        dialog.setOnShowListener {
-            // Style the positive button
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(getColor(R.color.posterita_primary))
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(getColor(R.color.posterita_muted))
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(getColor(R.color.posterita_error))
+            val address = etAddress.text?.toString()?.trim()
+            val city = etCity.text?.toString()?.trim()
+            val state = etState.text?.toString()?.trim()
+            val zip = etZip.text?.toString()?.trim()
+            val country = etCountry.text?.toString()?.trim()
+            val currency = etCurrency.text?.toString()?.trim()
 
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val name = etName.text?.toString()?.trim() ?: ""
-                if (name.isEmpty()) {
-                    Toast.makeText(this, "Store name is required", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val address = etAddress.text?.toString()?.trim()
-                val city = etCity.text?.toString()?.trim()
-                val state = etState.text?.toString()?.trim()
-                val zip = etZip.text?.toString()?.trim()
-                val country = etCountry.text?.toString()?.trim()
-
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        if (isEdit) {
-                            val updated = store!!.copy(
-                                name = name, address = address, city = city,
-                                state = state, zip = zip, country = country
-                            )
-                            db.storeDao().updateStore(updated)
-                            if (store.storeId == prefsManager.storeId) {
-                                prefsManager.setStoreNameSync(name)
-                            }
-                            Unit
-                        } else {
-                            val maxId = db.storeDao().getMaxStoreId() ?: 0
-                            val newStore = Store(
-                                storeId = maxId + 1,
-                                name = name, address = address, city = city,
-                                state = state, zip = zip, country = country,
-                                isactive = "Y"
-                            )
-                            db.storeDao().insertStore(newStore)
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    if (isEdit) {
+                        val updated = store!!.copy(
+                            name = name, address = address, city = city,
+                            state = state, zip = zip, country = country,
+                            currency = currency
+                        )
+                        db.storeDao().updateStore(updated)
+                        if (store.storeId == prefsManager.storeId) {
+                            prefsManager.setStoreNameSync(name)
                         }
+                        Unit
+                    } else {
+                        val maxId = db.storeDao().getMaxStoreId() ?: 0
+                        val newStore = Store(
+                            storeId = maxId + 1,
+                            name = name, address = address, city = city,
+                            state = state, zip = zip, country = country,
+                            currency = currency, isactive = "Y"
+                        )
+                        db.storeDao().insertStore(newStore)
                     }
-                    dialog.dismiss()
-                    loadData()
-                    Toast.makeText(this@ManageStoreActivity,
-                        if (isEdit) "Store updated" else "Store added", Toast.LENGTH_SHORT).show()
                 }
+                dialog.dismiss()
+                loadData()
+                Toast.makeText(this@ManageStoreActivity,
+                    if (isEdit) "Store updated" else "Store added", Toast.LENGTH_SHORT).show()
             }
         }
+
         dialog.show()
     }
 
