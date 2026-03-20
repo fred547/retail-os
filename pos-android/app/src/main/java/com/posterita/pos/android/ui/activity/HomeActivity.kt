@@ -232,6 +232,7 @@ class HomeActivity : AppCompatActivity() {
         val allTiles = listOf(
             AppTile("pos", "Point of Sale", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java, TileVisibility.ALL),
             AppTile("orders", "Orders", R.drawable.ic_check_circle, 0xFF5E35B1.toInt(), true, OrdersActivity::class.java, TileVisibility.ALL),
+            AppTile("tills", "Tills", R.drawable.till, 0xFF00838F.toInt(), true, TillHistoryActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), false, null, TileVisibility.SUPERVISOR_PLUS),
             AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
             AppTile("customers", "Customers", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), true, SearchCustomerActivity::class.java, TileVisibility.SUPERVISOR_PLUS),

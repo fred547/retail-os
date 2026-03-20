@@ -230,6 +230,29 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Print Count Sheet button (before Step 1) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_print_count_sheet"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/stroke_btn">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Print Count Sheet"
+                    android:textColor="@color/posterita_ink"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="14sp"
+                    android:drawableStart="@drawable/ic_menu_print"
+                    android:drawablePadding="8dp"
+                    app:drawableTint="@color/posterita_ink"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <!-- ================================================================ -->
             <!-- STEP 1: EXPECTED TOTALS                                          -->
             <!-- ================================================================ -->
@@ -1547,6 +1570,29 @@
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <!-- ================================================================ -->
+            <!-- SAVE DRAFT button                                                -->
+            <!-- ================================================================ -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/button_save_draft"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/stroke_btn">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SAVE DRAFT &amp; CONTINUE SELLING"
+                    android:textColor="@color/posterita_ink"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="14sp"
+                    android:letterSpacing="0.03"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- ================================================================ -->
             <!-- SUBMIT RECONCILIATION button                                     -->

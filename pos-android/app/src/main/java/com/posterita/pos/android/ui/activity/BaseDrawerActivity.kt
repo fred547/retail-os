@@ -299,6 +299,11 @@ abstract class BaseDrawerActivity : BaseActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
+        navClick(R.id.nav_till_history) {
+            if (this !is TillHistoryActivity) {
+                startActivity(Intent(this, TillHistoryActivity::class.java))
+            }
+        }
         navClick(R.id.nav_admin_settings) {
             if (this !is AdminSettingsActivity) {
                 startActivity(Intent(this, AdminSettingsActivity::class.java))

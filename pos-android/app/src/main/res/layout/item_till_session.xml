@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/posterita_paper"
+    app:strokeColor="@color/posterita_line"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- Row 1: Terminal name + status badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/text_terminal_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Terminal 1"
+                android:textColor="@color/posterita_ink"
+                android:fontFamily="@font/lexend_medium"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/text_status_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Open"
+                android:textSize="12sp"
+                android:fontFamily="@font/lexend_medium"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp" />
+        </LinearLayout>
+
+        <!-- Row 2: Opened by + time -->
+        <TextView
+            android:id="@+id/text_opened_by"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opened by Sarah M. · 08:00"
+            android:textColor="@color/posterita_muted"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+
+        <!-- Row 3: Opening → Closing amounts -->
+        <TextView
+            android:id="@+id/text_amounts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opening: Rs 1,000 → Closing: Rs 43,350"
+            android:textColor="@color/posterita_ink"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Row 4: Discrepancy (only for closed tills) -->
+        <TextView
+            android:id="@+id/text_discrepancy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Balanced"
+            android:textSize="13sp"
+            android:fontFamily="@font/lexend_medium"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

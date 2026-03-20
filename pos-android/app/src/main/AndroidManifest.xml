@@ -106,6 +106,10 @@
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
         <activity
+            android:name=".ui.activity.TillHistoryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".ui.activity.AdjustTillActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />

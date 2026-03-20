@@ -95,6 +95,29 @@ class CloseTillActivity : AppCompatActivity() {
         }
     }
 
+    companion object {
+        private const val DRAFT_PREFIX = "close_till_draft_"
+        private const val DRAFT_DENOM_2000 = "${DRAFT_PREFIX}denom_2000"
+        private const val DRAFT_DENOM_1000 = "${DRAFT_PREFIX}denom_1000"
+        private const val DRAFT_DENOM_500 = "${DRAFT_PREFIX}denom_500"
+        private const val DRAFT_DENOM_200 = "${DRAFT_PREFIX}denom_200"
+        private const val DRAFT_DENOM_100 = "${DRAFT_PREFIX}denom_100"
+        private const val DRAFT_DENOM_50 = "${DRAFT_PREFIX}denom_50"
+        private const val DRAFT_DENOM_25 = "${DRAFT_PREFIX}denom_25"
+        private const val DRAFT_DENOM_20 = "${DRAFT_PREFIX}denom_20"
+        private const val DRAFT_DENOM_10 = "${DRAFT_PREFIX}denom_10"
+        private const val DRAFT_DENOM_5 = "${DRAFT_PREFIX}denom_5"
+        private const val DRAFT_COINS = "${DRAFT_PREFIX}coins"
+        private const val DRAFT_CARD_AMT = "${DRAFT_PREFIX}card_amt"
+        private const val DRAFT_TILL_ID = "${DRAFT_PREFIX}till_id"
+
+        private val DRAFT_KEYS = listOf(
+            DRAFT_DENOM_2000, DRAFT_DENOM_1000, DRAFT_DENOM_500, DRAFT_DENOM_200,
+            DRAFT_DENOM_100, DRAFT_DENOM_50, DRAFT_DENOM_25, DRAFT_DENOM_20,
+            DRAFT_DENOM_10, DRAFT_DENOM_5, DRAFT_COINS, DRAFT_CARD_AMT, DRAFT_TILL_ID
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCloseTillBinding.inflate(layoutInflater)
@@ -284,8 +307,14 @@ class CloseTillActivity : AppCompatActivity() {
                 binding.textOrderCount?.text = orders.size.toString()
                 binding.textTotalSales?.text = NumberUtils.formatPrice(salesTotal)
 
-                // Pre-fill card amount with expected card total
-                binding.editCardAmount?.setText(NumberUtils.formatPrice(cardTotal + blinkTotal))
+                // Pre-fill card amount with expected card total (only if no draft)
+                val hasDraft = prefsManager.getString(DRAFT_TILL_ID) == openTill.tillId.toString()
+                if (!hasDraft) {
+                    binding.editCardAmount?.setText(NumberUtils.formatPrice(cardTotal + blinkTotal))
+                }
+
+                // Restore draft values if available
+                restoreDraft()
 
                 // Initial discrepancy update
                 updateDiscrepancy()
@@ -297,6 +326,12 @@ class CloseTillActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.back?.setOnClickListener { finish() }
+
+        // Print Count Sheet
+        binding.buttonPrintCountSheet?.setOnClickListener { printCountSheet() }
+
+        // Save Draft & Continue Selling
+        binding.buttonSaveDraft?.setOnClickListener { saveDraftAndFinish() }
 
         // Adjustments
         binding.buttonAddMoney?.setOnClickListener { showAdjustmentDialog(isPayIn = true) }
@@ -695,6 +730,7 @@ class CloseTillActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     prefsManager.isTillOpen = ""
+                    clearDraft()
                     showCloseTillConfirmation(closedDetails)
                 }
             } catch (e: Exception) {
@@ -755,6 +791,134 @@ class CloseTillActivity : AppCompatActivity() {
                 finish()
             }
             .show()
+    }
+
+    // ---- PRINT COUNT SHEET ---------------------------------------------------
+
+    private fun printCountSheet() {
+        val till = currentTill ?: return
+        Toast.makeText(this, "Printing denomination sheet...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val width = 32
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+
+            val sb = StringBuilder()
+            sb.appendLine(prefsManager.storeName)
+            sb.appendLine("Terminal: ${prefsManager.terminalName}")
+            sb.appendLine(dateFormat.format(Date()))
+            sb.appendLine("=".repeat(width))
+            sb.appendLine("TILL DENOMINATION COUNT SHEET")
+            sb.appendLine("=".repeat(width))
+            sb.appendLine("")
+
+            // Denominations
+            val denoms = listOf(
+                "Rs 2,000", "Rs 1,000", "Rs 500", "Rs 200", "Rs 100",
+                "Rs 50", "Rs 25", "Rs 20", "Rs 10", "Rs 5"
+            )
+            val denomValues = listOf(2000, 1000, 500, 200, 100, 50, 25, 20, 10, 5)
+
+            for (i in denoms.indices) {
+                sb.appendLine("${denoms[i]}")
+                sb.appendLine("  _____ x Rs ${denomValues[i]} = _____")
+                sb.appendLine("")
+            }
+
+            sb.appendLine("Coins")
+            sb.appendLine("  Total coins = _____")
+            sb.appendLine("")
+            sb.appendLine("-".repeat(width))
+            sb.appendLine("")
+            sb.appendLine(padLine("Expected Cash:", NumberUtils.formatPrice(expectedCashInDrawer), width))
+            sb.appendLine(padLine("Expected Card:", NumberUtils.formatPrice(expectedCardSales), width))
+            sb.appendLine("")
+            sb.appendLine("Counted total:  _____________")
+            sb.appendLine("")
+            sb.appendLine("Discrepancy:    _____________")
+            sb.appendLine("")
+            sb.appendLine("-".repeat(width))
+            sb.appendLine("")
+            sb.appendLine("Cashier signature:")
+            sb.appendLine("")
+            sb.appendLine("")
+            sb.appendLine("_________________________")
+            sb.appendLine("")
+            sb.appendLine("Supervisor signature:")
+            sb.appendLine("")
+            sb.appendLine("")
+            sb.appendLine("_________________________")
+            sb.appendLine("")
+
+            printRawToAllPrinters(sb.toString())
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@CloseTillActivity, "Denomination sheet printed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ---- DRAFT SAVE / RESTORE -----------------------------------------------
+
+    private fun saveDraft() {
+        val till = currentTill ?: return
+        prefsManager.setString(DRAFT_TILL_ID, till.tillId.toString())
+        prefsManager.setString(DRAFT_DENOM_2000, binding.denom2000Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_1000, binding.denom1000Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_500, binding.denom500Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_200, binding.denom200Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_100, binding.denom100Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_50, binding.denom50Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_25, binding.denom25Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_20, binding.denom20Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_10, binding.denom10Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_DENOM_5, binding.denom5Qty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_COINS, binding.denomCoinsQty?.text?.toString() ?: "")
+        prefsManager.setString(DRAFT_CARD_AMT, binding.editCardAmount?.text?.toString() ?: "")
+    }
+
+    private fun restoreDraft() {
+        val till = currentTill ?: return
+        val savedTillId = prefsManager.getString(DRAFT_TILL_ID)
+        if (savedTillId != till.tillId.toString()) return // draft is for a different till
+
+        fun restore(editText: EditText?, key: String) {
+            val value = prefsManager.getString(key)
+            if (value.isNotBlank() && value != "0" && value != "0.00") {
+                editText?.setText(value)
+            }
+        }
+
+        restore(binding.denom2000Qty, DRAFT_DENOM_2000)
+        restore(binding.denom1000Qty, DRAFT_DENOM_1000)
+        restore(binding.denom500Qty, DRAFT_DENOM_500)
+        restore(binding.denom200Qty, DRAFT_DENOM_200)
+        restore(binding.denom100Qty, DRAFT_DENOM_100)
+        restore(binding.denom50Qty, DRAFT_DENOM_50)
+        restore(binding.denom25Qty, DRAFT_DENOM_25)
+        restore(binding.denom20Qty, DRAFT_DENOM_20)
+        restore(binding.denom10Qty, DRAFT_DENOM_10)
+        restore(binding.denom5Qty, DRAFT_DENOM_5)
+        restore(binding.denomCoinsQty, DRAFT_COINS)
+
+        val cardDraft = prefsManager.getString(DRAFT_CARD_AMT)
+        if (cardDraft.isNotBlank()) {
+            binding.editCardAmount?.setText(cardDraft)
+        }
+
+        recalculateDenominationTotal()
+    }
+
+    private fun clearDraft() {
+        for (key in DRAFT_KEYS) {
+            prefsManager.setString(key, "")
+        }
+    }
+
+    private fun saveDraftAndFinish() {
+        saveDraft()
+        Toast.makeText(this, "Draft saved \u2014 you can resume later", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     // ---- PRINTER HELPERS -----------------------------------------------------
