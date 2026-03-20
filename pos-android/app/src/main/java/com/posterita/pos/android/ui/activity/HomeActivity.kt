@@ -22,6 +22,7 @@ import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.util.NumberUtils
+import com.posterita.pos.android.util.SessionTimeoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -74,6 +75,9 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         }
+
+        // Check idle timeout
+        SessionTimeoutManager.checkAndLock(this)
 
         setupGreeting()
         setupAppGrid()

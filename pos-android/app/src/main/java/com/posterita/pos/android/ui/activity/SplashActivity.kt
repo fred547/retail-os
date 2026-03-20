@@ -10,6 +10,7 @@ import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivitySplashBinding
 import com.posterita.pos.android.service.AiImportService
 import com.posterita.pos.android.util.SessionManager
+import com.posterita.pos.android.util.SessionTimeoutManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,7 @@ class SplashActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         AiImportService.startPendingIfNeeded(this, prefsManager)
+        SessionTimeoutManager.initialize(LockScreenActivity::class.java)
 
         Handler(Looper.getMainLooper()).postDelayed({
             val setupCompleted = prefsManager.getString("setup_completed", "")

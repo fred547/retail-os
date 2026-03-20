@@ -3,6 +3,7 @@ package com.posterita.pos.android.ui.activity
 import android.os.Handler
 import android.os.Looper
 import android.graphics.Rect
+import android.view.MotionEvent
 import android.view.TouchDelegate
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +11,24 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.widget.ImageButton
+import com.posterita.pos.android.util.SessionTimeoutManager
 
 open class BaseActivity : AppCompatActivity() {
 
     private var backPressedOnce = false
     private val backPressHandler = Handler(Looper.getMainLooper())
+
+    override fun onResume() {
+        super.onResume()
+        // Check idle timeout — redirect to lock screen if timed out
+        SessionTimeoutManager.checkAndLock(this)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        // Reset idle timer on every touch
+        SessionTimeoutManager.onUserActivity()
+        return super.dispatchTouchEvent(ev)
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {

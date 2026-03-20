@@ -228,6 +228,9 @@
             android:name=".ui.activity.ManageBrandsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.LockScreenActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.WebConsoleActivity"
             android:exported="false" />
         <activity
