@@ -32,16 +32,21 @@ open class BaseActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (backPressedOnce) {
+        // Only require double-back on Home screen to prevent accidental exit
+        // All other screens: normal back behavior (finish)
+        if (this::class.java.simpleName == "HomeActivity") {
+            if (backPressedOnce) {
+                @Suppress("DEPRECATION")
+                super.onBackPressed()
+                return
+            }
+            backPressedOnce = true
+            Toast.makeText(this, "Press again to exit", Toast.LENGTH_SHORT).show()
+            backPressHandler.postDelayed({ backPressedOnce = false }, 2000)
+        } else {
             @Suppress("DEPRECATION")
             super.onBackPressed()
-            return
         }
-
-        backPressedOnce = true
-        Toast.makeText(this, "Press again to exit", Toast.LENGTH_SHORT).show()
-
-        backPressHandler.postDelayed({ backPressedOnce = false }, 2000)
     }
 
     protected fun expandTouchArea(target: View, extraPaddingDp: Int = 16) {
