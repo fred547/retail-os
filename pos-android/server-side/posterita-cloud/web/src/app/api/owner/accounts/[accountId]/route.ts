@@ -10,10 +10,12 @@ import {
   normalizePhone,
 } from "@/lib/owner-lifecycle";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+let supabase: ReturnType<typeof createClient>;
+
+function getDb() {
+  if (!supabase) supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  return supabase;
+}
 
 async function resolveOwnedAccount(
   accountId: string,
@@ -67,6 +69,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ accountId: string }> }
 ) {
+  getDb(); // ensure lazy init
   const { accountId } = await params;
   const body = await req.json();
   const phone = normalizePhone(body.phone);
@@ -119,6 +122,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ accountId: string }> }
 ) {
+  getDb(); // ensure lazy init
   const { accountId } = await params;
   const body = await parseDeleteBody(req);
   const phone = normalizePhone(body.phone || req.nextUrl.searchParams.get("phone"));

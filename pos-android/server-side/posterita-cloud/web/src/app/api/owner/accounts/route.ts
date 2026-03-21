@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { findOwnerByIdentity, normalizeEmail, normalizePhone } from "@/lib/owner-lifecycle";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 export async function GET(req: NextRequest) {
+  const supabase = getSupabase();
   const email = normalizeEmail(req.nextUrl.searchParams.get("email"));
   const phone = normalizePhone(req.nextUrl.searchParams.get("phone"));
   if (!email && !phone) {
