@@ -14,10 +14,9 @@ export const runtime = "edge";
  * Body: { table, select, filters, order, limit, range }
  */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getDb() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 interface DataQuery {
   table: string;
@@ -53,7 +52,7 @@ export async function POST(req: NextRequest) {
           return { data: null, error: `Table '${q.table}' not allowed`, count: 0 };
         }
 
-        let query = supabase
+        let query = getDb()
           .from(q.table)
           .select(q.select ?? "*", {
             count: q.count as any,

@@ -3,10 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "edge";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getDb() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 const ALLOWED_TABLES = new Set([
   "productcategory", "customer",
@@ -24,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "id with column and value is required" }, { status: 400 });
     }
 
-    const { error } = await (supabase
+    const { error } = await (getDb()
       .from(table) as any)
       .delete()
       .eq(id.column, id.value);
