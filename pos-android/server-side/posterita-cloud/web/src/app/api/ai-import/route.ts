@@ -1137,6 +1137,8 @@ async function saveToSupabase(
           isactive: "Y",
           istaxincluded: "Y",
           isstock: "Y",
+          product_status: "review",
+          source: "ai_import",
         },
         { onConflict: "product_id" }
       );

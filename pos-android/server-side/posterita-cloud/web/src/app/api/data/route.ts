@@ -39,6 +39,7 @@ const ALLOWED_TABLES = new Set([
   "v_daily_sales", "v_hourly_sales", "v_payment_methods",
   "v_platform_overview", "v_price_review", "v_terminal_status",
   "v_top_products",
+  "intake_batch", "intake_item",
 ]);
 
 export async function POST(req: NextRequest) {

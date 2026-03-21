@@ -28,6 +28,8 @@ interface SyncRequest {
   categories?: any[];
   products?: any[];
   taxes?: any[];
+  // Push: error logs for remote debugging
+  error_logs?: any[];
 }
 
 /**
@@ -169,6 +171,37 @@ export async function POST(req: NextRequest) {
     let categoriesSynced = 0;
     let productsSynced = 0;
     let taxesSynced = 0;
+    let errorLogsSynced = 0;
+
+    // ========================================
+    // PUSH: Error logs (before everything else — fire-and-forget)
+    // ========================================
+    if (body.error_logs?.length) {
+      for (const log of body.error_logs) {
+        try {
+          const { error } = await supabase.from("error_logs").insert({
+            account_id: body.account_id,
+            timestamp: log.timestamp ?? 0,
+            severity: log.severity ?? "ERROR",
+            tag: log.tag ?? "",
+            message: log.message ?? "",
+            stacktrace: log.stacktrace,
+            screen: log.screen,
+            user_id: log.user_id ?? 0,
+            user_name: log.user_name,
+            store_id: log.store_id ?? body.store_id,
+            terminal_id: log.terminal_id ?? body.terminal_id,
+            device_id: log.device_id,
+            app_version: log.app_version,
+            os_version: log.os_version,
+          });
+          if (!error) errorLogsSynced++;
+        } catch (e: any) {
+          // Don't fail sync for error log issues
+          console.warn("Error log insert failed:", e.message);
+        }
+      }
+    }
 
     // ========================================
     // PUSH: Terminal → Cloud
@@ -595,6 +628,7 @@ export async function POST(req: NextRequest) {
       .from("product")
       .select("*")
       .eq("account_id", body.account_id)
+      .eq("product_status", "live")
       .gte("updated_at", lastSync);
 
     // Get updated categories
@@ -686,6 +720,7 @@ export async function POST(req: NextRequest) {
       stores: stores ?? [],
       terminals: terminals ?? [],
       // Stats
+      error_logs_synced: errorLogsSynced,
       orders_synced: ordersSynced,
       order_lines_synced: orderLinesSynced,
       payments_synced: paymentsSynced,

@@ -13,8 +13,11 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/reports",
   "/price-review",
   "/ai-import",
+  "/intake",
   "/settings",
 ]);
+
+const OTT_COOKIE = "posterita_ott_session";
 
 export async function updateSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -55,13 +58,62 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow OTT-bearing requests through — the client-side OttAuthBridge will validate
-  const hasOtt = request.nextUrl.searchParams.has("ott");
+  // ── OTT handling: validate token in middleware, set cookie, redirect ──
+  const ott = request.nextUrl.searchParams.get("ott");
+  if (ott) {
+    try {
+      // Validate OTT server-to-server
+      const validateUrl = new URL("/api/auth/ott/validate", request.nextUrl.origin);
+      const validateRes = await fetch(validateUrl.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: ott }),
+      });
+
+      if (validateRes.ok) {
+        const data = await validateRes.json();
+
+        // Redirect to the same path without ?ott, with cookie set
+        const cleanUrl = request.nextUrl.clone();
+        cleanUrl.searchParams.delete("ott");
+
+        // Apply legacy path redirect for OTT users too
+        if (LEGACY_CUSTOMER_PATHS.has(cleanUrl.pathname)) {
+          cleanUrl.pathname = cleanUrl.pathname === "/" ? "/customer" : `/customer${cleanUrl.pathname}`;
+        }
+
+        const response = NextResponse.redirect(cleanUrl);
+
+        // Set httpOnly cookie with session context (24h expiry)
+        response.cookies.set(OTT_COOKIE, JSON.stringify({
+          account_id: data.account_id,
+          user_id: data.user_id,
+          user_role: data.user_role,
+          store_id: data.store_id,
+          terminal_id: data.terminal_id,
+        }), {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          maxAge: 86400, // 24 hours
+          path: "/",
+        });
+
+        return response;
+      }
+    } catch (e) {
+      console.error("OTT middleware validation failed:", e);
+    }
+    // If OTT validation failed, fall through to normal auth check
+  }
+
+  // Check if user has a valid OTT cookie (Android WebView session)
+  const hasOttCookie = request.cookies.has(OTT_COOKIE);
 
   // Redirect unauthenticated users to login
   if (
     !user &&
-    !hasOtt &&
+    !hasOttCookie &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/customer/login") &&
     !request.nextUrl.pathname.startsWith("/manager/login") &&
@@ -77,7 +129,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user) {
+  // Legacy path redirects (for both Supabase Auth users and OTT users)
+  if (user || hasOttCookie) {
     const url = request.nextUrl.clone();
 
     if (url.pathname === "/platform") {

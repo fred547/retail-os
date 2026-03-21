@@ -21,6 +21,7 @@ import {
   Store,
   UserCog,
   Menu,
+  Inbox,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Price Review", href: "/price-review", icon: DollarSign },
   { name: "AI Import", href: "/ai-import", icon: Sparkles },
+  { name: "Product Intake", href: "/intake", icon: Inbox },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

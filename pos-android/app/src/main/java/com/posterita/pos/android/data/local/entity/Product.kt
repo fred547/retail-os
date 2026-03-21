@@ -40,5 +40,9 @@ data class Product(
     /** "Y" if the price was set by a staff member and needs owner review */
     val needs_price_review: String? = null,
     /** user_id of whoever last set the price (0 = original/AI import) */
-    val price_set_by: Int = 0
+    val price_set_by: Int = 0,
+    /** Lifecycle status: draft, review, live */
+    val product_status: String? = "live",
+    /** How this product was created: manual, ai_import, quotation, supplier_catalog */
+    val source: String? = "manual"
 ) : Serializable

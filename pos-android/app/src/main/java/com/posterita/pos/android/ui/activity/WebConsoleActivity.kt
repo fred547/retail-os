@@ -93,18 +93,17 @@ class WebConsoleActivity : AppCompatActivity() {
                     (function() {
                         var style = document.createElement('style');
                         style.textContent = `
-                            /* Hide the fixed sidebar — Android provides its own navigation */
-                            .fixed.inset-y-0, aside, nav.fixed { display: none !important; }
-                            /* Hide mobile hamburger menu button */
-                            button[aria-label="Open sidebar"], button[aria-label="Close sidebar"] { display: none !important; }
+                            /* Hide sidebar (desktop + mobile) */
+                            .sidebar-desktop, .sidebar-mobile, aside { display: none !important; }
+                            /* Hide hamburger menu button and backdrop */
+                            .sidebar-hamburger, .sidebar-backdrop { display: none !important; }
+                            button[aria-label="Open menu"], button[aria-label="Close sidebar"] { display: none !important; }
                             /* Make main content full width (remove sidebar margin) */
                             main, .flex-1 { margin-left: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
                             .lg\\:ml-64 { margin-left: 0 !important; }
                             /* Reduce top padding since Android has its own top bar */
                             .pt-16 { padding-top: 8px !important; }
                             .lg\\:pt-8 { padding-top: 8px !important; }
-                            /* Mobile overlay backdrop */
-                            .fixed.inset-0.bg-black\\/50 { display: none !important; }
                         `;
                         document.head.appendChild(style);
                     })();

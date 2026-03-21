@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Package, Pencil, X, Save, Trash2 } from "lucide-react";
+import { Package, Pencil, X, Save, Trash2, CheckCircle } from "lucide-react";
 import { dataUpdate } from "@/lib/supabase/data-client";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -18,6 +18,8 @@ interface Product {
   isactive: string;
   image: string | null;
   needs_price_review: string | null;
+  product_status: string | null;
+  source: string | null;
   productcategory_id: number | null;
   productcategory: { name: string } | null;
 }
@@ -30,9 +32,11 @@ interface Category {
 export default function ProductTable({
   products,
   categories,
+  showStatusColumn = false,
 }: {
   products: Product[];
   categories: Category[];
+  showStatusColumn?: boolean;
 }) {
   const router = useRouter();
   const [sort, setSort] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -115,6 +119,15 @@ export default function ProductTable({
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleApprove = async (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await dataUpdate("product", { column: "product_id", value: productId }, {
+      product_status: "live",
+      needs_price_review: null,
+    });
+    router.refresh();
+  };
+
   const handleSort = (key: string) => {
     setSort((prev) => {
       if (!prev || prev.key !== key) return { key, direction: "asc" };
@@ -168,6 +181,8 @@ export default function ProductTable({
               <th className="text-right">Cost</th>
               <SortableHeader label="Price" sortKey="sellingprice" currentSort={sort} onSort={handleSort} />
               <th>Status</th>
+              {showStatusColumn && <th>Source</th>}
+              {showStatusColumn && <th className="w-24"></th>}
               <th className="w-12"></th>
             </tr>
           </thead>
@@ -229,6 +244,26 @@ export default function ProductTable({
                     {p.isactive === "Y" ? "Active" : "Inactive"}
                   </span>
                 </td>
+                {showStatusColumn && (
+                  <td>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      {p.source === "ai_import" ? "AI Import" : p.source === "quotation" ? "Quotation" : p.source === "supplier_catalog" ? "Supplier" : "Manual"}
+                    </span>
+                  </td>
+                )}
+                {showStatusColumn && (
+                  <td>
+                    {(p.product_status === "review" || p.product_status === "draft") && (
+                      <button
+                        onClick={(e) => handleApprove(p.product_id, e)}
+                        className="flex items-center gap-1 text-green-600 hover:text-green-700 text-xs font-medium px-2 py-1 rounded-lg hover:bg-green-50 transition"
+                      >
+                        <CheckCircle size={14} />
+                        Approve
+                      </button>
+                    )}
+                  </td>
+                )}
                 <td>
                   <button
                     onClick={(e) => {

@@ -11,6 +11,7 @@ const supabase = createClient(
 const ALLOWED_TABLES = new Set([
   "product", "productcategory", "orders", "customer", "store",
   "terminal", "tax", "preference", "pos_user",
+  "intake_batch", "intake_item",
 ]);
 
 export async function POST(req: NextRequest) {

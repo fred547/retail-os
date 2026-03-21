@@ -1,6 +1,7 @@
 import { createServerSupabase, createServerSupabaseAdmin } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { isSuperAdmin } from "@/lib/super-admin";
+import { getSessionAccountId } from "@/lib/account-context";
 import Link from "next/link";
 import {
   DollarSign,
@@ -18,7 +19,7 @@ import {
 // Revalidate dashboard data every 60 seconds (ISR)
 export const revalidate = 60;
 
-async function getDashboardData() {
+async function getDashboardData(accountId: string) {
   const supabase = await createServerSupabaseAdmin();
 
   const today = new Date().toISOString().split("T")[0];
@@ -34,7 +35,7 @@ async function getDashboardData() {
 
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
 
-  // Run all queries in parallel for faster page loads
+  // Run all queries in parallel — all scoped to account_id
   const [
     { data: todaySales },
     { data: yesterdaySales },
@@ -46,17 +47,21 @@ async function getDashboardData() {
     { data: staleTerminals },
     { data: topProducts },
     { data: recentOrders },
+    { count: pendingReviewCount },
+    { count: intakeReadyCount },
   ] = await Promise.all([
-    supabase.from("v_daily_sales").select("*").eq("sale_date", today),
-    supabase.from("v_daily_sales").select("*").eq("sale_date", yesterday),
-    supabase.from("v_daily_sales").select("*").gte("sale_date", sixtyDaysAgo).lt("sale_date", thirtyDaysAgo),
-    supabase.from("v_daily_sales").select("*").gte("sale_date", thirtyDaysAgo).order("sale_date", { ascending: true }),
-    supabase.from("product").select("product_id", { count: "exact", head: true }).eq("needs_price_review", "Y").eq("isactive", "Y"),
-    supabase.from("orders").select("order_id", { count: "exact", head: true }).eq("is_sync", false),
-    supabase.from("product").select("product_id, name, sellingprice, needs_price_review, price_set_by").eq("needs_price_review", "Y").eq("isactive", "Y").limit(5),
-    supabase.from("terminal").select("terminal_id, name, store_id").lt("updated_at", oneHourAgo).eq("isactive", "Y"),
-    supabase.from("v_top_products").select("*").order("total_revenue", { ascending: false }).limit(10),
-    supabase.from("orders").select("order_id, document_no, grand_total, date_ordered, order_type, is_paid").order("date_ordered", { ascending: false }).limit(10),
+    supabase.from("v_daily_sales").select("*").eq("account_id", accountId).eq("sale_date", today),
+    supabase.from("v_daily_sales").select("*").eq("account_id", accountId).eq("sale_date", yesterday),
+    supabase.from("v_daily_sales").select("*").eq("account_id", accountId).gte("sale_date", sixtyDaysAgo).lt("sale_date", thirtyDaysAgo),
+    supabase.from("v_daily_sales").select("*").eq("account_id", accountId).gte("sale_date", thirtyDaysAgo).order("sale_date", { ascending: true }),
+    supabase.from("product").select("product_id", { count: "exact", head: true }).eq("account_id", accountId).eq("needs_price_review", "Y").eq("isactive", "Y"),
+    supabase.from("orders").select("order_id", { count: "exact", head: true }).eq("account_id", accountId).eq("is_sync", false),
+    supabase.from("product").select("product_id, name, sellingprice, needs_price_review, price_set_by").eq("account_id", accountId).eq("needs_price_review", "Y").eq("isactive", "Y").limit(5),
+    supabase.from("terminal").select("terminal_id, name, store_id").eq("account_id", accountId).lt("updated_at", oneHourAgo).eq("isactive", "Y"),
+    supabase.from("v_top_products").select("*").eq("account_id", accountId).order("total_revenue", { ascending: false }).limit(10),
+    supabase.from("orders").select("order_id, document_no, grand_total, date_ordered, order_type, is_paid").eq("account_id", accountId).order("date_ordered", { ascending: false }).limit(10),
+    supabase.from("product").select("product_id", { count: "exact", head: true }).eq("account_id", accountId).eq("product_status", "review").eq("isactive", "Y"),
+    supabase.from("intake_batch").select("batch_id", { count: "exact", head: true }).eq("account_id", accountId).or("status.eq.ready,status.eq.in_review"),
   ]);
 
   return {
@@ -70,6 +75,8 @@ async function getDashboardData() {
     staleTerminals: staleTerminals ?? [],
     topProducts: topProducts ?? [],
     recentOrders: recentOrders ?? [],
+    pendingReviewCount: pendingReviewCount ?? 0,
+    intakeReadyCount: intakeReadyCount ?? 0,
   };
 }
 
@@ -102,7 +109,10 @@ export default async function DashboardPage() {
     }
   }
 
-  const data = await getDashboardData();
+  const accountId = await getSessionAccountId();
+  if (!accountId) redirect("/manager/platform");
+
+  const data = await getDashboardData(accountId);
 
   // Aggregate today's totals across stores
   const todayRevenue = data.todaySales.reduce(
@@ -199,8 +209,38 @@ export default async function DashboardPage() {
       </div>
 
       {/* Alerts — actionable notifications with links to resolve */}
-      {(data.priceReviewCount > 0 || data.unsyncedCount > 0 || data.conflictProducts.length > 0 || data.staleTerminals.length > 0) && (
+      {(data.intakeReadyCount > 0 || data.pendingReviewCount > 0 || data.priceReviewCount > 0 || data.unsyncedCount > 0 || data.conflictProducts.length > 0 || data.staleTerminals.length > 0) && (
         <div className="space-y-3">
+          {data.intakeReadyCount > 0 && (
+            <Link href="/customer/intake" className="block">
+              <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4 text-sm text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={20} />
+                  <div>
+                    <span className="font-semibold">{data.intakeReadyCount} intake batch{data.intakeReadyCount !== 1 ? "es" : ""} ready for review</span>
+                    <p className="text-indigo-600 text-xs mt-0.5">Imported products need your review before going live on the POS</p>
+                  </div>
+                </div>
+                <ArrowRight size={18} className="text-indigo-400" />
+              </div>
+            </Link>
+          )}
+
+          {data.pendingReviewCount > 0 && (
+            <Link href="/customer/products?status=review" className="block">
+              <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl px-5 py-4 text-sm text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={20} />
+                  <div>
+                    <span className="font-semibold">{data.pendingReviewCount} product{data.pendingReviewCount !== 1 ? "s" : ""} waiting for review</span>
+                    <p className="text-purple-600 text-xs mt-0.5">AI-imported products need your approval before they appear on the POS</p>
+                  </div>
+                </div>
+                <ArrowRight size={18} className="text-purple-400" />
+              </div>
+            </Link>
+          )}
+
           {data.priceReviewCount > 0 && (
             <Link href="/customer/products?filter=price_review" className="block">
               <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-xl px-5 py-4 text-sm text-orange-700 hover:bg-orange-100 transition-colors cursor-pointer">

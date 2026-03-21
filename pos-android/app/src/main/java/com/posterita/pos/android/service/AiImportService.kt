@@ -641,7 +641,9 @@ class AiImportService : Service() {
                     isactive = "Y",
                     description = prodData.description,
                     image = prodData.imageUrl?.ifEmpty { null },
-                    iskitchenitem = if (data.businessType == "restaurant") "Y" else "N"
+                    iskitchenitem = if (data.businessType == "restaurant") "Y" else "N",
+                    product_status = "review",
+                    source = "ai_import"
                 )
             }
             if (products.isNotEmpty()) {

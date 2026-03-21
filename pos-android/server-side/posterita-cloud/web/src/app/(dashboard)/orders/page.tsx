@@ -1,4 +1,6 @@
 import { createServerSupabaseAdmin } from "@/lib/supabase/server";
+import { getSessionAccountId } from "@/lib/account-context";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import OrderTable from "./OrderTable";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -11,6 +13,9 @@ export default async function OrdersPage({
 }: {
   searchParams: Promise<{ page?: string; status?: string; date?: string }>;
 }) {
+  const accountId = await getSessionAccountId();
+  if (!accountId) redirect("/manager/platform");
+
   const params = await searchParams;
   const supabase = await createServerSupabaseAdmin();
   const page = parseInt(params.page ?? "1");
@@ -20,6 +25,7 @@ export default async function OrdersPage({
   let query = supabase
     .from("orders")
     .select("*, store(name)", { count: "exact" })
+    .eq("account_id", accountId)
     .order("date_ordered", { ascending: false })
     .range(offset, offset + perPage - 1);
 
