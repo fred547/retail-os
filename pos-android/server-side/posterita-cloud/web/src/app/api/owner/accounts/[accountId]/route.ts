@@ -10,18 +10,15 @@ import {
   normalizePhone,
 } from "@/lib/owner-lifecycle";
 
-let supabase: ReturnType<typeof createClient>;
-
 function getDb() {
-  if (!supabase) supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  return supabase;
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 }
 
 async function resolveOwnedAccount(
   accountId: string,
   identity: { phone?: string; email?: string }
 ): Promise<{ error: string } | { owner: any; account: any }> {
-  const { owner, error: ownerError } = await findOwnerByIdentity(supabase, identity);
+  const { owner, error: ownerError } = await findOwnerByIdentity(getDb(), identity);
   if (ownerError) {
     return { error: ownerError };
   }
@@ -30,7 +27,7 @@ async function resolveOwnedAccount(
     return { error: "Owner not found" };
   }
 
-  const { data: account, error: accountError } = await supabase
+  const { data: account, error: accountError } = await getDb()
     .from("account")
     .select("account_id, businessname, type, status, created_at, owner_id")
     .eq("account_id", accountId)
@@ -69,7 +66,6 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ accountId: string }> }
 ) {
-  getDb(); // ensure lazy init
   const { accountId } = await params;
   const body = await req.json();
   const phone = normalizePhone(body.phone);
@@ -97,7 +93,7 @@ export async function PATCH(
   }
 
   const { owner } = resolved;
-  const { data: account, error } = await supabase
+  const { data: account, error } = await getDb()
     .from("account")
     .update({
       businessname,
@@ -122,7 +118,6 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ accountId: string }> }
 ) {
-  getDb(); // ensure lazy init
   const { accountId } = await params;
   const body = await parseDeleteBody(req);
   const phone = normalizePhone(body.phone || req.nextUrl.searchParams.get("phone"));
@@ -153,7 +148,7 @@ export async function DELETE(
       );
     }
 
-    const { data: ownerUser, error: ownerUserError } = await supabase
+    const { data: ownerUser, error: ownerUserError } = await getDb()
       .from("pos_user")
       .select("pin")
       .eq("account_id", accountId)
@@ -168,7 +163,7 @@ export async function DELETE(
     }
   }
 
-  const { error: archiveError } = await supabase
+  const { error: archiveError } = await getDb()
     .from("account")
     .update({
       status: "archived",
@@ -180,7 +175,7 @@ export async function DELETE(
     return NextResponse.json({ error: archiveError.message }, { status: 500 });
   }
 
-  const { data: fallbackAccount } = await supabase
+  const { data: fallbackAccount } = await getDb()
     .from("account")
     .select("account_id")
     .eq("owner_id", owner.id)
@@ -190,14 +185,14 @@ export async function DELETE(
     .single();
 
   if (fallbackAccount?.account_id) {
-    await supabase
+    await getDb()
       .from("owner_account_session")
       .upsert(
         { owner_id: owner.id, account_id: fallbackAccount.account_id },
         { onConflict: "owner_id" }
       );
   } else {
-    await supabase.from("owner_account_session").delete().eq("owner_id", owner.id);
+    await getDb().from("owner_account_session").delete().eq("owner_id", owner.id);
   }
 
   return NextResponse.json({ success: true, archived: true });
