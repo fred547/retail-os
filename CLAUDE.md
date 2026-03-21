@@ -29,8 +29,17 @@ Unified retail management platform: one Android app, one web console, one backen
 ## API Endpoints
 
 - **Production:** `https://posterita-cloud.vercel.app/api/` — sync, data, AI import, Blink
+- **Web Console:** `https://web.posterita.com` (alias for posterita-cloud.vercel.app)
 - **Legacy (DO NOT USE):** `https://my.posterita.com/posteritabo`
 - **Loyalty (legacy):** `https://loyalty.posterita.com/api/` — being migrated
+
+## Deployment
+
+- **Vercel project:** `posterita-cloud` (team: `tamakgroup`)
+- **Deploy command:** `cd pos-android/server-side/posterita-cloud/web && npx vercel --prod --yes`
+- **IMPORTANT:** Always deploy to the `posterita-cloud` project, NOT `web`. If `.vercel/project.json` points to the wrong project, re-link: `npx vercel link --project posterita-cloud --yes`
+- **Domains:** `posterita-cloud.vercel.app` and `web.posterita.com`
+- All API routes use `force-dynamic` or lazy-init Supabase clients — never create `createClient()` at module scope
 
 ## Key Architectural Rules
 
