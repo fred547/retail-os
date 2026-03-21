@@ -24,11 +24,14 @@ import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SessionTimeoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import com.posterita.pos.android.data.local.entity.Store
+import com.posterita.pos.android.data.local.entity.Terminal
+import com.posterita.pos.android.util.LocalAccountRegistry
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -49,6 +52,9 @@ class HomeActivity : AppCompatActivity() {
     @Inject
     lateinit var connectivityMonitor: ConnectivityMonitor
 
+    @Inject
+    lateinit var accountRegistry: LocalAccountRegistry
+
     enum class TileVisibility { ALL, SUPERVISOR_PLUS, ADMIN_OWNER, OWNER_ONLY }
 
     data class AppTile(
@@ -66,20 +72,31 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // For demo accounts, auto-load the session so POS/Till work without login
-        if (sessionManager.user == null && DemoDataSeeder.isDemoAccount(prefsManager.accountId)) {
-            runBlocking {
-                withContext(Dispatchers.IO) {
-                    val user = db.userDao().getAllUsers().firstOrNull()
-                    if (user != null) sessionManager.user = user
-                }
-            }
-        }
-
         // Check idle timeout
         SessionTimeoutManager.checkAndLock(this)
 
+        // For demo accounts, auto-load the session so POS/Till work without login
+        if (sessionManager.user == null && DemoDataSeeder.isDemoAccount(prefsManager.accountId)) {
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    try {
+                        val user = db.userDao().getAllUsers().firstOrNull()
+                        if (user != null) {
+                            sessionManager.user = user
+                        }
+                    } catch (e: Exception) {
+                        Log.w("HomeActivity", "Failed to load demo user", e)
+                    }
+                    Unit
+                }
+                // Refresh UI after user is loaded
+                setupGreeting()
+                setupAppGrid()
+            }
+        }
+
         setupGreeting()
+        setupContextBar()
         setupAppGrid()
         loadTodaySummary()
         setupBottomNav()
@@ -117,6 +134,94 @@ class HomeActivity : AppCompatActivity() {
             binding.textTerminalInfo?.text = "Terminal: $terminalName"
             binding.textTerminalInfo?.visibility = View.VISIBLE
         }
+    }
+
+    private fun setupContextBar() {
+        val brandName = sessionManager.account?.businessname
+            ?: prefsManager.storeName.ifEmpty { "My Brand" }
+        val storeName = prefsManager.storeName.ifEmpty { "Store" }
+        val terminalName = prefsManager.terminalName.ifEmpty { "POS 1" }
+
+        binding.textContextBrand.text = brandName
+        binding.textContextStore.text = storeName
+        binding.textContextTerminal.text = terminalName
+
+        binding.cardContext.setOnClickListener { showContextPicker() }
+    }
+
+    private fun showContextPicker() {
+        lifecycleScope.launch {
+            val stores = withContext(Dispatchers.IO) {
+                try { db.storeDao().getAllStores().filter { it.isactive == "Y" } }
+                catch (_: Exception) { emptyList() }
+            }
+            val terminals = withContext(Dispatchers.IO) {
+                try { db.terminalDao().getAllTerminals().filter { it.isactive == "Y" } }
+                catch (_: Exception) { emptyList() }
+            }
+
+            // Build picker items: Store → Terminal hierarchy
+            val items = mutableListOf<String>()
+            val storeTerminalMap = mutableListOf<Pair<Store, Terminal?>>()
+
+            for (store in stores) {
+                val storeTerminals = terminals.filter { it.store_id == store.storeId }
+                if (storeTerminals.isEmpty()) {
+                    items.add("${store.name ?: "Store ${store.storeId}"}")
+                    storeTerminalMap.add(store to null)
+                } else {
+                    for (terminal in storeTerminals) {
+                        items.add("${store.name ?: "Store"} › ${terminal.name ?: "Terminal"}")
+                        storeTerminalMap.add(store to terminal)
+                    }
+                }
+            }
+
+            if (items.isEmpty()) {
+                Toast.makeText(this@HomeActivity, "No stores found", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            // Find currently selected index
+            val currentStoreId = prefsManager.storeId
+            val currentTerminalId = prefsManager.terminalId
+            val currentIndex = storeTerminalMap.indexOfFirst {
+                it.first.storeId == currentStoreId && (it.second?.terminalId ?: 0) == currentTerminalId
+            }.coerceAtLeast(0)
+
+            androidx.appcompat.app.AlertDialog.Builder(this@HomeActivity)
+                .setTitle("Switch Store & Terminal")
+                .setSingleChoiceItems(items.toTypedArray(), currentIndex) { dialog, which ->
+                    val (store, terminal) = storeTerminalMap[which]
+                    switchContext(store, terminal)
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
+    private fun switchContext(store: Store, terminal: Terminal?) {
+        prefsManager.setStoreIdSync(store.storeId)
+        prefsManager.setStoreNameSync(store.name ?: "")
+
+        if (terminal != null) {
+            prefsManager.setTerminalIdSync(terminal.terminalId)
+            prefsManager.setTerminalNameSync(terminal.name ?: "")
+            sessionManager.terminal = terminal
+        }
+
+        sessionManager.store = store
+
+        // Refresh UI
+        binding.textContextStore.text = store.name ?: "Store"
+        binding.textContextTerminal.text = terminal?.name ?: "—"
+        binding.textBranding.text = "${store.name} store"
+
+        Toast.makeText(this, "Switched to ${store.name}${terminal?.let { " › ${it.name}" } ?: ""}", Toast.LENGTH_SHORT).show()
+
+        // Reload today's summary for new context
+        loadTodaySummary()
     }
 
     private fun setupBottomNav() {
@@ -195,7 +300,7 @@ class HomeActivity : AppCompatActivity() {
             val revenue = todayOrders.sumOf { it.grandTotal }
             val customerCount = todayOrders.filter { it.customerId > 0 }.map { it.customerId }.distinct().size
 
-            val currency = sessionManager.account?.currency ?: "Rs"
+            val currency = sessionManager.account?.currency ?: ""
 
             withContext(Dispatchers.Main) {
                 binding.textOrderCount?.text = orderCount.toString()
