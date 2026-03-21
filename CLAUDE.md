@@ -9,7 +9,7 @@ Unified retail management platform: one Android app, one web console, one backen
 | `pos-android/` | Production Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
 | `pos-android/server-side/posterita-cloud/web/` | **Production web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/` | Vercel serverless API routes (sync, AI import, Blink payments) |
-| `pos-android/server-side/supabase/` | Supabase migrations and config |
+| `pos-android/server-side/posterita-cloud/supabase/` | Supabase migrations |
 | `posterita-prototype/` | Interactive UI prototype (React JSX, 1,242 lines) — design reference |
 | `specs/` | AI-optimized specification files (split from master plan v3.9) |
 | `manus-retail-os/` | Manus prototype — **inspiration only, NOT production code** |
@@ -23,50 +23,52 @@ Unified retail management platform: one Android app, one web console, one backen
 - **Web Console:** Next.js 14+ (App Router) on Vercel — at `pos-android/server-side/posterita-cloud/web/`
 - **Backend API:** Vercel serverless functions at `posterita-cloud.vercel.app/api/`
 - **Database:** Supabase Postgres (sole source of truth)
-- **Auth:** Supabase Auth (web console), JWT tokens (Android)
+- **Auth:** Supabase Auth (web console login), OTT tokens (Android WebView), PIN (Android device unlock)
 - **Media:** Cloudinary | **WhatsApp:** Meta Cloud API | **Payments:** Blink SDK
 
 ## API Endpoints
 
 - **Production:** `https://posterita-cloud.vercel.app/api/` — sync, data, AI import, Blink
 - **Web Console:** `https://web.posterita.com` (alias for posterita-cloud.vercel.app)
-- **Legacy (DO NOT USE):** `https://my.posterita.com/posteritabo`
+- **Legacy (DO NOT USE):** `https://my.posterita.com/posteritabo` — old Java backend, all `app/*` endpoints are dead
 - **Loyalty (legacy):** `https://loyalty.posterita.com/api/` — being migrated
 
 ## Deployment
 
 - **Vercel project:** `posterita-cloud` (team: `tamakgroup`)
 - **Deploy command:** `cd pos-android/server-side/posterita-cloud/web && npx vercel --prod --yes`
-- **IMPORTANT:** Always deploy to the `posterita-cloud` project, NOT `web`. If `.vercel/project.json` points to the wrong project, re-link: `npx vercel link --project posterita-cloud --yes`
+- **IMPORTANT:** Always deploy from the `web/` directory. If `.vercel/project.json` points to the wrong project, re-link: `npx vercel link --project posterita-cloud --yes`
 - **Domains:** `posterita-cloud.vercel.app` and `web.posterita.com`
+- **Supabase migrations:** Run via Management API (see memory file `reference_supabase.md`). After DDL changes, reload schema cache: `NOTIFY pgrst, 'reload schema'`
 - All API routes use `force-dynamic` or lazy-init Supabase clients — never create `createClient()` at module scope
 
 ## Key Architectural Rules
 
 1. **Android never talks to Supabase directly** — all data flows through the API
 2. **Web console reads Supabase directly** (via Supabase client) — mutations go through API routes
-3. **One store per user per day** — JWT carries store_id claim
+3. **Context = account_id + store_id + terminal_id** — every query is scoped to this context
 4. **Inventory count is scan-only** — no manual data entry
 5. **Offline-first** — every store-floor operation works without connectivity
 6. **Capability-driven UI** — role-based, not hardcoded screen lists
-7. **Every mutation produces an audit event**
-8. **Three-layer feature rule** — see Feature Development Workflow below
-9. **No CRUD scaffolds** — see UI Pattern Rules below
-10. **All errors go through AppErrorLogger** — see Error Logging below
+7. **Three-layer feature rule** — see Feature Development Workflow below
+8. **No CRUD scaffolds** — see UI Pattern Rules below
+9. **All errors go through AppErrorLogger** — see Error Logging below
+10. **Legacy workers are disabled** — `OrderSyncWorker`, `CloseTillSyncWorker`, `DocumentNoSyncWorker` skip for cloud/standalone accounts. Only `CloudSyncWorker` handles sync.
 
 ## Feature Development Workflow
 
 **CRITICAL: When implementing any feature, it must be built across all three layers:**
 
 ### Layer 1: Database (Supabase)
-- Define the table/schema in `pos-android/server-side/supabase/`
-- Add migrations
+- Add migrations in `pos-android/server-side/posterita-cloud/supabase/migrations/`
+- Run via Supabase Management API (see deployment section)
+- `account_id` is TEXT (not UUID) — values like `"standalone_1774110618083"` or server-assigned IDs
 - This is the source of truth
 
 ### Layer 2: Backend API (Vercel serverless)
 - Add API routes in `pos-android/server-side/posterita-cloud/web/src/app/api/`
 - CRUD endpoints that Android and Web Console both call
-- Validation, business logic, audit logging
+- Validation, business logic
 
 ### Layer 3a: Web Console (Next.js)
 - Admin CRUD pages in `pos-android/server-side/posterita-cloud/web/src/app/(dashboard)/`
@@ -83,33 +85,39 @@ Unified retail management platform: one Android app, one web console, one backen
 
 | Task | Android | Web Console | API |
 |------|---------|-------------|-----|
-| **POS checkout flow** | ✅ Native | ❌ | ✅ Sync orders |
-| **View/edit products** | WebView (`/products`) | ✅ Native | ✅ CRUD |
-| **View/edit stores** | WebView (`/stores`) | ✅ Native | ✅ CRUD |
-| **View/edit terminals** | WebView (`/terminals`) | ✅ Native | ✅ CRUD |
-| **View/edit users** | WebView (`/users`) | ✅ Native | ✅ CRUD |
-| **View/edit categories** | WebView (`/categories`) | ✅ Native | ✅ CRUD |
-| **View/edit taxes** | WebView (`/settings`) | ✅ Native | ✅ CRUD |
-| **Manage brands** | ✅ Native (owner only) | ✅ Native | ✅ CRUD |
-| **Product intake** | WebView embed | ✅ Native | ✅ AI extraction + matching |
-| **View orders** | ✅ Native | ✅ Native | ✅ Query |
-| **Till management** | ✅ Native | ✅ View only | ✅ Sync |
-| **Printer config** | ✅ Native (local) | ❌ | ❌ |
-| **Barcode scanning** | ✅ Native | ❌ | ❌ |
-| **Reports/analytics** | WebView (`/reports`) | ✅ Native | ✅ Query |
-| **Error logs** | ✅ Auto-synced | ✅ Native (`/errors`) | ✅ Sync |
+| **POS checkout flow** | Native | — | Sync orders |
+| **View/edit products** | WebView (`/products`) | Native | CRUD |
+| **View/edit stores** | WebView (`/stores`) | Native | CRUD |
+| **View/edit terminals** | WebView (`/terminals`) | Native | CRUD |
+| **View/edit users** | WebView (`/users`) | Native | CRUD |
+| **View/edit categories** | WebView (`/categories`) | Native | CRUD |
+| **View/edit taxes** | WebView (`/settings`) | Native | CRUD |
+| **Manage brands** | Native (owner only) | Native | CRUD |
+| **Product intake** | WebView (`/intake`) | Native | AI extraction + matching |
+| **View orders** | Native | Native | Query |
+| **Till management** | Native | View only | Sync |
+| **Printer config** | Native (local) | — | — |
+| **Barcode scanning** | Native | — | — |
+| **Reports/analytics** | WebView (`/reports`) | Native | Query |
+| **Error logs** | Auto-synced | Native (`/errors`) | Sync |
 
 ### WebView Integration Pattern
 
 **The web console is the primary CRUD interface. Android embeds it via `WebConsoleActivity`.**
 
-- All Settings items (Stores, Terminals, Products, Categories, Users, Taxes) open web console pages in a WebView
+- Settings items open web console pages in a WebView
 - `WebConsoleActivity` takes `EXTRA_PATH` (e.g., `/products`) and `EXTRA_TITLE`
-- Sidebar is hidden via CSS injection — Android provides its own navigation
-- Auth via OTT (One-Time Token): Android fetches token from `/api/auth/ott`, appends `?ott=xxx` to URL
-- After editing in web console, Android syncs to get updated data (CloudSyncWorker)
-- **Only printers are local** — configured on-device, no web console involvement
-- **Brands are native** because they control account switching (local concern)
+- **Auth flow:**
+  1. Android calls `POST /api/auth/ott` with `account_id`, `user_id`, `store_id`, `terminal_id`
+  2. Server creates a 60-second one-time token in `ott_tokens` table
+  3. Android loads `https://web.posterita.com/products?ott=<token>`
+  4. **Middleware** validates the OTT, sets httpOnly cookie `posterita_ott_session`, redirects to `/customer/products` (without `?ott`)
+  5. **Customer layout** checks OTT cookie → skips Supabase Auth → renders page
+  6. **`getSessionAccountId()`** reads `account_id` from OTT cookie as fallback
+- Sidebar is hidden: customer layout detects OTT session and omits `<Sidebar />`
+- CSS injection also hides sidebar classes as backup
+- WebView blocks navigation to `/login`, `/customer/login`, `/platform`, `/manager` to prevent breaking Android nav
+- After editing, Android syncs via CloudSyncWorker to get updated data
 
 ## Web Console Routes
 
@@ -119,10 +127,11 @@ Real web app at `pos-android/server-side/posterita-cloud/web/`:
 | Route | Page | Status |
 |-------|------|--------|
 | `/platform` | Owner's brand list → pick brand | ✅ |
-| `/platform/[brand]/stores` | Stores in brand → pick store | ❌ Needs building |
-| `/platform/[brand]/[store]/terminals` | Terminals in store → pick terminal | ❌ Needs building |
+| `/platform/[brand]/stores` | Stores in brand → pick store | ❌ Needs building (web console only) |
+| `/platform/[brand]/[store]/terminals` | Terminals in store → pick terminal | ❌ Needs building (web console only) |
 
 Login flow: **Owner → Brand → Store → Terminal → Dashboard** (context set for session).
+Note: Android handles context selection natively via the Home screen context switcher (Store › Terminal picker).
 
 ### Dashboard & Operations (scoped to selected terminal/store/brand)
 | Route | Page | Status |
@@ -136,9 +145,9 @@ Login flow: **Owner → Brand → Store → Terminal → Dashboard** (context se
 ### Product Intake (scoped to selected brand)
 | Route | Page | Status |
 |-------|------|--------|
-| `/intake` | Intake dashboard — batch list, pending review counts | ❌ Needs building |
-| `/intake/new` | Start new intake — pick source, upload/enter input | ❌ Needs building |
-| `/intake/[batchId]` | Review batch — item-by-item approval with AI matching | ❌ Needs building |
+| `/intake` | Intake dashboard — batch list, pending review counts | ✅ |
+| `/intake/new` | Start new intake — pick source, upload/enter input | ✅ |
+| `/intake/[batchId]` | Review batch — item-by-item approval with AI matching | ✅ |
 
 ### Data Management (scoped to selected brand)
 | Route | Page | Status |
@@ -149,7 +158,7 @@ Login flow: **Owner → Brand → Store → Terminal → Dashboard** (context se
 | `/terminals` | Terminals | ✅ |
 | `/users` | Users | ✅ |
 | `/settings` | Settings/Taxes | ✅ |
-| `/ai-import` | AI product import (will migrate to intake pipeline) | ✅ |
+| `/ai-import` | AI product import (legacy — being replaced by intake pipeline) | ✅ |
 | `/price-review` | Price review queue (staff-set prices) | ✅ |
 | `/brands` | Brand management | ❌ Needs building |
 
@@ -176,6 +185,17 @@ Login flow: **Owner → Brand → Store → Terminal → Dashboard** (context se
 2. Creates owner + 2 brands (live + demo) via `POST /api/auth/signup`
 3. Goes straight to Home — user is already authenticated (just completed signup)
 4. Non-blocking banner: "Check your email to verify your account" (needed for password reset later)
+
+### Android Login (Returning User / New Device)
+1. Welcome screen → tap "Log In"
+2. Enter email + password
+3. **Online-first:** calls `POST /api/auth/lookup` to find account by email
+4. If found → gets `live_account_id` and `demo_account_id`
+5. Sets up local account, triggers immediate CloudSync to pull all data (products, users, stores, etc.)
+6. Waits for sync to bring down user record, validates password against `user.pin` or `user.password`
+7. If sync hasn't completed → creates temporary local user from email, proceeds to Home
+8. On next sync cycle, full data arrives and overwrites the temp user
+9. **Offline fallback:** if no internet, tries local Room databases (previously synced accounts)
 
 ### Password vs PIN
 - **Password:** account-level credential for Supabase Auth (web console login, password reset). Set during signup. Any length.
@@ -204,9 +224,9 @@ Login flow: **Owner → Brand → Store → Terminal → Dashboard** (context se
 1. **Email OTP** — verifies email during signup (non-blocking, needed for password reset)
 2. **Password** — account auth for web console (Supabase Auth)
 3. **PIN** — 4-digit quick device unlock (mandatory, synced)
-4. **Biometric** — optional shortcut for PIN (fingerprint/face)
-5. **Role-based** — cashier can't void/refund without supervisor PIN
-6. **Audit log** — every action tracked with user + timestamp
+4. **OTT** — one-time token for WebView auth (60-second expiry, single use)
+5. **Biometric** — optional shortcut for PIN (fingerprint/face)
+6. **Role-based** — cashier can't void/refund without supervisor PIN
 
 ## UI Pattern Rules
 
@@ -281,12 +301,13 @@ AppErrorLogger.info(context, "Sync", "Sync completed in 3.2s")
 ### Stack
 - **Android:** `ErrorLog` entity → `ErrorLogDao` → `AppErrorLogger` utility → synced by `CloudSyncService`
 - **API:** `POST /api/sync` handles `error_logs` array in sync request
-- **Database:** `error_logs` Supabase table with RLS (migration `00013_error_logs.sql`)
+- **Database:** `error_logs` Supabase table (migration `00013_error_logs.sql`)
 - **Crash handler:** `AppErrorLogger.installCrashHandler()` in `PosteritaApp.onCreate()`
 
 ## Android Navigation Architecture
 
 - **Home screen:** Hub with bottom nav (Home | POS | Orders | More)
+- **Context switcher:** Tappable "Store › Terminal ▾" under greeting — opens picker dialog to switch store/terminal
 - **POS drawer:** Home, Orders, Terminal Info, Printers, Till History
 - **POS MORE menu:** Open Cash Drawer, Clear Cart, Hold Order, Close Till
 - **Settings:** Opens web console pages via WebView (all data management)
@@ -326,7 +347,7 @@ Owner (person)
 - **Admin sees one brand** — the stores and terminals within it.
 - **Staff sees one terminal** — scoped to their assigned store.
 - **Web console navigation:** Owner → pick brand → pick store → pick terminal → dashboard scoped to that context.
-- **Android app:** same hierarchy, but terminal is auto-selected (device is enrolled to a terminal).
+- **Android app:** context switcher on Home screen lets owner pick Store › Terminal. Brand switching via Brands tile.
 
 ## Till Management
 
@@ -347,11 +368,11 @@ Owner (person)
 5. Float amount stored on terminal record for next session
 
 ### Close Till — Full Reconciliation
-All tender types are reconciled, not just cash. Cashiers sometimes record wrong payment type (e.g. ring up "card" when customer paid cash).
+All tender types are reconciled, not just cash.
 
 **Step 1: Count cash** (same denomination counter as open till)
-**Step 2: Enter card batch total** (manual entry from card machine's batch report; auto-fill if integrated later)
-**Step 3: Enter Blink total** (manual entry for now; auto-fill if integrated later)
+**Step 2: Enter card batch total** (manual entry from card machine's batch report)
+**Step 3: Enter Blink total** (manual entry for now)
 
 **Step 4: Reconciliation summary**
 ```
@@ -375,15 +396,9 @@ TOTAL COUNTED       Rs 5,820.00
 SHORTAGE            Rs -30.00
 ```
 
-- Per-type breakdown is **informational**
-- **Total discrepancy is the headline number** — that's what the cashier is accountable for
-- Optional note field for explaining discrepancy
-- Terminal record updated with closing float for next session
-
 ### UX Rules for Till Screens
 - **No progressive disclosure** for the denomination counter — one scrollable screen
-- **Stepper input** (`-` `[n]` `+`) per denomination, not a numpad — most counts are under 20
-- **No reconfirmation** — the digital count is the record, no counting twice
+- **Stepper input** (`-` `[n]` `+`) per denomination, not a numpad
 - Denominations ordered **largest to smallest**, grouped Notes / Coins
 
 ## Brand Colors
@@ -397,62 +412,13 @@ SHORTAGE            Rs -30.00
 
 Products enter the system from many sources but NEVER go straight to the POS. Every product passes through a staging area where the owner reviews, enhances, and approves before it becomes sellable.
 
-### The Problem
-
-A retailer gets product data from everywhere — supplier catalogues, websites, purchase orders, invoices, AI discovery. Each source has different data quality: a catalogue PDF might have names and prices but no images; an invoice has cost prices but no selling prices; a website scrape has images but approximate prices. Without a funnel, products land directly in the POS with missing data, wrong prices, or duplicate entries.
-
 ### Core Concept: Intake Batch → Intake Items → Products
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        INTAKE SOURCES                               │
-│                                                                     │
-│  Website    Catalogue   Purchase    Invoice   AI                    │
-│  Scrape     PDF/CSV     Order                 Search                │
-└──────┬──────────┬──────────────┬─────────────┬────────────┬─────────┘
-       │          │              │             │            │
-       ▼          ▼              ▼             ▼            ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       INTAKE BATCH                                  │
-│  Groups all items from one import action                           │
-│  Tracks: source, source_ref, status, who created it, when          │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       INTAKE ITEMS                                  │
-│  Raw extracted data — one row per candidate product                │
-│                                                                     │
-│  AI MATCHING ENGINE:                                                │
-│  • Each item is matched against the existing product catalog       │
-│  • match_type: exact (barcode hit) | fuzzy (name similarity) |    │
-│                 new (no match found) | manual (owner linked it)    │
-│  • match_confidence: 0.00–1.00                                     │
-│  • match_product_id: FK to existing product if matched             │
-│                                                                     │
-│  OWNER REVIEW:                                                      │
-│  • Side-by-side: extracted data vs existing product (if matched)   │
-│  • Fix names, adjust prices, assign categories, pick images        │
-│  • Approve / reject / merge with existing product                  │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                    ┌──────────┼──────────┐
-                    ▼          ▼          ▼
-              ┌──────────┐ ┌────────┐ ┌──────────┐
-              │ NEW      │ │ UPDATE │ │ REJECTED │
-              │ PRODUCT  │ │ EXIST. │ │ (skip)   │
-              │ created  │ │ PRODUCT│ │          │
-              │ as live  │ │ price/ │ │          │
-              │          │ │ image  │ │          │
-              └──────────┘ └────────┘ └──────────┘
-                    │          │
-                    ▼          ▼
-              ┌──────────────────────┐
-              │   PRODUCT TABLE      │
-              │   status = live      │
-              │   source = (origin)  │
-              │   → syncs to POS     │
-              └──────────────────────┘
+Source → intake_batch → intake_items (AI extraction + matching)
+    → Owner reviews in web console (/intake/[batchId])
+    → Approve → creates/updates products as live → syncs to POS
+    → Reject → skipped, kept for audit
 ```
 
 ### Database Schema
@@ -462,20 +428,16 @@ A retailer gets product data from everywhere — supplier catalogues, websites, 
 | Column | Type | Purpose |
 |--------|------|---------|
 | `batch_id` | SERIAL PK | |
-| `account_id` | UUID FK | Scoped to brand |
+| `account_id` | INT | Scoped to brand (TEXT in Supabase, INT in Room) |
 | `source` | TEXT | `website`, `catalogue`, `purchase_order`, `invoice`, `ai_search`, `supplier_feed` |
 | `source_ref` | TEXT | URL, filename, PO number, invoice number |
-| `source_file_url` | TEXT | Cloudinary URL of uploaded document (PDF, CSV, image) |
+| `source_file_url` | TEXT | Cloudinary URL of uploaded document |
 | `status` | TEXT | `processing` → `ready` → `in_review` → `committed` / `failed` |
 | `item_count` | INT | Total items extracted |
 | `approved_count` | INT | Items approved (created or merged) |
 | `rejected_count` | INT | Items skipped |
 | `supplier_name` | TEXT | Extracted or entered supplier name |
-| `created_by` | INT | User who initiated |
 | `created_at` | TIMESTAMPTZ | |
-| `reviewed_by` | INT | User who completed review |
-| `reviewed_at` | TIMESTAMPTZ | |
-| `notes` | TEXT | Owner notes |
 
 #### `intake_item` — one candidate product within a batch
 
@@ -483,205 +445,57 @@ A retailer gets product data from everywhere — supplier catalogues, websites, 
 |--------|------|---------|
 | `item_id` | SERIAL PK | |
 | `batch_id` | INT FK | Parent batch |
-| `account_id` | UUID FK | |
-| **Extracted data** | | |
+| `account_id` | INT | |
 | `name` | TEXT | Product name as extracted |
-| `description` | TEXT | |
 | `selling_price` | NUMERIC(12,2) | Selling price if available |
 | `cost_price` | NUMERIC(12,2) | Cost/wholesale price if available |
 | `image_url` | TEXT | Original source URL |
 | `image_cdn_url` | TEXT | After Cloudinary upload |
 | `barcode` | TEXT | UPC/EAN if found |
-| `category_name` | TEXT | Raw category text (not FK yet) |
-| `unit` | TEXT | "kg", "piece", "bottle", "pack" |
-| `supplier_sku` | TEXT | Supplier's own product code |
-| `quantity` | NUMERIC(12,2) | Quantity (for POs/invoices) |
-| **AI matching** | | |
+| `category_name` | TEXT | Raw category text |
 | `match_product_id` | INT FK nullable | Matched existing product |
 | `match_confidence` | NUMERIC(3,2) | 0.00–1.00 |
 | `match_type` | TEXT | `exact`, `fuzzy`, `new`, `manual` |
-| **Review** | | |
 | `status` | TEXT | `pending`, `approved`, `rejected`, `merged` |
-| `override_name` | TEXT | Owner's corrected name |
-| `override_price` | NUMERIC(12,2) | Owner's corrected price |
-| `override_category_id` | INT FK nullable | Owner-assigned category |
 | `committed_product_id` | INT FK nullable | Product created/updated on commit |
-| `created_at` | TIMESTAMPTZ | |
-| `reviewed_at` | TIMESTAMPTZ | |
 
-### Source Types & What Each Extracts
+### Product Lifecycle Columns (on `product` table)
 
-| Source | Input | Extracts | Typical data quality |
-|--------|-------|----------|---------------------|
-| **Website scrape** | URL(s) | Names, prices, images, descriptions, categories | Good names + images, prices may be tax-ambiguous |
-| **Catalogue PDF** | Uploaded PDF | Names, SKUs, prices, descriptions, images | Good structure, may lack images |
-| **Catalogue CSV** | Uploaded spreadsheet | All columns as-is | High quality if supplier format is known |
-| **Purchase order** | Uploaded PO document | Items, quantities, cost prices, supplier SKUs | Cost prices (not selling), quantities for inventory |
-| **Invoice** | Uploaded invoice image/PDF | Items, quantities, unit costs, totals, supplier info | Definitive cost prices, may reference existing products |
-| **AI search** | Business name + location | Names, prices, images, categories, store info | Variable — AI's best guess from web search |
-| **Supplier feed** | API/URL (future) | Full catalog with updates | High quality, automated |
+| Column | Values | Purpose |
+|--------|--------|---------|
+| `product_status` | `live`, `draft` | `live` = sellable on POS. `draft` = owner WIP. Default `live`. |
+| `source` | `manual`, `website`, `catalogue`, `purchase_order`, `invoice`, `ai_search` | How product was created |
+| `needs_price_review` | `"Y"` / `null` | Staff changed the price — owner needs to approve |
 
-### AI Matching Engine
+Note: `product_status = 'review'` exists in the CHECK constraint but is being phased out. New products from intake land as `live` after approval.
 
-When intake items are extracted, each is matched against the existing product catalog:
+### Three Review Queues (independent)
 
-1. **Exact match** (confidence 1.0) — barcode/UPC matches an existing product
-2. **Fuzzy match** (confidence 0.6–0.9) — name similarity above threshold, same category
-3. **New** (confidence 0.0) — no plausible match found
-4. **Manual** — owner explicitly links the item to an existing product during review
-
-Matching is done by Claude AI with the existing catalog as context. The AI sees:
-- All existing product names, barcodes, categories, and prices
-- The intake item's extracted data
-- Returns: `match_product_id`, `match_confidence`, `match_type`, reasoning
-
-### Review UX (Web Console)
-
-#### Batch list (`/intake`)
-- Table of batches: source icon, source_ref, item count, status badge, date
-- Status badges: `Processing` (spinner), `Ready for Review` (orange), `Committed` (green), `Failed` (red)
-- Click → opens batch review
-
-#### Batch review (`/intake/[batchId]`)
-Three-column layout per item:
-
-| Extracted (left) | Match (center) | Action (right) |
-|-------------------|----------------|----------------|
-| Name, price, image from source | Existing product if matched (with confidence %) | Approve / Reject / Edit |
-
-**For matched items (update existing product):**
-- Show diff: "Cost price: Rs 50 → Rs 45" (from invoice)
-- Owner can accept update, reject, or override values
-
-**For new items (create product):**
-- Show extracted data with editable fields
-- Owner fills in: selling price (if only cost known), category, tax rule
-- Image preview with option to crop/replace
-
-**Bulk actions:**
-- "Approve All New" — creates all unmatched items as products
-- "Approve All Matches" — updates all matched products
-- "Reject Remaining" — skips everything not yet reviewed
-
-### Commit Logic
-
-When the owner approves an item:
-
-**If `match_type = 'new'` (or manual override to "create new"):**
-1. Create a new `product` row
-2. `product_status = 'live'`, `source = <batch.source>`
-3. Upload image to Cloudinary if not already done
-4. Set `committed_product_id` on the intake_item
-
-**If `match_type = 'exact' | 'fuzzy' | 'manual'` (merge with existing):**
-1. Update the matched product's fields (only the fields the owner approved)
-2. Common updates: cost_price (from PO/invoice), image (from catalogue), description
-3. Set `committed_product_id` on the intake_item
-4. If selling_price changed → `needs_price_review = null` (owner just approved it)
-
-**If status = 'rejected':**
-1. Skip — no product created or updated
-2. Item stays in `intake_item` for audit trail
-
-When all items in a batch are reviewed → batch.status = `committed`.
-
-### How This Replaces the Current AI Import
-
-The existing AI import (`/ai-import`, `/api/ai-import`) currently creates products directly in the `product` table with `product_status = 'review'`. With the intake pipeline:
-
-1. **AI import becomes one source type** — `ai_search` or `website` source in the intake pipeline
-2. **Same AI extraction** — Claude still does the heavy lifting (web search, scraping, image analysis)
-3. **But products land in `intake_item`** — not directly in the product table
-4. **Review happens in `/intake/[batchId]`** — not in the products page status tabs
-5. **The existing `/ai-import` UI becomes a "start intake" flow** — pick source type, provide input, kick off processing
-
-### Relationship to `product_status` and `needs_price_review`
-
-| Concept | Where | Purpose |
-|---------|-------|---------|
-| **Intake review** | `intake_item.status` | "Should this external data become a product at all?" |
-| **Product status** | `product.product_status` | `live` = sellable, `draft` = owner WIP (manual creation in progress) |
-| **Price review** | `product.needs_price_review` | "A cashier changed the price — is the new price OK?" |
-
-These are three different review queues:
-- Intake review: **before** a product exists (external data → product)
-- Product draft: **during** manual creation (owner hasn't finished filling in fields)
-- Price review: **after** a product is live (staff changed something)
+| Queue | Where | When |
+|-------|-------|------|
+| **Intake review** | `intake_item.status` | Before a product exists — external data → product |
+| **Product draft** | `product.product_status = 'draft'` | During manual creation — owner hasn't finished |
+| **Price review** | `product.needs_price_review = 'Y'` | After live — staff changed the price |
 
 ### API Routes for Intake
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/intake` | POST | Create batch, start AI processing (returns batch_id) |
+| `/api/intake` | POST | Create batch (returns batch_id) |
 | `/api/intake` | GET | List batches for account |
-| `/api/intake/[batchId]` | GET | Get batch + items |
-| `/api/intake/[batchId]/process` | POST | Trigger AI extraction + matching (async, SSE for progress) |
+| `/api/intake/[batchId]` | GET | Get batch + items + matched products |
+| `/api/intake/[batchId]/process` | POST | AI extraction + matching (SSE streaming) |
 | `/api/intake/[batchId]/review` | POST | Approve/reject items, commit to product table |
-| `/api/intake/[batchId]/match` | POST | Re-run AI matching on specific items |
-
-### Android Integration
-
-Android does NOT interact with the intake pipeline directly. The flow is:
-1. Owner uses web console (or WebView on Android) to run intake
-2. Approved products land in `product` table as `live`
-3. Next sync cycle delivers them to Android POS
-4. Business as usual
-
-**Exception:** The existing Android `AiImportService` (first-launch setup) currently writes products directly to Room. This stays as-is for the onboarding experience — it creates products locally with `product_status = 'review'` and `source = 'ai_import'`. These sync up to Supabase on first cloud sync, and the owner can review them in the web console.
-
-### Source-Specific Parsers
-
-Each source type has its own extraction strategy:
-
-**Website (`website`):**
-- Fetch HTML → Claude extracts product data from page structure
-- Follow pagination/category links if detected
-- Download and re-host images on Cloudinary
-
-**Catalogue PDF (`catalogue`):**
-- Upload to Cloudinary for storage
-- Claude Vision analyzes each page for tabular product data
-- Extracts: name, SKU, price, description, image regions
-
-**Catalogue CSV/Excel (`catalogue`):**
-- Parse columns with header detection
-- AI maps arbitrary column names to standard fields
-- "Item Description" → name, "RRP" → selling_price, "Trade Price" → cost_price
-
-**Purchase Order (`purchase_order`):**
-- Upload document (PDF/image)
-- Claude Vision extracts line items: product name, quantity, unit cost
-- Matched products get cost_price updated
-- Unmatched items flagged as potential new products (need selling price from owner)
-
-**Invoice (`invoice`):**
-- Upload invoice image/PDF
-- Claude Vision extracts: supplier, items, quantities, unit prices, totals, tax
-- Cross-reference with PO if PO number present
-- Update cost prices on matched products
-- Extract supplier info for future reference
-
-**AI Search (`ai_search`):**
-- Business name + location → Claude web search
-- Finds menus, product pages, social media posts
-- Extracts whatever product data is available
-- Lower confidence — more review needed
 
 ### Supplier Management (Future)
 
-Intake batches track `supplier_name`. Over time this builds a supplier directory:
-- Which suppliers provide which products
-- Cost price history per supplier per product
-- Preferred supplier per product
-- Reorder points and lead times
-
-This is the foundation for the Phase 2 procurement module.
+Intake batches track `supplier_name`. Over time this builds a supplier directory — foundation for Phase 2 procurement module.
 
 ## Current Phase
 
 **Phase 0** — Android app cleanup, UI consistency, offline POS solid. ✅ Nearly complete.
 **Phase 1** — Web console CRUD + API routes + auth integration + sync engine.
-**Phase 1.5** — Product Intake Pipeline (intake batches, AI matching, review UX).
+**Phase 1.5** — Product Intake Pipeline (intake batches, AI matching, review UX). ✅ Built.
 **Phase 2** — Inventory, loyalty, catalogue, logistics.
 **Phase 3** — Staff ops, supervisor, warehouse, AI assistant.
 
