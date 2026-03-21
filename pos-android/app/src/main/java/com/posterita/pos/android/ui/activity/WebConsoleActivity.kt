@@ -81,7 +81,16 @@ class WebConsoleActivity : AppCompatActivity() {
 
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                // Keep all navigation inside the WebView
+                val navUrl = request?.url?.toString() ?: return false
+
+                // Block navigation to login, dashboard, or platform pages — these break the Android nav
+                val blockedPaths = listOf("/login", "/customer/login", "/manager", "/platform", "/customer$")
+                if (blockedPaths.any { navUrl.contains(it) }) {
+                    Log.d("WebConsoleActivity", "Blocked navigation to: $navUrl")
+                    return true // block
+                }
+
+                // Allow navigation within the web console
                 return false
             }
 

@@ -50,6 +50,12 @@ class CloseTillSyncWorker(
             val terminalId = prefsManager.terminalId
             if (accountId.isEmpty() || terminalId == 0) return@withContext Result.failure()
 
+            // Skip for cloud/standalone accounts — handled by CloudSyncWorker
+            val baseUrl = prefsManager.baseUrl
+            if (baseUrl.contains("posterita-cloud") || baseUrl.contains("web.posterita") || accountId.startsWith("standalone") || accountId == "null") {
+                return@withContext Result.success()
+            }
+
             val db = AppDatabase.getInstance(applicationContext, accountId)
             val closedTills = db.tillDao().getClosedTillByTerminalId(terminalId)
             val unSyncedTills = closedTills.filter { !it.isSync }
@@ -61,9 +67,9 @@ class CloseTillSyncWorker(
                 till.json?.let { jsonArray.put(it) }
             }
 
-            val baseUrl = prefsManager.baseUrl.let { if (it.endsWith("/")) it else "$it/" }
+            val syncUrl = baseUrl.let { if (it.endsWith("/")) it else "$it/" }
             val retrofit = Retrofit.Builder()
-                .baseUrl(baseUrl)
+                .baseUrl(syncUrl)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()

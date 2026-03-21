@@ -188,7 +188,7 @@ class CloudSyncWorker(
                 "account_id" to accountId,
                 "email" to email,
                 "businessname" to (account?.businessname ?: prefsManager.storeName),
-                "currency" to (account?.currency ?: "MUR"),
+                "currency" to (account?.currency ?: ""),
                 "stores" to stores.map { store ->
                     mapOf(
                         "store_id" to store.storeId,
