@@ -17,7 +17,7 @@ Unified retail management platform: one Android app, one web console, one backen
 
 - **Android:** Kotlin, Room, Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
 - **Web:** Next.js 14+ (App Router) on Vercel
-- **DB:** Supabase Postgres — `account_id` is TEXT (e.g. `"standalone_1774110618083"`)
+- **DB:** Supabase Postgres — `account_id` is TEXT. **RLS is enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web), OTT tokens (Android WebView), PIN (device unlock)
 - **Production:** `https://posterita-cloud.vercel.app/api/` = `https://web.posterita.com`
 - **Legacy (DO NOT USE):** `my.posterita.com/posteritabo` — all `app/*` endpoints are dead
