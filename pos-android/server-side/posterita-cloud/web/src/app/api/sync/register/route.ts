@@ -20,6 +20,8 @@ import { ensureDefaultAccountManager } from "@/lib/account-manager";
  * the account_id stays the same forever.
  */
 
+export const dynamic = "force-dynamic";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!

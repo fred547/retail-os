@@ -26,6 +26,8 @@ const CLOUDINARY_CLOUD_NAME =
   process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy";
 const MODEL = "claude-sonnet-4-6";
 
+export const dynamic = "force-dynamic";
+
 // Service-role Supabase client for DB writes
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 

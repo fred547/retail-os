@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 30;
 
+export const dynamic = "force-dynamic";
+
 // Service role client — bypasses RLS for sync operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
