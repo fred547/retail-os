@@ -3,10 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+function getSupabaseAdmin() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 /**
  * GET /api/intake — list batches for the current account
@@ -14,9 +13,20 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
  */
 
 async function getAccountId(): Promise<string | null> {
+  const admin = getSupabaseAdmin();
   const cookieStore = await cookies();
+
+  // Check OTT cookie first (Android WebView)
+  const ottCookie = cookieStore.get("posterita_ott_session");
+  if (ottCookie?.value) {
+    try {
+      const session = JSON.parse(ottCookie.value);
+      if (session.account_id) return session.account_id;
+    } catch { /* ignore */ }
+  }
+
   const supabase = createServerClient(
-    SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { getAll: () => cookieStore.getAll(), setAll() {} } }
   );
@@ -24,21 +34,21 @@ async function getAccountId(): Promise<string | null> {
   if (!user) return null;
 
   // Super admin impersonation
-  const { data: sa } = await supabaseAdmin.from("super_admin").select("id").eq("auth_uid", user.id).eq("is_active", true).single();
+  const { data: sa } = await admin.from("super_admin").select("id").eq("auth_uid", user.id).eq("is_active", true).single();
   if (sa) {
-    const { data: session } = await supabaseAdmin.from("super_admin_session").select("account_id").eq("super_admin_id", sa.id).order("started_at", { ascending: false }).limit(1).single();
+    const { data: session } = await admin.from("super_admin_session").select("account_id").eq("super_admin_id", sa.id).order("started_at", { ascending: false }).limit(1).single();
     return session?.account_id ?? null;
   }
 
   // Owner session
-  const { data: owner } = await supabaseAdmin.from("owner").select("id").eq("auth_uid", user.id).eq("is_active", true).single();
+  const { data: owner } = await admin.from("owner").select("id").eq("auth_uid", user.id).eq("is_active", true).single();
   if (owner?.id) {
-    const { data: ownerSession } = await supabaseAdmin.from("owner_account_session").select("account_id").eq("owner_id", owner.id).single();
+    const { data: ownerSession } = await admin.from("owner_account_session").select("account_id").eq("owner_id", owner.id).single();
     if (ownerSession?.account_id) return ownerSession.account_id;
   }
 
   // Fallback: pos_user
-  const { data: posUser } = await supabaseAdmin.from("pos_user").select("account_id").eq("auth_uid", user.id).limit(1).single();
+  const { data: posUser } = await admin.from("pos_user").select("account_id").eq("auth_uid", user.id).limit(1).single();
   return posUser?.account_id ?? null;
 }
 
@@ -46,7 +56,8 @@ export async function GET() {
   const accountId = await getAccountId();
   if (!accountId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
+  const admin = getSupabaseAdmin();
+  const { data, error } = await admin
     .from("intake_batch")
     .select("*")
     .eq("account_id", accountId)
@@ -67,7 +78,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "source is required" }, { status: 400 });
   }
 
-  const { data, error } = await supabaseAdmin
+  const admin = getSupabaseAdmin();
+  const { data, error } = await admin
     .from("intake_batch")
     .insert({
       account_id: accountId,

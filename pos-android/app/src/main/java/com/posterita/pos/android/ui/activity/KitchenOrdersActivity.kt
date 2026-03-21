@@ -312,8 +312,8 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
                     priceEntered = itemJson.optDouble("price", 0.0),
                     tax = tax
                 )
-                cartItem.modifiers = itemJson.optString("modifiers", null)
-                cartItem.note = itemJson.optString("note", null)
+                cartItem.modifiers = itemJson.optString("modifiers").ifEmpty { null }
+                cartItem.note = itemJson.optString("note").ifEmpty { null }
                 cartItem.updateTotals()
                 shoppingCart.addOrUpdateLine(cartItem)
             }
@@ -459,8 +459,8 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
                     linenetamt = itemJson.optDouble("lineNetAmt", 0.0),
                     taxamt = itemJson.optDouble("taxAmt", 0.0),
                     discountamt = itemJson.optDouble("discountAmt", 0.0),
-                    modifiers = itemJson.optString("modifiers", null),
-                    note = itemJson.optString("note", null),
+                    modifiers = itemJson.optString("modifiers").ifEmpty { null },
+                    note = itemJson.optString("note").ifEmpty { null },
                     isKitchenItem = product?.iskitchenitem,
                     tax_id = product?.tax_id ?: 0
                 )

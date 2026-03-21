@@ -185,7 +185,7 @@ class WebConsoleActivity : AppCompatActivity() {
             if (conn.responseCode == 200) {
                 val response = conn.inputStream.bufferedReader().readText()
                 val json = JSONObject(response)
-                json.optString("token", null)
+                json.optString("token").ifEmpty { null }
             } else {
                 Log.w("WebConsoleActivity", "OTT request failed: ${conn.responseCode}")
                 null

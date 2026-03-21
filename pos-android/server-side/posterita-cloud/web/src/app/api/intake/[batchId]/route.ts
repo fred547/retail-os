@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 /**
  * GET /api/intake/[batchId] — get batch with all its items
@@ -14,11 +13,12 @@ export async function GET(
   { params }: { params: Promise<{ batchId: string }> }
 ) {
   const { batchId } = await params;
+  const supabase = getSupabase();
 
   const [{ data: batch, error: batchErr }, { data: items, error: itemsErr }] =
     await Promise.all([
-      supabaseAdmin.from("intake_batch").select("*").eq("batch_id", batchId).single(),
-      supabaseAdmin.from("intake_item").select("*").eq("batch_id", batchId).order("item_id"),
+      supabase.from("intake_batch").select("*").eq("batch_id", batchId).single(),
+      supabase.from("intake_item").select("*").eq("batch_id", batchId).order("item_id"),
     ]);
 
   if (batchErr) return NextResponse.json({ error: batchErr.message }, { status: 404 });
@@ -31,7 +31,7 @@ export async function GET(
 
   let matchedProducts: any[] = [];
   if (matchedIds.length > 0) {
-    const { data } = await supabaseAdmin
+    const { data } = await supabase
       .from("product")
       .select("product_id, name, sellingprice, costprice, image, upc, productcategory_id")
       .in("product_id", matchedIds);

@@ -296,8 +296,8 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
                     priceEntered = price,
                     tax = tax
                 )
-                cartItem.modifiers = itemJson.optString("modifiers", null)
-                cartItem.note = itemJson.optString("note", null)
+                cartItem.modifiers = itemJson.optString("modifiers").ifEmpty { null }
+                cartItem.note = itemJson.optString("note").ifEmpty { null }
                 cartItem.updateTotals()
                 addOrUpdateLine(cartItem)
             }
@@ -306,7 +306,7 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
         // Restore lineNo counter so new items don't collide with restored keys
         lineNo = cartItems.keys.mapNotNull { it.toIntOrNull() }.maxOrNull() ?: 0
 
-        note = json.optString("note", null)
+        note = json.optString("note").ifEmpty { null }
         tipsAmount = json.optDouble("tipsAmount", 0.0)
         tipsPercentage = json.optDouble("tipsPercentage", 0.0)
         orderType = json.optString("orderType", "dine_in")

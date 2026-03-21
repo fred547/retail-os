@@ -3,13 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 300;
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY!;
-const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy";
 const MODEL = "claude-sonnet-4-6";
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+function getSupabaseAdmin() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 // ════════════════════════════════════════════════════════
 // SSE helpers
@@ -84,7 +82,7 @@ async function callClaude(messages: any[], maxTokens: number = 16000): Promise<s
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": process.env.CLAUDE_API_KEY!,
         "anthropic-version": "2023-06-01",
       },
       signal: controller.signal,
@@ -110,7 +108,7 @@ async function callClaudeWithWebSearch(prompt: string, maxSearches: number = 10)
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": process.env.CLAUDE_API_KEY!,
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "web-search-2025-03-05",
       },
@@ -150,7 +148,7 @@ async function uploadToCloudinary(imageUrl: string, accountId: string, itemId: n
     formData.append("upload_preset", "posterita_unsigned");
     formData.append("folder", `posterita/${accountId}/intake`);
     formData.append("public_id", `intake_${itemId}`);
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${(process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy")}/image/upload`, { method: "POST", body: formData });
     const result = await response.json();
     return result.secure_url ?? imageUrl;
   } catch { return imageUrl; }
@@ -330,7 +328,7 @@ async function matchAgainstCatalog(
   writer: SSEWriter
 ): Promise<MatchResult[]> {
   // Fetch existing products
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await getSupabaseAdmin()
     .from("product")
     .select("product_id, name, upc, sellingprice, costprice, productcategory_id")
     .eq("account_id", accountId)
@@ -423,7 +421,7 @@ export async function POST(
   (async () => {
     try {
       // Load the batch
-      const { data: batch, error: batchErr } = await supabaseAdmin
+      const { data: batch, error: batchErr } = await getSupabaseAdmin()
         .from("intake_batch")
         .select("*")
         .eq("batch_id", batchId)
@@ -471,7 +469,7 @@ export async function POST(
       }
 
       if (extractedItems.length === 0) {
-        await supabaseAdmin.from("intake_batch").update({ status: "failed", item_count: 0 }).eq("batch_id", batchId);
+        await getSupabaseAdmin().from("intake_batch").update({ status: "failed", item_count: 0 }).eq("batch_id", batchId);
         writer.sendError("No products could be extracted from the source");
         writer.close();
         return;
@@ -499,7 +497,7 @@ export async function POST(
           } catch { /* skip */ }
         }
 
-        const { data: inserted } = await supabaseAdmin
+        const { data: inserted } = await getSupabaseAdmin()
           .from("intake_item")
           .insert({
             batch_id: parseInt(batchId),
@@ -534,7 +532,7 @@ export async function POST(
       const newCount = matchResults.filter(m => m.match_type === "new").length;
       const matchedCount = matchResults.filter(m => m.match_type !== "new").length;
 
-      await supabaseAdmin.from("intake_batch").update({
+      await getSupabaseAdmin().from("intake_batch").update({
         status: "ready",
         item_count: insertedItems.length,
       }).eq("batch_id", batchId);
@@ -548,7 +546,7 @@ export async function POST(
       });
     } catch (e: any) {
       console.error("Intake processing error:", e);
-      await supabaseAdmin.from("intake_batch").update({ status: "failed" }).eq("batch_id", batchId);
+      await getSupabaseAdmin().from("intake_batch").update({ status: "failed" }).eq("batch_id", batchId);
       writer.sendError(e.message || "Processing failed");
     } finally {
       writer.close();
