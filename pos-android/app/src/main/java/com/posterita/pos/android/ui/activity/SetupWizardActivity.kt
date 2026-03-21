@@ -63,6 +63,7 @@ class SetupWizardActivity : AppCompatActivity() {
     private var collectedBrand = ""
     private var collectedCountry = ""
     private var collectedCategory = ""
+    private var collectedPin = ""
 
     data class StepInfo(
         val title: String,
@@ -77,6 +78,7 @@ class SetupWizardActivity : AppCompatActivity() {
         StepInfo("Brand Name", "Name your business", R.layout.setup_step_brand),
         StepInfo("Country", "Where do you operate?", R.layout.setup_step_country),
         StepInfo("Category", "What do you sell?", R.layout.setup_step_category),
+        StepInfo("Set PIN", "Quick unlock for your POS", R.layout.setup_step_pin),
         StepInfo("Setting Up", "AI is building your store", R.layout.setup_step_ai_building)
     )
 
@@ -180,6 +182,7 @@ class SetupWizardActivity : AppCompatActivity() {
             R.layout.setup_step_brand -> setupBrandStep(contentView)
             R.layout.setup_step_country -> setupCountryStep(contentView)
             R.layout.setup_step_category -> setupCategoryStep(contentView)
+            R.layout.setup_step_pin -> setupPinStep(contentView)
             R.layout.setup_step_ai_building -> setupAiBuildingStep(contentView)
         }
     }
@@ -201,6 +204,7 @@ class SetupWizardActivity : AppCompatActivity() {
             R.layout.setup_step_brand -> validateBrandStep()
             R.layout.setup_step_country -> validateCountryStep()
             R.layout.setup_step_category -> validateCategoryStep()
+            R.layout.setup_step_pin -> validatePinStep()
             else -> true
         }
     }
@@ -382,6 +386,112 @@ class SetupWizardActivity : AppCompatActivity() {
         return true
     }
 
+    // ─── PIN Step ──────────────────────────────────────────────
+
+    private var pinBuffer = ""
+    private var pinConfirmMode = false
+    private var firstPin = ""
+
+    private fun setupPinStep(view: View) {
+        pinBuffer = ""
+        pinConfirmMode = false
+        firstPin = ""
+
+        // Hide the Next button — PIN auto-advances when 4 digits entered
+        binding.btnNext.visibility = View.GONE
+
+        val buttons = mapOf(
+            R.id.btn_0 to "0", R.id.btn_1 to "1", R.id.btn_2 to "2",
+            R.id.btn_3 to "3", R.id.btn_4 to "4", R.id.btn_5 to "5",
+            R.id.btn_6 to "6", R.id.btn_7 to "7", R.id.btn_8 to "8",
+            R.id.btn_9 to "9"
+        )
+
+        for ((id, digit) in buttons) {
+            view.findViewById<View>(id)?.setOnClickListener {
+                if (pinBuffer.length < 4) {
+                    pinBuffer += digit
+                    updatePinDots(view)
+                    if (pinBuffer.length == 4) {
+                        handlePinComplete(view)
+                    }
+                }
+            }
+        }
+
+        view.findViewById<View>(R.id.btn_backspace)?.setOnClickListener {
+            if (pinBuffer.isNotEmpty()) {
+                pinBuffer = pinBuffer.dropLast(1)
+                updatePinDots(view)
+            }
+        }
+
+        view.findViewById<View>(R.id.btn_clear)?.setOnClickListener {
+            pinBuffer = ""
+            updatePinDots(view)
+        }
+    }
+
+    private fun updatePinDots(view: View) {
+        val dots = listOf(
+            view.findViewById<View>(R.id.dot1),
+            view.findViewById<View>(R.id.dot2),
+            view.findViewById<View>(R.id.dot3),
+            view.findViewById<View>(R.id.dot4)
+        )
+        val filledColor = getColor(R.color.posterita_primary)
+        val emptyColor = getColor(R.color.posterita_line)
+
+        for (i in dots.indices) {
+            val bg = dots[i]?.background
+            if (bg is android.graphics.drawable.GradientDrawable) {
+                bg.setColor(if (i < pinBuffer.length) filledColor else emptyColor)
+            }
+        }
+
+        view.findViewById<android.widget.TextView>(R.id.text_pin_error)?.visibility = View.GONE
+    }
+
+    private fun handlePinComplete(view: View) {
+        if (!pinConfirmMode) {
+            // First entry — ask to confirm
+            firstPin = pinBuffer
+            pinBuffer = ""
+            pinConfirmMode = true
+            updatePinDots(view)
+
+            // Update subtitle
+            binding.tvStepDescription.text = "Enter the same PIN again to confirm"
+        } else {
+            // Confirm entry
+            if (pinBuffer == firstPin) {
+                // Match — save and advance
+                collectedPin = pinBuffer
+                binding.btnNext.visibility = View.VISIBLE
+                goNext()
+            } else {
+                // Mismatch — reset
+                view.findViewById<android.widget.TextView>(R.id.text_pin_error)?.apply {
+                    text = "PINs don't match — try again"
+                    visibility = View.VISIBLE
+                }
+                pinBuffer = ""
+                pinConfirmMode = false
+                firstPin = ""
+                updatePinDots(view)
+                binding.tvStepDescription.text = "Quick unlock for your POS"
+            }
+        }
+    }
+
+    private fun validatePinStep(): Boolean {
+        if (collectedPin.length != 4) {
+            toast("Please set a 4-digit PIN")
+            return false
+        }
+        return true
+    }
+
     // ─── AI Building Step ────────────────────────────────────
 
     private fun inferBusinessType(category: String): String {
@@ -456,7 +566,7 @@ class SetupWizardActivity : AppCompatActivity() {
                     // Owner
                     freshDb.userDao().insertUser(User(
                         user_id = 1, firstname = collectedName, lastname = "",
-                        username = collectedEmail, pin = collectedPassword, password = collectedPassword,
+                        username = collectedEmail, pin = collectedPin,
                         isadmin = "Y", isactive = "Y", issalesrep = "Y",
                         role = User.ROLE_OWNER, email = collectedEmail, phone1 = collectedPhone
                     ))
@@ -630,7 +740,7 @@ class SetupWizardActivity : AppCompatActivity() {
      * Returns the JSON response or null on failure.
      */
     private fun callSignupApi(currency: String): org.json.JSONObject? {
-        val url = java.net.URL("https://posterita-cloud.vercel.app/api/auth/signup")
+        val url = java.net.URL("https://web-tamakgroup.vercel.app/api/auth/signup")
         val conn = url.openConnection() as java.net.HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")

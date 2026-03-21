@@ -44,7 +44,7 @@ class WebConsoleActivity : AppCompatActivity() {
         const val EXTRA_PATH = "web_console_path"
         const val EXTRA_TITLE = "web_console_title"
         // Base URL for the web console
-        const val WEB_CONSOLE_BASE = "https://posterita-cloud.vercel.app"
+        const val WEB_CONSOLE_BASE = "https://web-tamakgroup.vercel.app"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
