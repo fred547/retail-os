@@ -44,7 +44,7 @@ class WebConsoleActivity : AppCompatActivity() {
         const val EXTRA_PATH = "web_console_path"
         const val EXTRA_TITLE = "web_console_title"
         // Base URL for the web console
-        const val WEB_CONSOLE_BASE = "https://posterita-cloud.vercel.app"
+        const val WEB_CONSOLE_BASE = "https://web.posterita.com"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -143,6 +143,8 @@ class WebConsoleActivity : AppCompatActivity() {
                 val separator = if (targetUrl.contains("?")) "&" else "?"
                 "$targetUrl${separator}ott=$ottToken"
             } else {
+                // OTT failed — load without auth (user may see login page)
+                Log.w("WebConsoleActivity", "Loading without OTT auth: $targetUrl")
                 targetUrl
             }
             binding.webView.loadUrl(finalUrl)
@@ -155,10 +157,19 @@ class WebConsoleActivity : AppCompatActivity() {
      */
     private suspend fun fetchOttToken(): String? = withContext(Dispatchers.IO) {
         try {
-            val accountId = prefsManager.accountId.ifEmpty { return@withContext null }
+            val rawAccountId = prefsManager.accountId
+            val accountId = rawAccountId.ifEmpty { null } ?: run {
+                Log.e("WebConsoleActivity", "OTT: accountId is empty, cannot fetch token")
+                return@withContext null
+            }
+            if (accountId == "null" || accountId == "0") {
+                Log.e("WebConsoleActivity", "OTT: accountId is invalid ($accountId)")
+                return@withContext null
+            }
             val userId = prefsManager.userId
             val storeId = prefsManager.storeId
             val terminalId = prefsManager.terminalId
+            Log.d("WebConsoleActivity", "OTT: requesting token for account=$accountId user=$userId store=$storeId terminal=$terminalId")
 
             val url = URL("$WEB_CONSOLE_BASE/api/auth/ott")
             val conn = url.openConnection() as HttpURLConnection
@@ -182,12 +193,16 @@ class WebConsoleActivity : AppCompatActivity() {
                 writer.flush()
             }
 
-            if (conn.responseCode == 200) {
+            val responseCode = conn.responseCode
+            if (responseCode == 200) {
                 val response = conn.inputStream.bufferedReader().readText()
                 val json = JSONObject(response)
-                json.optString("token").ifEmpty { null }
+                val token = json.optString("token").ifEmpty { null }
+                Log.d("WebConsoleActivity", "OTT: got token=${token?.take(8)}...")
+                token
             } else {
-                Log.w("WebConsoleActivity", "OTT request failed: ${conn.responseCode}")
+                val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
+                Log.w("WebConsoleActivity", "OTT request failed: $responseCode body=$errorBody")
                 null
             }
         } catch (e: Exception) {

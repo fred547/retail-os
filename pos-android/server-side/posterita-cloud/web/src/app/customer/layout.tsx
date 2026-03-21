@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import Sidebar from "@/components/Sidebar";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAccountManagerInfo } from "@/lib/super-admin";
@@ -16,24 +16,31 @@ export default async function CustomerPortalLayout({
     return <>{children}</>;
   }
 
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Check OTT cookie (Android WebView session) — skip Supabase Auth if present
+  const cookieStore = await cookies();
+  const ottCookie = cookieStore.get("posterita_ott_session");
+  const hasOttSession = !!ottCookie?.value;
 
-  if (!user) {
-    redirect("/customer/login");
-  }
+  if (!hasOttSession) {
+    const supabase = await createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const managerInfo = await getAccountManagerInfo();
-  if (managerInfo && !managerInfo.impersonating) {
-    redirect("/manager/platform");
+    if (!user) {
+      redirect("/customer/login");
+    }
+
+    const managerInfo = await getAccountManagerInfo();
+    if (managerInfo && !managerInfo.impersonating) {
+      redirect("/manager/platform");
+    }
   }
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar portal="customer" />
-      <main className="flex-1 lg:ml-64 p-8 pt-16 lg:pt-8">{children}</main>
+      {!hasOttSession && <Sidebar portal="customer" />}
+      <main className={`flex-1 p-8 ${hasOttSession ? "pt-4" : "lg:ml-64 pt-16 lg:pt-8"}`}>{children}</main>
     </div>
   );
 }
