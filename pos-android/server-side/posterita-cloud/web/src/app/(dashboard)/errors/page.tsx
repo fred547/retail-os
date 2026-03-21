@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
 import ErrorLogTable from "./ErrorLogTable";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function ErrorsPage({
   searchParams,

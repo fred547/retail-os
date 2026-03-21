@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 // Revalidate dashboard data every 60 seconds (ISR)
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 async function getDashboardData(accountId: string) {
   const supabase = await createServerSupabaseAdmin();

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Globe, FileText, ShoppingCart, Receipt, Search, Rss, Clock, CheckCircle, XCircle, Loader2, AlertCircle } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 const SOURCE_META: Record<string, { label: string; icon: typeof Globe; color: string }> = {
   website: { label: "Website", icon: Globe, color: "text-blue-600 bg-blue-50" },

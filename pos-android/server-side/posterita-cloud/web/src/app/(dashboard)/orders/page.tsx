@@ -5,8 +5,7 @@ import Link from "next/link";
 import OrderTable from "./OrderTable";
 import Breadcrumb from "@/components/Breadcrumb";
 
-// Revalidate order data every 60 seconds (ISR)
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function OrdersPage({
   searchParams,

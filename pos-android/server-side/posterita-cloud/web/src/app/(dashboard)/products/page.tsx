@@ -9,7 +9,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import ApproveAllButton from "./ApproveAllButton";
 
 // Revalidate product data every 60 seconds (ISR)
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({
   searchParams,

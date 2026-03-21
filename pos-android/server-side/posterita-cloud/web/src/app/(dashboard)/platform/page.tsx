@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createServerSupabaseAdmin } from "@/lib/supabase/server";
 import { isAccountManager } from "@/lib/super-admin";
 import { redirect } from "next/navigation";
