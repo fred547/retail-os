@@ -38,6 +38,7 @@ const navigation = [
   { name: "Price Review", href: "/price-review", icon: DollarSign },
   { name: "AI Import", href: "/ai-import", icon: Sparkles },
   { name: "Product Intake", href: "/intake", icon: Inbox },
+  { name: "Brands", href: "/brands", icon: Store },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

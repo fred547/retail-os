@@ -15,9 +15,19 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/ai-import",
   "/intake",
   "/settings",
+  "/errors",
+  "/brands",
 ]);
 
+/** Also redirect sub-paths like /intake/new, /intake/123 */
+const LEGACY_CUSTOMER_PREFIXES = ["/intake/"];
+
 const OTT_COOKIE = "posterita_ott_session";
+
+function isLegacyCustomerPath(pathname: string): boolean {
+  if (LEGACY_CUSTOMER_PATHS.has(pathname)) return true;
+  return LEGACY_CUSTOMER_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 export async function updateSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -78,7 +88,7 @@ export async function updateSession(request: NextRequest) {
         cleanUrl.searchParams.delete("ott");
 
         // Apply legacy path redirect for OTT users too
-        if (LEGACY_CUSTOMER_PATHS.has(cleanUrl.pathname)) {
+        if (isLegacyCustomerPath(cleanUrl.pathname)) {
           cleanUrl.pathname = cleanUrl.pathname === "/" ? "/customer" : `/customer${cleanUrl.pathname}`;
         }
 
@@ -138,7 +148,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (LEGACY_CUSTOMER_PATHS.has(url.pathname)) {
+    if (isLegacyCustomerPath(url.pathname)) {
       url.pathname = url.pathname === "/" ? "/customer" : `/customer${url.pathname}`;
       return NextResponse.redirect(url);
     }

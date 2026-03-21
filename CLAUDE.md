@@ -76,7 +76,7 @@ cd pos-android/server-side/posterita-cloud/web && npx vercel --prod --yes
 | `/errors` | ✅ | `/users` | ✅ |
 | `/intake` + `/new` + `/[id]` | ✅ | `/settings` (taxes) | ✅ |
 | `/ai-import` (legacy) | ✅ | `/price-review` | ✅ |
-| `/platform` (brand picker) | ✅ | `/brands` | ❌ |
+| `/platform` (brand picker) | ✅ | `/brands` | ✅ |
 
 ## Auth Flow
 
