@@ -20,12 +20,9 @@ import { ensureDefaultAccountManager } from "@/lib/account-manager";
  * the account_id stays the same forever.
  */
 
-export const dynamic = "force-dynamic";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getDb() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 async function linkAccountOwner(
   accountId: string,
@@ -36,7 +33,7 @@ async function linkAccountOwner(
   const normalizedPhone = normalizePhone(identity.phone);
   if (!normalizedEmail && !normalizedPhone) return;
 
-  const { owner: existingOwner, error: ownerLookupError } = await findOwnerByIdentity(supabase, {
+  const { owner: existingOwner, error: ownerLookupError } = await findOwnerByIdentity(getDb(), {
     email: normalizedEmail,
     phone: normalizedPhone,
   });
@@ -46,12 +43,12 @@ async function linkAccountOwner(
     return;
   }
 
-  const accountManagerId = await ensureDefaultAccountManager(supabase);
+  const accountManagerId = await ensureDefaultAccountManager(getDb());
 
   let ownerId = existingOwner?.id ?? null;
 
   if (!ownerId) {
-    const { data: insertedOwner, error: ownerInsertError } = await supabase
+    const { data: insertedOwner, error: ownerInsertError } = await getDb()
       .from("owner")
       .insert({
         email: normalizedEmail || `owner+${accountId}@local.posterita.invalid`,
@@ -71,7 +68,7 @@ async function linkAccountOwner(
 
     ownerId = insertedOwner.id;
   } else {
-    await supabase
+    await getDb()
       .from("owner")
       .update({
         phone: normalizedPhone || existingOwner?.phone || null,
@@ -84,7 +81,7 @@ async function linkAccountOwner(
       .eq("id", ownerId);
   }
 
-  const { error: accountOwnerError } = await supabase
+  const { error: accountOwnerError } = await getDb()
     .from("account")
     .update({ owner_id: ownerId })
     .eq("account_id", accountId);
@@ -93,7 +90,7 @@ async function linkAccountOwner(
     console.error("Account owner update failed:", accountOwnerError.message);
   }
 
-  const { error: sessionError } = await supabase
+  const { error: sessionError } = await getDb()
     .from("owner_account_session")
     .upsert({ owner_id: ownerId, account_id: accountId }, { onConflict: "owner_id" });
 
@@ -107,7 +104,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
 
   if (taxes?.length) {
     for (const tax of taxes) {
-      await supabase.from("tax").upsert(
+      await getDb().from("tax").upsert(
         {
           tax_id: tax.tax_id,
           account_id: accountId,
@@ -122,7 +119,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
   }
   if (categories?.length) {
     for (const cat of categories) {
-      await supabase.from("productcategory").upsert(
+      await getDb().from("productcategory").upsert(
         {
           productcategory_id: cat.productcategory_id,
           account_id: accountId,
@@ -138,7 +135,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
   }
   if (products?.length) {
     for (const product of products) {
-      await supabase.from("product").upsert(
+      await getDb().from("product").upsert(
         {
           product_id: product.product_id,
           account_id: accountId,
@@ -167,7 +164,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
   }
   if (users?.length) {
     for (const user of users) {
-      await supabase.from("pos_user").upsert(
+      await getDb().from("pos_user").upsert(
         {
           user_id: user.user_id || user.userId,
           account_id: accountId,
@@ -190,7 +187,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
   }
   if (stores?.length) {
     for (const store of stores) {
-      await supabase.from("store").upsert(
+      await getDb().from("store").upsert(
         {
           store_id: store.storeId || store.store_id,
           account_id: accountId,
@@ -209,7 +206,7 @@ async function pushInitialData(body: any, accountId: string, currency: string) {
   }
   if (terminals?.length) {
     for (const terminal of terminals) {
-      await supabase.from("terminal").upsert(
+      await getDb().from("terminal").upsert(
         {
           terminal_id: terminal.terminalId || terminal.terminal_id,
           account_id: accountId,
@@ -251,7 +248,7 @@ export async function POST(req: NextRequest) {
       activeUserCount: Array.isArray(users) ? users.filter((user: any) => user?.isactive !== "N").length : 0,
     });
 
-    const { data: existing } = await supabase
+    const { data: existing } = await getDb()
       .from("account")
       .select("account_id, businessname")
       .eq("account_id", account_id)
@@ -259,7 +256,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       await pushInitialData(body, account_id, currency || "MUR");
-      await supabase
+      await getDb()
         .from("account")
         .update({
           type: accountType,
@@ -277,7 +274,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { error: accountError } = await supabase.from("account").insert({
+    const { error: accountError } = await getDb().from("account").insert({
       account_id,
       businessname: businessname || "Unnamed Business",
       currency: currency || "MUR",

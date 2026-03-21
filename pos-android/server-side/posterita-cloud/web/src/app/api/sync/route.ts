@@ -3,13 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 30;
 
-export const dynamic = "force-dynamic";
-
-// Service role client — bypasses RLS for sync operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getDb() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 interface SyncRequest {
   account_id: string;
@@ -48,14 +44,14 @@ async function insertOrUpdate(
   uuidValue: string
 ): Promise<{ error: any }> {
   // Try INSERT first
-  const insertResult = await supabase.from(table).insert(record);
+  const insertResult = await getDb().from(table).insert(record);
 
   if (insertResult.error) {
     const code = (insertResult.error as any).code;
     const msg = insertResult.error.message || "";
     // Postgres unique-violation or duplicate key → fall back to UPDATE
     if (code === "23505" || msg.includes("duplicate")) {
-      const updateResult = await supabase
+      const updateResult = await getDb()
         .from(table)
         .update(record)
         .eq("uuid", uuidValue);
@@ -84,7 +80,7 @@ async function tenantUpsert(
   accountId: string
 ): Promise<{ error: any }> {
   // Check if record exists at all
-  const { data: existing } = await (supabase
+  const { data: existing } = await (getDb()
     .from(table) as any)
     .select(`${pkColumn}, account_id`)
     .eq(pkColumn, pkValue)
@@ -96,7 +92,7 @@ async function tenantUpsert(
       return { error: { message: `PK ${pkValue} belongs to another account, skipped` } };
     }
     // Same account → update
-    const { error } = await supabase
+    const { error } = await getDb()
       .from(table)
       .update(record)
       .eq(pkColumn, pkValue)
@@ -105,12 +101,12 @@ async function tenantUpsert(
   }
 
   // Doesn't exist → insert
-  const { error } = await supabase.from(table).insert(record);
+  const { error } = await getDb().from(table).insert(record);
   if (error) {
     const code = (error as any).code;
     // Handle race condition: another sync inserted between our check and insert
     if (code === "23505") {
-      const { error: updateErr } = await supabase
+      const { error: updateErr } = await getDb()
         .from(table)
         .update(record)
         .eq(pkColumn, pkValue)
@@ -137,14 +133,14 @@ export async function POST(req: NextRequest) {
     // Verify account exists — auto-create if missing (defensive: handles
     // cases where registration was marked done on the client but never
     // reached the cloud, e.g. network timeout after server committed).
-    const { data: account } = await supabase
+    const { data: account } = await getDb()
       .from("account")
       .select("account_id")
       .eq("account_id", body.account_id)
       .single();
 
     if (!account) {
-      const { error: createErr } = await supabase.from("account").insert({
+      const { error: createErr } = await getDb().from("account").insert({
         account_id: body.account_id,
         businessname: body.account_id, // placeholder — will be updated on next register call
         currency: "MUR",
@@ -181,7 +177,7 @@ export async function POST(req: NextRequest) {
     if (body.error_logs?.length) {
       for (const log of body.error_logs) {
         try {
-          const { error } = await supabase.from("error_logs").insert({
+          const { error } = await getDb().from("error_logs").insert({
             account_id: body.account_id,
             timestamp: log.timestamp ?? 0,
             severity: log.severity ?? "ERROR",
@@ -292,7 +288,7 @@ export async function POST(req: NextRequest) {
           // Only set till_id if the till actually exists in the cloud
           // Otherwise omit to avoid FK violation
           if (tillId > 0) {
-            const { data: tillExists } = await supabase
+            const { data: tillExists } = await getDb()
               .from("till")
               .select("till_id")
               .eq("till_id", tillId)
@@ -335,7 +331,7 @@ export async function POST(req: NextRequest) {
             productdescription: line.productdescription || line.productDescription,
           };
 
-          const { error } = await supabase
+          const { error } = await getDb()
             .from("orderline")
             .upsert(dbLine, { onConflict: "orderline_id" });
 
@@ -369,7 +365,7 @@ export async function POST(req: NextRequest) {
             extra_info: payment.extraInfo || payment.extra_info,
           };
 
-          const { error } = await supabase
+          const { error } = await getDb()
             .from("payment")
             .upsert(dbPayment, { onConflict: "payment_id" });
 
@@ -391,7 +387,7 @@ export async function POST(req: NextRequest) {
           ...adj,
           account_id: body.account_id,
         }));
-        await supabase.from("till_adjustment").upsert(mapped);
+        await getDb().from("till_adjustment").upsert(mapped);
       } catch (e: any) {
         errors.push(`Till adjustments: ${e.message}`);
       }
@@ -626,7 +622,7 @@ export async function POST(req: NextRequest) {
     const lastSync = body.last_sync_at || "1970-01-01T00:00:00Z";
 
     // Get updated products
-    const { data: products } = await supabase
+    const { data: products } = await getDb()
       .from("product")
       .select("*")
       .eq("account_id", body.account_id)
@@ -634,42 +630,42 @@ export async function POST(req: NextRequest) {
       .gte("updated_at", lastSync);
 
     // Get updated categories
-    const { data: categories } = await supabase
+    const { data: categories } = await getDb()
       .from("productcategory")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get updated taxes
-    const { data: taxes } = await supabase
+    const { data: taxes } = await getDb()
       .from("tax")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get updated modifiers
-    const { data: modifiers } = await supabase
+    const { data: modifiers } = await getDb()
       .from("modifier")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get updated customers
-    const { data: customers } = await supabase
+    const { data: customers } = await getDb()
       .from("customer")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get preferences
-    const { data: preferences } = await supabase
+    const { data: preferences } = await getDb()
       .from("preference")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get updated users
-    const { data: users } = await supabase
+    const { data: users } = await getDb()
       .from("pos_user")
       .select(
         "user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive"
@@ -678,27 +674,27 @@ export async function POST(req: NextRequest) {
       .gte("updated_at", lastSync);
 
     // Get discount codes
-    const { data: discountCodes } = await supabase
+    const { data: discountCodes } = await getDb()
       .from("discountcode")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
     // Get restaurant tables for this store
-    const { data: tables } = await supabase
+    const { data: tables } = await getDb()
       .from("restaurant_table")
       .select("*")
       .eq("store_id", body.store_id)
       .gte("updated_at", lastSync);
 
     // Get stores and terminals (for config changes)
-    const { data: stores } = await supabase
+    const { data: stores } = await getDb()
       .from("store")
       .select("*")
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
-    const { data: terminals } = await supabase
+    const { data: terminals } = await getDb()
       .from("terminal")
       .select("*")
       .eq("account_id", body.account_id)

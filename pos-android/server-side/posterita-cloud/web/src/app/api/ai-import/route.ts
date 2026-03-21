@@ -19,17 +19,13 @@ export const maxDuration = 300;
  *  4. "images"    — Analyze uploaded product images
  */
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY!;
-const CLOUDINARY_CLOUD_NAME =
-  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy";
 const MODEL = "claude-sonnet-4-6";
 
-export const dynamic = "force-dynamic";
-
-// Service-role Supabase client for DB writes
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+function getSupabaseAdmin() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
+function getClaudeApiKey() { return process.env.CLAUDE_API_KEY!; }
+function getCloudinaryCloudName() { return process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy"; }
 
 // ════════════════════════════════════════════════════════
 // Types
@@ -135,7 +131,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
 
   // Create a user-context Supabase client
   const supabase = createServerClient(
-    SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -153,7 +149,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   if (!user) return null;
 
   // Check if super admin with active impersonation
-  const { data: superAdmin } = await supabaseAdmin
+  const { data: superAdmin } = await getSupabaseAdmin()
     .from("super_admin")
     .select("id")
     .eq("auth_uid", user.id)
@@ -161,7 +157,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
     .single();
 
   if (superAdmin) {
-    const { data: session } = await supabaseAdmin
+    const { data: session } = await getSupabaseAdmin()
       .from("super_admin_session")
       .select("account_id")
       .eq("super_admin_id", superAdmin.id)
@@ -176,7 +172,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   }
 
   // Owner-centric lookup: prefer the explicitly selected owner account.
-  const { data: owner } = await supabaseAdmin
+  const { data: owner } = await getSupabaseAdmin()
     .from("owner")
     .select("id")
     .eq("auth_uid", user.id)
@@ -184,7 +180,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
     .single();
 
   if (owner?.id) {
-    const { data: ownerSession } = await supabaseAdmin
+    const { data: ownerSession } = await getSupabaseAdmin()
       .from("owner_account_session")
       .select("account_id")
       .eq("owner_id", owner.id)
@@ -196,7 +192,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   }
 
   // Fallback for legacy users that still map 1:1 through pos_user.
-  const { data: posUser } = await supabaseAdmin
+  const { data: posUser } = await getSupabaseAdmin()
     .from("pos_user")
     .select("account_id")
     .eq("auth_uid", user.id)
@@ -209,7 +205,7 @@ async function setAccountStatus(
   accountId: string,
   status: "draft" | "in_progress" | "ready" | "failed"
 ) {
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from("account")
     .update({ status })
     .eq("account_id", accountId);
@@ -547,7 +543,7 @@ async function handleImages(
 
   // Get existing categories for better matching
   let existingCategories: string[] = [];
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("productcategory")
     .select("name")
     .eq("account_id", accountId)
@@ -614,7 +610,7 @@ async function callClaudeWithWebSearch(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": getClaudeApiKey(),
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "web-search-2025-03-05",
       },
@@ -668,7 +664,7 @@ async function callClaude(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": getClaudeApiKey(),
         "anthropic-version": "2023-06-01",
       },
       signal: controller.signal,
@@ -976,7 +972,7 @@ async function uploadToCloudinary(
     formData.append("public_id", publicId);
 
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${getCloudinaryCloudName()}/image/upload`,
       { method: "POST", body: formData }
     );
 
@@ -1008,27 +1004,27 @@ async function saveToSupabase(
   let storesCreated = 0;
 
   // Get existing categories + taxes for this account
-  const { data: existingCategories } = await supabaseAdmin
+  const { data: existingCategories } = await getSupabaseAdmin()
     .from("productcategory")
     .select("productcategory_id, name")
     .eq("account_id", accountId)
     .eq("isactive", "Y");
 
-  const { data: existingTaxes } = await supabaseAdmin
+  const { data: existingTaxes } = await getSupabaseAdmin()
     .from("tax")
     .select("tax_id, name, rate")
     .eq("account_id", accountId)
     .eq("isactive", "Y");
 
   // Get next IDs
-  const { data: maxCatId } = await supabaseAdmin
+  const { data: maxCatId } = await getSupabaseAdmin()
     .from("productcategory")
     .select("productcategory_id")
     .eq("account_id", accountId)
     .order("productcategory_id", { ascending: false })
     .limit(1);
 
-  const { data: maxProdId } = await supabaseAdmin
+  const { data: maxProdId } = await getSupabaseAdmin()
     .from("product")
     .select("product_id")
     .eq("account_id", accountId)
@@ -1047,7 +1043,7 @@ async function saveToSupabase(
     if (matchedTax) {
       taxId = matchedTax.tax_id;
     } else {
-      const { data: newTax } = await supabaseAdmin
+      const { data: newTax } = await getSupabaseAdmin()
         .from("tax")
         .insert({
           account_id: accountId,
@@ -1081,7 +1077,7 @@ async function saveToSupabase(
       categoryId = existing.productcategory_id;
     } else {
       categoryId = nextCategoryId++;
-      await supabaseAdmin.from("productcategory").upsert(
+      await getSupabaseAdmin().from("productcategory").upsert(
         {
           productcategory_id: categoryId,
           account_id: accountId,
@@ -1124,7 +1120,7 @@ async function saveToSupabase(
           ? (product.price * setup.tax_rate) / (100 + setup.tax_rate)
           : 0;
 
-      await supabaseAdmin.from("product").upsert(
+      await getSupabaseAdmin().from("product").upsert(
         {
           product_id: productId,
           account_id: accountId,
@@ -1149,7 +1145,7 @@ async function saveToSupabase(
 
   // Create store records
   if (setup.stores?.length) {
-    const { data: maxStoreId } = await supabaseAdmin
+    const { data: maxStoreId } = await getSupabaseAdmin()
       .from("store")
       .select("store_id")
       .eq("account_id", accountId)
@@ -1161,7 +1157,7 @@ async function saveToSupabase(
     for (const store of setup.stores) {
       if (!store.store_name) continue;
 
-      await supabaseAdmin.from("store").upsert(
+      await getSupabaseAdmin().from("store").upsert(
         {
           store_id: nextStoreId++,
           account_id: accountId,
