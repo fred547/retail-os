@@ -740,7 +740,7 @@ class SetupWizardActivity : AppCompatActivity() {
      * Returns the JSON response or null on failure.
      */
     private fun callSignupApi(currency: String): org.json.JSONObject? {
-        val url = java.net.URL("https://web-tamakgroup.vercel.app/api/auth/signup")
+        val url = java.net.URL("https://posterita-cloud.vercel.app/api/auth/signup")
         val conn = url.openConnection() as java.net.HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")
