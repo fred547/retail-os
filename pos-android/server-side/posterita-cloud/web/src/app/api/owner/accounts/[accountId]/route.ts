@@ -20,7 +20,7 @@ function getDb() {
 async function resolveOwnedAccount(
   accountId: string,
   identity: { phone?: string; email?: string }
-) {
+): Promise<{ error: string } | { owner: any; account: any }> {
   const { owner, error: ownerError } = await findOwnerByIdentity(supabase, identity);
   if (ownerError) {
     return { error: ownerError };
