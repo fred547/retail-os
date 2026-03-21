@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { account_id, user_id, user_role, store_id, terminal_id } = body;
 
-    if (!account_id || !user_id) {
+    if (!account_id || user_id == null) {
       return NextResponse.json({ error: "account_id and user_id required" }, { status: 400 });
     }
 

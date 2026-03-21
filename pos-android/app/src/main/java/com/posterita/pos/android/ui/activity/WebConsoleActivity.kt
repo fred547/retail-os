@@ -172,7 +172,7 @@ class WebConsoleActivity : AppCompatActivity() {
 
             val payload = JSONObject().apply {
                 put("account_id", accountId)
-                put("user_id", userId)
+                put("user_id", if (userId > 0) userId else 1)
                 if (storeId > 0) put("store_id", storeId)
                 if (terminalId > 0) put("terminal_id", terminalId)
             }
