@@ -1,23 +1,29 @@
 package com.posterita.pos.android
 
 import android.app.Application
+import com.posterita.pos.android.util.AppErrorLogger
+import com.posterita.pos.android.util.SessionManager
+import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.worker.CloudSyncWorker
-import com.posterita.pos.android.worker.CloseTillSyncWorker
-import com.posterita.pos.android.worker.DocumentNoSyncWorker
 import com.posterita.pos.android.worker.LoyaltySyncWorker
-import com.posterita.pos.android.worker.OrderSyncWorker
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class PosteritaApp : Application() {
+
+    @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var prefsManager: SharedPreferencesManager
+
     override fun onCreate() {
         super.onCreate()
         com.jakewharton.threetenabp.AndroidThreeTen.init(this)
 
-        // Schedule background sync workers (15-min periodic, requires network)
-        OrderSyncWorker.scheduleSync(this)
-        CloseTillSyncWorker.scheduleSync(this)
-        DocumentNoSyncWorker.scheduleSync(this)
+        // Initialize error logging + crash handler
+        AppErrorLogger.initialize(sessionManager, prefsManager)
+        AppErrorLogger.installCrashHandler(this)
+
+        // Schedule background sync workers
         LoyaltySyncWorker.scheduleSync(this)
 
         // Schedule cloud sync (Supabase) — every 5 minutes, requires network

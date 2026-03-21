@@ -11,12 +11,12 @@ import javax.inject.Singleton
 @Singleton
 class SessionManager @Inject constructor() {
 
-    var account: Account? = null
-    var store: Store? = null
-    var terminal: Terminal? = null
-    var user: User? = null
-    var till: Till? = null
-    var selectedCustomer: Customer? = null
+    @Volatile var account: Account? = null
+    @Volatile var store: Store? = null
+    @Volatile var terminal: Terminal? = null
+    @Volatile var user: User? = null
+    @Volatile var till: Till? = null
+    @Volatile var selectedCustomer: Customer? = null
 
     val defaultCustomer: Customer
         get() = Customer(
@@ -27,6 +27,7 @@ class SessionManager @Inject constructor() {
 
     val taxCache: MutableMap<Int, Tax> = mutableMapOf()
 
+    @Synchronized
     fun resetSession() {
         account = null
         store = null

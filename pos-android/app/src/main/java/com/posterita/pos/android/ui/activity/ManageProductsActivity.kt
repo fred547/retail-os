@@ -1,15 +1,19 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Product
 import com.posterita.pos.android.data.local.entity.ProductCategory
@@ -33,6 +37,14 @@ class ManageProductsActivity : AppCompatActivity() {
     private var products = mutableListOf<Product>()
     private var categories = listOf<ProductCategory>()
     private var taxes = listOf<Tax>()
+
+    private val detailLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            loadData() // Refresh list after edit
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,69 +82,73 @@ class ManageProductsActivity : AppCompatActivity() {
     }
 
     inner class ProductAdapter : RecyclerView.Adapter<ProductAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName: TextView = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails: TextView = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardItem)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
+            val iconInitial: TextView = itemView.findViewById(R.id.iconInitial)
+            val tvName: TextView = itemView.findViewById(R.id.tvItemName)
+            val tvSubtitle: TextView = itemView.findViewById(R.id.tvItemSubtitle)
+            val tvMeta: TextView = itemView.findViewById(R.id.tvItemMeta)
+            val tvBadge: TextView = itemView.findViewById(R.id.tvBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_manage_card, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val p = products[position]
-            holder.tvName.text = p.name ?: "Unknown"
-            val catName = categories.find { it.productcategory_id == p.productcategory_id }?.name ?: ""
-            holder.tvDetails.text = "Price: ${p.sellingprice ?: 0.0} | ${catName.ifEmpty { "No category" }}"
+            val name = p.name ?: "Product"
+            val initial = name.firstOrNull()?.uppercase() ?: "P"
+
+            holder.tvName.text = name
+            holder.iconInitial.text = initial
+
+            // Price + category subtitle
+            val catName = categories.find { it.productcategory_id == p.productcategory_id }?.name
+            val price = NumberUtils.formatPrice(p.sellingprice)
+            holder.tvSubtitle.text = "$price · ${catName ?: "No category"}"
+
+            // Barcode as meta
+            if (!p.upc.isNullOrBlank()) {
+                holder.tvMeta.text = "UPC: ${p.upc}"
+                holder.tvMeta.visibility = View.VISIBLE
+            } else if (!p.itemcode.isNullOrBlank()) {
+                holder.tvMeta.text = "SKU: ${p.itemcode}"
+                holder.tvMeta.visibility = View.VISIBLE
+            } else {
+                holder.tvMeta.visibility = View.GONE
+            }
+
+            // Color by product type
+            val color = when {
+                p.iskitchenitem == "Y" -> getColor(R.color.posterita_warning)
+                p.ismodifier == "Y" -> getColor(R.color.posterita_purple)
+                p.isfavourite == "Y" -> getColor(R.color.posterita_error)
+                else -> getColor(R.color.posterita_primary)
+            }
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(color)
+            holder.iconInitial.setTextColor(getColor(R.color.white))
+
+            // Stock badge
+            if (p.isstock == "Y") {
+                holder.tvBadge.text = "STOCK"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_secondary))
+                holder.tvBadge.visibility = View.VISIBLE
+            } else {
+                holder.tvBadge.visibility = View.GONE
+            }
+
             holder.card.setOnClickListener {
-                val fields = arrayListOf(
-                    "## GENERAL|",
-                    "Name|${p.name ?: ""}",
-                    "Item Code|${p.itemcode ?: ""}",
-                    "UPC / Barcode|${p.upc ?: ""}",
-                    "Barcode Type|${p.barcodetype ?: ""}",
-                    "Description|${p.description ?: ""}",
-                    "---|",
-                    "## PRICING|",
-                    "Selling Price|${NumberUtils.formatPrice(p.sellingprice)}",
-                    "Cost Price|${NumberUtils.formatPrice(p.costprice)}",
-                    "Wholesale Price|${if (p.iswholesaleprice == "Y") NumberUtils.formatPrice(p.wholesaleprice) else "N/A"}",
-                    "Tax Included|${if (p.istaxincluded == "Y") "Yes" else "No"}",
-                    "Tax Amount|${NumberUtils.formatPrice(p.taxamount)}",
-                    "---|",
-                    "## FLAGS|",
-                    "Stock Item|${if (p.isstock == "Y") "Yes" else "No"}",
-                    "Kitchen Item|${if (p.iskitchenitem == "Y") "Yes" else "No"}",
-                    "Favourite|${if (p.isfavourite == "Y") "Yes" else "No"}",
-                    "Modifier|${if (p.ismodifier == "Y") "Yes" else "No"}",
-                    "BOM|${if (p.isbom == "Y") "Yes" else "No"}",
-                    "Variable Item|${if (p.isvariableitem == "Y") "Yes" else "No"}",
-                    "Editable|${if (p.iseditable == "Y") "Yes" else "No"}",
-                    "Print Order Copy|${if (p.printordercopy == "Y") "Yes" else "No"}",
-                    "---|",
-                    "## STATUS|",
-                    "Active|${if (p.isactive == "Y") "Yes" else "No"}",
-                    "Needs Price Review|${if (p.needs_price_review == "Y") "Yes" else "No"}",
-                    "Category ID|${p.productcategory_id}",
-                    "Tax ID|${p.tax_id}",
-                    "Product ID|${p.product_id}"
-                )
-                val intent = Intent(this@ManageProductsActivity, DetailViewActivity::class.java)
-                intent.putExtra(DetailViewActivity.EXTRA_TITLE, p.name ?: "Product Details")
-                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
-                startActivity(intent)
+                val intent = Intent(this@ManageProductsActivity, ProductDetailActivity::class.java)
+                intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT_ID, p.product_id)
+                detailLauncher.launch(intent)
             }
         }
+
         override fun getItemCount() = products.size
     }
 }

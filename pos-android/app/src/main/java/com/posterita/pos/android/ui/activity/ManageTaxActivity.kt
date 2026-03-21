@@ -1,7 +1,9 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -10,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Tax
 import com.posterita.pos.android.databinding.ActivityManageListBinding
@@ -51,34 +54,50 @@ class ManageTaxActivity : AppCompatActivity() {
             }
             binding.progressLoading.visibility = View.GONE
             binding.tvEmpty.visibility = if (taxes.isEmpty()) View.VISIBLE else View.GONE
+            binding.layoutEmpty.visibility = if (taxes.isEmpty()) View.VISIBLE else View.GONE
             binding.recyclerView.adapter = TaxAdapter()
         }
     }
 
     inner class TaxAdapter : RecyclerView.Adapter<TaxAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName: TextView = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails: TextView = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardItem)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
+            val iconInitial: TextView = itemView.findViewById(R.id.iconInitial)
+            val tvName: TextView = itemView.findViewById(R.id.tvItemName)
+            val tvSubtitle: TextView = itemView.findViewById(R.id.tvItemSubtitle)
+            val tvBadge: TextView = itemView.findViewById(R.id.tvBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_manage_card, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val t = taxes[position]
-            holder.tvName.text = "${t.name} (${t.rate}%)"
-            holder.tvDetails.text = "Code: ${t.taxcode ?: "N/A"}"
+
+            holder.tvName.text = t.name ?: "Tax"
+            holder.tvSubtitle.text = "Rate: ${t.rate}% · Code: ${t.taxcode ?: "N/A"}"
+            holder.iconInitial.text = "%"
+
+            // Tax icon color
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(getColor(R.color.posterita_warning))
+            holder.iconInitial.setTextColor(getColor(R.color.white))
+
+            // Active badge
+            if (t.isactive == "Y") {
+                holder.tvBadge.text = "ACTIVE"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_secondary))
+                holder.tvBadge.visibility = View.VISIBLE
+            } else {
+                holder.tvBadge.text = "INACTIVE"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_muted))
+                holder.tvBadge.visibility = View.VISIBLE
+            }
+
             holder.card.setOnClickListener {
                 val fields = arrayListOf(
                     "## GENERAL|",
@@ -92,10 +111,13 @@ class ManageTaxActivity : AppCompatActivity() {
                 )
                 val intent = Intent(this@ManageTaxActivity, DetailViewActivity::class.java)
                 intent.putExtra(DetailViewActivity.EXTRA_TITLE, t.name ?: "Tax Details")
+                intent.putExtra(DetailViewActivity.EXTRA_SUBTITLE, "Rate: ${t.rate}%")
+                intent.putExtra(DetailViewActivity.EXTRA_COLOR, getColor(R.color.posterita_warning))
                 intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
                 startActivity(intent)
             }
         }
+
         override fun getItemCount() = taxes.size
     }
 }

@@ -210,6 +210,9 @@
             android:name=".ui.activity.ManageProductsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.ProductDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.ManageCategoriesActivity"
             android:exported="false" />
         <activity
@@ -244,6 +247,10 @@
             android:exported="false" />
         <activity
             android:name=".ui.activity.EditTerminalActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.EditStoreActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
         <activity

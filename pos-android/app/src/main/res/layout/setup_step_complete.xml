@@ -1,85 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <ImageView
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_marginTop="32dp"
-        android:src="@drawable/ic_check_circle"
-        android:contentDescription="Setup Complete" />
-
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:text="You're all set!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?android:attr/textColorPrimary" />
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:paddingHorizontal="24dp"
-        android:text="Your Posterita POS is ready to use. You can change these settings anytime from the Settings menu."
-        android:textSize="16sp"
-        android:textColor="?android:attr/textColorSecondary" />
+        <!-- Success icon -->
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="24dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_check_circle"
+            android:contentDescription="Setup Complete"
+            app:tint="@color/posterita_secondary" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginHorizontal="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
-
-        <LinearLayout
-            android:id="@+id/summaryContainer"
+        <TextView
+            android:id="@+id/tvCompleteTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="You're all set!"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/posterita_ink" />
 
-            <TextView
+        <TextView
+            android:id="@+id/tvCompleteSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Your account has been created. Here's what we set up for you."
+            android:textSize="14sp"
+            android:textColor="@color/posterita_muted" />
+
+        <!-- Email verification banner -->
+        <TextView
+            android:id="@+id/tvVerificationBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:background="@color/posterita_primary_light"
+            android:textColor="@color/posterita_primary"
+            android:textSize="13sp"
+            android:drawablePadding="8dp"
+            android:visibility="gone" />
+
+        <!-- Summary card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/posterita_line"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:id="@+id/layoutSummary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Configuration Summary"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textColor="?android:attr/textColorPrimary" />
+                android:orientation="vertical"
+                android:padding="16dp" />
+        </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/tvSummaryStore"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textSize="13sp"
-                android:textColor="?android:attr/textColorSecondary" />
+        <!-- Hint -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="You can manage products, stores, and users from the Settings menu anytime."
+            android:textSize="13sp"
+            android:textColor="@color/posterita_muted" />
 
-            <TextView
-                android:id="@+id/tvSummaryTerminal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="13sp"
-                android:textColor="?android:attr/textColorSecondary" />
-
-            <TextView
-                android:id="@+id/tvSummaryType"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="13sp"
-                android:textColor="?android:attr/textColorSecondary" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>

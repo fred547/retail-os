@@ -3,15 +3,15 @@ package com.posterita.pos.android.ui.activity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivityDatabaseSynchonizerBinding
-import com.posterita.pos.android.ui.viewmodel.SyncViewModel
+import com.posterita.pos.android.service.SyncStatusManager
 import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.util.SharedPreferencesManager
+import com.posterita.pos.android.worker.CloudSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,8 +22,6 @@ import javax.inject.Inject
 class DatabaseSynchonizerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDatabaseSynchonizerBinding
-
-    private val syncViewModel: SyncViewModel by viewModels()
 
     @Inject lateinit var connectivityMonitor: ConnectivityMonitor
     @Inject lateinit var prefsManager: SharedPreferencesManager
@@ -38,7 +36,7 @@ class DatabaseSynchonizerActivity : AppCompatActivity() {
         binding.buttonBack?.setOnClickListener { finish() }
 
         setupConnectivityObserver()
-        observeSyncResult()
+        observeSyncStatus()
         loadPendingCounts()
         showServerInfo()
 
@@ -88,43 +86,43 @@ class DatabaseSynchonizerActivity : AppCompatActivity() {
         }
     }
 
-    private fun observeSyncResult() {
-        syncViewModel.isLoading.observe(this) { isLoading ->
-            binding.progressBar?.visibility = if (isLoading) View.VISIBLE else View.GONE
-            if (isLoading) {
-                binding.syncText?.text = "Synchronizing..."
-                binding.buttonSyncNow?.isEnabled = false
-                binding.buttonSyncNow?.text = "Syncing..."
-            } else {
-                binding.buttonSyncNow?.isEnabled = connectivityMonitor.isConnected.value == true
-                binding.buttonSyncNow?.text = "Sync Now"
-            }
-        }
-
-        syncViewModel.syncResult.observe(this) { result ->
-            result.fold(
-                onSuccess = {
-                    binding.syncText?.text = "Sync complete"
-                    binding.textLastSync?.text = "Last sync: Just now"
-                    loadPendingCounts()
-                    Toast.makeText(this, "Sync complete", Toast.LENGTH_SHORT).show()
-                },
-                onFailure = { error ->
-                    val message = when {
-                        error.message?.contains("resolve host") == true -> "Server unreachable — check your internet connection"
-                        error.message?.contains("timeout") == true -> "Connection timed out — try again later"
-                        error.message?.contains("401") == true -> "Authentication failed — please log in again"
-                        else -> "Sync failed: ${error.message}"
+    private fun observeSyncStatus() {
+        lifecycleScope.launch {
+            SyncStatusManager.status.collect { status ->
+                when (status.state) {
+                    SyncStatusManager.SyncState.IDLE -> {
+                        binding.progressBar?.visibility = View.GONE
+                        binding.buttonSyncNow?.isEnabled = connectivityMonitor.isConnected.value == true
+                        binding.buttonSyncNow?.text = "Sync Now"
                     }
-                    binding.syncText?.text = message
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    SyncStatusManager.SyncState.COMPLETE -> {
+                        binding.progressBar?.visibility = View.GONE
+                        binding.syncText?.text = "Sync complete"
+                        binding.textLastSync?.text = "Last sync: Just now"
+                        binding.buttonSyncNow?.isEnabled = connectivityMonitor.isConnected.value == true
+                        binding.buttonSyncNow?.text = "Sync Now"
+                        loadPendingCounts()
+                    }
+                    SyncStatusManager.SyncState.ERROR -> {
+                        binding.progressBar?.visibility = View.GONE
+                        binding.syncText?.text = status.errorMessage ?: "Sync failed"
+                        binding.buttonSyncNow?.isEnabled = connectivityMonitor.isConnected.value == true
+                        binding.buttonSyncNow?.text = "Sync Now"
+                    }
+                    else -> {
+                        binding.progressBar?.visibility = View.VISIBLE
+                        binding.syncText?.text = status.message.ifEmpty { "Synchronizing..." }
+                        binding.buttonSyncNow?.isEnabled = false
+                        binding.buttonSyncNow?.text = "Syncing..."
+                    }
                 }
-            )
+            }
         }
     }
 
     private fun startSync() {
-        syncViewModel.pullData()
+        CloudSyncWorker.syncNow(this)
+        Toast.makeText(this, "Cloud sync started", Toast.LENGTH_SHORT).show()
     }
 
     private fun loadPendingCounts() {

@@ -68,6 +68,100 @@ Every screen follows this pattern:
 - `MaterialCardView`, 14dp radius, 0dp elevation, 1dp stroke `posterita_line`
 - Background: `posterita_paper`
 
+### List Item Cards (`item_manage_card.xml`)
+Standard card for list screens (settings sub-screens, manage screens):
+- 40dp rounded-square icon with colored background + white initial/icon
+- Title (lexend_medium) + subtitle (tiny, muted) + optional meta line (micro)
+- Optional badge (10sp, semibold) + right chevron `›`
+- Color-code icons by entity type/role/status
+
+### Detail Brochure (`DetailViewActivity`)
+**NEVER use flat label-value tables for detail screens.** Use brochure pattern:
+1. **Hero Header** — centered 72dp icon circle + large title + key stat subtitle + flag chips
+2. **Section Cards** — grouped fields in bordered cards, section header (11sp, muted, semibold, 0.08 letter-spacing)
+3. **Boolean Chips** — "Yes"/"No" rendered as colored pills (green/muted), not plain text
+4. **Right-aligned values** — labels 40% width (muted), values 60% width (ink, medium weight, right-aligned)
+5. **Pass extras:** `EXTRA_TITLE`, `EXTRA_SUBTITLE` (key stat), `EXTRA_COLOR` (icon bg color), `EXTRA_FIELDS`
+6. **Field format:** `"label|value"` strings. `"## SECTION|"` for section headers. `"---|"` ignored.
+7. Chip candidates: Active, Admin, Stock Item, Kitchen Item, Favourite, Modifier, etc.
+8. **Section cards are tappable** — tap a section to open its Section Editor (see below)
+
+### Section Editor Pattern (Progressive Disclosure)
+**NEVER build monolithic edit forms.** Use section-based editing:
+
+#### Core Principle
+Every entity is displayed as a **Detail Brochure** (read view). Each section card is tappable.
+Tapping opens a **Section Editor** — a focused bottom sheet with only that section's 2-4 fields.
+The same section editors are reused as wizard steps when creating a new entity.
+
+#### Architecture
+```
+SectionEditorSheet (reusable BottomSheetDialogFragment)
+├── Input: section key, field definitions, current values
+├── UI: title + 2-4 focused inputs + Save button
+├── Output: edited values via callback/result
+│
+Detail Brochure (view + edit existing)
+├── Hero header (read-only)
+├── Section cards (tappable → opens SectionEditorSheet)
+├── On save → updates DB, refreshes brochure
+│
+Create Wizard (new entity)
+├── Chains SectionEditorSheets as sequential steps
+├── Progress indicator (dots or steps)
+├── Each step = same component used in edit mode
+├── Final step creates entity with all collected values
+```
+
+#### Section Editor Rules
+1. **Max 4 fields per section** — if a section has more, split it
+2. **Bottom sheet, not full screen** — keeps context visible behind
+3. **One Save per section** — partial saves are OK, no "save all" at the end
+4. **Smart inputs** — dropdowns for categories/tax, toggles for booleans, number pad for prices
+5. **Validation inline** — show errors on the field, not in a toast
+6. **Cancel = swipe down** — no explicit cancel button needed
+
+#### Standard Section Definitions
+
+**Products:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| General | Name, Item Code, UPC, Description | Text |
+| Pricing | Selling Price, Cost Price, Wholesale Price | Number (currency) |
+| Category & Tax | Category, Tax Rate | Dropdown pickers |
+| Flags | Stock, Kitchen, Favourite, Modifier, BOM | Toggle switches |
+
+**Stores:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| General | Name, Currency | Text, Dropdown |
+| Address | Address, City, State, ZIP, Country | Text |
+
+**Terminals:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| General | Name, Prefix, Float Amount | Text, Number |
+| Store | Store assignment | Dropdown picker |
+
+**Users:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| Identity | First Name, Last Name, Username | Text |
+| Contact | Email, Phone | Text (email/phone) |
+| Role | Role, Discount Limit | Dropdown, Number |
+| Security | PIN | PIN input (masked) |
+
+**Taxes:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| General | Name, Rate, Tax Code | Text, Number |
+
+**Categories:**
+| Section | Fields | Input Types |
+|---------|--------|-------------|
+| General | Name, Display Name, Position | Text, Number |
+| Tax | Tax assignment | Dropdown picker |
+
 ## Mobile Screens (from prototype)
 
 ### Auth: welcome → phone → otp → profile → pin → enroll → login
@@ -88,3 +182,6 @@ Every screen follows this pattern:
 4. **Always use TextAppearance.Posterita.*** styles for text
 5. **Always use Widget.Posterita.Button.*** styles for buttons
 6. **Prototype is UI reference, not feature spec** — preserve existing Android functionality
+7. **NEVER build monolithic edit forms** — use Section Editor pattern (progressive disclosure)
+8. **NEVER show data as a flat label-value table** — use Detail Brochure pattern
+9. **NEVER use CRUD scaffolds** — every screen should feel designed, not generated

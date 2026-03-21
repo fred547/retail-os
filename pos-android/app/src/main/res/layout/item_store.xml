@@ -1,105 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardStore"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
     app:cardCornerRadius="14dp"
-    app:cardElevation="2dp"
-    app:cardBackgroundColor="@color/posterita_paper">
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line"
+    app:cardBackgroundColor="@color/posterita_paper"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical">
 
-        <!-- Row 1: Name + active badge -->
+        <!-- Store icon -->
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="14dp">
+
+            <View
+                android:id="@+id/iconBg"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_rounded_square" />
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_drawer"
+                app:tint="@color/white"
+                android:contentDescription="Store" />
+        </FrameLayout>
+
+        <!-- Text content -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvStoreName"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
-                style="@style/TextAppearance.Posterita.Subheading"
-                android:textColor="@color/posterita_ink" />
+                style="@style/TextAppearance.Posterita.Body"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_ink"
+                tools:text="Main Street Store" />
+
+            <TextView
+                android:id="@+id/tvStoreAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                style="@style/TextAppearance.Posterita.Tiny"
+                android:textColor="@color/posterita_muted"
+                tools:text="123 Main Street" />
+
+            <TextView
+                android:id="@+id/tvStoreCityCountry"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                style="@style/TextAppearance.Posterita.Micro"
+                android:textColor="@color/posterita_muted"
+                tools:text="Port Louis, Mauritius" />
+        </LinearLayout>
+
+        <!-- Info column -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_marginStart="8dp">
 
             <TextView
                 android:id="@+id/tvActiveBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/posterita_primary"
-                android:background="@color/posterita_primary_light"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:visibility="gone" />
-        </LinearLayout>
-
-        <!-- Row 2: Address line -->
-        <TextView
-            android:id="@+id/tvStoreAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            style="@style/TextAppearance.Posterita.Body.Muted" />
-
-        <!-- Row 3: City, Country -->
-        <TextView
-            android:id="@+id/tvStoreCityCountry"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            style="@style/TextAppearance.Posterita.Caption"
-            android:textColor="@color/posterita_muted" />
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="8dp"
-            android:background="@color/posterita_line" />
-
-        <!-- Row 4: Currency + Terminal count -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tvStoreCurrency"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                style="@style/TextAppearance.Posterita.Caption"
-                android:textColor="@color/posterita_muted" />
+                android:text="ACTIVE"
+                android:textSize="10sp"
+                android:fontFamily="@font/lexend_semibold"
+                android:textColor="@color/posterita_secondary"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/tvTerminalCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/TextAppearance.Posterita.Caption"
-                android:textColor="@color/posterita_muted" />
+                android:layout_marginTop="2dp"
+                style="@style/TextAppearance.Posterita.Micro"
+                android:textColor="@color/posterita_muted"
+                tools:text="2 terminals" />
+
+            <TextView
+                android:id="@+id/tvStoreCurrency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.Posterita.Micro"
+                android:textColor="@color/posterita_muted"
+                tools:text="MUR" />
         </LinearLayout>
+
+        <!-- Chevron -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="›"
+            android:textSize="20sp"
+            android:textColor="@color/posterita_muted" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

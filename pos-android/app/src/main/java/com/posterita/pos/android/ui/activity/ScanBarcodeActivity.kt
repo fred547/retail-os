@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
@@ -70,6 +71,12 @@ class ScanBarcodeActivity : AppCompatActivity() {
                         scannedCount++
                         updateStatusText()
 
+                        // Check for terminal enrollment QR
+                        if (barcode.startsWith("TERMINAL:")) {
+                            handleTerminalEnrollment(barcode)
+                            return
+                        }
+
                         // Look up product and add to cart
                         lookupAndAddProduct(barcode)
 
@@ -83,6 +90,73 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun handleTerminalEnrollment(qrContent: String) {
+        // Format: TERMINAL:{terminalId}:{accountId}
+        val parts = qrContent.split(":")
+        if (parts.size != 3) {
+            showProductToast("Invalid QR", "Not a valid terminal enrollment code")
+            return
+        }
+        val terminalId = parts[1].toIntOrNull()
+        val accountId = parts[2]
+        if (terminalId == null || accountId.isBlank()) {
+            showProductToast("Invalid QR", "Could not read terminal data")
+            return
+        }
+
+        // Pause scanning while dialog is shown
+        binding.cameraPreview.pause()
+
+        lifecycleScope.launch {
+            val terminal = withContext(Dispatchers.IO) {
+                db.terminalDao().getTerminalById(terminalId)
+            }
+            val terminalName = terminal?.name ?: "Terminal $terminalId"
+            val storeName = withContext(Dispatchers.IO) {
+                terminal?.let { db.storeDao().getStoreById(it.store_id)?.name }
+            } ?: "Unknown Store"
+
+            AlertDialog.Builder(this@ScanBarcodeActivity)
+                .setTitle("Enroll Device")
+                .setMessage("Link this device to:\n\nTerminal: $terminalName\nStore: $storeName\n\nThis will set this device as the active terminal.")
+                .setPositiveButton("Enroll") { _, _ ->
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            // Mark all terminals as not selected
+                            val allTerminals = db.terminalDao().getAllTerminals()
+                            for (t in allTerminals) {
+                                if (t.isselected == "Y") {
+                                    db.terminalDao().updateTerminal(t.copy(isselected = "N"))
+                                }
+                            }
+                            // Select the scanned terminal
+                            if (terminal != null) {
+                                db.terminalDao().updateTerminal(terminal.copy(isselected = "Y"))
+                                sessionManager.terminal = terminal
+                            }
+                            // Update prefs
+                            prefsManager.setTerminalIdSync(terminalId)
+                            prefsManager.setTerminalNameSync(terminalName)
+                            if (terminal != null) {
+                                prefsManager.setStoreIdSync(terminal.store_id)
+                                prefsManager.setStoreNameSync(storeName)
+                                val store = db.storeDao().getStoreById(terminal.store_id)
+                                if (store != null) sessionManager.store = store
+                            }
+                        }
+                        Toast.makeText(this@ScanBarcodeActivity,
+                            "Device enrolled to $terminalName", Toast.LENGTH_LONG).show()
+                        finish()
+                    }
+                }
+                .setNegativeButton("Cancel") { _, _ ->
+                    binding.cameraPreview.resume()
+                }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private fun lookupAndAddProduct(barcode: String) {

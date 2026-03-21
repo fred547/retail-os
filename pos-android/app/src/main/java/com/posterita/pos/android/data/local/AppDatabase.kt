@@ -22,9 +22,10 @@ import com.posterita.pos.android.util.Constants
         HoldOrder::class, Payment::class, RestaurantTable::class,
         LoyaltyCache::class, PendingLoyaltyAward::class,
         PendingConsentUpdate::class,
-        AuditEvent::class
+        AuditEvent::class,
+        ErrorLog::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -55,6 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun pendingConsentUpdateDao(): PendingConsentUpdateDao
     abstract fun paymentDao(): PaymentDao
     abstract fun auditEventDao(): AuditEventDao
+    abstract fun errorLogDao(): ErrorLogDao
 
     companion object {
         @Volatile
@@ -75,7 +77,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_13_14, MIGRATION_14_15,
                         MIGRATION_15_16, MIGRATION_16_17,
                         MIGRATION_17_18, MIGRATION_18_19,
-                        MIGRATION_19_20
+                        MIGRATION_19_20,
+                        MIGRATION_20_21
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -220,6 +223,31 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_19_20 = object : Migration(19, 20) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE printer ADD COLUMN role TEXT NOT NULL DEFAULT 'receipt'")
+            }
+        }
+
+        private val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS error_log (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        timestamp INTEGER NOT NULL DEFAULT 0,
+                        severity TEXT NOT NULL DEFAULT 'ERROR',
+                        tag TEXT NOT NULL,
+                        message TEXT NOT NULL,
+                        stacktrace TEXT,
+                        screen TEXT,
+                        userId INTEGER NOT NULL DEFAULT 0,
+                        userName TEXT,
+                        storeId INTEGER NOT NULL DEFAULT 0,
+                        terminalId INTEGER NOT NULL DEFAULT 0,
+                        accountId TEXT,
+                        deviceId TEXT,
+                        appVersion TEXT,
+                        osVersion TEXT,
+                        isSynced TEXT NOT NULL DEFAULT 'N'
+                    )
+                """.trimIndent())
             }
         }
     }

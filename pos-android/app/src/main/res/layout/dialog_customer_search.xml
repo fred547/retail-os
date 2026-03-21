@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@color/posterita_paper">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer"
+            style="@style/TextAppearance.Posterita.Heading"
+            android:textColor="@color/posterita_primary"
+            android:layout_marginBottom="14dp" />
+
+        <!-- Search input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:hint="Search by name or phone"
+            app:startIconDrawable="@drawable/ic_search"
+            app:startIconTint="@color/posterita_muted"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Results list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="240dp"
+            android:nestedScrollingEnabled="true"
+            android:visibility="gone" />
+
+        <!-- No results / Create option -->
+        <LinearLayout
+            android:id="@+id/layout_no_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_no_results"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No customers found"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_create_customer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Create Customer"
+                style="@style/Widget.Posterita.Button.Outlined" />
+        </LinearLayout>
+
+        <!-- Empty state hint -->
+        <TextView
+            android:id="@+id/tv_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Type a name or phone number to search"
+            android:textSize="13sp"
+            android:textColor="@color/posterita_muted"
+            android:gravity="center"
+            android:paddingTop="20dp"
+            android:paddingBottom="12dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="14dp"
+            android:background="@color/posterita_line" />
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_skip"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:text="Skip"
+                android:visibility="gone"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:text="Cancel"
+                style="@style/Widget.Posterita.Button.Outlined" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

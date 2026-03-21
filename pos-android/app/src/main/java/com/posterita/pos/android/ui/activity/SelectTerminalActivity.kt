@@ -10,7 +10,6 @@ import com.posterita.pos.android.databinding.ActivitySelectTerminalBinding
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.data.local.entity.Terminal
 import com.posterita.pos.android.ui.viewmodel.TerminalSelectionViewModel
-import com.posterita.pos.android.ui.viewmodel.SyncViewModel
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -21,7 +20,6 @@ class SelectTerminalActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySelectTerminalBinding
 
     private val terminalSelectionViewModel: TerminalSelectionViewModel by viewModels()
-    private val syncViewModel: SyncViewModel by viewModels()
 
     @Inject
     lateinit var prefsManager: SharedPreferencesManager
@@ -108,17 +106,6 @@ class SelectTerminalActivity : AppCompatActivity() {
             }
         }
 
-        syncViewModel.syncResult.observe(this) { result ->
-            result.fold(
-                onSuccess = {
-                    Toast.makeText(this, "Sync complete", Toast.LENGTH_SHORT).show()
-                    terminalSelectionViewModel.loadStores()
-                },
-                onFailure = { error ->
-                    Toast.makeText(this, "Sync failed: ${error.message}", Toast.LENGTH_LONG).show()
-                }
-            )
-        }
     }
 
     override fun onCreateOptionsMenu(menu: android.view.Menu?): Boolean {

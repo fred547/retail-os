@@ -3,7 +3,6 @@ package com.posterita.pos.android.ui.viewmodel
 import androidx.lifecycle.*
 import com.posterita.pos.android.data.local.dao.*
 import com.posterita.pos.android.data.local.entity.*
-import com.posterita.pos.android.data.remote.ApiService
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +14,6 @@ class TerminalSelectionViewModel @Inject constructor(
     private val storeDao: StoreDao,
     private val terminalDao: TerminalDao,
     private val sequenceDao: SequenceDao,
-    private val apiService: ApiService,
     private val prefsManager: SharedPreferencesManager,
     private val sessionManager: SessionManager
 ) : ViewModel() {
@@ -52,13 +50,10 @@ class TerminalSelectionViewModel @Inject constructor(
             sessionManager.store = store
             sessionManager.terminal = terminal
 
-            // Mark terminal as selected
+            // Mark terminal as selected locally
             if (terminal.isselected != "Y") {
                 val updated = terminal.copy(isselected = "Y")
                 terminalDao.updateTerminal(updated)
-                try {
-                    apiService.saveTerminalOnline(prefsManager.accountId, terminal.terminalId, "Y")
-                } catch (_: Exception) {}
             }
 
             // Initialize sequences

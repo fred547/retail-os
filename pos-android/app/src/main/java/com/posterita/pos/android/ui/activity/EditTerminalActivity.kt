@@ -186,7 +186,7 @@ class EditTerminalActivity : AppCompatActivity() {
         }
 
         btnExport.setOnClickListener {
-            Toast.makeText(this, "PDF export coming soon", Toast.LENGTH_SHORT).show()
+            exportQrPdf()
         }
     }
 
@@ -413,7 +413,7 @@ class EditTerminalActivity : AppCompatActivity() {
             .show()
     }
 
-    // ——— QR Code Generation ———
+    // ——— QR Code Generation & Export ———
 
     private fun generateQrBitmap(content: String, size: Int): Bitmap? {
         return try {
@@ -428,6 +428,83 @@ class EditTerminalActivity : AppCompatActivity() {
             bitmap
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private fun exportQrPdf() {
+        val t = terminal ?: return
+        val accountId = prefsManager.accountId
+        val qrContent = "TERMINAL:${t.terminalId}:$accountId"
+        val qrBitmap = generateQrBitmap(qrContent, 512) ?: return
+
+        try {
+            val document = android.graphics.pdf.PdfDocument()
+            val pageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4
+            val page = document.startPage(pageInfo)
+            val canvas = page.canvas
+
+            val paint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                color = Color.BLACK
+            }
+
+            // Title
+            paint.textSize = 28f
+            paint.typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            val title = "Terminal Enrollment"
+            canvas.drawText(title, (595 - paint.measureText(title)) / 2, 80f, paint)
+
+            // Terminal name
+            paint.textSize = 22f
+            paint.typeface = android.graphics.Typeface.DEFAULT
+            val name = t.name ?: "Terminal ${t.terminalId}"
+            canvas.drawText(name, (595 - paint.measureText(name)) / 2, 120f, paint)
+
+            // Store name
+            val storeName = allStores.find { it.storeId == t.store_id }?.name
+            if (storeName != null) {
+                paint.textSize = 16f
+                paint.color = Color.GRAY
+                canvas.drawText(storeName, (595 - paint.measureText(storeName)) / 2, 150f, paint)
+                paint.color = Color.BLACK
+            }
+
+            // QR code centered
+            val qrSize = 300
+            val qrLeft = (595 - qrSize) / 2f
+            val qrTop = 200f
+            val dst = android.graphics.RectF(qrLeft, qrTop, qrLeft + qrSize, qrTop + qrSize)
+            canvas.drawBitmap(qrBitmap, null, dst, paint)
+
+            // Instructions
+            paint.textSize = 14f
+            paint.color = Color.GRAY
+            val instruction = "Scan this QR code to enroll a device to this terminal"
+            canvas.drawText(instruction, (595 - paint.measureText(instruction)) / 2, qrTop + qrSize + 40, paint)
+
+            // Terminal ID
+            paint.textSize = 12f
+            val idLine = "Terminal ID: ${t.terminalId}  |  Prefix: ${t.prefix ?: "N/A"}"
+            canvas.drawText(idLine, (595 - paint.measureText(idLine)) / 2, qrTop + qrSize + 70, paint)
+
+            document.finishPage(page)
+
+            // Save to cache and share
+            val file = java.io.File(cacheDir, "terminal_${t.terminalId}_qr.pdf")
+            document.writeTo(java.io.FileOutputStream(file))
+            document.close()
+
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                this, "$packageName.fileprovider", file
+            )
+            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "application/pdf"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(android.content.Intent.createChooser(shareIntent, "Export QR Code"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to export PDF: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

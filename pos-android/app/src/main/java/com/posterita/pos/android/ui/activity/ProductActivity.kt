@@ -44,8 +44,8 @@ import com.posterita.pos.android.ui.adapter.ProductCategoryAdapter
 import com.posterita.pos.android.ui.viewmodel.CustomerViewModel
 import com.posterita.pos.android.ui.viewmodel.ProductViewModel
 import com.posterita.pos.android.ui.viewmodel.ShoppingCartViewModel
-import com.posterita.pos.android.ui.viewmodel.SyncViewModel
 import com.posterita.pos.android.ui.viewmodel.TillViewModel
+import com.posterita.pos.android.worker.CloudSyncWorker
 import com.posterita.pos.android.domain.model.CartItem
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SessionManager
@@ -66,7 +66,6 @@ class ProductActivity : BaseDrawerActivity() {
     private val productViewModel: ProductViewModel by viewModels()
     private val shoppingCartViewModel: ShoppingCartViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
-    private val syncViewModel: SyncViewModel by viewModels()
     private val tillViewModel: TillViewModel by viewModels()
 
     @Inject
@@ -970,10 +969,16 @@ class ProductActivity : BaseDrawerActivity() {
         }
 
         // Stock quantity
-        txtStockQty?.text = "—" // TODO: Stock qty from inventory module
+        txtStockQty?.text = "—" // Phase 2: inventory module
 
         // Sold today — count from today's orders
-        txtSoldToday?.text = "—" // TODO: Query from orders table
+        lifecycleScope.launch {
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+            val qtySold = withContext(Dispatchers.IO) {
+                db.orderLineDao().getQtySoldSince(product.product_id, today)
+            }
+            txtSoldToday?.text = if (qtySold > 0) NumberUtils.formatQuantity(qtySold) else "0"
+        }
 
         // Add to Cart
         btnAddToCart?.setOnClickListener {
@@ -1033,7 +1038,7 @@ class ProductActivity : BaseDrawerActivity() {
         navView.findViewById<View>(R.id.nav_get_update)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             Toast.makeText(this, "Syncing data...", Toast.LENGTH_SHORT).show()
-            syncViewModel.pullData()
+            CloudSyncWorker.syncNow(this)
         }
         navView.findViewById<View>(R.id.nav_logout)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -1911,16 +1916,6 @@ class ProductActivity : BaseDrawerActivity() {
             }
         }
 
-        syncViewModel.syncResult.observe(this) { result ->
-            result.fold(
-                onSuccess = {
-                    Toast.makeText(this, "Data sync complete", Toast.LENGTH_SHORT).show()
-                },
-                onFailure = { error ->
-                    Toast.makeText(this, "Sync failed: ${error.message}", Toast.LENGTH_LONG).show()
-                }
-            )
-        }
     }
 
 }

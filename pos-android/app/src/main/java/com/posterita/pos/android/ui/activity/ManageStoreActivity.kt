@@ -1,19 +1,18 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
@@ -36,6 +35,14 @@ class ManageStoreActivity : AppCompatActivity() {
 
     private var stores = mutableListOf<Store>()
     private var terminalCounts = mutableMapOf<Int, Int>()
+
+    private val editStoreLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            loadData()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,118 +80,18 @@ class ManageStoreActivity : AppCompatActivity() {
         }
     }
 
-    private fun showStoreDialog(store: Store?) {
-        val isEdit = store != null
-
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_store, null)
-        val dialog = android.app.Dialog(this)
-        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        val tvTitle = dialogView.findViewById<TextView>(R.id.tvDialogTitle)
-        val etName = dialogView.findViewById<TextInputEditText>(R.id.etStoreName)
-        val etAddress = dialogView.findViewById<TextInputEditText>(R.id.etStoreAddress)
-        val etCity = dialogView.findViewById<TextInputEditText>(R.id.etStoreCity)
-        val etState = dialogView.findViewById<TextInputEditText>(R.id.etStoreState)
-        val etZip = dialogView.findViewById<TextInputEditText>(R.id.etStoreZip)
-        val etCountry = dialogView.findViewById<TextInputEditText>(R.id.etStoreCountry)
-        val btnDelete = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteStore)
-        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelStore)
-        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveStore)
-
-        tvTitle.text = if (isEdit) "Edit Store" else "Add Store"
-
-        // Pre-fill fields if editing
-        if (isEdit) {
-            etName.setText(store!!.name ?: "")
-            etAddress.setText(store.address ?: "")
-            etCity.setText(store.city ?: "")
-            etState.setText(store.state ?: "")
-            etZip.setText(store.zip ?: "")
-            etCountry.setText(store.country ?: "")
-            btnDelete.visibility = View.VISIBLE
+    private fun launchEditStore(store: Store?) {
+        val intent = Intent(this, EditStoreActivity::class.java)
+        if (store != null) {
+            intent.putExtra(EditStoreActivity.EXTRA_STORE_ID, store.storeId)
         }
-
-        btnDelete.setOnClickListener {
-            dialog.dismiss()
-            deleteStore(store!!)
-        }
-
-        btnCancel.setOnClickListener { dialog.dismiss() }
-
-        btnSave.setOnClickListener {
-            val name = etName.text?.toString()?.trim() ?: ""
-            if (name.isEmpty()) {
-                Toast.makeText(this, "Store name is required", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val address = etAddress.text?.toString()?.trim()
-            val city = etCity.text?.toString()?.trim()
-            val state = etState.text?.toString()?.trim()
-            val zip = etZip.text?.toString()?.trim()
-            val country = etCountry.text?.toString()?.trim()
-
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    if (isEdit) {
-                        val updated = store!!.copy(
-                            name = name, address = address, city = city,
-                            state = state, zip = zip, country = country
-                        )
-                        db.storeDao().updateStore(updated)
-                        if (store.storeId == prefsManager.storeId) {
-                            prefsManager.setStoreNameSync(name)
-                        }
-                        Unit
-                    } else {
-                        val maxId = db.storeDao().getMaxStoreId() ?: 0
-                        val newStore = Store(
-                            storeId = maxId + 1,
-                            name = name, address = address, city = city,
-                            state = state, zip = zip, country = country,
-                            isactive = "Y"
-                        )
-                        db.storeDao().insertStore(newStore)
-                    }
-                }
-                dialog.dismiss()
-                loadData()
-                Toast.makeText(this@ManageStoreActivity,
-                    if (isEdit) "Store updated" else "Store added", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        dialog.show()
-    }
-
-    private fun deleteStore(store: Store) {
-        if (store.storeId == prefsManager.storeId) {
-            Toast.makeText(this, "Cannot delete the active store", Toast.LENGTH_SHORT).show()
-            return
-        }
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Delete Store")
-            .setMessage("Are you sure you want to delete '${store.name}'?")
-            .setPositiveButton("Delete") { _, _ ->
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { db.storeDao().deleteStore(store) }
-                    loadData()
-                    Toast.makeText(this@ManageStoreActivity, "Store deleted", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        editStoreLauncher.launch(intent)
     }
 
     inner class StoreAdapter : RecyclerView.Adapter<StoreAdapter.VH>() {
         inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val card: MaterialCardView = itemView.findViewById(R.id.cardStore)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
             val tvName: TextView = itemView.findViewById(R.id.tvStoreName)
             val tvAddress: TextView = itemView.findViewById(R.id.tvStoreAddress)
             val tvCityCountry: TextView = itemView.findViewById(R.id.tvStoreCityCountry)
@@ -205,6 +112,11 @@ class ManageStoreActivity : AppCompatActivity() {
 
             holder.tvName.text = s.name ?: "Unnamed Store"
 
+            // Icon color
+            val iconColor = if (isActive) getColor(R.color.posterita_primary) else getColor(R.color.posterita_muted)
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(iconColor)
+
             // Active badge
             holder.tvActiveBadge.visibility = if (isActive) View.VISIBLE else View.GONE
 
@@ -214,7 +126,7 @@ class ManageStoreActivity : AppCompatActivity() {
                 holder.card.strokeWidth = 2
             } else {
                 holder.card.strokeColor = getColor(R.color.posterita_line)
-                holder.card.strokeWidth = 0
+                holder.card.strokeWidth = (resources.displayMetrics.density).toInt()
             }
 
             // Address
@@ -236,27 +148,9 @@ class ManageStoreActivity : AppCompatActivity() {
             val count = terminalCounts[s.storeId] ?: 0
             holder.tvTerminalCount.text = "$count terminal${if (count != 1) "s" else ""}"
 
-            // Read-only detail view
+            // Tap to edit store
             holder.card.setOnClickListener {
-                val fields = arrayListOf(
-                    "## GENERAL|",
-                    "Name|${s.name ?: ""}",
-                    "Address|${s.address ?: ""}",
-                    "City|${s.city ?: ""}",
-                    "State|${s.state ?: ""}",
-                    "Zip|${s.zip ?: ""}",
-                    "Country|${s.country ?: ""}",
-                    "Currency|${s.currency ?: ""}",
-                    "---|",
-                    "## STATUS|",
-                    "Active|${if (s.isactive == "Y") "Yes" else "No"}",
-                    "Terminals|${terminalCounts[s.storeId] ?: 0}",
-                    "Store ID|${s.storeId}"
-                )
-                val intent = Intent(this@ManageStoreActivity, DetailViewActivity::class.java)
-                intent.putExtra(DetailViewActivity.EXTRA_TITLE, s.name ?: "Store Details")
-                intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
-                startActivity(intent)
+                launchEditStore(s)
             }
         }
 

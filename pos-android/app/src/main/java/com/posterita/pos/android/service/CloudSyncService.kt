@@ -122,6 +122,9 @@ class CloudSyncService @Inject constructor(
             val allProducts = db.productDao().getAllProductsSync()
             val allTaxes = db.taxDao().getAllTaxesSync()
 
+            // Collect unsynced error logs
+            val unsyncedErrorLogs = db.errorLogDao().getUnsyncedLogs()
+
             // Build sync request
             val request = CloudSyncRequest(
                 accountId = accountId,
@@ -139,6 +142,7 @@ class CloudSyncService @Inject constructor(
                 categories = if (allCategories.isNotEmpty()) allCategories.map { it.toSyncCategory() } else null,
                 products = if (allProducts.isNotEmpty()) allProducts.map { it.toSyncProduct() } else null,
                 taxes = if (allTaxes.isNotEmpty()) allTaxes.map { it.toSyncTax() } else null,
+                errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
             )
 
             Log.d(TAG, "Syncing: ${unsyncedOrders.size} orders, ${orderLines.size} lines, ${unsyncedTills.size} tills")
@@ -166,6 +170,13 @@ class CloudSyncService @Inject constructor(
 
             // Process the response with detailed progress
             processSyncResponse(syncResponse, unsyncedOrders, unsyncedTills)
+
+            // Mark error logs as synced and clean up old ones
+            if (unsyncedErrorLogs.isNotEmpty()) {
+                db.errorLogDao().markSynced(unsyncedErrorLogs.map { it.id })
+                val cutoff = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
+                db.errorLogDao().deleteOldSyncedLogs(cutoff)
+            }
 
             // Update last sync timestamp
             val syncTime = System.currentTimeMillis()
@@ -954,4 +965,24 @@ class CloudSyncService @Inject constructor(
             "pulled=$productsPulled products, $categoriesPulled categories, $taxesPulled taxes, $customersPulled customers" +
             if (errors.isNotEmpty()) " | ${errors.size} errors" else ""
     }
+
+    // ---- Error Log Mapper ----
+
+    private fun ErrorLog.toSyncErrorLog(): SyncErrorLog = SyncErrorLog(
+        id = id,
+        timestamp = timestamp,
+        severity = severity,
+        tag = tag,
+        message = message,
+        stacktrace = stacktrace,
+        screen = screen,
+        userId = userId,
+        userName = userName,
+        storeId = storeId,
+        terminalId = terminalId,
+        accountId = accountId,
+        deviceId = deviceId,
+        appVersion = appVersion,
+        osVersion = osVersion
+    )
 }

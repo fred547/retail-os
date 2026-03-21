@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/posterita_bg">
@@ -48,31 +49,103 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="16dp"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="@color/posterita_line"
-            app:cardBackgroundColor="@color/posterita_paper">
+            android:orientation="vertical">
 
+            <!-- Hero card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/posterita_paper">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="28dp"
+                    android:paddingBottom="24dp"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp">
+
+                    <!-- Hero icon -->
+                    <FrameLayout
+                        android:layout_width="72dp"
+                        android:layout_height="72dp">
+
+                        <View
+                            android:id="@+id/heroIconBg"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_rounded_square" />
+
+                        <TextView
+                            android:id="@+id/heroInitial"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textSize="28sp"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/lexend_semibold"
+                            tools:text="P" />
+                    </FrameLayout>
+
+                    <!-- Hero title -->
+                    <TextView
+                        android:id="@+id/heroTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        style="@style/TextAppearance.Posterita.Title"
+                        android:textColor="@color/posterita_ink"
+                        tools:text="Coca-Cola 330ml" />
+
+                    <!-- Hero subtitle (key stat) -->
+                    <TextView
+                        android:id="@+id/heroSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        style="@style/TextAppearance.Posterita.Body.Muted"
+                        tools:text="Rs 45.00 · Beverages" />
+
+                    <!-- Hero chips row -->
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/heroChips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone"
+                        app:flexWrap="wrap"
+                        app:justifyContent="center"
+                        app:alignItems="center"
+                        tools:visibility="visible" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section cards container -->
             <LinearLayout
                 android:id="@+id/layout_fields"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="24dp" />
 
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

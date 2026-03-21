@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivitySplashBinding
 import com.posterita.pos.android.service.AiImportService
@@ -14,7 +16,7 @@ import com.posterita.pos.android.util.SessionTimeoutManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -28,6 +30,8 @@ class SplashActivity : AppCompatActivity() {
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var db: AppDatabase
 
+    private val splashHandler = Handler(Looper.getMainLooper())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
@@ -37,56 +41,76 @@ class SplashActivity : AppCompatActivity() {
         AiImportService.startPendingIfNeeded(this, prefsManager)
         SessionTimeoutManager.initialize(LockScreenActivity::class.java)
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            val setupCompleted = prefsManager.getString("setup_completed", "")
-            val hasAccount = prefsManager.accountId.isNotEmpty()
+        splashHandler.postDelayed({ navigateAfterSplash() }, 2000)
+    }
 
-            val intent = when {
-                // First-time user: go to onboarding wizard
-                setupCompleted.isEmpty() && !hasAccount ->
-                    Intent(this, SetupWizardActivity::class.java)
+    override fun onDestroy() {
+        splashHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
 
-                // Has account: load user into session, show lock screen
-                hasAccount -> {
-                    // Load the last user into session (remember who they are)
-                    runBlocking {
-                        withContext(Dispatchers.IO) {
-                            try {
-                                val user = db.userDao().getAllUsers().firstOrNull()
-                                if (user != null) sessionManager.user = user
-                            } catch (_: Exception) {}
-                        }
-                    }
+    private fun navigateAfterSplash() {
+        val setupCompleted = prefsManager.getString("setup_completed", "")
+        val hasAccount = prefsManager.accountId.isNotEmpty()
 
-                    val user = sessionManager.user
-                    // If PIN is a password (>4 chars), reset to default 0000
-                    if (user != null && (user.pin?.length ?: 0) > 4) {
-                        runBlocking {
-                            withContext(Dispatchers.IO) {
-                                try {
-                                    db.userDao().updateUserPin(user.user_id, "0000")
-                                    sessionManager.user = user.copy(pin = "0000")
-                                } catch (_: Exception) {}
-                            }
-                        }
-                    }
-                    val hasPin = !sessionManager.user?.pin.isNullOrEmpty()
-
-                    if (hasPin) {
-                        // Has PIN → lock screen (remembers last user, just asks for PIN)
-                        SessionTimeoutManager.lock()
-                        Intent(this, LockScreenActivity::class.java)
-                    } else {
-                        // No PIN set → go straight to Home
-                        Intent(this, HomeActivity::class.java)
-                    }
-                }
-
-                // Fallback: onboarding
-                else -> Intent(this, SetupWizardActivity::class.java)
+        when {
+            // First-time user: go to onboarding wizard
+            setupCompleted.isEmpty() && !hasAccount -> {
+                startActivity(Intent(this, SetupWizardActivity::class.java))
+                finish()
             }
-            startActivity(intent)
-            finish()
-        }, 2000)
+
+            // Demo account: skip lock screen, go straight to Home
+            prefsManager.accountId == "demo_account" -> {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val user = db.userDao().getAllUsers().firstOrNull()
+                            if (user != null) {
+                                sessionManager.user = user
+                            }
+                        } catch (e: Exception) {
+                            Log.w("SplashActivity", "Failed to load demo user", e)
+                        }
+                        Unit
+                    }
+                    startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+                    finish()
+                }
+            }
+
+            // Real account: load user, check PIN
+            hasAccount -> {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val user = db.userDao().getAllUsers().firstOrNull()
+                            if (user != null) {
+                                sessionManager.user = user
+                            }
+                        } catch (e: Exception) {
+                            Log.w("SplashActivity", "Failed to load user", e)
+                        }
+                        Unit
+                    }
+
+                    val pin = sessionManager.user?.pin
+                    val intent = if (!pin.isNullOrEmpty()) {
+                        SessionTimeoutManager.lock()
+                        Intent(this@SplashActivity, LockScreenActivity::class.java)
+                    } else {
+                        Intent(this@SplashActivity, HomeActivity::class.java)
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+            }
+
+            // Fallback
+            else -> {
+                startActivity(Intent(this, SetupWizardActivity::class.java))
+                finish()
+            }
+        }
     }
 }

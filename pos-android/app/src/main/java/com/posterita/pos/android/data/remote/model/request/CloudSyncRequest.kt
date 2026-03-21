@@ -24,6 +24,8 @@ data class CloudSyncRequest(
     @SerializedName("categories") val categories: List<SyncCategory>? = null,
     @SerializedName("products") val products: List<SyncProduct>? = null,
     @SerializedName("taxes") val taxes: List<SyncTax>? = null,
+    // Push: error logs for remote debugging
+    @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
 )
 
 data class SyncOrder(
@@ -200,4 +202,22 @@ data class SyncTax(
     @SerializedName("rate") val rate: Double = 0.0,
     @SerializedName("taxcode") val taxCode: String? = null,
     @SerializedName("isactive") val isActive: String? = "Y",
+)
+
+data class SyncErrorLog(
+    @SerializedName("id") val id: Long,
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("severity") val severity: String,
+    @SerializedName("tag") val tag: String,
+    @SerializedName("message") val message: String,
+    @SerializedName("stacktrace") val stacktrace: String? = null,
+    @SerializedName("screen") val screen: String? = null,
+    @SerializedName("user_id") val userId: Int = 0,
+    @SerializedName("user_name") val userName: String? = null,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("terminal_id") val terminalId: Int = 0,
+    @SerializedName("account_id") val accountId: String? = null,
+    @SerializedName("device_id") val deviceId: String? = null,
+    @SerializedName("app_version") val appVersion: String? = null,
+    @SerializedName("os_version") val osVersion: String? = null,
 )

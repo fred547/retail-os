@@ -1,7 +1,9 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -10,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.User
 import com.posterita.pos.android.databinding.ActivityManageListBinding
@@ -51,34 +54,65 @@ class ManageUsersActivity : AppCompatActivity() {
             }
             binding.progressLoading.visibility = View.GONE
             binding.tvEmpty.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
+            binding.layoutEmpty.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
             binding.recyclerView.adapter = UserAdapter()
         }
     }
 
     inner class UserAdapter : RecyclerView.Adapter<UserAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName: TextView = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails: TextView = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardItem)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
+            val iconInitial: TextView = itemView.findViewById(R.id.iconInitial)
+            val tvName: TextView = itemView.findViewById(R.id.tvItemName)
+            val tvSubtitle: TextView = itemView.findViewById(R.id.tvItemSubtitle)
+            val tvMeta: TextView = itemView.findViewById(R.id.tvItemMeta)
+            val tvBadge: TextView = itemView.findViewById(R.id.tvBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_manage_card, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val u = users[position]
-            holder.tvName.text = "${u.firstname ?: ""} ${u.lastname ?: ""} (${u.username ?: ""})"
-            holder.tvDetails.text = u.displayRole
+            val name = "${u.firstname ?: ""} ${u.lastname ?: ""}".trim().ifEmpty { u.username ?: "User" }
+            val initial = name.firstOrNull()?.uppercase() ?: "U"
+
+            holder.tvName.text = name
+            holder.tvSubtitle.text = u.displayRole
+            holder.iconInitial.text = initial
+
+            // Username as meta
+            if (!u.username.isNullOrBlank()) {
+                holder.tvMeta.text = "@${u.username}"
+                holder.tvMeta.visibility = View.VISIBLE
+            } else {
+                holder.tvMeta.visibility = View.GONE
+            }
+
+            // Color by role
+            val color = when {
+                u.isOwner -> getColor(R.color.posterita_primary)
+                u.isAdminOrOwner -> getColor(R.color.posterita_purple)
+                u.isSupervisor -> getColor(R.color.posterita_warning)
+                else -> getColor(R.color.posterita_secondary)
+            }
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(color)
+            holder.iconInitial.setTextColor(getColor(R.color.white))
+
+            // Active badge
+            if (u.isactive == "Y") {
+                holder.tvBadge.text = "ACTIVE"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_secondary))
+                holder.tvBadge.visibility = View.VISIBLE
+            } else {
+                holder.tvBadge.visibility = View.GONE
+            }
+
             holder.card.setOnClickListener {
                 val fields = arrayListOf(
                     "## IDENTITY|",
@@ -108,11 +142,14 @@ class ManageUsersActivity : AppCompatActivity() {
                     "User ID|${u.user_id}"
                 )
                 val intent = Intent(this@ManageUsersActivity, DetailViewActivity::class.java)
-                intent.putExtra(DetailViewActivity.EXTRA_TITLE, "${u.firstname ?: ""} ${u.lastname ?: ""}".trim().ifEmpty { "User Details" })
+                intent.putExtra(DetailViewActivity.EXTRA_TITLE, name.ifEmpty { "User Details" })
+                intent.putExtra(DetailViewActivity.EXTRA_SUBTITLE, u.displayRole)
+                intent.putExtra(DetailViewActivity.EXTRA_COLOR, color)
                 intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
                 startActivity(intent)
             }
         }
+
         override fun getItemCount() = users.size
     }
 }

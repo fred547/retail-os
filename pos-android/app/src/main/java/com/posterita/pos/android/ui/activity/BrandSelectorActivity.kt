@@ -3,11 +3,13 @@ package com.posterita.pos.android.ui.activity
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
@@ -19,7 +21,7 @@ import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -97,6 +99,8 @@ class BrandSelectorActivity : AppCompatActivity() {
         // Switch to the selected brand's database
         val currentId = prefsManager.accountId
         if (currentId != brand.id) {
+            // Clear session state from previous brand
+            sessionManager.resetSession()
             // Switch account
             prefsManager.setAccountIdSync(brand.id)
             prefsManager.setStoreNameSync(brand.storeName)
@@ -106,24 +110,30 @@ class BrandSelectorActivity : AppCompatActivity() {
         // Save as last selected brand
         prefsManager.setStringSync("last_brand_id", brand.id)
 
-        // Load user from new DB
-        runBlocking {
+        // Load user from new DB, then navigate
+        lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 try {
                     val db = AppDatabase.getInstance(this@BrandSelectorActivity, brand.id)
                     val user = db.userDao().getAllUsers().firstOrNull()
-                    if (user != null) sessionManager.user = user
-                } catch (_: Exception) {}
+                    if (user != null) {
+                        sessionManager.user = user
+                    }
+                } catch (e: Exception) {
+                    Log.w("BrandSelector", "Failed to load user for brand ${brand.id}", e)
+                }
+                Unit
             }
-        }
 
-        // Go to Home
-        val intent = Intent(this, HomeActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
+            // Go to Home
+            val intent = Intent(this@BrandSelectorActivity, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 
+    @Suppress("MissingSuperCall")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // Must select a brand — can't go back

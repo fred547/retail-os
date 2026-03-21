@@ -40,4 +40,13 @@ interface OrderDao {
 
     @Query("SELECT * FROM orders WHERE tillId = :tillId AND docStatus = 'CO'")
     suspend fun getOrdersByTillId(tillId: Int): List<Order>
+
+    @Query("SELECT * FROM orders WHERE customerId = :customerId ORDER BY dateordered DESC")
+    suspend fun getOrdersByCustomerId(customerId: Int): List<Order>
+
+    @Query("SELECT COUNT(*) FROM orders WHERE customerId = :customerId")
+    suspend fun getOrderCountForCustomer(customerId: Int): Int
+
+    @Query("SELECT COALESCE(SUM(grandTotal), 0.0) FROM orders WHERE customerId = :customerId AND docStatus = 'CO'")
+    suspend fun getTotalSpentByCustomer(customerId: Int): Double
 }

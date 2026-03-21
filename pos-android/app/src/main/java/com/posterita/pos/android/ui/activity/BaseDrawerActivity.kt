@@ -55,6 +55,12 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
     protected lateinit var drawerLayout: DrawerLayout
     private var navView: View? = null
+    private val syncDismissHandler = Handler(Looper.getMainLooper())
+
+    override fun onDestroy() {
+        syncDismissHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
 
     @Inject
     lateinit var prefsManager: SharedPreferencesManager
@@ -197,6 +203,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
      * and after injecting dependencies.
      * Wires up all nav drawer click handlers.
      */
+    @android.annotation.SuppressLint("WrongViewCast")
     protected fun setupDrawerNavigation() {
         val nav = navView ?: return
 
@@ -406,6 +413,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
     /**
      * Observe SyncStatusManager and update the nav drawer sync UI in real time.
      */
+    @android.annotation.SuppressLint("WrongViewCast")
     private fun setupSyncStatusObserver(nav: View) {
         val syncStatus = (nav.findViewById<View>(R.id.nav_sync_status) as? TextView) ?: return
         val syncSpinner = nav.findViewById<View>(R.id.nav_sync_spinner) as? ProgressBar
@@ -477,7 +485,8 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         }
 
                         // Auto-dismiss the summary after 10 seconds
-                        Handler(Looper.getMainLooper()).postDelayed({
+                        syncDismissHandler.removeCallbacksAndMessages(null)
+                        syncDismissHandler.postDelayed({
                             if (SyncStatusManager.status.value.state == SyncStatusManager.SyncState.COMPLETE) {
                                 SyncStatusManager.idle(status.lastSyncTime)
                             }

@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
@@ -116,7 +117,7 @@ class TerminalInfoActivity : AppCompatActivity() {
                             text = "${printer.name ?: "—"} · ${printer.printerType ?: ""}"
                             setTextColor(getColor(R.color.posterita_ink))
                             textSize = 14f
-                            typeface = resources.getFont(R.font.lexend_medium)
+                            typeface = ResourcesCompat.getFont(this@TerminalInfoActivity, R.font.lexend_medium)
                         }
                         row.addView(nameText)
 

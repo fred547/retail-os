@@ -391,6 +391,7 @@ class ReceiptActivity : BaseDrawerActivity() {
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 
+    @Suppress("MissingSuperCall")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (fromCheckout) {

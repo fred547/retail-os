@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp"
+    android:paddingTop="16dp">
+
+    <!-- Icon -->
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginBottom="16dp">
+
+        <View
+            android:id="@+id/icon_bg"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_rounded_square"
+            android:backgroundTint="@color/posterita_primary" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_lock"
+            app:tint="@color/white"
+            android:contentDescription="PIN" />
+    </FrameLayout>
+
+    <!-- Dynamic status text (changes between Enter / Confirm) -->
+    <TextView
+        android:id="@+id/text_pin_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter a 4-digit PIN"
+        android:gravity="center"
+        style="@style/TextAppearance.Posterita.Subheading"
+        android:textColor="@color/posterita_ink" />
+
+    <TextView
+        android:id="@+id/text_pin_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="24dp"
+        android:text="You'll use this to quickly unlock the POS"
+        android:gravity="center"
+        style="@style/TextAppearance.Posterita.Tiny"
+        android:textColor="@color/posterita_muted" />
+
+    <!-- PIN dots -->
+    <LinearLayout
+        android:id="@+id/layout_pin_dots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <View android:id="@+id/dot1" android:layout_width="14dp" android:layout_height="14dp" android:layout_marginEnd="14dp" android:background="@drawable/bg_internet_dot" />
+        <View android:id="@+id/dot2" android:layout_width="14dp" android:layout_height="14dp" android:layout_marginEnd="14dp" android:background="@drawable/bg_internet_dot" />
+        <View android:id="@+id/dot3" android:layout_width="14dp" android:layout_height="14dp" android:layout_marginEnd="14dp" android:background="@drawable/bg_internet_dot" />
+        <View android:id="@+id/dot4" android:layout_width="14dp" android:layout_height="14dp" android:background="@drawable/bg_internet_dot" />
+    </LinearLayout>
+
+    <!-- Error text -->
+    <TextView
+        android:id="@+id/text_pin_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/posterita_error"
+        style="@style/TextAppearance.Posterita.Micro"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Numpad -->
+    <GridLayout
+        android:id="@+id/grid_numpad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:rowCount="4">
+
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_1" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="1" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_2" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="2" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_3" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="3" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_4" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="4" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_5" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="5" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_6" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="6" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_7" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="7" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_8" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="8" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_9" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="9" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_clear" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="C" android:textSize="20sp" android:textColor="@color/posterita_error" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_0" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="0" android:textSize="20sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_backspace" style="@style/Widget.Posterita.Button.Outlined" android:layout_width="72dp" android:layout_height="54dp" android:layout_margin="4dp" android:text="⌫" android:textSize="20sp" />
+    </GridLayout>
+
+</LinearLayout>

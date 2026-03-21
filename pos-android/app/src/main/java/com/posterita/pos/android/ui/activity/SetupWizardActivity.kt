@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
 import android.widget.ArrayAdapter
-import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -22,10 +21,12 @@ import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.*
 import com.posterita.pos.android.databinding.ActivitySetupWizardBinding
 import com.posterita.pos.android.service.AiImportService
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.DemoDataSeeder
 import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.util.WebsiteSetupService
+import com.posterita.pos.android.worker.CloudSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,12 +35,14 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
- * SetupWizardActivity — 7-step onboarding flow.
+ * SetupWizardActivity — online-first onboarding flow.
  *
  * Flow:
- *   Welcome → Phone → OTP Verify → Name → Brand → Country → Category →
- *   AI Building (infers business type, discovers stores, seeds demo, queues import)
- *   → finishWizard → Home
+ *   Welcome → Create Account (email + password + phone) → Name → Brand →
+ *   Country → Category → PIN → Setting Up (server signup + sync) →
+ *   Review Products → Home
+ *
+ * Requires internet. No standalone/offline fallback.
  */
 @AndroidEntryPoint
 class SetupWizardActivity : AppCompatActivity() {
@@ -53,7 +56,6 @@ class SetupWizardActivity : AppCompatActivity() {
     @Inject lateinit var websiteSetupService: WebsiteSetupService
 
     private var currentStep = 0
-    private var websiteSetupResult: WebsiteSetupService.StoreSetupResult? = null
 
     // ── Collected values ──────────────────────────────────────
     private var collectedEmail = ""
@@ -64,6 +66,10 @@ class SetupWizardActivity : AppCompatActivity() {
     private var collectedCountry = ""
     private var collectedCategory = ""
     private var collectedPin = ""
+
+    // ── Server response ───────────────────────────────────────
+    private var serverAccountId: String? = null
+    private var serverDemoAccountId: String? = null
 
     data class StepInfo(
         val title: String,
@@ -79,12 +85,11 @@ class SetupWizardActivity : AppCompatActivity() {
         StepInfo("Country", "Where do you operate?", R.layout.setup_step_country),
         StepInfo("Category", "What do you sell?", R.layout.setup_step_category),
         StepInfo("Set PIN", "Quick unlock for your POS", R.layout.setup_step_pin),
-        StepInfo("Setting Up", "AI is building your store", R.layout.setup_step_ai_building)
+        StepInfo("Setting Up", "Creating your account on the server", R.layout.setup_step_ai_building),
+        StepInfo("Your Products", "Review what we set up for you", R.layout.setup_step_complete)
     )
 
-    private var aiBuildingComplete = false
     private var isOnline = false
-    private var discoveredStoreCount = 1
 
     private data class CountryInfo(
         val name: String,
@@ -138,6 +143,7 @@ class SetupWizardActivity : AppCompatActivity() {
 
         val isWelcome = step == 0
         val isAutoStep = info.layoutRes == R.layout.setup_step_ai_building
+        val isReviewStep = info.layoutRes == R.layout.setup_step_complete
         val chromeVisibility = if (isWelcome) View.GONE else View.VISIBLE
 
         binding.appBarLayout.visibility = chromeVisibility
@@ -157,18 +163,20 @@ class SetupWizardActivity : AppCompatActivity() {
             binding.tvStepDescription.text = info.description
         }
 
-        binding.btnNext.text = if (isWelcome) "Get Started" else "Next"
-
         if (isWelcome) {
             binding.btnNext.visibility = View.GONE
             binding.btnBack.visibility = View.GONE
+        } else if (isAutoStep) {
+            binding.btnNext.visibility = View.GONE
+            binding.btnBack.visibility = View.GONE
+        } else if (isReviewStep) {
+            binding.btnNext.visibility = View.VISIBLE
+            binding.btnNext.text = "Start Selling"
+            binding.btnBack.visibility = View.GONE
         } else {
-            binding.btnNext.visibility = if (isAutoStep) View.GONE else View.VISIBLE
-            binding.btnBack.visibility = when {
-                isAutoStep -> View.GONE
-                step == 1 -> View.INVISIBLE
-                else -> View.VISIBLE
-            }
+            binding.btnNext.visibility = View.VISIBLE
+            binding.btnNext.text = "Next"
+            binding.btnBack.visibility = if (step == 1) View.INVISIBLE else View.VISIBLE
         }
 
         binding.contentFrame.removeAllViews()
@@ -183,7 +191,8 @@ class SetupWizardActivity : AppCompatActivity() {
             R.layout.setup_step_country -> setupCountryStep(contentView)
             R.layout.setup_step_category -> setupCategoryStep(contentView)
             R.layout.setup_step_pin -> setupPinStep(contentView)
-            R.layout.setup_step_ai_building -> setupAiBuildingStep(contentView)
+            R.layout.setup_step_ai_building -> setupServerCreationStep(contentView)
+            R.layout.setup_step_complete -> setupReviewStep(contentView)
         }
     }
 
@@ -212,6 +221,11 @@ class SetupWizardActivity : AppCompatActivity() {
     private fun setupWelcomeStep(view: View) {
         // Sign Up → new owner onboarding
         view.findViewById<MaterialButton>(R.id.btnSignUp)?.setOnClickListener {
+            if (!isOnline) {
+                toast("Internet connection required to create an account")
+                checkInternetStatus()
+                return@setOnClickListener
+            }
             goNext()
         }
 
@@ -222,8 +236,6 @@ class SetupWizardActivity : AppCompatActivity() {
 
         // Enroll Device → scan QR to set up for a store
         view.findViewById<MaterialButton>(R.id.btnEnrollDevice)?.setOnClickListener {
-            // Phase 1: will open camera to scan enrollment QR
-            // For now, show placeholder
             Toast.makeText(this, "Device enrollment requires a QR code from the store owner. Coming in Phase 1.", Toast.LENGTH_LONG).show()
         }
 
@@ -251,13 +263,71 @@ class SetupWizardActivity : AppCompatActivity() {
 
     // ─── Sign Up (email + password) ─────────────────────────
 
+    private var selectedDialCode = "+230" // default Mauritius
+
     private fun setupSignupStep(view: View) {
         val etEmail = view.findViewById<TextInputEditText>(R.id.etEmail)
         val etPassword = view.findViewById<TextInputEditText>(R.id.etPassword)
         val etPhone = view.findViewById<TextInputEditText>(R.id.etPhone)
+        val tvCountryCode = view.findViewById<android.widget.TextView>(R.id.tvCountryCode)
+        val btnCountryCode = view.findViewById<View>(R.id.btnCountryCode)
+
         if (collectedEmail.isNotEmpty()) etEmail.setText(collectedEmail)
         if (collectedPhone.isNotEmpty()) etPhone.setText(collectedPhone)
+
+        // Detect device locale and default country code
+        val deviceCountryCode = try {
+            val tm = getSystemService(android.content.Context.TELEPHONY_SERVICE) as? android.telephony.TelephonyManager
+            val simCountry = tm?.simCountryIso?.uppercase()
+                ?: tm?.networkCountryIso?.uppercase()
+                ?: java.util.Locale.getDefault().country
+            countryIsoToDialCode(simCountry)
+        } catch (_: Exception) {
+            "+230" // fallback to Mauritius
+        }
+        selectedDialCode = deviceCountryCode
+        tvCountryCode?.text = selectedDialCode
+
+        // Also pre-select the country for the Country step
+        val matchedCountry = countries.find { it.dialCode == selectedDialCode }
+        if (matchedCountry != null) selectedCountry = matchedCountry
+
+        // Country code picker
+        btnCountryCode?.setOnClickListener {
+            val items = countries.map { "${it.name} (${it.dialCode})" }.toTypedArray()
+            val currentIndex = countries.indexOfFirst { it.dialCode == selectedDialCode }.coerceAtLeast(0)
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Select country")
+                .setSingleChoiceItems(items, currentIndex) { dialog, which ->
+                    val selected = countries[which]
+                    selectedDialCode = selected.dialCode
+                    tvCountryCode?.text = selectedDialCode
+                    selectedCountry = selected
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
         etEmail.requestFocus()
+    }
+
+    private fun countryIsoToDialCode(iso: String): String {
+        return when (iso.uppercase()) {
+            "MU" -> "+230"
+            "RE" -> "+262"
+            "ZA" -> "+27"
+            "KE" -> "+254"
+            "TZ" -> "+255"
+            "NG" -> "+234"
+            "IN" -> "+91"
+            "AE" -> "+971"
+            "GB" -> "+44"
+            "FR" -> "+33"
+            "US" -> "+1"
+            "CA" -> "+1"
+            "AU" -> "+61"
+            else -> "+230" // default Mauritius
+        }
     }
 
     private fun validateSignupStep(): Boolean {
@@ -277,9 +347,20 @@ class SetupWizardActivity : AppCompatActivity() {
         if (password.length < 6) { toast("Password must be at least 6 characters"); return false }
         if (password != confirmPassword) { toast("Passwords don't match"); return false }
 
+        if (!isOnline) {
+            toast("Internet connection required")
+            checkInternetStatus()
+            return false
+        }
+
         collectedEmail = email
         collectedPassword = password
-        collectedPhone = phone
+        // Prepend dial code if user didn't include it
+        collectedPhone = if (phone.isNotEmpty() && !phone.startsWith("+")) {
+            "$selectedDialCode$phone"
+        } else {
+            phone
+        }
         return true
     }
 
@@ -452,34 +533,80 @@ class SetupWizardActivity : AppCompatActivity() {
         view.findViewById<android.widget.TextView>(R.id.text_pin_error)?.visibility = View.GONE
     }
 
-    private fun handlePinComplete(view: View) {
-        if (!pinConfirmMode) {
-            // First entry — ask to confirm
-            firstPin = pinBuffer
-            pinBuffer = ""
-            pinConfirmMode = true
-            updatePinDots(view)
+    private fun flashDots(view: View, color: Int) {
+        val dots = listOf(
+            view.findViewById<View>(R.id.dot1),
+            view.findViewById<View>(R.id.dot2),
+            view.findViewById<View>(R.id.dot3),
+            view.findViewById<View>(R.id.dot4)
+        )
+        for (dot in dots) {
+            val bg = dot?.background
+            if (bg is android.graphics.drawable.GradientDrawable) bg.setColor(color)
+        }
+    }
 
-            // Update subtitle
-            binding.tvStepDescription.text = "Enter the same PIN again to confirm"
+    private fun handlePinComplete(view: View) {
+        val statusText = view.findViewById<android.widget.TextView>(R.id.text_pin_status)
+        val hintText = view.findViewById<android.widget.TextView>(R.id.text_pin_hint)
+        val iconBg = view.findViewById<View>(R.id.icon_bg)
+
+        if (!pinConfirmMode) {
+            // First entry — flash green, then switch to confirm
+            firstPin = pinBuffer
+            flashDots(view, getColor(R.color.posterita_secondary))
+
+            view.postDelayed({
+                pinBuffer = ""
+                pinConfirmMode = true
+                updatePinDots(view)
+
+                // Update in-layout text to confirm mode
+                statusText?.text = "Confirm your PIN"
+                hintText?.text = "Enter the same 4 digits again"
+                iconBg?.backgroundTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.posterita_secondary))
+            }, 400)
         } else {
-            // Confirm entry
             if (pinBuffer == firstPin) {
-                // Match — save and advance
+                // Match — flash green and advance
+                flashDots(view, getColor(R.color.posterita_secondary))
+                statusText?.text = "PIN set!"
+                hintText?.text = ""
+
                 collectedPin = pinBuffer
-                binding.btnNext.visibility = View.VISIBLE
-                goNext()
+                view.postDelayed({
+                    binding.btnNext.visibility = View.VISIBLE
+                    goNext()
+                }, 500)
             } else {
-                // Mismatch — reset
+                // Mismatch — flash red, shake, reset
+                flashDots(view, getColor(R.color.posterita_error))
                 view.findViewById<android.widget.TextView>(R.id.text_pin_error)?.apply {
                     text = "PINs don't match — try again"
                     visibility = View.VISIBLE
                 }
-                pinBuffer = ""
-                pinConfirmMode = false
-                firstPin = ""
-                updatePinDots(view)
-                binding.tvStepDescription.text = "Quick unlock for your POS"
+
+                val dotLayout = view.findViewById<View>(R.id.layout_pin_dots)
+                dotLayout?.animate()
+                    ?.translationX(20f)?.setDuration(50)
+                    ?.withEndAction {
+                        dotLayout.animate()
+                            .translationX(-20f).setDuration(50)
+                            .withEndAction {
+                                dotLayout.animate()
+                                    .translationX(0f).setDuration(50).start()
+                            }.start()
+                    }?.start()
+
+                view.postDelayed({
+                    pinBuffer = ""
+                    pinConfirmMode = false
+                    firstPin = ""
+                    updatePinDots(view)
+                    statusText?.text = "Enter a 4-digit PIN"
+                    hintText?.text = "You'll use this to quickly unlock the POS"
+                    iconBg?.backgroundTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.posterita_primary))
+                }, 600)
             }
         }
     }
@@ -492,20 +619,28 @@ class SetupWizardActivity : AppCompatActivity() {
         return true
     }
 
-    // ─── AI Building Step ────────────────────────────────────
+    // ─── Server Account Creation Step ─────────────────────────
 
     private fun inferBusinessType(category: String): String {
         val foodKeywords = listOf("food", "beverage", "restaurant", "cafe", "coffee", "bar", "bakery", "pizza", "kitchen")
         return if (foodKeywords.any { category.contains(it, ignoreCase = true) }) "restaurant" else "retail"
     }
 
-    private fun setupAiBuildingStep(view: View) {
+    private fun setupServerCreationStep(view: View) {
         val tvTitle = view.findViewById<TextView>(R.id.tvAiBuildingTitle)
+        val tvSubtitle = view.findViewById<TextView>(R.id.tvAiBuildingSubtitle)
         val progressStore = view.findViewById<CircularProgressIndicator>(R.id.progressStore)
         val tvStatusStore = view.findViewById<TextView>(R.id.tvStatusStore)
+        val layoutProducts = view.findViewById<View>(R.id.layoutStatusProducts)
+        val progressProducts = view.findViewById<CircularProgressIndicator>(R.id.progressProducts)
+        val tvStatusProducts = view.findViewById<TextView>(R.id.tvStatusProducts)
+        val layoutFinish = view.findViewById<View>(R.id.layoutStatusFinish)
+        val progressFinish = view.findViewById<CircularProgressIndicator>(R.id.progressFinish)
+        val tvStatusFinish = view.findViewById<TextView>(R.id.tvStatusFinish)
 
         tvTitle.text = "Setting up $collectedBrand"
-        tvStatusStore.text = "Creating your account..."
+        tvSubtitle.text = "Creating your account on the server..."
+        tvStatusStore.text = "Creating account..."
         progressStore.visibility = View.VISIBLE
 
         val businessType = inferBusinessType(collectedCategory)
@@ -515,31 +650,46 @@ class SetupWizardActivity : AppCompatActivity() {
             try {
                 val currency = selectedCountry.currency
 
-                // Try server signup first (creates 2 brands: live + demo)
-                var accountId: String? = null
-                var demoAccountId: String? = null
+                // Step 1: Call signup API (required — online-first)
+                tvStatusStore.text = "Creating your account..."
 
-                if (isOnline) {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            val result = callSignupApi(currency)
-                            accountId = result?.optString("live_account_id")
-                            demoAccountId = result?.optString("demo_account_id")
-                        } catch (e: Exception) {
-                            android.util.Log.w("SetupWizard", "Server signup failed, falling back to local", e)
-                        }
-                    }
+                val signupResult = withContext(Dispatchers.IO) {
+                    callSignupApi(currency)
                 }
 
-                // Fallback to local if server signup failed
-                if (accountId.isNullOrEmpty()) {
-                    accountId = "standalone_${System.currentTimeMillis()}"
+                if (signupResult == null) {
+                    showSetupError(view, "Could not create account. Check your internet connection and try again.")
+                    return@launch
                 }
 
-                val finalAccountId = accountId!!
+                serverAccountId = signupResult.optString("live_account_id")
+                serverDemoAccountId = signupResult.optString("demo_account_id")
+
+                if (serverAccountId.isNullOrEmpty()) {
+                    showSetupError(view, "Server returned an invalid response. Please try again.")
+                    return@launch
+                }
+
+                val finalAccountId = serverAccountId!!
+
+                // Step 1 done
+                progressStore.visibility = View.GONE
+                tvStatusStore.text = "Account created"
+                tvStatusStore.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
+                tvStatusStore.compoundDrawablePadding = 8
+
+                // Step 2: Set up local database
+                layoutProducts?.alpha = 1f
+                progressProducts?.visibility = View.VISIBLE
+                tvStatusProducts?.text = "Setting up local data..."
 
                 withContext(Dispatchers.IO) {
                     prefsManager.setAccountIdSync(finalAccountId)
+                    prefsManager.setStringSync("setup_mode", "cloud")
+                    prefsManager.setStringSync("currency", currency)
+                    prefsManager.setEmailSync(collectedEmail)
+                    prefsManager.setOwnerPhoneSync(collectedPhone)
+
                     AppDatabase.resetInstance()
                     val freshDb = AppDatabase.getInstance(this@SetupWizardActivity, finalAccountId)
 
@@ -549,7 +699,7 @@ class SetupWizardActivity : AppCompatActivity() {
                             address1 = collectedCountry, isactive = "Y", currency = currency)
                     ))
 
-                    // Store
+                    // Store — use ID 1 as placeholder, sync will update with real server IDs
                     freshDb.storeDao().insertStore(
                         Store(storeId = 1, name = collectedBrand, address = "",
                             country = selectedCountry.name, currency = currency, isactive = "Y")
@@ -563,7 +713,7 @@ class SetupWizardActivity : AppCompatActivity() {
                     prefsManager.setTerminalIdSync(1)
                     prefsManager.setTerminalNameSync("POS 1")
 
-                    // Owner
+                    // Owner user
                     freshDb.userDao().insertUser(User(
                         user_id = 1, firstname = collectedName, lastname = "",
                         username = collectedEmail, pin = collectedPin,
@@ -571,29 +721,17 @@ class SetupWizardActivity : AppCompatActivity() {
                         role = User.ROLE_OWNER, email = collectedEmail, phone1 = collectedPhone
                     ))
 
-                    prefsManager.setEmailSync(collectedEmail)
-                    prefsManager.setOwnerPhoneSync(collectedPhone)
-                    prefsManager.setStringSync("setup_mode", "standalone")
-                    prefsManager.setStringSync("currency", currency)
-
-                    // Store demo account ID if we got one from server
-                    if (!demoAccountId.isNullOrEmpty()) {
-                        prefsManager.setStringSync("demo_account_id", demoAccountId!!)
-                    }
-
-                    // Seed demo products locally — POS works immediately
-                    demoSeeder.seedDemoProducts(freshDb, collectedCategory)
-
+                    // Register accounts
                     accountRegistry.addAccount(
                         id = finalAccountId, name = collectedBrand, storeName = collectedBrand,
                         ownerEmail = collectedEmail, ownerPhone = collectedPhone,
                         type = "live", status = "onboarding"
                     )
 
-                    // Register demo brand too if server created it
-                    if (!demoAccountId.isNullOrEmpty()) {
+                    if (!serverDemoAccountId.isNullOrEmpty()) {
+                        prefsManager.setStringSync("demo_account_id", serverDemoAccountId!!)
                         accountRegistry.addAccount(
-                            id = demoAccountId!!, name = "${collectedName}'s Demo",
+                            id = serverDemoAccountId!!, name = "${collectedName}'s Demo",
                             storeName = "${collectedName}'s Demo Store",
                             ownerEmail = collectedEmail, ownerPhone = collectedPhone,
                             type = "demo", status = "testing"
@@ -601,92 +739,141 @@ class SetupWizardActivity : AppCompatActivity() {
                     }
                 }
 
-                // Queue AI in background — don't wait
-                if (isOnline && websiteSetupService.isConfigured()) {
+                // Step 2 done
+                progressProducts?.visibility = View.GONE
+                tvStatusProducts?.text = "Local data ready"
+                tvStatusProducts?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
+                tvStatusProducts?.compoundDrawablePadding = 8
+
+                // Step 3: Sync with server + queue AI import
+                layoutFinish?.alpha = 1f
+                progressFinish?.visibility = View.VISIBLE
+                tvStatusFinish?.text = "Syncing with server..."
+
+                withContext(Dispatchers.IO) {
+                    // Trigger immediate cloud sync to pull server-assigned IDs
+                    CloudSyncWorker.syncNow(this@SetupWizardActivity)
+                }
+
+                // Queue AI import in background
+                if (websiteSetupService.isConfigured()) {
                     withContext(Dispatchers.IO) {
                         try {
                             AiImportService.queueStart(
                                 prefs = prefsManager, urls = emptyList(),
                                 businessName = collectedBrand, businessLocation = collectedCountry,
-                                businessType = businessType, accountId = finalAccountId,
+                                businessType = businessType, accountId = serverAccountId!!,
                                 ownerEmail = collectedEmail, ownerPhone = collectedPhone,
                                 accountType = "live"
                             )
                         } catch (e: Exception) {
-                            android.util.Log.w("SetupWizard", "AI queue failed, continuing", e)
+                            AppErrorLogger.warn(this@SetupWizardActivity, "SetupWizard", "AI queue failed, continuing", e)
                         }
                     }
                 }
 
-                // Go straight to home
-                finishWizard()
+                // Give sync a moment to pull data
+                delay(2000)
+
+                // Step 3 done
+                progressFinish?.visibility = View.GONE
+                tvStatusFinish?.text = "All set!"
+                tvStatusFinish?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
+                tvStatusFinish?.compoundDrawablePadding = 8
+
+                // Auto-advance to review step
+                delay(500)
+                showStep(currentStep + 1)
 
             } catch (e: Exception) {
-                android.util.Log.e("SetupWizard", "Account creation failed", e)
-                val tvError = view.findViewById<TextView>(R.id.tvAiBuildingError)
-                tvError.text = "Setup failed: ${e.message ?: "Unknown error"}"
-                tvError.visibility = View.VISIBLE
-                binding.btnNext.visibility = View.VISIBLE
-                binding.btnNext.text = "Retry"
-                binding.btnBack.visibility = View.VISIBLE
+                AppErrorLogger.log(this@SetupWizardActivity, "SetupWizard", "Account creation failed", e)
+                showSetupError(view, "Setup failed: ${e.message ?: "Unknown error"}")
             }
         }
     }
 
-    private suspend fun seedAiData(
-        freshDb: AppDatabase,
-        data: WebsiteSetupService.StoreSetupResult
-    ) {
-        // Use country's tax info, or AI-detected
-        val taxRate = if (data.taxRate > 0) data.taxRate else selectedCountry.taxRate
-        val taxName = data.taxName.orEmpty().ifEmpty { selectedCountry.taxName }
+    private fun showSetupError(view: View, message: String) {
+        val tvError = view.findViewById<TextView>(R.id.tvAiBuildingError)
+        tvError?.text = message
+        tvError?.visibility = View.VISIBLE
+        binding.btnNext.visibility = View.VISIBLE
+        binding.btnNext.text = "Retry"
+        binding.btnBack.visibility = View.VISIBLE
+    }
 
-        val taxId = 1
-        freshDb.taxDao().insertTax(
-            Tax(tax_id = taxId, name = "$taxName ${taxRate.toInt()}%",
-                rate = taxRate, taxcode = taxName.uppercase().replace(" ", "").ifEmpty { "TAX" },
-                isactive = "Y")
-        )
-        freshDb.taxDao().insertTax(
-            Tax(tax_id = 2, name = "No Tax", rate = 0.0, taxcode = "NONE", isactive = "Y")
-        )
+    // ─── Review Products Step ─────────────────────────────────
 
-        var categoryId = 1
-        var productId = 100 // start at 100 to not conflict with demo products
+    private fun setupReviewStep(view: View) {
+        val tvTitle = view.findViewById<TextView>(R.id.tvCompleteTitle)
+            ?: view.findViewById<TextView>(R.id.tvAiBuildingTitle)
+        val tvSubtitle = view.findViewById<TextView>(R.id.tvCompleteSubtitle)
+            ?: view.findViewById<TextView>(R.id.tvAiBuildingSubtitle)
 
-        for (catData in data.categories) {
-            if (catData.name.isNullOrBlank()) continue
+        tvTitle?.text = "You're all set!"
+        tvSubtitle?.text = "Your account has been created. Here's what we set up for you."
 
-            freshDb.productCategoryDao().insertProductCategory(
-                ProductCategory(
-                    productcategory_id = categoryId + 10, // offset to not conflict with demo
-                    name = catData.name,
-                    isactive = "Y",
-                    position = categoryId + 10
-                )
-            )
-
-            val products = catData.products.map { prodData ->
-                val taxAmount = if (taxRate > 0) prodData.price * taxRate / 100.0 else 0.0
-                Product(
-                    product_id = productId++,
-                    name = prodData.name,
-                    sellingprice = prodData.price,
-                    costprice = 0.0,
-                    productcategory_id = categoryId + 10,
-                    tax_id = if (taxRate > 0) taxId else 2,
-                    taxamount = taxAmount,
-                    isactive = "Y",
-                    description = prodData.description,
-                    image = prodData.imageUrl?.ifEmpty { null },
-                    iskitchenitem = if (inferBusinessType(collectedCategory) == "restaurant") "Y" else "N"
-                )
+        // Load product counts from local DB
+        lifecycleScope.launch {
+            val summary = withContext(Dispatchers.IO) {
+                try {
+                    val db = AppDatabase.getInstance(this@SetupWizardActivity, serverAccountId ?: prefsManager.accountId)
+                    val productCount = db.productDao().getAllProductsSync().size
+                    val categoryCount = db.productCategoryDao().getAllProductCategoriesSync().size
+                    val storeCount = db.storeDao().getAllStores().size
+                    Triple(productCount, categoryCount, storeCount)
+                } catch (_: Exception) {
+                    Triple(0, 0, 0)
+                }
             }
-            if (products.isNotEmpty()) {
-                freshDb.productDao().insertProducts(products)
+
+            // Build summary in the complete layout
+            val summaryContainer = view.findViewById<android.widget.LinearLayout>(R.id.layoutSummary)
+            if (summaryContainer != null) {
+                summaryContainer.removeAllViews()
+                addSummaryRow(summaryContainer, "Brand", collectedBrand)
+                addSummaryRow(summaryContainer, "Store", collectedBrand)
+                addSummaryRow(summaryContainer, "Terminal", "POS 1")
+                addSummaryRow(summaryContainer, "Country", selectedCountry.name)
+                addSummaryRow(summaryContainer, "Currency", selectedCountry.currency)
+                addSummaryRow(summaryContainer, "Products", "${summary.first}")
+                addSummaryRow(summaryContainer, "Categories", "${summary.second}")
+                if (websiteSetupService.isConfigured()) {
+                    addSummaryRow(summaryContainer, "AI Import", "Running in background")
+                }
             }
-            categoryId++
+
+            // Show email verification banner
+            val tvBanner = view.findViewById<TextView>(R.id.tvVerificationBanner)
+            if (tvBanner != null) {
+                tvBanner.text = "Check your email ($collectedEmail) to verify your account"
+                tvBanner.visibility = View.VISIBLE
+            }
         }
+    }
+
+    private fun addSummaryRow(container: android.widget.LinearLayout, label: String, value: String) {
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(0, 8, 0, 8)
+        }
+
+        val labelView = TextView(this).apply {
+            text = label
+            setTextColor(getColor(R.color.posterita_muted))
+            textSize = 14f
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val valueView = TextView(this).apply {
+            text = value
+            setTextColor(getColor(R.color.posterita_ink))
+            textSize = 14f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+
+        row.addView(labelView)
+        row.addView(valueView)
+        container.addView(row)
     }
 
     // ─── Internet Check ──────────────────────────────────────
@@ -700,14 +887,15 @@ class SetupWizardActivity : AppCompatActivity() {
         lifecycleScope.launch {
             isOnline = withContext(Dispatchers.IO) {
                 try {
-                    val url = java.net.URL("https://api.anthropic.com")
+                    val url = java.net.URL("https://web.posterita.com/api/sync")
                     val conn = url.openConnection() as java.net.HttpURLConnection
                     conn.connectTimeout = 5000
                     conn.readTimeout = 5000
-                    conn.requestMethod = "HEAD"
+                    conn.requestMethod = "GET"
                     conn.connect()
+                    val code = conn.responseCode
                     conn.disconnect()
-                    true
+                    code in 200..499 // Any response means server is reachable
                 } catch (e: Exception) {
                     false
                 }
@@ -740,18 +928,20 @@ class SetupWizardActivity : AppCompatActivity() {
      * Returns the JSON response or null on failure.
      */
     private fun callSignupApi(currency: String): org.json.JSONObject? {
-        val url = java.net.URL("https://posterita-cloud.vercel.app/api/auth/signup")
+        val url = java.net.URL("https://web.posterita.com/api/auth/signup")
         val conn = url.openConnection() as java.net.HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 10_000
+        conn.connectTimeout = 15_000
+        conn.readTimeout = 15_000
         conn.doOutput = true
 
         val payload = org.json.JSONObject().apply {
             put("phone", collectedPhone)
             put("email", collectedEmail)
             put("firstname", collectedName)
+            put("password", collectedPassword)
+            put("pin", collectedPin)
             put("businessname", collectedBrand)
             put("country", collectedCountry)
             put("currency", currency)
@@ -762,12 +952,56 @@ class SetupWizardActivity : AppCompatActivity() {
             writer.flush()
         }
 
-        return if (conn.responseCode == 200) {
+        val responseCode = conn.responseCode
+        return if (responseCode == 200) {
             val response = conn.inputStream.bufferedReader().readText()
+            android.util.Log.d("SetupWizard", "Signup API success")
             org.json.JSONObject(response)
+        } else if (responseCode == 409) {
+            // Account already exists — try to fetch existing account ID
+            val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
+            android.util.Log.w("SetupWizard", "Account already exists (409): $errorBody")
+            fetchExistingAccountId(collectedEmail, collectedPhone)
         } else {
             val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
-            android.util.Log.w("SetupWizard", "Signup API failed: ${conn.responseCode} $errorBody")
+            android.util.Log.w("SetupWizard", "Signup API failed: $responseCode $errorBody")
+            null
+        }
+    }
+
+    /**
+     * If signup returns 409, look up the existing account IDs by email/phone.
+     */
+    private fun fetchExistingAccountId(email: String, phone: String): org.json.JSONObject? {
+        return try {
+            val url = java.net.URL("https://web.posterita.com/api/auth/lookup")
+            val conn = url.openConnection() as java.net.HttpURLConnection
+            conn.requestMethod = "POST"
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.connectTimeout = 5_000
+            conn.readTimeout = 5_000
+            conn.doOutput = true
+
+            val payload = org.json.JSONObject().apply {
+                if (email.isNotEmpty()) put("email", email)
+                if (phone.isNotEmpty()) put("phone", phone)
+            }
+
+            java.io.OutputStreamWriter(conn.outputStream).use { writer ->
+                writer.write(payload.toString())
+                writer.flush()
+            }
+
+            if (conn.responseCode == 200) {
+                val response = conn.inputStream.bufferedReader().readText()
+                android.util.Log.d("SetupWizard", "Lookup success")
+                org.json.JSONObject(response)
+            } else {
+                android.util.Log.w("SetupWizard", "Lookup failed: ${conn.responseCode}")
+                null
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("SetupWizard", "Lookup failed", e)
             null
         }
     }

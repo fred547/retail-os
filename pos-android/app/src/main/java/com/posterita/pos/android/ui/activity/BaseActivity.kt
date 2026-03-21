@@ -24,6 +24,11 @@ open class BaseActivity : AppCompatActivity() {
         SessionTimeoutManager.checkAndLock(this)
     }
 
+    override fun onDestroy() {
+        backPressHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         // Reset idle timer on every touch
         SessionTimeoutManager.onUserActivity()

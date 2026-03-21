@@ -2,15 +2,19 @@ package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.view.View
+import android.widget.TextView
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivitySettingsBinding
+import com.posterita.pos.android.util.SessionManager
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : BaseDrawerActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
+    @Inject lateinit var sessionManager: SessionManager
 
     override fun getDrawerHighlightId(): Int = R.id.nav_settings
 
@@ -23,13 +27,28 @@ class SettingsActivity : BaseDrawerActivity() {
 
         setupDrawerNavigation()
 
-        // Data — opens web console embedded in app
+        // Web Console — all data managed via embedded web console
         binding.storesOption.setOnClickListener { openWebConsole("/stores", "Stores") }
         binding.terminalsOption.setOnClickListener { openWebConsole("/terminals", "Terminals") }
-        binding.usersOption?.setOnClickListener { openWebConsole("/users", "Users") }
-        binding.taxesOption?.setOnClickListener { openWebConsole("/settings", "Taxes") }
-        binding.categoriesOption?.setOnClickListener { openWebConsole("/categories", "Categories") }
-        binding.productsOption?.setOnClickListener { openWebConsole("/products", "Products") }
+        binding.productsOption.setOnClickListener { openWebConsole("/products", "Products") }
+        binding.categoriesOption.setOnClickListener { openWebConsole("/categories", "Categories") }
+        binding.usersOption.setOnClickListener { openWebConsole("/users", "Users") }
+        binding.taxesOption.setOnClickListener { openWebConsole("/settings", "Taxes") }
+
+        // Device — local config only
+        binding.printersOption.setOnClickListener {
+            startActivity(Intent(this, PrintersActivity::class.java))
+        }
+
+        // Brands — owner only
+        val isOwner = sessionManager.user?.isOwner == true
+        if (isOwner) {
+            findViewById<TextView>(R.id.tv_account_header)?.visibility = View.VISIBLE
+            binding.brandsOption.visibility = View.VISIBLE
+            binding.brandsOption.setOnClickListener {
+                startActivity(Intent(this, ManageBrandsActivity::class.java))
+            }
+        }
 
         // System
         binding.about.setOnClickListener {
@@ -38,19 +57,9 @@ class SettingsActivity : BaseDrawerActivity() {
     }
 
     private fun openWebConsole(path: String, title: String) {
-        // Local read-only views for now
-        // TODO: Switch to WebView once OTT auth is deployed to Vercel
-        val activityClass = when (path) {
-            "/stores" -> ManageStoreActivity::class.java
-            "/terminals" -> ManageTerminalActivity::class.java
-            "/users" -> ManageUsersActivity::class.java
-            "/settings" -> ManageTaxActivity::class.java
-            "/categories" -> ManageCategoriesActivity::class.java
-            "/products" -> ManageProductsActivity::class.java
-            else -> null
-        }
-        if (activityClass != null) {
-            startActivity(Intent(this, activityClass))
-        }
+        val intent = Intent(this, WebConsoleActivity::class.java)
+        intent.putExtra(WebConsoleActivity.EXTRA_PATH, path)
+        intent.putExtra(WebConsoleActivity.EXTRA_TITLE, title)
+        startActivity(intent)
     }
 }

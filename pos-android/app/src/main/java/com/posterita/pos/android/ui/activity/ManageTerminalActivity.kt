@@ -1,6 +1,7 @@
 package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -96,6 +97,7 @@ class ManageTerminalActivity : AppCompatActivity() {
     inner class TerminalAdapter : RecyclerView.Adapter<TerminalAdapter.VH>() {
         inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val card: MaterialCardView = itemView.findViewById(R.id.cardTerminal)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
             val tvName: TextView = itemView.findViewById(R.id.tvTerminalName)
             val tvStore: TextView = itemView.findViewById(R.id.tvTerminalStore)
             val tvPrefix: TextView = itemView.findViewById(R.id.tvTerminalPrefix)
@@ -115,6 +117,11 @@ class ManageTerminalActivity : AppCompatActivity() {
 
             holder.tvName.text = t.name ?: "Unnamed Terminal"
 
+            // Icon color
+            val iconColor = if (isActive) getColor(R.color.posterita_primary) else getColor(R.color.posterita_muted)
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(iconColor)
+
             // Active badge
             holder.tvActiveBadge.visibility = if (isActive) View.VISIBLE else View.GONE
 
@@ -124,7 +131,7 @@ class ManageTerminalActivity : AppCompatActivity() {
                 holder.card.strokeWidth = 2
             } else {
                 holder.card.strokeColor = getColor(R.color.posterita_line)
-                holder.card.strokeWidth = 0
+                holder.card.strokeWidth = (resources.displayMetrics.density).toInt()
             }
 
             // Store name
@@ -165,6 +172,8 @@ class ManageTerminalActivity : AppCompatActivity() {
                 )
                 val intent = Intent(this@ManageTerminalActivity, DetailViewActivity::class.java)
                 intent.putExtra(DetailViewActivity.EXTRA_TITLE, t.name ?: "Terminal Details")
+                intent.putExtra(DetailViewActivity.EXTRA_SUBTITLE, storeName ?: "Terminal")
+                intent.putExtra(DetailViewActivity.EXTRA_COLOR, if (isActive) getColor(R.color.posterita_primary) else getColor(R.color.posterita_muted))
                 intent.putStringArrayListExtra(DetailViewActivity.EXTRA_FIELDS, fields)
                 startActivity(intent)
             }

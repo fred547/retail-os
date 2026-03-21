@@ -83,6 +83,7 @@ public class BluetoothConnection extends DeviceConnection {
     /**
      * Get bluetooth device UUID
      */
+    @android.annotation.SuppressLint("MissingPermission")
     protected UUID getDeviceUUID() {
         ParcelUuid[] uuids = device.getUuids();
         if (uuids != null && uuids.length > 0) {

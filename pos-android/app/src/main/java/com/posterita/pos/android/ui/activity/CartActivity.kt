@@ -35,7 +35,6 @@ import com.posterita.pos.android.data.local.entity.DiscountCode
 import com.posterita.pos.android.data.local.entity.HoldOrder
 import com.posterita.pos.android.data.local.entity.Modifier
 import com.posterita.pos.android.data.local.entity.Product
-import com.posterita.pos.android.data.remote.ApiService
 import com.posterita.pos.android.data.remote.BlinkApiService
 import com.posterita.pos.android.data.remote.model.request.BlinkTillQRCodeRequest
 import com.posterita.pos.android.data.remote.model.request.LoyaltyAwardRequest
@@ -91,9 +90,6 @@ class CartActivity : BaseDrawerActivity() {
 
     @Inject
     lateinit var db: AppDatabase
-
-    @Inject
-    lateinit var apiService: ApiService
 
     @Inject
     lateinit var blinkApiService: BlinkApiService
@@ -1159,7 +1155,7 @@ class CartActivity : BaseDrawerActivity() {
     // ==================== BLINK PAYMENT ====================
 
     private fun showBlinkPaymentDialog(grandTotal: Double) {
-        val currency = sessionManager.account?.currency ?: "MUR"
+        val currency = sessionManager.account?.currency ?: ""
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_blink_payment, null)
 
         val textAmountDue = dialogView.findViewById<TextView>(R.id.text_amount_due)
@@ -2419,33 +2415,28 @@ class CartActivity : BaseDrawerActivity() {
     }
 
     private fun showCustomerNumpadDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.add_customer_layout, null)
+        showCustomerSearchDialog()
+    }
+
+    private fun showCustomerSearchDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_customer_search, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // Set backspace text programmatically
-        dialogView.findViewById<TextView>(R.id.btn_backspace)?.text = "\u232B"
+        val etSearch = dialogView.findViewById<TextInputEditText>(R.id.et_search)
+        val recyclerResults = dialogView.findViewById<RecyclerView>(R.id.recycler_results)
+        val layoutNoResults = dialogView.findViewById<View>(R.id.layout_no_results)
+        val tvNoResults = dialogView.findViewById<TextView>(R.id.tv_no_results)
+        val btnCreate = dialogView.findViewById<View>(R.id.btn_create_customer)
+        val tvHint = dialogView.findViewById<View>(R.id.tv_hint)
+        val btnSkip = dialogView.findViewById<View>(R.id.btn_skip)
+        val btnCancel = dialogView.findViewById<View>(R.id.btn_cancel)
 
-        var currentCountry = getDefaultCountry()
+        recyclerResults.layoutManager = LinearLayoutManager(this)
 
-        val txtTitle = dialogView.findViewById<TextView>(R.id.txt_title)
-        val txtCountryCode = dialogView.findViewById<TextView>(R.id.txt_country_code)
-        val txtPhoneNumber = dialogView.findViewById<TextView>(R.id.txt_phone_number)
-        val txtDigitCount = dialogView.findViewById<TextView>(R.id.txt_digit_count)
-        val txtValidation = dialogView.findViewById<TextView>(R.id.txt_validation)
-        val layoutExtraDetails = dialogView.findViewById<LinearLayout>(R.id.layout_extra_details)
-        val nameInput = dialogView.findViewById<EditText>(R.id.text_customer_name)
-        val emailInput = dialogView.findViewById<EditText>(R.id.text_email_address)
-        val addressInput = dialogView.findViewById<EditText>(R.id.text_address)
-        val btnCreateByName = dialogView.findViewById<View>(R.id.btn_create_by_name)
-        val btnSkip = dialogView.findViewById<View>(R.id.button_skip)
-
-        txtTitle.text = "Customer"
-        txtCountryCode.text = currentCountry.code
-
-        // Show Skip button when this dialog is triggered by the payment flow
+        // Show Skip button when triggered by payment flow
         if (pendingPayAfterCustomer) {
             btnSkip.visibility = View.VISIBLE
             btnSkip.setOnClickListener {
@@ -2455,187 +2446,19 @@ class CartActivity : BaseDrawerActivity() {
             }
         }
 
-        var phoneStr = ""
-
-        fun formatPhoneDisplay(): String {
-            val length = currentCountry.mobileLength
-            val sb = StringBuilder()
-            for (i in 0 until length) {
-                if (i > 0) sb.append(" ")
-                if (i < phoneStr.length) {
-                    sb.append(phoneStr[i])
-                } else if (i == phoneStr.length) {
-                    sb.append("_")
-                } else {
-                    sb.append("\u2022")
-                }
-            }
-            return sb.toString()
-        }
-
-        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.button_save)
-
-        fun updateDisplay() {
-            val length = currentCountry.mobileLength
-            txtPhoneNumber.text = formatPhoneDisplay()
-            txtPhoneNumber.setTextColor(
-                if (phoneStr.length == length) resources.getColor(R.color.posterita_ink, null) else resources.getColor(R.color.posterita_muted, null)
-            )
-            txtDigitCount.text = "${phoneStr.length} / $length digits"
-            txtValidation.visibility = View.GONE
-
-            // Dynamic button text: Skip when empty, Save when full
-            btnSave?.text = if (phoneStr.isEmpty()) "Skip" else "Save"
-
-            if (phoneStr.length >= 3) {
-                customerViewModel.searchCustomersByPhone(phoneStr) { results ->
-                    if (results.size == 1 && phoneStr.length >= length) {
-                        val customer = results[0]
-                        shoppingCartViewModel.setCustomer(customer)
-                        Toast.makeText(this, "Customer: ${customer.name}", Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
-                        if (pendingPayAfterCustomer) {
-                            pendingPayAfterCustomer = false
-                            proceedToPayment()
-                        }
-                    } else if (results.isNotEmpty()) {
-                        txtValidation.text = "${results.size} customer(s) found"
-                        txtValidation.setTextColor(resources.getColor(R.color.txt_color, null))
-                        txtValidation.visibility = View.VISIBLE
-                    } else {
-                        txtValidation.text = "New customer"
-                        txtValidation.setTextColor(resources.getColor(R.color.txt_color, null))
-                        txtValidation.visibility = View.VISIBLE
-                    }
-                }
-            }
-        }
-
-        fun updateHint() {
-            txtPhoneNumber.hint = (1..currentCountry.mobileLength).joinToString(" ") { "_" }
-        }
-
-        updateHint()
-        updateDisplay()
-
-        // Country code picker with full country list
-        txtCountryCode.setOnClickListener {
-            val countryNames = allCountries.map { "${it.code}  ${it.name}" }.toTypedArray()
-            val currentIndex = allCountries.indexOf(currentCountry).coerceAtLeast(0)
-
-            AlertDialog.Builder(this)
-                .setTitle("Select Country")
-                .setSingleChoiceItems(countryNames, currentIndex) { d, which ->
-                    currentCountry = allCountries[which]
-                    txtCountryCode.text = currentCountry.code
-                    if (phoneStr.length > currentCountry.mobileLength) {
-                        phoneStr = phoneStr.take(currentCountry.mobileLength)
-                    }
-                    updateHint()
-                    updateDisplay()
-                    d.dismiss()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        }
-
-        val appendDigit = fun(digit: String) {
-            if (phoneStr.length >= currentCountry.mobileLength) return
-            phoneStr += digit
-            updateDisplay()
-        }
-
-        dialogView.findViewById<View>(R.id.btn_0).setOnClickListener { appendDigit("0") }
-        dialogView.findViewById<View>(R.id.btn_1).setOnClickListener { appendDigit("1") }
-        dialogView.findViewById<View>(R.id.btn_2).setOnClickListener { appendDigit("2") }
-        dialogView.findViewById<View>(R.id.btn_3).setOnClickListener { appendDigit("3") }
-        dialogView.findViewById<View>(R.id.btn_4).setOnClickListener { appendDigit("4") }
-        dialogView.findViewById<View>(R.id.btn_5).setOnClickListener { appendDigit("5") }
-        dialogView.findViewById<View>(R.id.btn_6).setOnClickListener { appendDigit("6") }
-        dialogView.findViewById<View>(R.id.btn_7).setOnClickListener { appendDigit("7") }
-        dialogView.findViewById<View>(R.id.btn_8).setOnClickListener { appendDigit("8") }
-        dialogView.findViewById<View>(R.id.btn_9).setOnClickListener { appendDigit("9") }
-
-        dialogView.findViewById<View>(R.id.btn_backspace).setOnClickListener {
-            if (phoneStr.isNotEmpty()) {
-                phoneStr = phoneStr.dropLast(1)
-                updateDisplay()
-            }
-        }
-        dialogView.findViewById<View>(R.id.btn_backspace).setOnLongClickListener {
-            phoneStr = ""
-            updateDisplay()
-            true
-        }
-
-        val btnDetails = dialogView.findViewById<View>(R.id.btn_details)
-        btnDetails.setOnClickListener {
-            layoutExtraDetails.visibility = if (layoutExtraDetails.visibility == View.GONE)
-                View.VISIBLE else View.GONE
-        }
-
-        // Create by Name — show name input dialog
-        btnCreateByName.setOnClickListener {
-            dialog.dismiss()
-            showCreateByNameDialog()
-        }
-
-        dialogView.findViewById<View>(R.id.button_cancel).setOnClickListener {
+        btnCancel.setOnClickListener {
             pendingPayAfterCustomer = false
             dialog.dismiss()
         }
 
-        btnSave?.setOnClickListener {
-            // Skip — no phone entered, dismiss and proceed
-            if (phoneStr.isEmpty()) {
-                dialog.dismiss()
-                if (pendingPayAfterCustomer) {
-                    pendingPayAfterCustomer = false
-                    proceedToPayment()
-                }
-                return@setOnClickListener
-            }
-
-            // Partial number — show error, don't proceed
-            val mobileLength = currentCountry.mobileLength
-            if (phoneStr.length != mobileLength) {
-                txtValidation.text = "Enter all $mobileLength digits or clear to skip"
-                txtValidation.setTextColor(resources.getColor(R.color.posterita_error, null))
-                txtValidation.visibility = View.VISIBLE
-                return@setOnClickListener
-            }
-
-            if (currentCountry.code == "+230" && !phoneStr.startsWith("5")) {
-                txtValidation.text = "Mauritius mobile numbers start with 5"
-                txtValidation.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
-                txtValidation.visibility = View.VISIBLE
-                return@setOnClickListener
-            }
-
-            val fullPhone = "${currentCountry.code}$phoneStr"
-
-            customerViewModel.searchCustomersByPhone(phoneStr) { results ->
-                if (results.isNotEmpty()) {
-                    val customer = results[0]
-                    shoppingCartViewModel.setCustomer(customer)
-                    Toast.makeText(this, "Customer: ${customer.name}", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
-                    if (pendingPayAfterCustomer) {
-                        pendingPayAfterCustomer = false
-                        proceedToPayment()
-                    }
-                } else {
-                    val name = nameInput?.text?.toString()?.trim()
-                    val customerName = if (name.isNullOrEmpty()) fullPhone else name
-                    val email = emailInput?.text?.toString()?.trim()
-                    val address = addressInput?.text?.toString()?.trim()
-
-                    customerViewModel.createCustomer(customerName, email, fullPhone, address, null, null)
-                    dialog.dismiss()
-                }
-            }
+        // Create customer from current search text
+        btnCreate.setOnClickListener {
+            val query = etSearch.text?.toString()?.trim() ?: ""
+            dialog.dismiss()
+            showCreateCustomerDialog(query)
         }
 
+        // Observe create result
         customerViewModel.createResult.observe(this) { result ->
             result.fold(
                 onSuccess = { customer ->
@@ -2656,28 +2479,85 @@ class CartActivity : BaseDrawerActivity() {
             )
         }
 
+        // Live search with debounce
+        var searchRunnable: Runnable? = null
+        val handler = android.os.Handler(mainLooper)
+
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                searchRunnable?.let { handler.removeCallbacks(it) }
+                val query = s?.toString()?.trim() ?: ""
+
+                if (query.length < 2) {
+                    recyclerResults.visibility = View.GONE
+                    layoutNoResults.visibility = View.GONE
+                    tvHint.visibility = View.VISIBLE
+                    return
+                }
+
+                searchRunnable = Runnable {
+                    customerViewModel.searchCustomersByPhone(query) { results ->
+                        tvHint.visibility = View.GONE
+                        if (results.isNotEmpty()) {
+                            recyclerResults.visibility = View.VISIBLE
+                            layoutNoResults.visibility = View.GONE
+                            recyclerResults.adapter = CustomerSearchResultAdapter(results) { customer ->
+                                shoppingCartViewModel.setCustomer(customer)
+                                Toast.makeText(this@CartActivity, "Customer: ${customer.name}", Toast.LENGTH_SHORT).show()
+                                dialog.dismiss()
+                                if (pendingPayAfterCustomer) {
+                                    pendingPayAfterCustomer = false
+                                    proceedToPayment()
+                                }
+                            }
+                        } else {
+                            recyclerResults.visibility = View.GONE
+                            layoutNoResults.visibility = View.VISIBLE
+                            tvNoResults.text = "No customers matching \"$query\""
+                        }
+                    }
+                }
+                handler.postDelayed(searchRunnable!!, 300)
+            }
+        })
+
         dialog.show()
+        etSearch.requestFocus()
     }
 
-    private fun showCreateByNameDialog() {
+    private fun showCreateCustomerDialog(prefill: String) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(60, 40, 60, 20)
         }
+        val isPhone = prefill.all { it.isDigit() || it == '+' }
         val nameInput = EditText(this).apply {
             hint = "Customer name"
             inputType = android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
             textSize = 16f
+            if (!isPhone && prefill.isNotEmpty()) setText(prefill)
+        }
+        val phoneInput = EditText(this).apply {
+            hint = "Phone number (optional)"
+            inputType = android.text.InputType.TYPE_CLASS_PHONE
+            textSize = 16f
+            if (isPhone && prefill.isNotEmpty()) setText(prefill)
         }
         layout.addView(nameInput)
+        layout.addView(phoneInput)
 
         AlertDialog.Builder(this)
-            .setTitle("Create Customer by Name")
+            .setTitle("Create Customer")
             .setView(layout)
             .setPositiveButton("Create") { _, _ ->
                 val name = nameInput.text.toString().trim()
+                val phone = phoneInput.text.toString().trim()
                 if (name.isNotEmpty()) {
-                    customerViewModel.createCustomer(name, null, null, null, null, null)
+                    customerViewModel.createCustomer(name, null, phone.ifEmpty { null }, null, null, null)
+                } else if (phone.isNotEmpty()) {
+                    customerViewModel.createCustomer(phone, null, phone, null, null, null)
                 } else {
                     Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show()
                 }
@@ -2687,6 +2567,40 @@ class CartActivity : BaseDrawerActivity() {
             }
             .show()
         nameInput.requestFocus()
+    }
+
+    private class CustomerSearchResultAdapter(
+        private val customers: List<Customer>,
+        private val onSelect: (Customer) -> Unit
+    ) : RecyclerView.Adapter<CustomerSearchResultAdapter.VH>() {
+
+        class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val tvName: TextView = itemView.findViewById(R.id.text_customer_name)
+            val tvPhone: TextView = itemView.findViewById(R.id.text_customer_phone)
+            val btnSelect: View = itemView.findViewById(R.id.button_select)
+        }
+
+        override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_customer, parent, false)
+            return VH(view)
+        }
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val c = customers[position]
+            holder.tvName.text = c.name ?: "Unknown"
+            val phone = c.phone1 ?: c.mobile ?: c.phone2
+            if (!phone.isNullOrBlank()) {
+                holder.tvPhone.text = phone
+                holder.tvPhone.visibility = View.VISIBLE
+            } else {
+                holder.tvPhone.visibility = View.GONE
+            }
+            holder.btnSelect.setOnClickListener { onSelect(c) }
+            holder.itemView.setOnClickListener { onSelect(c) }
+        }
+
+        override fun getItemCount() = customers.size
     }
 
     private fun updateCartEmptyState(items: List<CartItem>) {

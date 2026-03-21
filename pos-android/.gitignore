@@ -81,3 +81,4 @@ visual-test-screenshots/
 
 # One-off scripts
 scripts/
+.vercel

@@ -66,11 +66,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- DATA FROM WEB section -->
+            <!-- WEB CONSOLE section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="DATA (from web console)"
+                android:text="WEB CONSOLE"
                 style="@style/TextAppearance.Posterita.Label"
                 android:textColor="@color/posterita_muted"
                 android:layout_marginBottom="8dp" />
@@ -119,7 +119,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="View store locations"
+                            android:text="Manage store locations"
                             style="@style/TextAppearance.Posterita.Tiny"
                             android:textColor="@color/posterita_muted" />
                     </LinearLayout>
@@ -177,7 +177,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="View POS terminals"
+                            android:text="Manage POS terminals"
                             style="@style/TextAppearance.Posterita.Tiny"
                             android:textColor="@color/posterita_muted" />
                     </LinearLayout>
@@ -191,9 +191,9 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Users -->
+            <!-- Products -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/users_option"
+                android:id="@+id/products_option"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
@@ -217,9 +217,9 @@
                         android:layout_width="22dp"
                         android:layout_height="22dp"
                         android:layout_marginEnd="14dp"
-                        android:src="@drawable/ic_user"
+                        android:src="@drawable/ic_product_placeholder"
                         app:tint="@color/posterita_primary"
-                        android:contentDescription="Users" />
+                        android:contentDescription="Products" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -229,71 +229,13 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Users"
+                            android:text="Products"
                             style="@style/TextAppearance.Posterita.Body"
                             android:fontFamily="@font/lexend_medium" />
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="View staff and roles"
-                            style="@style/TextAppearance.Posterita.Tiny"
-                            android:textColor="@color/posterita_muted" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="›"
-                        android:textSize="20sp"
-                        android:textColor="@color/posterita_muted" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Taxes -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/taxes_option"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/posterita_line"
-                app:cardBackgroundColor="@color/posterita_paper"
-                android:layout_marginBottom="6dp"
-                android:foreground="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="14dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="14dp"
-                        android:src="@drawable/ic_edit"
-                        app:tint="@color/posterita_primary"
-                        android:contentDescription="Taxes" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Taxes"
-                            style="@style/TextAppearance.Posterita.Body"
-                            android:fontFamily="@font/lexend_medium" />
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="View tax rates"
+                            android:text="Product catalogue"
                             style="@style/TextAppearance.Posterita.Tiny"
                             android:textColor="@color/posterita_muted" />
                     </LinearLayout>
@@ -351,7 +293,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="View product categories"
+                            android:text="Product categories"
                             style="@style/TextAppearance.Posterita.Tiny"
                             android:textColor="@color/posterita_muted" />
                     </LinearLayout>
@@ -365,9 +307,67 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Products -->
+            <!-- Users -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/products_option"
+                android:id="@+id/users_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_user"
+                        app:tint="@color/posterita_primary"
+                        android:contentDescription="Users" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Users"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Staff and roles"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Taxes -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/taxes_option"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
@@ -391,9 +391,9 @@
                         android:layout_width="22dp"
                         android:layout_height="22dp"
                         android:layout_marginEnd="14dp"
-                        android:src="@drawable/ic_product_placeholder"
+                        android:src="@drawable/ic_edit"
                         app:tint="@color/posterita_primary"
-                        android:contentDescription="Products" />
+                        android:contentDescription="Taxes" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -403,13 +403,150 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Products"
+                            android:text="Taxes"
                             style="@style/TextAppearance.Posterita.Body"
                             android:fontFamily="@font/lexend_medium" />
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="View product catalogue"
+                            android:text="Tax rates"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- DEVICE section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DEVICE"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Printers -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/printers_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_menu_print"
+                        app:tint="@color/posterita_primary"
+                        android:contentDescription="Printers" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Printers"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Receipt and kitchen printers"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ACCOUNT section (owner only) -->
+            <TextView
+                android:id="@+id/tv_account_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ACCOUNT"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- Brands (owner only) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/brands_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_splash"
+                        app:tint="@color/posterita_purple"
+                        android:contentDescription="Brands" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Brands"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Switch or manage brands"
                             style="@style/TextAppearance.Posterita.Tiny"
                             android:textColor="@color/posterita_muted" />
                     </LinearLayout>
@@ -489,15 +626,6 @@
                         android:textColor="@color/posterita_muted" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Hidden binding compat -->
-            <com.google.android.material.card.MaterialCardView android:id="@+id/pos_customization" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <com.google.android.material.card.MaterialCardView android:id="@+id/printers_option" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <com.google.android.material.card.MaterialCardView android:id="@+id/debugger" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <com.google.android.material.card.MaterialCardView android:id="@+id/nfc" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_loyalty_enabled" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <com.google.android.material.textfield.TextInputLayout android:id="@+id/layout_loyalty_api_url" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"><com.google.android.material.textfield.TextInputEditText android:id="@+id/edit_loyalty_api_url" android:layout_width="0dp" android:layout_height="0dp" /></com.google.android.material.textfield.TextInputLayout>
-            <com.google.android.material.textfield.TextInputLayout android:id="@+id/layout_loyalty_account_key" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"><com.google.android.material.textfield.TextInputEditText android:id="@+id/edit_loyalty_account_key" android:layout_width="0dp" android:layout_height="0dp" /></com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
     </ScrollView>

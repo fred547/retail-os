@@ -2,6 +2,7 @@ package com.posterita.pos.android.ui.activity
 
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.TextView
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityAboutBinding
 import com.posterita.pos.android.util.SessionManager
@@ -21,7 +22,6 @@ class AboutActivity : BaseDrawerActivity() {
         setContentViewWithDrawer(R.layout.activity_about)
         binding = ActivityAboutBinding.bind(drawerLayout.getChildAt(0))
 
-        // Top bar: hamburger menu to open drawer
         binding.buttonBack.setImageResource(R.drawable.ic_drawer)
         binding.buttonBack.setOnClickListener { openDrawer() }
 
@@ -31,11 +31,27 @@ class AboutActivity : BaseDrawerActivity() {
     }
 
     private fun displayInfo() {
+        // Current session
+        val account = sessionManager.account
+        findViewById<TextView>(R.id.tv_brand_value)?.text = account?.businessname ?: "N/A"
+        findViewById<TextView>(R.id.tv_store_value)?.text = prefsManager.storeName.ifBlank { "N/A" }
+        findViewById<TextView>(R.id.tv_terminal_value)?.text = prefsManager.terminalName.ifBlank { "N/A" }
+        val user = sessionManager.user
+        val userName = listOfNotNull(user?.firstname, user?.lastname)
+            .joinToString(" ").ifBlank { user?.username ?: "N/A" }
+        findViewById<TextView>(R.id.tv_user_value)?.text = userName
+        findViewById<TextView>(R.id.tv_currency_value)?.text = account?.currency ?: "N/A"
+
         // Version info
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             binding.textViewVersionNameValue.text = packageInfo.versionName ?: "N/A"
-            binding.textViewVersionCodeValue.text = packageInfo.longVersionCode.toString()
+            @Suppress("DEPRECATION")
+            binding.textViewVersionCodeValue.text = if (android.os.Build.VERSION.SDK_INT >= 28) {
+                packageInfo.longVersionCode.toString()
+            } else {
+                packageInfo.versionCode.toString()
+            }
         } catch (e: Exception) {
             binding.textViewVersionNameValue.text = "N/A"
             binding.textViewVersionCodeValue.text = "N/A"
@@ -45,8 +61,7 @@ class AboutActivity : BaseDrawerActivity() {
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "N/A"
         binding.textViewDeviceIdValue.text = deviceId
 
-        // Support info — website from account if available
-        val account = sessionManager.account
+        // Support — website from account if available
         val website = account?.website
         if (!website.isNullOrBlank()) {
             binding.textViewWebsiteValue.text = website
