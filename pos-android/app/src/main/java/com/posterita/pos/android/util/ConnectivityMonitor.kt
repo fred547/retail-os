@@ -15,11 +15,11 @@ import javax.inject.Singleton
 class ConnectivityMonitor @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val _isConnected = MutableLiveData(checkConnectivity())
-    val isConnected: LiveData<Boolean> = _isConnected
-
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+
+    private val _isConnected = MutableLiveData(checkConnectivity())
+    val isConnected: LiveData<Boolean> = _isConnected
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
