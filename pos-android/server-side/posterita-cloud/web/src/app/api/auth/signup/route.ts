@@ -26,15 +26,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const phone = normalizePhone(body.phone);
     const email = normalizeEmail(body.email);
+    const password = body.password?.trim() || "";
+    const pin = body.pin?.trim() || "";
     const firstname = body.firstname?.trim() || "";
     const lastname = body.lastname?.trim() || "";
     const country = body.country?.trim() || "Mauritius";
     const currency = body.currency?.trim() || "MUR";
     const businessName = body.businessname?.trim() || `${firstname}'s Store`;
 
-    if (!phone && !email) {
-      return NextResponse.json({ error: "Phone or email required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
+    // Password is optional — if not provided, auth user won't be created
+    // but the POS account will still be set up
     if (!firstname) {
       return NextResponse.json({ error: "First name required" }, { status: 400 });
     }
@@ -45,12 +49,31 @@ export async function POST(req: NextRequest) {
     );
 
     // Check if owner already exists
-    const existingOwner = await findOwnerByIdentity(supabase, { phone, email });
-    if (existingOwner) {
+    const { owner: existingOwner } = await findOwnerByIdentity(supabase, { phone, email });
+    if (existingOwner?.id) {
       return NextResponse.json(
         { error: "An account with this phone/email already exists" },
         { status: 409 }
       );
+    }
+
+    // Create Supabase Auth user (email + password)
+    // Non-blocking: if auth fails, we still create the POS account
+    let authUserId: string | null = null;
+    try {
+      const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: false,
+        user_metadata: { firstname, phone },
+      });
+      if (authErr) {
+        console.warn("Supabase Auth user creation failed (non-blocking):", authErr.message);
+      } else {
+        authUserId = authUser.user?.id || null;
+      }
+    } catch (e: any) {
+      console.warn("Supabase Auth error (non-blocking):", e.message);
     }
 
     // Generate IDs
@@ -64,6 +87,9 @@ export async function POST(req: NextRequest) {
       .insert({
         email: email || null,
         phone: phone || null,
+        name: firstname,
+        auth_uid: authUserId || null,
+        is_active: true,
       })
       .select("id")
       .single();
@@ -107,9 +133,10 @@ export async function POST(req: NextRequest) {
     });
 
     // 5. Create POS owner user for both accounts
-    for (const accountId of [liveAccountId, demoAccountId]) {
+    for (const accId of [liveAccountId, demoAccountId]) {
       await supabase.from("pos_user").insert({
-        account_id: accountId,
+        account_id: accId,
+        auth_uid: authUserId,
         firstname,
         lastname: lastname || null,
         username: firstname.toLowerCase(),
@@ -119,7 +146,7 @@ export async function POST(req: NextRequest) {
         isadmin: "Y",
         issalesrep: "Y",
         isactive: "Y",
-        pin: "1234",
+        pin: pin || null,
         country,
       });
     }
