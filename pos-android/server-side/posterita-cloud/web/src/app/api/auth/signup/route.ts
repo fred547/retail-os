@@ -132,9 +132,17 @@ export async function POST(req: NextRequest) {
       account_id: liveAccountId,
     });
 
-    // 5. Create POS owner user for both accounts
+    // 5. Create store + terminal for BOTH brands (before users, so store_id exists)
+    await createStoreAndTerminal(supabase, liveAccountId, businessName, country);
+    await createStoreAndTerminal(supabase, demoAccountId, `${firstname}'s Demo Store`, country);
+
+    // 6. Create default taxes for both brands
+    await seedDefaultTaxes(supabase, liveAccountId);
+    await seedDemoTaxes(supabase, demoAccountId);
+
+    // 7. Create POS owner user for both accounts
     for (const accId of [liveAccountId, demoAccountId]) {
-      await supabase.from("pos_user").insert({
+      const { error: userErr } = await supabase.from("pos_user").insert({
         account_id: accId,
         auth_uid: authUserId,
         firstname,
@@ -149,19 +157,12 @@ export async function POST(req: NextRequest) {
         pin: pin || null,
         country,
       });
+      if (userErr) console.warn(`User insert for ${accId} failed:`, userErr.message);
     }
 
-    // 6. Create store + terminal for LIVE brand
-    await createStoreAndTerminal(supabase, liveAccountId, businessName, country);
-
-    // 7. Create store + terminal + demo data for DEMO brand
-    await createStoreAndTerminal(supabase, demoAccountId, `${firstname}'s Demo Store`, country);
-    await seedDemoTaxes(supabase, demoAccountId);
+    // 8. Seed demo data (categories + products)
     await seedDemoCategories(supabase, demoAccountId);
     await seedDemoProducts(supabase, demoAccountId, currency);
-
-    // 8. Create default taxes for live brand too
-    await seedDefaultTaxes(supabase, liveAccountId);
 
     return NextResponse.json({
       owner_id: ownerId,
@@ -182,7 +183,7 @@ async function createStoreAndTerminal(
   storeName: string,
   country: string
 ) {
-  const { data: store } = await supabase
+  const { data: store, error: storeErr } = await supabase
     .from("store")
     .insert({
       account_id: accountId,
@@ -193,8 +194,13 @@ async function createStoreAndTerminal(
     .select("store_id")
     .single();
 
+  if (storeErr) {
+    console.error(`Store insert for ${accountId} failed:`, storeErr.message);
+    return;
+  }
+
   if (store) {
-    await supabase.from("terminal").insert({
+    const { error: termErr } = await supabase.from("terminal").insert({
       account_id: accountId,
       store_id: store.store_id,
       name: "POS 1",
@@ -203,6 +209,7 @@ async function createStoreAndTerminal(
       floatamt: 0,
       sequence: 1,
     });
+    if (termErr) console.error(`Terminal insert for ${accountId} failed:`, termErr.message);
   }
 }
 
