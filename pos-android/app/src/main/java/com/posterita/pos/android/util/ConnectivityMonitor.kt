@@ -22,16 +22,8 @@ class ConnectivityMonitor @Inject constructor(
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-            // Only mark as connected when the OS has validated actual internet access
-            val validated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-            _isConnected.postValue(validated)
-        }
-
         override fun onAvailable(network: Network) {
-            // Network appeared — check if it's actually validated
-            _isConnected.postValue(checkConnectivity())
+            _isConnected.postValue(true)
         }
 
         override fun onLost(network: Network) {
@@ -59,6 +51,5 @@ class ConnectivityMonitor @Inject constructor(
         val network = cm.activeNetwork ?: return false
         val caps = cm.getNetworkCapabilities(network) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 }
