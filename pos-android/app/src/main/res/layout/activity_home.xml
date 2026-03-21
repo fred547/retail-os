@@ -34,25 +34,63 @@
                 style="@style/TextAppearance.Posterita.Heading"
                 tools:text="Good morning, John" />
 
-            <TextView
-                android:id="@+id/textBranding"
+            <!-- Tappable context line: Store › Terminal  ▾ -->
+            <LinearLayout
+                android:id="@+id/layoutContextSwitcher"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                style="@style/TextAppearance.Posterita.Tiny"
-                android:textColor="@color/posterita_muted"
-                tools:text="Grand Baie store · Cashier" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="2dp">
 
+                <TextView
+                    android:id="@+id/textContextStore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/posterita_primary"
+                    android:fontFamily="@font/lexend_medium"
+                    tools:text="Main Street" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" › "
+                    android:textSize="13sp"
+                    android:textColor="@color/posterita_muted" />
+
+                <TextView
+                    android:id="@+id/textContextTerminal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/posterita_ink"
+                    android:fontFamily="@font/lexend_medium"
+                    tools:text="POS 1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" ▾"
+                    android:textSize="12sp"
+                    android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+
+            <!-- Hidden views for binding compat -->
+            <TextView
+                android:id="@+id/textBranding"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
             <TextView
                 android:id="@+id/textTerminalInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                style="@style/TextAppearance.Posterita.Nano"
-                android:textColor="@color/posterita_muted"
-                android:visibility="gone"
-                tools:text="Terminal: POS-GB-01"
-                tools:visibility="visible" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Connectivity indicator -->
@@ -87,140 +125,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Context switcher bar -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardContext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/posterita_line"
-        app:cardBackgroundColor="@color/posterita_paper"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackground"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="10dp">
-
-            <!-- Brand -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/textContextBrand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/posterita_ink"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="Yadea" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Brand"
-                    android:textSize="10sp"
-                    android:textColor="@color/posterita_muted" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="16sp"
-                android:textColor="@color/posterita_muted"
-                android:layout_marginHorizontal="4dp" />
-
-            <!-- Store -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/textContextStore"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/posterita_primary"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="Main Street" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Store"
-                    android:textSize="10sp"
-                    android:textColor="@color/posterita_muted" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="16sp"
-                android:textColor="@color/posterita_muted"
-                android:layout_marginHorizontal="4dp" />
-
-            <!-- Terminal -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/textContextTerminal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/posterita_ink"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="POS 1" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Terminal"
-                    android:textSize="10sp"
-                    android:textColor="@color/posterita_muted" />
-            </LinearLayout>
-
-            <!-- Dropdown arrow -->
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="4dp"
-                android:src="@android:drawable/arrow_down_float"
-                app:tint="@color/posterita_muted"
-                android:contentDescription="Switch context" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
     <!-- Summary card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSummary"
@@ -234,7 +138,7 @@
         app:strokeWidth="1dp"
         app:strokeColor="@color/posterita_line"
         app:cardBackgroundColor="@color/posterita_paper"
-        app:layout_constraintTop_toBottomOf="@id/cardContext">
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
 
         <LinearLayout
             android:layout_width="match_parent"

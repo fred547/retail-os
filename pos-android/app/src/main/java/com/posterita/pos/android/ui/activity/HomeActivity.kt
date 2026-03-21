@@ -118,35 +118,16 @@ class HomeActivity : AppCompatActivity() {
             else -> "Good evening"
         }
         binding.textGreeting.text = "$greeting, $displayName"
-
-        // Show store name + role under greeting (matches prototype)
-        val storeName = prefsManager.storeName.ifEmpty { null }
-        val roleName = user?.displayRole
-        val subtitle = listOfNotNull(
-            storeName?.let { "$it store" },
-            roleName
-        ).joinToString(" · ")
-        binding.textBranding.text = subtitle.ifEmpty { "retailOS" }
-
-        // Show terminal info
-        val terminalName = prefsManager.terminalName.ifEmpty { null }
-        if (terminalName != null) {
-            binding.textTerminalInfo?.text = "Terminal: $terminalName"
-            binding.textTerminalInfo?.visibility = View.VISIBLE
-        }
     }
 
     private fun setupContextBar() {
-        val brandName = sessionManager.account?.businessname
-            ?: prefsManager.storeName.ifEmpty { "My Brand" }
         val storeName = prefsManager.storeName.ifEmpty { "Store" }
         val terminalName = prefsManager.terminalName.ifEmpty { "POS 1" }
 
-        binding.textContextBrand.text = brandName
         binding.textContextStore.text = storeName
         binding.textContextTerminal.text = terminalName
 
-        binding.cardContext.setOnClickListener { showContextPicker() }
+        binding.layoutContextSwitcher.setOnClickListener { showContextPicker() }
     }
 
     private fun showContextPicker() {
@@ -216,7 +197,6 @@ class HomeActivity : AppCompatActivity() {
         // Refresh UI
         binding.textContextStore.text = store.name ?: "Store"
         binding.textContextTerminal.text = terminal?.name ?: "—"
-        binding.textBranding.text = "${store.name} store"
 
         Toast.makeText(this, "Switched to ${store.name}${terminal?.let { " › ${it.name}" } ?: ""}", Toast.LENGTH_SHORT).show()
 
