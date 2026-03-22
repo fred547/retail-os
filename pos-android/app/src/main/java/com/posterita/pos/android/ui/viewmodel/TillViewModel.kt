@@ -1,10 +1,14 @@
 package com.posterita.pos.android.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.posterita.pos.android.data.local.dao.AccountDao
 import com.posterita.pos.android.data.local.dao.StoreDao
 import com.posterita.pos.android.data.local.dao.TaxDao
 import com.posterita.pos.android.data.local.dao.TerminalDao
+import com.posterita.pos.android.data.local.entity.Account
+import com.posterita.pos.android.data.local.entity.Store
+import com.posterita.pos.android.data.local.entity.Terminal
 import com.posterita.pos.android.data.local.entity.Till
 import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.service.TillService
@@ -36,25 +40,56 @@ class TillViewModel @Inject constructor(
 
     /**
      * Ensures all session objects (account, store, terminal) are loaded from DB.
-     * This handles the case where the app is re-launched and session was lost.
+     * If Room is empty (pre-sync), creates minimal fallback entities from prefs.
      */
     private suspend fun ensureSessionLoaded() {
         if (sessionManager.account == null) {
             val accountId = prefsManager.accountId
-            if (accountId.isNotEmpty()) {
-                sessionManager.account = accountDao.getAccountById(accountId)
+            if (accountId.isNotEmpty() && accountId != "null") {
+                var account = accountDao.getAccountById(accountId)
+                if (account == null) {
+                    // Room is empty (hasn't synced yet) — create a minimal fallback
+                    Log.w("TillViewModel", "Account not in Room, creating fallback for $accountId")
+                    account = Account(
+                        account_id = accountId,
+                        businessname = prefsManager.getString("store_name", "My Store"),
+                        currency = prefsManager.getString("currency", "MUR"),
+                    )
+                    accountDao.insertAccounts(listOf(account))
+                }
+                sessionManager.account = account
             }
         }
         if (sessionManager.store == null) {
             val storeId = prefsManager.storeId
             if (storeId > 0) {
-                sessionManager.store = storeDao.getStoreById(storeId)
+                var store = storeDao.getStoreById(storeId)
+                if (store == null) {
+                    Log.w("TillViewModel", "Store not in Room, creating fallback for $storeId")
+                    store = Store(
+                        storeId = storeId,
+                        name = prefsManager.getString("store_name", "Store"),
+                    )
+                    storeDao.insertStore(store)
+                }
+                sessionManager.store = store
             }
         }
         if (sessionManager.terminal == null) {
             val terminalId = prefsManager.terminalId
             if (terminalId > 0) {
-                sessionManager.terminal = terminalDao.getTerminalById(terminalId)
+                var terminal = terminalDao.getTerminalById(terminalId)
+                if (terminal == null) {
+                    Log.w("TillViewModel", "Terminal not in Room, creating fallback for $terminalId")
+                    terminal = Terminal(
+                        terminalId = terminalId,
+                        store_id = prefsManager.storeId,
+                        name = prefsManager.getString("terminal_name", "POS 1"),
+                        prefix = prefsManager.accountId.take(3).uppercase(),
+                    )
+                    terminalDao.insertTerminal(terminal)
+                }
+                sessionManager.terminal = terminal
             }
         }
         // Load tax cache if empty

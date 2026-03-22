@@ -9,7 +9,7 @@ import retrofit2.http.POST
 
 /**
  * Retrofit interface for the Posterita Cloud Supabase sync API.
- * Base URL: https://posterita-cloud.vercel.app/api/
+ * Base URL: https://web.posterita.com/api/
  */
 interface CloudSyncApi {
 

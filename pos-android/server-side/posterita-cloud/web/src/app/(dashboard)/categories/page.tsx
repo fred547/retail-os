@@ -174,7 +174,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Categories" }]} />
+      <Breadcrumb items={[{ label: "Categories" }]} />
 
       {/* Header */}
       <div className="flex items-center justify-between">

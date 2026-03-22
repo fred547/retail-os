@@ -13,5 +13,6 @@ data class HoldOrder(
     val description: String? = null,
     val tillId: Int = 0,
     val terminalId: Int = 0,
-    val storeId: Int = 0
+    val storeId: Int = 0,
+    val account_id: String = ""
 )

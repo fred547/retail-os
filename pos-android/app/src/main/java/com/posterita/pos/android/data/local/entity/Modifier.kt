@@ -25,7 +25,7 @@ data class Modifier(
     val iseditable: String? = null,
     val isfavourite: String? = null,
     val productcategory_id: Int = 0,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val iskitchenitem: String? = null,
     val sellingprice: Double = 0.0,
     val name: String? = null,

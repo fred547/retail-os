@@ -16,7 +16,9 @@ data class Printer(
     @ColumnInfo(name = "print_receipt") val printReceipt: Boolean = true,
     @ColumnInfo(name = "print_kitchen") val printKitchen: Boolean = false,
     @ColumnInfo(name = "cash_drawer") val cashDrawer: String? = null,
-    @ColumnInfo(name = "role") val role: String = ROLE_RECEIPT
+    @ColumnInfo(name = "role") val role: String = ROLE_RECEIPT,
+    @ColumnInfo(name = "account_id") val account_id: String = "",
+    @ColumnInfo(name = "store_id") val store_id: Int = 0
 ) {
     companion object {
         const val ROLE_RECEIPT = "receipt"

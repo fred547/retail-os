@@ -25,7 +25,7 @@ import com.posterita.pos.android.util.Constants
         AuditEvent::class,
         ErrorLog::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)

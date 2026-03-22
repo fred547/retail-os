@@ -103,7 +103,6 @@ export default function NewIntakePage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <Breadcrumb items={[
-        { label: "Dashboard", href: "/customer" },
         { label: "Product Intake", href: "/customer/intake" },
         { label: "New Intake" },
       ]} />

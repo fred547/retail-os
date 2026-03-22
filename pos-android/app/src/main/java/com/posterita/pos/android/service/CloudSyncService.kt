@@ -207,6 +207,8 @@ class CloudSyncService @Inject constructor(
                 modifiersPulled = syncResponse.modifiers?.size ?: 0,
                 customersPulled = syncResponse.customers?.size ?: 0,
                 usersPulled = syncResponse.users?.size ?: 0,
+                storesPulled = syncResponse.stores?.size ?: 0,
+                terminalsPulled = syncResponse.terminals?.size ?: 0,
                 discountCodesPulled = syncResponse.discountCodes?.size ?: 0,
                 preferencesPulled = syncResponse.preferences?.size ?: 0,
                 tablesPulled = syncResponse.restaurantTables?.size ?: 0,
@@ -766,7 +768,7 @@ class CloudSyncService @Inject constructor(
                 itemcode = map["itemcode"] as? String,
                 needs_price_review = map["needs_price_review"] as? String,
                 price_set_by = (map["price_set_by"] as? Number)?.toInt() ?: 0,
-                account_id = (map["account_id"] as? Number)?.toInt() ?: 0,
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map product: ${e.message}")
@@ -783,6 +785,7 @@ class CloudSyncService @Inject constructor(
                 display = map["display"] as? String,
                 position = (map["position"] as? Number)?.toInt() ?: 0,
                 tax_id = map["tax_id"] as? String,
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map category: ${e.message}")
@@ -797,6 +800,7 @@ class CloudSyncService @Inject constructor(
                 name = map["name"] as? String,
                 rate = (map["rate"] as? Number)?.toDouble() ?: 0.0,
                 isactive = map["isactive"] as? String ?: "Y",
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map tax: ${e.message}")
@@ -846,6 +850,7 @@ class CloudSyncService @Inject constructor(
                 isactive = map["isactive"] as? String ?: "Y",
                 loyaltypoints = (map["loyalty_points"] as? Number)?.toInt() ?: 0,
                 discountcode_id = (map["discountcode_id"] as? Number)?.toInt() ?: 0,
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map customer: ${e.message}")
@@ -940,6 +945,7 @@ class CloudSyncService @Inject constructor(
                 country = map["country"] as? String,
                 currency = map["currency"] as? String,
                 isactive = map["isactive"] as? String ?: "Y",
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map store: ${e.message}")
@@ -957,6 +963,7 @@ class CloudSyncService @Inject constructor(
                 sequence = (map["sequence"] as? Number)?.toInt() ?: 0,
                 cash_up_sequence = (map["cash_up_sequence"] as? Number)?.toInt() ?: 0,
                 isactive = map["isactive"] as? String ?: "Y",
+                account_id = map["account_id"]?.toString() ?: "",
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map terminal: ${e.message}")

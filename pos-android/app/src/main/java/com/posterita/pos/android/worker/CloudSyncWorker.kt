@@ -114,8 +114,8 @@ class CloudSyncWorker(
             val prefsManager = SharedPreferencesManager(applicationContext)
             val accountId = prefsManager.accountId
 
-            if (accountId.isEmpty()) {
-                Log.d(TAG, "No account configured, skipping sync")
+            if (accountId.isEmpty() || accountId == "null" || accountId == "0") {
+                Log.d(TAG, "No valid account configured (got '$accountId'), skipping sync")
                 return@withContext Result.success()
             }
 

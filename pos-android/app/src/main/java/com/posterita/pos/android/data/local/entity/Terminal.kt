@@ -23,7 +23,7 @@ data class Terminal(
     val tax_id: Int = 0,
     val ebs_counter: Int = 0,
     val sequence: Int = 0,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val createdby: Int = 0,
     val name: String? = null,
     val mraebs_id: String? = null,

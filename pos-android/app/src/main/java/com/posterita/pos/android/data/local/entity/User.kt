@@ -27,7 +27,7 @@ data class User(
     val address1: String? = null,
     val issalesrep: String? = null,
     val lastname: String? = null,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val updated: String? = null,
     val username: String? = null,
     val role: String? = null

@@ -15,6 +15,7 @@ import com.posterita.pos.android.ui.viewmodel.TillViewModel
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import com.posterita.pos.android.worker.CloudSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -59,6 +60,11 @@ class TillActivity : AppCompatActivity() {
 
         binding.buttonBack?.setOnClickListener { finish() }
 
+        // Connectivity dot → opens sync screen
+        binding.connectivityDot?.setOnClickListener {
+            startActivity(android.content.Intent(this, DatabaseSynchonizerActivity::class.java))
+        }
+
         buildDenominationRows()
         setupOpenTillButton()
         observeViewModel()
@@ -66,6 +72,9 @@ class TillActivity : AppCompatActivity() {
 
         // Check if a till is already open for this terminal
         tillViewModel.loadOpenTill()
+
+        // Force sync on POS entry to ensure local DB is up to date
+        CloudSyncWorker.syncNow(this)
     }
 
     private fun buildDenominationRows() {

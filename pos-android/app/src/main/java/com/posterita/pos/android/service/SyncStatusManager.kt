@@ -54,6 +54,8 @@ object SyncStatusManager {
         val modifiersPulled: Int = 0,
         val customersPulled: Int = 0,
         val usersPulled: Int = 0,
+        val storesPulled: Int = 0,
+        val terminalsPulled: Int = 0,
         val discountCodesPulled: Int = 0,
         val preferencesPulled: Int = 0,
         val tablesPulled: Int = 0,
@@ -64,6 +66,7 @@ object SyncStatusManager {
         val totalPushed get() = ordersPushed + tillsPushed
         val totalPulled get() = productsPulled + categoriesPulled + taxesPulled +
                 modifiersPulled + customersPulled + usersPulled +
+                storesPulled + terminalsPulled +
                 discountCodesPulled + preferencesPulled + tablesPulled
 
         fun toDisplayString(): String {
@@ -76,6 +79,8 @@ object SyncStatusManager {
             if (modifiersPulled > 0) parts.add("$modifiersPulled modifiers")
             if (customersPulled > 0) parts.add("$customersPulled customers")
             if (usersPulled > 0) parts.add("$usersPulled users")
+            if (storesPulled > 0) parts.add("$storesPulled stores")
+            if (terminalsPulled > 0) parts.add("$terminalsPulled terminals")
             if (discountCodesPulled > 0) parts.add("$discountCodesPulled discount codes")
             if (preferencesPulled > 0) parts.add("$preferencesPulled preferences")
             if (tablesPulled > 0) parts.add("$tablesPulled tables")

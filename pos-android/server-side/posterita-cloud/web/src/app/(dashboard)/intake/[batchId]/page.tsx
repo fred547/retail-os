@@ -178,7 +178,6 @@ export default function BatchReviewPage() {
   return (
     <div className="space-y-6">
       <Breadcrumb items={[
-        { label: "Dashboard", href: "/customer" },
         { label: "Product Intake", href: "/customer/intake" },
         { label: `Batch #${batch.batch_id}` },
       ]} />

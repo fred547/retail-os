@@ -109,7 +109,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Settings" }]} />
+      <Breadcrumb items={[{ label: "Settings" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Settings</h1>

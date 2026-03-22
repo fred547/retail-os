@@ -122,7 +122,7 @@ export default function TablesPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Tables" }]} />
+      <Breadcrumb items={[{ label: "Tables" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tables</h1>

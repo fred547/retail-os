@@ -310,7 +310,7 @@ export default function AiImportPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "AI Import" }]} />
+      <Breadcrumb items={[{ label: "AI Import" }]} />
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
           AI Store Setup & Product Import

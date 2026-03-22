@@ -81,7 +81,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Reports" }]} />
+      <Breadcrumb items={[{ label: "Reports" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reports</h1>

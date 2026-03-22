@@ -126,9 +126,9 @@ export async function POST(req: NextRequest) {
     const body: SyncRequest = await req.json();
 
     // Validate required fields
-    if (!body.account_id || !body.terminal_id) {
+    if (!body.account_id || body.account_id === "null" || !body.terminal_id) {
       return NextResponse.json(
-        { error: "account_id and terminal_id are required" },
+        { error: "Valid account_id and terminal_id are required" },
         { status: 400 }
       );
     }

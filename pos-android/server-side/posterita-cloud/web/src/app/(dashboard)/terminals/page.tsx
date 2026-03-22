@@ -151,7 +151,7 @@ export default function TerminalsPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Terminals" }]} />
+      <Breadcrumb items={[{ label: "Terminals" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Terminals</h1>

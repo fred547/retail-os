@@ -72,11 +72,17 @@ class LoginActivity : AppCompatActivity() {
         binding.tvError.visibility = View.GONE
 
         lifecycleScope.launch {
-            // Authenticate via server
+            // Try server first (online-first)
             val result = withContext(Dispatchers.IO) { serverLogin(email, password) }
 
             if (result == null) {
-                showError("Invalid email or password")
+                // Server unreachable — try offline login with local databases
+                val offlineResult = withContext(Dispatchers.IO) { tryOfflineLogin(email) }
+                if (offlineResult != null) {
+                    loginSuccess(offlineResult.first, offlineResult.second)
+                    return@launch
+                }
+                showError("Cannot connect to server. Check your internet connection.")
                 resetButton()
                 return@launch
             }
@@ -153,6 +159,58 @@ class LoginActivity : AppCompatActivity() {
                 loginSuccess(accountId, tempUser)
             }
         }
+    }
+
+    /**
+     * Offline fallback: scan local Room databases for a user matching this email.
+     * Returns (accountId, User) if found, null otherwise.
+     */
+    private suspend fun tryOfflineLogin(email: String): Pair<String, User>? {
+        // Check account registry for previously synced accounts
+        val accounts = accountRegistry.getAllAccounts()
+        for (account in accounts) {
+            try {
+                val db = AppDatabase.getInstance(this, account.id)
+                val users = db.userDao().getAllUsers()
+                val matchingUser = users.firstOrNull { u ->
+                    u.email.equals(email, ignoreCase = true) ||
+                    u.username.equals(email, ignoreCase = true)
+                }
+                if (matchingUser != null) {
+                    Log.d("LoginActivity", "Offline login: found user in account ${account.id}")
+                    return account.id to matchingUser
+                }
+            } catch (e: Exception) {
+                Log.w("LoginActivity", "Offline login: failed to check account ${account.id}", e)
+            }
+        }
+
+        // Also scan for any Room DB files on disk
+        val dbDir = getDatabasePath("dummy").parentFile ?: return null
+        val dbFiles = dbDir.listFiles()?.filter {
+            it.name.startsWith("POSTERITA_LITE_DB_") && !it.name.contains("-shm") && !it.name.contains("-wal")
+        } ?: return null
+
+        for (dbFile in dbFiles) {
+            val accountId = dbFile.name.removePrefix("POSTERITA_LITE_DB_")
+            if (accounts.any { it.id == accountId }) continue // already checked
+            try {
+                val db = AppDatabase.getInstance(this, accountId)
+                val users = db.userDao().getAllUsers()
+                val matchingUser = users.firstOrNull { u ->
+                    u.email.equals(email, ignoreCase = true) ||
+                    u.username.equals(email, ignoreCase = true)
+                }
+                if (matchingUser != null) {
+                    Log.d("LoginActivity", "Offline login: found user in DB file $accountId")
+                    return accountId to matchingUser
+                }
+            } catch (e: Exception) {
+                Log.w("LoginActivity", "Offline login: failed to check DB $accountId", e)
+            }
+        }
+
+        return null
     }
 
     private fun serverLogin(email: String, password: String): JSONObject? {

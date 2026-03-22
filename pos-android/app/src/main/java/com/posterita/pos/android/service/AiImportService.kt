@@ -130,19 +130,22 @@ class AiImportService : Service() {
                 return
             }
 
-            val urls = prefs.getString(PREF_RESUME_URLS)
-                .split("|||")
-                .filter { it.isNotBlank() }
-            if (urls.isEmpty()) {
+            // Need at least a business name — URLs are optional (AI will search by name)
+            val businessName = prefs.getString(PREF_RESUME_NAME)
+            if (businessName.isBlank()) {
                 prefs.setString(PREF_PENDING_START, "")
                 return
             }
+
+            val urls = prefs.getString(PREF_RESUME_URLS)
+                .split("|||")
+                .filter { it.isNotBlank() }
 
             prefs.setString(PREF_PENDING_START, "")
             start(
                 context,
                 urls,
-                prefs.getString(PREF_RESUME_NAME),
+                businessName,
                 prefs.getString(PREF_RESUME_LOCATION),
                 prefs.getString(PREF_RESUME_TYPE),
                 prefs.getString(PREF_RESUME_ACCOUNT_ID),
@@ -154,18 +157,19 @@ class AiImportService : Service() {
 
         /** Check if there's a failed/interrupted import that can be resumed */
         fun hasResumableImport(prefs: SharedPreferencesManager): Boolean {
-            return prefs.getString(PREF_RESUME_URLS).isNotBlank() &&
+            return prefs.getString(PREF_RESUME_NAME).isNotBlank() &&
                    prefs.getString(PREF_IMPORT_RUNNING) != "true" &&
                    prefs.getString(PREF_IMPORT_ACCOUNT_ID).isBlank()
         }
 
         /** Resume a previously interrupted import */
         fun resume(context: Context, prefs: SharedPreferencesManager) {
+            val businessName = prefs.getString(PREF_RESUME_NAME)
+            if (businessName.isBlank()) return
             val urls = prefs.getString(PREF_RESUME_URLS).split("|||").filter { it.isNotBlank() }
-            if (urls.isEmpty()) return
             start(
                 context, urls,
-                prefs.getString(PREF_RESUME_NAME),
+                businessName,
                 prefs.getString(PREF_RESUME_LOCATION),
                 prefs.getString(PREF_RESUME_TYPE),
                 prefs.getString(PREF_RESUME_ACCOUNT_ID),
@@ -190,9 +194,8 @@ class AiImportService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val urls = intent?.getStringArrayListExtra(EXTRA_URLS) ?: run {
-            stopSelf(); return START_NOT_STICKY
-        }
+        if (intent == null) { stopSelf(); return START_NOT_STICKY }
+        val urls = intent.getStringArrayListExtra(EXTRA_URLS) ?: arrayListOf()
         val businessName = intent.getStringExtra(EXTRA_BUSINESS_NAME) ?: ""
         val businessLocation = intent.getStringExtra(EXTRA_BUSINESS_LOCATION) ?: ""
         val businessType = intent.getStringExtra(EXTRA_BUSINESS_TYPE) ?: "retail"

@@ -237,8 +237,8 @@ export async function POST(req: NextRequest) {
       status,
     } = body;
 
-    if (!account_id) {
-      return NextResponse.json({ error: "account_id is required" }, { status: 400 });
+    if (!account_id || account_id === "null" || account_id === "0" || account_id.trim().length === 0) {
+      return NextResponse.json({ error: "Valid account_id is required" }, { status: 400 });
     }
 
     const accountType = normalizeAccountType(type) || "trial";
@@ -250,19 +250,24 @@ export async function POST(req: NextRequest) {
 
     const { data: existing } = await getDb()
       .from("account")
-      .select("account_id, businessname")
+      .select("account_id, businessname, type")
       .eq("account_id", account_id)
       .single();
 
     if (existing) {
       await pushInitialData(body, account_id, currency || "MUR");
-      await getDb()
-        .from("account")
-        .update({
-          type: accountType,
-          status: lifecycleStatus,
-        })
-        .eq("account_id", account_id);
+      // Only update type/status if NOT already set to a higher tier (don't downgrade live → trial)
+      const currentType = existing.type || "trial";
+      const shouldUpdateType = currentType === "trial" && accountType !== "trial";
+      if (shouldUpdateType) {
+        await getDb()
+          .from("account")
+          .update({
+            type: accountType,
+            status: lifecycleStatus,
+          })
+          .eq("account_id", account_id);
+      }
 
       await linkAccountOwner(account_id, { email, phone }, existing.businessname || businessname || "Unnamed Business");
 

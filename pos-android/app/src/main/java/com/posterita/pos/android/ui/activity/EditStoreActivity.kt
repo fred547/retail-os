@@ -187,13 +187,12 @@ class EditStoreActivity : AppCompatActivity() {
                     Unit
                 } else {
                     val maxId = db.storeDao().getMaxStoreId() ?: 0
-                    val acctId = try { prefsManager.accountId.toInt() } catch (_: Exception) { 0 }
                     val newStore = Store(
                         storeId = maxId + 1,
                         name = name, address = address, city = city,
                         state = state, zip = zip, country = country,
                         isactive = "Y",
-                        account_id = acctId
+                        account_id = prefsManager.accountId
                     )
                     db.storeDao().insertStore(newStore)
                 }

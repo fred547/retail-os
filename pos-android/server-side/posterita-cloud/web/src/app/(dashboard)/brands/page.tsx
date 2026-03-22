@@ -67,7 +67,7 @@ export default async function BrandsPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Brands" }]} />
+      <Breadcrumb items={[{ label: "Brands" }]} />
 
       <div className="flex items-center justify-between">
         <div>

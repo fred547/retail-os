@@ -40,7 +40,7 @@ export default async function IntakePage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Product Intake" }]} />
+      <Breadcrumb items={[{ label: "Product Intake" }]} />
 
       <div className="flex items-center justify-between">
         <div>

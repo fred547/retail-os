@@ -18,7 +18,7 @@ data class Store(
     val city: String? = null,
     val created: String? = null,
     val isactive: String? = null,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val createdby: Int = 0,
     val name: String? = null,
     val state: String? = null,

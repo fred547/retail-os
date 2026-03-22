@@ -50,7 +50,6 @@ export default async function ErrorsPage({
     <div className="space-y-6">
       <Breadcrumb
         items={[
-          { label: "Dashboard", href: "/customer" },
           { label: "Error Logs" },
         ]}
       />

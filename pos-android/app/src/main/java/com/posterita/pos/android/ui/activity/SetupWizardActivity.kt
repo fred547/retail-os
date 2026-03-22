@@ -669,8 +669,13 @@ class SetupWizardActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                serverAccountId = signupResult.optString("live_account_id")
-                serverDemoAccountId = signupResult.optString("demo_account_id")
+                // optString returns "null" for JSON null — guard against it
+                serverAccountId = signupResult.optString("live_account_id", "").let {
+                    if (it == "null") "" else it
+                }
+                serverDemoAccountId = signupResult.optString("demo_account_id", "").let {
+                    if (it == "null") "" else it
+                }
 
                 // Save HMAC sync secret for signing sync requests
                 val syncSecret = signupResult.optString("sync_secret", "")
@@ -679,7 +684,7 @@ class SetupWizardActivity : AppCompatActivity() {
                 }
 
                 if (serverAccountId.isNullOrEmpty()) {
-                    showSetupError(view, "Server returned an invalid response. Please try again.")
+                    showSetupError(view, "Account creation failed — no valid account ID returned. Please try again or use a different email.")
                     return@launch
                 }
 
@@ -758,39 +763,38 @@ class SetupWizardActivity : AppCompatActivity() {
                 tvStatusProducts?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
                 tvStatusProducts?.compoundDrawablePadding = 8
 
-                // Step 3: Sync with server + queue AI import
+                // Step 3: Sync with server + queue AI product discovery
                 layoutFinish?.alpha = 1f
                 progressFinish?.visibility = View.VISIBLE
                 tvStatusFinish?.text = "Syncing with server..."
 
                 withContext(Dispatchers.IO) {
-                    // Trigger immediate cloud sync to pull server-assigned IDs
                     CloudSyncWorker.syncNow(this@SetupWizardActivity)
                 }
 
-                // Queue AI import in background
-                if (websiteSetupService.isConfigured()) {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            AiImportService.queueStart(
-                                prefs = prefsManager, urls = emptyList(),
-                                businessName = collectedBrand, businessLocation = collectedCountry,
-                                businessType = businessType, accountId = serverAccountId!!,
-                                ownerEmail = collectedEmail, ownerPhone = collectedPhone,
-                                accountType = "live"
-                            )
-                        } catch (e: Exception) {
-                            AppErrorLogger.warn(this@SetupWizardActivity, "SetupWizard", "AI queue failed, continuing", e)
-                        }
+                // Queue AI import — discovers business online, extracts products
+                tvStatusFinish?.text = "Queuing AI product discovery..."
+                withContext(Dispatchers.IO) {
+                    try {
+                        AiImportService.queueStart(
+                            prefs = prefsManager, urls = emptyList(),
+                            businessName = collectedBrand, businessLocation = collectedCountry,
+                            businessType = businessType, accountId = serverAccountId!!,
+                            ownerEmail = collectedEmail, ownerPhone = collectedPhone,
+                            accountType = "live"
+                        )
+                        AiImportService.startPendingIfNeeded(this@SetupWizardActivity, prefsManager)
+                    } catch (e: Exception) {
+                        AppErrorLogger.warn(this@SetupWizardActivity, "SetupWizard", "AI import queue failed", e)
                     }
                 }
 
                 // Give sync a moment to pull data
                 delay(2000)
+                tvStatusFinish?.text = "All set!"
 
                 // Step 3 done
                 progressFinish?.visibility = View.GONE
-                tvStatusFinish?.text = "All set!"
                 tvStatusFinish?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
                 tvStatusFinish?.compoundDrawablePadding = 8
 

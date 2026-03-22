@@ -469,7 +469,7 @@ export default function UsersPage() {
   // ──────────────────────────────────────
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Users" }]} />
+      <Breadcrumb items={[{ label: "Users" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Users</h1>

@@ -15,7 +15,7 @@ data class Preference(
     val showcustomerbrn: String? = null,
     val showstocktransfer: String? = null,
     val printpaymentrule: String? = null,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val showunitprice: String? = null,
     val createdby: Int = 0,
     val acceptpaymentrule: String? = null,

@@ -55,15 +55,19 @@ class SharedPreferencesManager @Inject constructor(
         get() {
             // Migrate from plain prefs if needed
             val secure = securePrefs.getString(Constants.ACCOUNT_ID, null)
-            if (secure != null) return secure
+            if (secure != null && secure != "null") return secure
             val plain = prefs.getString(Constants.ACCOUNT_ID, "") ?: ""
-            if (plain.isNotEmpty()) {
+            if (plain.isNotEmpty() && plain != "null") {
                 securePrefs.edit().putString(Constants.ACCOUNT_ID, plain).apply()
                 prefs.edit().remove(Constants.ACCOUNT_ID).apply()
             }
-            return plain
+            return if (plain == "null") "" else plain
         }
-        set(value) = securePrefs.edit().putString(Constants.ACCOUNT_ID, value).apply()
+        set(value) {
+            // Never store the string "null" — treat it as empty
+            val sanitized = if (value == "null") "" else value
+            securePrefs.edit().putString(Constants.ACCOUNT_ID, sanitized).apply()
+        }
 
     var baseUrl: String
         get() = prefs.getString(Constants.KEY_BASE_URL, Constants.DEFAULT_BASE_URL) ?: Constants.DEFAULT_BASE_URL

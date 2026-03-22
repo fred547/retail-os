@@ -106,7 +106,7 @@ export default async function ProductsPage({
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Dashboard", href: "/customer" }, { label: "Products" }]} />
+      <Breadcrumb items={[{ label: "Products" }]} />
       {params.filter === "price_review" && (
         <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-xl px-5 py-3">
           <p className="text-sm text-orange-700">
@@ -188,8 +188,8 @@ export default async function ProductsPage({
       </div>
 
       {/* Search & Filters */}
-      <div className="flex gap-4">
-        <form className="flex-1 relative">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form className="flex-1 relative min-w-0">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             size={18}
@@ -197,8 +197,8 @@ export default async function ProductsPage({
           <input
             name="search"
             defaultValue={params.search}
-            placeholder="Search products by name, UPC, or description..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+            placeholder="Search products..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm"
           />
         </form>
         <CategoryFilter

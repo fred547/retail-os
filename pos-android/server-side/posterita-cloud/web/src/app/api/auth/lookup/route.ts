@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
       .select("account_id, type")
       .eq("owner_id", owner.id);
 
-    const liveAccount = accounts?.find((a: any) => a.type === "live");
+    // Find live account (or fallback to trial/any non-demo account)
+    const liveAccount = accounts?.find((a: any) => a.type === "live")
+      || accounts?.find((a: any) => a.type !== "demo");
     const demoAccount = accounts?.find((a: any) => a.type === "demo");
 
     return NextResponse.json({

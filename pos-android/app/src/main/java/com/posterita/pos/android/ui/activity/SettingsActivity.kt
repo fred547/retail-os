@@ -44,6 +44,9 @@ class SettingsActivity : BaseDrawerActivity() {
         }
 
         // Device — local config only
+        binding.syncOption.setOnClickListener {
+            startActivity(Intent(this, DatabaseSynchonizerActivity::class.java))
+        }
         binding.printersOption.setOnClickListener {
             startActivity(Intent(this, PrintersActivity::class.java))
         }

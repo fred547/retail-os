@@ -30,7 +30,7 @@ data class Customer(
     val created: String? = null,
     val address1: String? = null,
     val mobile: String? = null,
-    val account_id: Int = 0,
+    val account_id: String = "",
     val discountcodeexpiry: String? = null,
     val dob: String? = null,
     val loyaltypoints: Int = 0,
