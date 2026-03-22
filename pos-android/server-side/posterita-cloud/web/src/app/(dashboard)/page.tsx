@@ -257,7 +257,7 @@ export default async function DashboardPage() {
           )}
 
           {data.conflictProducts.length > 0 && (
-            <Link href="/products?filter=price_review" className="block">
+            <Link href="/customer/products?filter=price_review" className="block">
               <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-700 hover:bg-red-100 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
                   <RefreshCw size={20} />

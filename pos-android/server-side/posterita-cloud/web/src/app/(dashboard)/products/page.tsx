@@ -82,10 +82,11 @@ export default async function ProductsPage({
       .eq("product_status", "draft"),
   ]);
 
-  // Get categories for filter
+  // Get categories for filter (scoped to this account)
   const { data: categories } = await supabase
     .from("productcategory")
     .select("productcategory_id, name")
+    .eq("account_id", accountId)
     .eq("isactive", "Y")
     .order("name");
 

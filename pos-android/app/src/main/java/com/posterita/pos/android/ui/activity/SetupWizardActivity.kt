@@ -47,6 +47,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SetupWizardActivity : AppCompatActivity() {
 
+    companion object {
+        private const val REQUEST_CODE_ENROLL = 9001
+    }
+
     private lateinit var binding: ActivitySetupWizardBinding
 
     @Inject lateinit var prefsManager: SharedPreferencesManager
@@ -236,7 +240,10 @@ class SetupWizardActivity : AppCompatActivity() {
 
         // Enroll Device → scan QR to set up for a store
         view.findViewById<MaterialButton>(R.id.btnEnrollDevice)?.setOnClickListener {
-            Toast.makeText(this, "Device enrollment requires a QR code from the store owner. Coming in Phase 1.", Toast.LENGTH_LONG).show()
+            val scanIntent = Intent(this, ScanBarcodeActivity::class.java)
+            scanIntent.putExtra("EXTRA_MODE", "enroll")
+            @Suppress("DEPRECATION")
+            startActivityForResult(scanIntent, REQUEST_CODE_ENROLL)
         }
 
         // Try Demo → load demo and go to home
@@ -665,6 +672,12 @@ class SetupWizardActivity : AppCompatActivity() {
                 serverAccountId = signupResult.optString("live_account_id")
                 serverDemoAccountId = signupResult.optString("demo_account_id")
 
+                // Save HMAC sync secret for signing sync requests
+                val syncSecret = signupResult.optString("sync_secret", "")
+                if (syncSecret.isNotEmpty()) {
+                    prefsManager.syncSecret = syncSecret
+                }
+
                 if (serverAccountId.isNullOrEmpty()) {
                     showSetupError(view, "Server returned an invalid response. Please try again.")
                     return@launch
@@ -1003,6 +1016,17 @@ class SetupWizardActivity : AppCompatActivity() {
         } catch (e: Exception) {
             android.util.Log.w("SetupWizard", "Lookup failed", e)
             null
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_ENROLL && resultCode == RESULT_OK) {
+            // Enrollment completed successfully in ScanBarcodeActivity — go to Home
+            prefsManager.setString("setup_completed", "true")
+            restartApp()
         }
     }
 

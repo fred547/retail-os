@@ -121,6 +121,7 @@ class CloudSyncService @Inject constructor(
             val allCategories = db.productCategoryDao().getAllProductCategoriesSync()
             val allProducts = db.productDao().getAllProductsSync()
             val allTaxes = db.taxDao().getAllTaxesSync()
+            val allTables = db.restaurantTableDao().getTablesByStore(storeId)
 
             // Collect unsynced error logs
             val unsyncedErrorLogs = db.errorLogDao().getUnsyncedLogs()
@@ -142,6 +143,7 @@ class CloudSyncService @Inject constructor(
                 categories = if (allCategories.isNotEmpty()) allCategories.map { it.toSyncCategory() } else null,
                 products = if (allProducts.isNotEmpty()) allProducts.map { it.toSyncProduct() } else null,
                 taxes = if (allTaxes.isNotEmpty()) allTaxes.map { it.toSyncTax() } else null,
+                restaurantTables = if (allTables.isNotEmpty()) allTables.map { it.toSyncRestaurantTable() } else null,
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
             )
 
@@ -675,6 +677,20 @@ class CloudSyncService @Inject constructor(
             rate = rate,
             taxCode = taxcode,
             isActive = isactive ?: "Y",
+        )
+    }
+
+    private fun RestaurantTable.toSyncRestaurantTable(): SyncRestaurantTable {
+        return SyncRestaurantTable(
+            tableId = table_id,
+            tableName = table_name,
+            seats = seats,
+            isOccupied = is_occupied,
+            currentOrderId = current_order_id,
+            storeId = store_id,
+            terminalId = terminal_id,
+            created = created,
+            updated = updated,
         )
     }
 

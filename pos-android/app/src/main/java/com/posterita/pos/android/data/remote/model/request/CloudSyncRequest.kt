@@ -24,6 +24,8 @@ data class CloudSyncRequest(
     @SerializedName("categories") val categories: List<SyncCategory>? = null,
     @SerializedName("products") val products: List<SyncProduct>? = null,
     @SerializedName("taxes") val taxes: List<SyncTax>? = null,
+    // Push: restaurant tables
+    @SerializedName("restaurant_tables") val restaurantTables: List<SyncRestaurantTable>? = null,
     // Push: error logs for remote debugging
     @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
 )
@@ -202,6 +204,18 @@ data class SyncTax(
     @SerializedName("rate") val rate: Double = 0.0,
     @SerializedName("taxcode") val taxCode: String? = null,
     @SerializedName("isactive") val isActive: String? = "Y",
+)
+
+data class SyncRestaurantTable(
+    @SerializedName("table_id") val tableId: Int,
+    @SerializedName("table_name") val tableName: String,
+    @SerializedName("seats") val seats: Int = 4,
+    @SerializedName("is_occupied") val isOccupied: Boolean = false,
+    @SerializedName("current_order_id") val currentOrderId: String? = null,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("terminal_id") val terminalId: Int = 0,
+    @SerializedName("created") val created: Long = 0,
+    @SerializedName("updated") val updated: Long = 0,
 )
 
 data class SyncErrorLog(

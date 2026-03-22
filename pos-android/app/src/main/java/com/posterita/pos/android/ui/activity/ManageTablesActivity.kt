@@ -1,22 +1,26 @@
 package com.posterita.pos.android.ui.activity
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.RestaurantTable
 import com.posterita.pos.android.databinding.ActivityManageListBinding
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -25,23 +29,31 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ManageTablesActivity : AppCompatActivity() {
+class ManageTablesActivity : BaseDrawerActivity() {
 
     private lateinit var binding: ActivityManageListBinding
     @Inject lateinit var db: AppDatabase
-    @Inject lateinit var prefsManager: SharedPreferencesManager
 
     private var tables = mutableListOf<RestaurantTable>()
 
+    override fun getDrawerHighlightId(): Int = R.id.nav_settings
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityManageListBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithDrawer(R.layout.activity_manage_list)
+        binding = ActivityManageListBinding.bind(drawerLayout.getChildAt(0))
 
-        binding.toolbar.title = "Manage Tables"
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        // Top bar
+        binding.tvTitle.text = "Tables"
+        binding.buttonBack.setOnClickListener { finish() }
+
+        // Hide web console banner — tables are managed locally
+        binding.layoutWebBanner.visibility = View.GONE
+
+        setupDrawerNavigation()
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.fabAdd.visibility = View.VISIBLE
         binding.fabAdd.setOnClickListener { showTableDialog(null) }
 
         loadData()
@@ -50,26 +62,36 @@ class ManageTablesActivity : AppCompatActivity() {
     private fun loadData() {
         binding.progressLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
-            tables = withContext(Dispatchers.IO) {
-                db.restaurantTableDao().getTablesByStore(prefsManager.storeId).toMutableList()
+            try {
+                tables = withContext(Dispatchers.IO) {
+                    db.restaurantTableDao().getTablesByStore(prefsManager.storeId).toMutableList()
+                }
+                binding.progressLoading.visibility = View.GONE
+                val isEmpty = tables.isEmpty()
+                binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                binding.tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                if (isEmpty) {
+                    binding.tvEmpty.text = "No tables yet"
+                }
+                binding.recyclerView.adapter = TableAdapter()
+            } catch (e: Exception) {
+                binding.progressLoading.visibility = View.GONE
+                AppErrorLogger.log(this@ManageTablesActivity, "ManageTablesActivity", "Failed to load tables", e)
             }
-            binding.progressLoading.visibility = View.GONE
-            binding.tvEmpty.visibility = if (tables.isEmpty()) View.VISIBLE else View.GONE
-            binding.recyclerView.adapter = TableAdapter()
         }
     }
 
     private fun showTableDialog(table: RestaurantTable?) {
         val isEdit = table != null
 
-        val container = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setPadding(64, 32, 64, 16)
         }
 
         val tilName = TextInputLayout(this).apply {
             hint = "Table Name"
-            layoutParams = android.widget.LinearLayout.LayoutParams(
+            layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             )
         }
@@ -79,7 +101,7 @@ class ManageTablesActivity : AppCompatActivity() {
 
         val tilSeats = TextInputLayout(this).apply {
             hint = "Number of Seats"
-            layoutParams = android.widget.LinearLayout.LayoutParams(
+            layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { topMargin = 16 }
         }
@@ -99,11 +121,6 @@ class ManageTablesActivity : AppCompatActivity() {
             .setView(container)
             .setPositiveButton("Save", null)
             .setNegativeButton("Cancel", null)
-            .apply {
-                if (isEdit) {
-                    setNeutralButton("Delete") { _, _ -> deleteTable(table!!) }
-                }
-            }
             .create()
 
         dialog.setOnShowListener {
@@ -112,35 +129,47 @@ class ManageTablesActivity : AppCompatActivity() {
                 val seats = etSeats.text?.toString()?.toIntOrNull() ?: 4
 
                 if (name.isEmpty()) {
-                    Toast.makeText(this, "Table name is required", Toast.LENGTH_SHORT).show()
+                    tilName.error = "Table name is required"
                     return@setOnClickListener
                 }
 
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        if (isEdit) {
-                            val updated = table!!.copy(
-                                table_name = name,
-                                seats = seats,
-                                updated = System.currentTimeMillis()
-                            )
-                            db.restaurantTableDao().updateTable(updated)
-                        } else {
-                            val newTable = RestaurantTable(
-                                table_name = name,
-                                seats = seats,
-                                store_id = prefsManager.storeId,
-                                terminal_id = prefsManager.terminalId,
-                                created = System.currentTimeMillis(),
-                                updated = System.currentTimeMillis()
-                            )
-                            db.restaurantTableDao().insertTable(newTable)
+                    try {
+                        withContext(Dispatchers.IO) {
+                            if (isEdit) {
+                                val updated = table!!.copy(
+                                    table_name = name,
+                                    seats = seats,
+                                    updated = System.currentTimeMillis()
+                                )
+                                db.restaurantTableDao().updateTable(updated)
+                            } else {
+                                val newTable = RestaurantTable(
+                                    table_name = name,
+                                    seats = seats,
+                                    store_id = prefsManager.storeId,
+                                    terminal_id = prefsManager.terminalId,
+                                    created = System.currentTimeMillis(),
+                                    updated = System.currentTimeMillis()
+                                )
+                                db.restaurantTableDao().insertTable(newTable)
+                            }
                         }
+                        dialog.dismiss()
+                        loadData()
+                        Toast.makeText(
+                            this@ManageTablesActivity,
+                            if (isEdit) "Table updated" else "Table added",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: Exception) {
+                        AppErrorLogger.log(
+                            this@ManageTablesActivity,
+                            "ManageTablesActivity",
+                            "Failed to ${if (isEdit) "update" else "add"} table",
+                            e
+                        )
                     }
-                    dialog.dismiss()
-                    loadData()
-                    Toast.makeText(this@ManageTablesActivity,
-                        if (isEdit) "Table updated" else "Table added", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -153,9 +182,18 @@ class ManageTablesActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete '${table.table_name}'?")
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { db.restaurantTableDao().deleteTable(table) }
-                    loadData()
-                    Toast.makeText(this@ManageTablesActivity, "Table deleted", Toast.LENGTH_SHORT).show()
+                    try {
+                        withContext(Dispatchers.IO) { db.restaurantTableDao().deleteTable(table) }
+                        loadData()
+                        Toast.makeText(this@ManageTablesActivity, "Table deleted", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        AppErrorLogger.log(
+                            this@ManageTablesActivity,
+                            "ManageTablesActivity",
+                            "Failed to delete table",
+                            e
+                        )
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -163,31 +201,74 @@ class ManageTablesActivity : AppCompatActivity() {
     }
 
     inner class TableAdapter : RecyclerView.Adapter<TableAdapter.VH>() {
-        inner class VH(val card: MaterialCardView) : RecyclerView.ViewHolder(card) {
-            val tvName: TextView = TextView(card.context).apply { textSize = 16f; setPadding(16, 4, 16, 0) }
-            val tvDetails: TextView = TextView(card.context).apply { textSize = 13f; setPadding(16, 0, 16, 8); setTextColor(getColor(android.R.color.darker_gray)) }
-            val layout = android.widget.LinearLayout(card.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(32, 24, 32, 24)
-                addView(tvName)
-                addView(tvDetails)
-            }
-            init {
-                card.addView(layout)
-                card.radius = 24f; card.useCompatPadding = true
-                card.setOnClickListener { showTableDialog(tables[adapterPosition]) }
-            }
+        inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val card: MaterialCardView = itemView.findViewById(R.id.cardItem)
+            val iconBg: View = itemView.findViewById(R.id.iconBg)
+            val iconInitial: TextView = itemView.findViewById(R.id.iconInitial)
+            val tvName: TextView = itemView.findViewById(R.id.tvItemName)
+            val tvSubtitle: TextView = itemView.findViewById(R.id.tvItemSubtitle)
+            val tvBadge: TextView = itemView.findViewById(R.id.tvBadge)
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
-            MaterialCardView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-        )
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_manage_card, parent, false)
+            return VH(view)
+        }
+
         override fun onBindViewHolder(holder: VH, position: Int) {
             val t = tables[position]
+
+            // Icon initial — first letter of table name
+            holder.iconInitial.text = t.table_name.firstOrNull()?.uppercase() ?: "T"
+
+            // Icon color — green if occupied, gray if free
+            val iconColor = if (t.is_occupied) {
+                getColor(R.color.posterita_secondary)
+            } else {
+                getColor(R.color.posterita_muted)
+            }
+            val bg = holder.iconBg.background
+            if (bg is GradientDrawable) bg.setColor(iconColor)
+
+            // Table name
             holder.tvName.text = t.table_name
-            holder.tvDetails.text = "Seats: ${t.seats}"
+
+            // Subtitle — seat count
+            holder.tvSubtitle.text = "${t.seats} seats"
+
+            // Status badge
+            holder.tvBadge.visibility = View.VISIBLE
+            if (t.is_occupied) {
+                holder.tvBadge.text = "Occupied"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_secondary))
+                holder.tvBadge.setBackgroundResource(R.drawable.bg_rounded_square)
+                val badgeBg = holder.tvBadge.background
+                if (badgeBg is GradientDrawable) {
+                    badgeBg.setColor(getColor(R.color.posterita_secondary_light))
+                    badgeBg.cornerRadius = 12f * resources.displayMetrics.density
+                }
+            } else {
+                holder.tvBadge.text = "Free"
+                holder.tvBadge.setTextColor(getColor(R.color.posterita_muted))
+                holder.tvBadge.setBackgroundResource(R.drawable.bg_rounded_square)
+                val badgeBg = holder.tvBadge.background
+                if (badgeBg is GradientDrawable) {
+                    badgeBg.setColor(getColor(R.color.posterita_bg))
+                    badgeBg.cornerRadius = 12f * resources.displayMetrics.density
+                }
+            }
+
+            // Tap to edit
+            holder.card.setOnClickListener { showTableDialog(t) }
+
+            // Long-press to delete
+            holder.card.setOnLongClickListener {
+                deleteTable(t)
+                true
+            }
         }
+
         override fun getItemCount() = tables.size
     }
 }

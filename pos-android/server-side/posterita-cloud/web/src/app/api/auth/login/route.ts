@@ -61,10 +61,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find accounts for this owner
+    // Find accounts for this owner (include sync_secret for HMAC auth)
     const { data: accounts } = await supabase
       .from("account")
-      .select("account_id, type, businessname, currency, status")
+      .select("account_id, type, businessname, currency, status, sync_secret")
       .eq("owner_id", owner.id);
 
     const liveAccount = accounts?.find((a: any) => a.type === "live");
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
       demo_account_id: demoAccount?.account_id || null,
       brand_name: liveAccount?.businessname || null,
       currency: liveAccount?.currency || null,
+      sync_secret: liveAccount?.sync_secret || null,
       auth_user_id: authData.user.id,
     });
   } catch (e: any) {

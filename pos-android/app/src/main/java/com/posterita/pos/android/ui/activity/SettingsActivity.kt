@@ -35,6 +35,14 @@ class SettingsActivity : BaseDrawerActivity() {
         binding.usersOption.setOnClickListener { openWebConsole("/users", "Users") }
         binding.taxesOption.setOnClickListener { openWebConsole("/settings", "Taxes") }
 
+        // Restaurant tables — only visible in restaurant mode
+        if (prefsManager.isRestaurant) {
+            binding.tablesOption.visibility = View.VISIBLE
+            binding.tablesOption.setOnClickListener {
+                startActivity(Intent(this, ManageTablesActivity::class.java))
+            }
+        }
+
         // Device — local config only
         binding.printersOption.setOnClickListener {
             startActivity(Intent(this, PrintersActivity::class.java))

@@ -332,6 +332,11 @@ class SharedPreferencesManager @Inject constructor(
         get() = prefs.getBoolean("cloud_sync_enabled", true) // Enabled by default
         set(value) = prefs.edit().putBoolean("cloud_sync_enabled", value).apply()
 
+    // HMAC sync secret (stored encrypted — used to sign sync API requests)
+    var syncSecret: String
+        get() = securePrefs.getString(Constants.SYNC_SECRET, "") ?: ""
+        set(value) = securePrefs.edit().putString(Constants.SYNC_SECRET, value).apply()
+
     fun resetAccount() {
         val savedEmail = email
         val savedOwnerPhone = ownerPhone

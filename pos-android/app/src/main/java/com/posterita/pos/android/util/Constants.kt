@@ -74,6 +74,7 @@ object Constants {
     const val CLOUD_SYNC_URL = "cloud_sync_url"
     const val DEFAULT_CLOUD_SYNC_URL = "https://posterita-cloud.vercel.app/api/"
     const val CLOUD_LAST_SYNC_AT = "cloud_last_sync_at"
+    const val SYNC_SECRET = "sync_secret"
 
     // URLs
     // TODO: Update to new signup URL when web console is ready

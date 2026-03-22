@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSessionAccountId } from "@/lib/account-context";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 /**
  * Data proxy API — allows client-side pages to query Supabase
  * through the service role key (bypassing RLS).
  *
- * This is necessary because the web dashboard doesn't have per-user
- * Supabase Auth sessions yet. Auth is handled by Next.js middleware.
+ * SECURITY: Automatically injects account_id filter from the user's
+ * session context. Client-supplied account_id filters are verified
+ * against the session to prevent cross-account data leaks.
  *
  * Usage: POST /api/data
  * Body: { table, select, filters, order, limit, range }
@@ -41,8 +43,19 @@ const ALLOWED_TABLES = new Set([
   "intake_batch", "intake_item",
 ]);
 
+// Tables that don't have account_id column (skip auto-injection)
+const NO_ACCOUNT_ID_TABLES = new Set([
+  "v_platform_overview",
+]);
+
 export async function POST(req: NextRequest) {
   try {
+    // Resolve session account_id for security scoping
+    const accountId = await getSessionAccountId();
+    if (!accountId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const queries: DataQuery[] = await req.json();
     const queryList = Array.isArray(queries) ? queries : [queries];
 
@@ -52,12 +65,28 @@ export async function POST(req: NextRequest) {
           return { data: null, error: `Table '${q.table}' not allowed`, count: 0 };
         }
 
+        // Verify any client-supplied account_id filter matches the session
+        if (q.filters) {
+          const accountFilter = q.filters.find((f) => f.column === "account_id" && f.op === "eq");
+          if (accountFilter && accountFilter.value !== accountId) {
+            return { data: null, error: "Account ID mismatch", count: 0 };
+          }
+        }
+
         let query = getDb()
           .from(q.table)
           .select(q.select ?? "*", {
             count: q.count as any,
             head: q.head ?? false,
           });
+
+        // Auto-inject account_id filter (unless table doesn't have one)
+        if (!NO_ACCOUNT_ID_TABLES.has(q.table)) {
+          const hasAccountFilter = q.filters?.some((f) => f.column === "account_id");
+          if (!hasAccountFilter) {
+            query = query.eq("account_id", accountId);
+          }
+        }
 
         if (q.filters) {
           for (const f of q.filters) {

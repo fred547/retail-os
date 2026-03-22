@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createHmac, timingSafeEqual } from "crypto";
 
 export const maxDuration = 30;
 
@@ -26,6 +27,8 @@ interface SyncRequest {
   categories?: any[];
   products?: any[];
   taxes?: any[];
+  // Push: restaurant tables
+  restaurant_tables?: any[];
   // Push: error logs for remote debugging
   error_logs?: any[];
 }
@@ -130,6 +133,63 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ========================================
+    // HMAC-SHA256 sync authentication
+    // ========================================
+    const syncTimestamp = req.headers.get("x-sync-timestamp");
+    const syncSignature = req.headers.get("x-sync-signature");
+    const requireAuth = process.env.REQUIRE_SYNC_AUTH === "true";
+
+    if (syncTimestamp && syncSignature) {
+      // Validate timestamp is within 300 seconds
+      const now = Math.floor(Date.now() / 1000);
+      const ts = parseInt(syncTimestamp, 10);
+      if (isNaN(ts) || Math.abs(now - ts) > 300) {
+        return NextResponse.json(
+          { error: "Sync timestamp expired or invalid" },
+          { status: 401 }
+        );
+      }
+
+      // Look up sync_secret for this account
+      const { data: secretRow } = await getDb()
+        .from("account")
+        .select("sync_secret")
+        .eq("account_id", body.account_id)
+        .single();
+
+      const secret = secretRow?.sync_secret;
+      if (secret) {
+        const expectedPayload = `${body.account_id}:${syncTimestamp}`;
+        const expectedSig = createHmac("sha256", secret)
+          .update(expectedPayload)
+          .digest("hex");
+
+        // Constant-time comparison
+        const sigBuf = Buffer.from(syncSignature, "hex");
+        const expectedBuf = Buffer.from(expectedSig, "hex");
+        if (sigBuf.length !== expectedBuf.length || !timingSafeEqual(sigBuf, expectedBuf)) {
+          return NextResponse.json(
+            { error: "Invalid sync signature" },
+            { status: 401 }
+          );
+        }
+      } else if (requireAuth) {
+        return NextResponse.json(
+          { error: "Account has no sync secret configured" },
+          { status: 401 }
+        );
+      }
+    } else if (requireAuth) {
+      return NextResponse.json(
+        { error: "Sync authentication required (missing x-sync-timestamp / x-sync-signature headers)" },
+        { status: 401 }
+      );
+    } else if (!syncTimestamp && !syncSignature) {
+      // No auth headers — log warning but allow through
+      console.warn(`[sync] Unauthenticated sync request from account ${body.account_id}`);
+    }
+
     // Verify account exists — auto-create if missing (defensive: handles
     // cases where registration was marked done on the client but never
     // reached the cloud, e.g. network timeout after server committed).
@@ -169,6 +229,7 @@ export async function POST(req: NextRequest) {
     let categoriesSynced = 0;
     let productsSynced = 0;
     let taxesSynced = 0;
+    let tablesSynced = 0;
     let errorLogsSynced = 0;
 
     // ========================================
@@ -616,6 +677,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sync restaurant tables
+    if (body.restaurant_tables?.length) {
+      for (const table of body.restaurant_tables) {
+        try {
+          const tableId = table.table_id ?? table.tableId;
+          const dbTable = {
+            table_id: tableId,
+            table_name: table.table_name ?? table.tableName,
+            seats: table.seats ?? 4,
+            is_occupied: table.is_occupied ?? table.isOccupied ?? false,
+            current_order_id: table.current_order_id ?? table.currentOrderId,
+            store_id: table.store_id ?? table.storeId ?? body.store_id,
+            terminal_id: table.terminal_id ?? table.terminalId ?? body.terminal_id,
+            account_id: body.account_id,
+            created: table.created ?? Date.now(),
+            updated: table.updated ?? Date.now(),
+          };
+          const { error } = await tenantUpsert("restaurant_table", dbTable, "table_id", tableId, body.account_id);
+          if (error) {
+            errors.push(`Table ${tableId}: ${error.message}`);
+          } else {
+            tablesSynced++;
+          }
+        } catch (e: any) {
+          errors.push(`Table: ${e.message}`);
+        }
+      }
+    }
+
     // ========================================
     // PULL: Cloud → Terminal
     // ========================================
@@ -729,6 +819,7 @@ export async function POST(req: NextRequest) {
       categories_synced: categoriesSynced,
       products_synced: productsSynced,
       taxes_synced: taxesSynced,
+      tables_synced: tablesSynced,
       errors,
     });
   } catch (error: any) {

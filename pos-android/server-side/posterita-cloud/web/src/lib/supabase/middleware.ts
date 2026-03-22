@@ -17,6 +17,7 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/settings",
   "/errors",
   "/brands",
+  "/tables",
 ]);
 
 /** Also redirect sub-paths like /intake/new, /intake/123 */

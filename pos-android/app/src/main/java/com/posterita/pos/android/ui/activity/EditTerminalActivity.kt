@@ -179,7 +179,8 @@ class EditTerminalActivity : AppCompatActivity() {
         cardQr.visibility = View.VISIBLE
 
         val accountId = prefsManager.accountId
-        val qrContent = "TERMINAL:$terminalId:$accountId"
+        val storeIdForQr = terminal?.store_id ?: prefsManager.storeId
+        val qrContent = "POSTERITA:1:$accountId:$storeIdForQr:$terminalId"
         val bitmap = generateQrBitmap(qrContent, 512)
         if (bitmap != null) {
             ivQr.setImageBitmap(bitmap)
@@ -434,7 +435,8 @@ class EditTerminalActivity : AppCompatActivity() {
     private fun exportQrPdf() {
         val t = terminal ?: return
         val accountId = prefsManager.accountId
-        val qrContent = "TERMINAL:${t.terminalId}:$accountId"
+        val storeIdForQr = t.store_id.takeIf { it > 0 } ?: prefsManager.storeId
+        val qrContent = "POSTERITA:1:$accountId:$storeIdForQr:${t.terminalId}"
         val qrBitmap = generateQrBitmap(qrContent, 512) ?: return
 
         try {

@@ -68,10 +68,19 @@ class TillViewModel @Inject constructor(
 
     fun loadOpenTill() {
         viewModelScope.launch {
-            ensureSessionLoaded()
-            val till = tillService.getOpenTill(prefsManager.terminalId)
-            sessionManager.till = till
-            _currentTill.postValue(till)
+            try {
+                ensureSessionLoaded()
+                val terminalId = prefsManager.terminalId
+                if (terminalId <= 0) {
+                    _currentTill.postValue(null)
+                    return@launch
+                }
+                val till = tillService.getOpenTill(terminalId)
+                sessionManager.till = till
+                _currentTill.postValue(till)
+            } catch (e: Exception) {
+                _currentTill.postValue(null)
+            }
         }
     }
 

@@ -28,6 +28,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * Background worker that syncs data between the local POS database and Posterita Cloud
@@ -280,10 +282,20 @@ class CloudSyncWorker(
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build()
 
-            val request = Request.Builder()
+            val syncSecret = prefsManager.syncSecret
+            val requestBuilder = Request.Builder()
                 .url(url)
                 .post(body)
-                .build()
+
+            // Add HMAC auth headers if sync secret is available
+            if (syncSecret.isNotEmpty() && accountId.isNotEmpty()) {
+                val timestamp = (System.currentTimeMillis() / 1000).toString()
+                val signature = computeHmacSha256(syncSecret, "$accountId:$timestamp")
+                requestBuilder.addHeader("X-Sync-Timestamp", timestamp)
+                requestBuilder.addHeader("X-Sync-Signature", signature)
+            }
+
+            val request = requestBuilder.build()
 
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string()
@@ -301,17 +313,46 @@ class CloudSyncWorker(
         }
     }
 
+    /**
+     * Computes HMAC-SHA256 of the given message using the provided secret.
+     * Returns the hex-encoded signature string.
+     */
+    private fun computeHmacSha256(secret: String, message: String): String {
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(SecretKeySpec(secret.toByteArray(Charsets.UTF_8), "HmacSHA256"))
+        return mac.doFinal(message.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+    }
+
     private fun createCloudSyncApi(baseUrl: String): CloudSyncApi {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
         }
 
-        val client = OkHttpClient.Builder()
+        val prefsManager = SharedPreferencesManager(applicationContext)
+        val syncSecret = prefsManager.syncSecret
+        val accountId = prefsManager.accountId
+
+        val clientBuilder = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .build()
+
+        // Add HMAC signing interceptor if sync secret is available
+        if (syncSecret.isNotEmpty() && accountId.isNotEmpty()) {
+            clientBuilder.addInterceptor { chain ->
+                val timestamp = (System.currentTimeMillis() / 1000).toString()
+                val signature = computeHmacSha256(syncSecret, "$accountId:$timestamp")
+                val signedRequest = chain.request().newBuilder()
+                    .addHeader("X-Sync-Timestamp", timestamp)
+                    .addHeader("X-Sync-Signature", signature)
+                    .build()
+                chain.proceed(signedRequest)
+            }
+        }
+
+        val client = clientBuilder.build()
 
         val url = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 

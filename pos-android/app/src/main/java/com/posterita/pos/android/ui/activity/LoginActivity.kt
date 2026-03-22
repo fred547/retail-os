@@ -93,6 +93,12 @@ class LoginActivity : AppCompatActivity() {
                 return@launch
             }
 
+            // Save HMAC sync secret for signing sync requests
+            val syncSecret = result.optString("sync_secret", "")
+            if (syncSecret.isNotEmpty()) {
+                prefsManager.syncSecret = syncSecret
+            }
+
             // Set up local account
             withContext(Dispatchers.IO) {
                 setupLocalAccount(accountId, email, result)

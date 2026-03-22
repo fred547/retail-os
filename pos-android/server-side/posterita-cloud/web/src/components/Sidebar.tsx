@@ -22,6 +22,7 @@ import {
   UserCog,
   Menu,
   Inbox,
+  UtensilsCrossed,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -34,6 +35,7 @@ const navigation = [
   { name: "Stores", href: "/stores", icon: Store },
   { name: "Users", href: "/users", icon: UserCog },
   { name: "Terminals", href: "/terminals", icon: Monitor },
+  { name: "Tables", href: "/tables", icon: UtensilsCrossed },
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Price Review", href: "/price-review", icon: DollarSign },
   { name: "AI Import", href: "/ai-import", icon: Sparkles },

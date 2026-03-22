@@ -37,6 +37,9 @@ class TillActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        // Back button
+        binding.buttonBack?.setOnClickListener { finish() }
+
         setupNumpad()
         setupQuickAmounts()
         setupOpenTillButton()
@@ -81,7 +84,7 @@ class TillActivity : AppCompatActivity() {
             true
         }
 
-        // Dot button not needed with cents-based input, but keep for quick "00" append
+        // Dot button appends "00" (shift to dollars)
         binding.btnDot.setOnClickListener {
             if (amountCents < 99999999) {
                 amountCents *= 100
@@ -118,7 +121,22 @@ class TillActivity : AppCompatActivity() {
         binding.buttonOpenTill.setOnClickListener {
             val openingAmount = amountCents / 100.0
 
+            // Pre-check: make sure session data is available
+            if (prefsManager.accountId.isEmpty() || prefsManager.accountId == "null") {
+                Toast.makeText(this, "No account found. Please sync your data first.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            if (prefsManager.storeId <= 0) {
+                Toast.makeText(this, "No store selected. Please select a store from Settings.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            if (prefsManager.terminalId <= 0) {
+                Toast.makeText(this, "No terminal selected. Please select a terminal from Settings.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             binding.buttonOpenTill.isEnabled = false
+            binding.buttonOpenTill.text = "Opening..."
             tillViewModel.openTill(openingAmount)
         }
     }
@@ -133,6 +151,7 @@ class TillActivity : AppCompatActivity() {
 
         tillViewModel.openTillResult.observe(this) { result ->
             binding.buttonOpenTill.isEnabled = true
+            binding.buttonOpenTill.text = "Open Till"
             result.fold(
                 onSuccess = {
                     Toast.makeText(this, "Till opened successfully", Toast.LENGTH_SHORT).show()
