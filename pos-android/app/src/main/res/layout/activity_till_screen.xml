@@ -2,14 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constwhole"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/constwhole"
     android:fitsSystemWindows="true"
     android:background="@color/posterita_bg"
-    tools:context=".Activities.TillActivity">
+    tools:context=".ui.activity.TillActivity">
 
-    <!-- Top bar: ← back + Title -->
+    <!-- Top bar -->
     <LinearLayout
         android:id="@+id/layout_top_bar"
         android:layout_width="match_parent"
@@ -41,7 +41,6 @@
             android:text="Open Till"
             style="@style/TextAppearance.Posterita.Heading" />
 
-        <!-- Connectivity indicator -->
         <View
             android:id="@+id/connectivity_dot"
             android:layout_width="8dp"
@@ -50,7 +49,7 @@
             android:background="@drawable/bg_internet_dot" />
     </LinearLayout>
 
-    <!-- Hidden toolbar kept for binding compatibility (setSupportActionBar) -->
+    <!-- Hidden toolbar for binding compatibility -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
@@ -69,257 +68,127 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Amount card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardAmount"
-        style="@style/Widget.Posterita.Card.Hero"
+    <!-- Scrollable content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintBottom_toTopOf="@id/bottom_bar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:paddingTop="24dp"
-            android:paddingBottom="24dp">
+            android:padding="16dp">
 
+            <!-- Total card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Opening Float"
+                        android:textColor="@color/posterita_muted"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/lexend_regular" />
+
+                    <TextView
+                        android:id="@+id/txtAmountDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="0.00"
+                        style="@style/TextAppearance.Posterita.PriceDisplay" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Count the cash in your drawer"
+                        android:textColor="@color/posterita_muted"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/lexend_regular" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Notes section header -->
             <TextView
-                android:id="@+id/txt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Opening cash amount"
-                style="@style/TextAppearance.Posterita.Label" />
+                android:text="NOTES"
+                android:textColor="@color/posterita_muted"
+                android:textSize="12sp"
+                android:fontFamily="@font/lexend_medium"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="4dp" />
 
+            <!-- Denomination rows will be added programmatically here -->
+            <LinearLayout
+                android:id="@+id/layout_notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Coins section header -->
             <TextView
-                android:id="@+id/txtAmountDisplay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="0.00"
-                style="@style/TextAppearance.Posterita.PriceDisplay" />
+                android:text="COINS"
+                android:textColor="@color/posterita_muted"
+                android:textSize="12sp"
+                android:fontFamily="@font/lexend_medium"
+                android:letterSpacing="0.1"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="4dp" />
+
+            <LinearLayout
+                android:id="@+id/layout_coins"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Bottom spacing -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
 
-    <!-- Quick amount chips -->
+    <!-- Bottom bar with Open Till button -->
     <LinearLayout
-        android:id="@+id/quickAmounts"
+        android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/cardAmount"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:orientation="vertical"
+        android:background="@color/posterita_paper"
+        android:elevation="8dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnQuick0"
-            style="@style/Widget.Posterita.Button.Outlined"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:minHeight="40dp"
-            android:text="0"
-            android:textSize="13sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnQuick50"
-            style="@style/Widget.Posterita.Button.Outlined"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:minHeight="40dp"
-            android:text="50"
-            android:textSize="13sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnQuick100"
-            style="@style/Widget.Posterita.Button.Outlined"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:minHeight="40dp"
-            android:text="100"
-            android:textSize="13sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnQuick200"
-            style="@style/Widget.Posterita.Button.Outlined"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:minHeight="40dp"
-            android:text="200"
-            android:textSize="13sp" />
+            android:id="@+id/button_open_till"
+            style="@style/Widget.Posterita.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Open Till"
+            android:textSize="16sp" />
     </LinearLayout>
-
-    <!-- Number pad grid -->
-    <GridLayout
-        android:id="@+id/numpadGrid"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
-        android:columnCount="3"
-        android:rowCount="4"
-        android:useDefaultMargins="true"
-        app:layout_constraintTop_toBottomOf="@id/quickAmounts"
-        app:layout_constraintBottom_toTopOf="@id/button_open_till"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn1"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn2"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="2" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn3"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="3" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn4"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="4" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn5"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="5" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn6"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="6" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn7"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="7" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn8"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="8" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn9"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="9" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDot"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="." />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn0"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            android:text="0" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBackspace"
-            style="@style/Widget.Posterita.Button.Tonal"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="3dp"
-            app:icon="@drawable/ic_backspace"
-            app:iconGravity="textStart"
-            app:iconSize="24dp"
-            app:iconTint="@color/posterita_ink" />
-
-    </GridLayout>
-
-    <!-- Open Till button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_open_till"
-        style="@style/Widget.Posterita.Button.Primary"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:text="Open Till"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

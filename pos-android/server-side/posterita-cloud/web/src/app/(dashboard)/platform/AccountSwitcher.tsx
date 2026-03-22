@@ -20,8 +20,8 @@ export default function AccountSwitcher({
     });
 
     if (res.ok) {
-      // Redirect into the customer portal — now viewing as this account
-      router.push("/customer");
+      // Redirect to store picker — let AM choose store + terminal context
+      router.push(`/platform/${accountId}/stores`);
       router.refresh();
     }
   };

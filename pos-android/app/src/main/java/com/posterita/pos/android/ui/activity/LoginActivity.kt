@@ -4,7 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.data.local.AppDatabase
@@ -52,7 +54,7 @@ class LoginActivity : AppCompatActivity() {
         binding.btnLogin.setOnClickListener { attemptLogin() }
 
         binding.btnForgotPassword.setOnClickListener {
-            Toast.makeText(this, "Password reset will be sent to your email", Toast.LENGTH_LONG).show()
+            showForgotPasswordDialog()
         }
 
         binding.tvSignUpLink.setOnClickListener { finish() }
@@ -242,6 +244,73 @@ class LoginActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish()
+    }
+
+    private fun showForgotPasswordDialog() {
+        val emailInput = EditText(this).apply {
+            hint = "Enter your email"
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            setPadding(48, 32, 48, 32)
+            // Pre-fill with the email field value
+            val currentEmail = binding.etEmail.text?.toString()?.trim() ?: ""
+            if (currentEmail.isNotEmpty()) setText(currentEmail)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Reset Password")
+            .setMessage("We'll send a password reset link to your email address.")
+            .setView(emailInput)
+            .setPositiveButton("Send Reset Link") { _, _ ->
+                val email = emailInput.text?.toString()?.trim() ?: ""
+                if (email.isEmpty()) {
+                    Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                requestPasswordReset(email)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun requestPasswordReset(email: String) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val url = URL("https://web.posterita.com/api/auth/reset-password")
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.connectTimeout = 10_000
+                    conn.readTimeout = 10_000
+                    conn.doOutput = true
+
+                    val payload = JSONObject().apply { put("email", email) }
+                    OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
+
+                    val responseCode = conn.responseCode
+                    val body = if (responseCode in 200..299) {
+                        conn.inputStream.bufferedReader().readText()
+                    } else {
+                        conn.errorStream?.bufferedReader()?.readText() ?: """{"error":"Request failed"}"""
+                    }
+                    JSONObject(body)
+                } catch (e: Exception) {
+                    AppErrorLogger.warn(this@LoginActivity, "LoginActivity", "Password reset request failed", e)
+                    null
+                }
+            }
+
+            if (result != null && result.optBoolean("success", false)) {
+                Toast.makeText(
+                    this@LoginActivity,
+                    "Password reset email sent. Check your inbox.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                val errorMsg = result?.optString("error", "Failed to send reset email") ?: "Failed to send reset email"
+                Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun showError(msg: String) {

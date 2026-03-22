@@ -111,6 +111,79 @@ export async function getSessionAccountId(): Promise<string | null> {
 }
 
 /**
+ * Resolves the current user's store_id from their session context.
+ * Returns null if no store context is set.
+ */
+export async function getSessionStoreId(): Promise<number | null> {
+  const context = await getOwnerSessionContext();
+  return context?.store_id ?? null;
+}
+
+/**
+ * Resolves the current user's terminal_id from their session context.
+ * Returns null if no terminal context is set.
+ */
+export async function getSessionTerminalId(): Promise<number | null> {
+  const context = await getOwnerSessionContext();
+  return context?.terminal_id ?? null;
+}
+
+/**
+ * Returns the full session context (account_id, store_id, terminal_id)
+ * from the owner_account_session table.
+ */
+export async function getSessionContext(): Promise<{
+  account_id: string;
+  store_id: number | null;
+  terminal_id: number | null;
+} | null> {
+  const accountId = await getSessionAccountId();
+  if (!accountId) return null;
+
+  const context = await getOwnerSessionContext();
+  return {
+    account_id: accountId,
+    store_id: context?.store_id ?? null,
+    terminal_id: context?.terminal_id ?? null,
+  };
+}
+
+/**
+ * Internal helper to read the owner's session context from
+ * owner_account_session (store_id + terminal_id).
+ */
+async function getOwnerSessionContext(): Promise<{
+  store_id: number | null;
+  terminal_id: number | null;
+} | null> {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const admin = await createServerSupabaseAdmin();
+
+  const { data: owner } = await admin
+    .from("owner")
+    .select("id")
+    .eq("auth_uid", user.id)
+    .eq("is_active", true)
+    .single();
+
+  if (!owner?.id) return null;
+
+  const { data: session } = await admin
+    .from("owner_account_session")
+    .select("store_id, terminal_id")
+    .eq("owner_id", owner.id)
+    .single();
+
+  return session ?? null;
+}
+
+/**
  * Read account_id from the OTT cookie set by middleware during
  * Android WebView authentication.
  */

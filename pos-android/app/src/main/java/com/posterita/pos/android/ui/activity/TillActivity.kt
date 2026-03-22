@@ -2,9 +2,14 @@ package com.posterita.pos.android.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityTillScreenBinding
 import com.posterita.pos.android.ui.viewmodel.TillViewModel
 import com.posterita.pos.android.util.NumberUtils
@@ -20,14 +25,29 @@ class TillActivity : AppCompatActivity() {
 
     private val tillViewModel: TillViewModel by viewModels()
 
-    @Inject
-    lateinit var sessionManager: SessionManager
+    @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var prefsManager: SharedPreferencesManager
 
-    @Inject
-    lateinit var prefsManager: SharedPreferencesManager
+    // Denomination data: label, value, isNote
+    private data class Denomination(val label: String, val value: Double, val isNote: Boolean)
 
-    // Tracks the raw digits entered (no decimal point stored — last 2 digits are cents)
-    private var amountCents: Long = 0
+    // MUR denominations — largest to smallest, notes then coins
+    private val denominations = listOf(
+        Denomination("Rs 2,000", 2000.0, true),
+        Denomination("Rs 1,000", 1000.0, true),
+        Denomination("Rs 500", 500.0, true),
+        Denomination("Rs 200", 200.0, true),
+        Denomination("Rs 100", 100.0, true),
+        Denomination("Rs 50", 50.0, true),
+        Denomination("Rs 25", 25.0, true),
+        Denomination("Rs 20", 20.0, false),
+        Denomination("Rs 10", 10.0, false),
+        Denomination("Rs 5", 5.0, false),
+        Denomination("Rs 1", 1.0, false),
+    )
+
+    // Track counts per denomination
+    private val counts = IntArray(denominations.size)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,91 +57,87 @@ class TillActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // Back button
         binding.buttonBack?.setOnClickListener { finish() }
 
-        setupNumpad()
-        setupQuickAmounts()
+        buildDenominationRows()
         setupOpenTillButton()
         observeViewModel()
-        updateAmountDisplay()
+        updateTotal()
 
         // Check if a till is already open for this terminal
         tillViewModel.loadOpenTill()
     }
 
-    private fun setupNumpad() {
-        val digitButtons = mapOf(
-            binding.btn0 to 0,
-            binding.btn1 to 1,
-            binding.btn2 to 2,
-            binding.btn3 to 3,
-            binding.btn4 to 4,
-            binding.btn5 to 5,
-            binding.btn6 to 6,
-            binding.btn7 to 7,
-            binding.btn8 to 8,
-            binding.btn9 to 9
-        )
+    private fun buildDenominationRows() {
+        val inflater = LayoutInflater.from(this)
+        val notesContainer = binding.layoutNotes ?: return
+        val coinsContainer = binding.layoutCoins ?: return
 
-        for ((button, digit) in digitButtons) {
-            button.setOnClickListener {
-                if (amountCents < 999999999) { // max ~9,999,999.99
-                    amountCents = amountCents * 10 + digit
-                    updateAmountDisplay()
+        denominations.forEachIndexed { index, denom ->
+            val row = inflater.inflate(R.layout.item_denomination_row, null)
+
+            val labelView = row.findViewById<TextView>(R.id.text_denom_label)
+            val countView = row.findViewById<TextView>(R.id.text_count)
+            val subtotalView = row.findViewById<TextView>(R.id.text_subtotal)
+            val btnMinus = row.findViewById<ImageView>(R.id.btn_minus)
+            val btnPlus = row.findViewById<ImageView>(R.id.btn_plus)
+
+            labelView.text = denom.label
+            countView.text = "0"
+            subtotalView.text = "0"
+
+            btnPlus.setOnClickListener {
+                counts[index]++
+                countView.text = counts[index].toString()
+                subtotalView.text = NumberUtils.formatPrice(counts[index] * denom.value)
+                updateTotal()
+            }
+
+            btnMinus.setOnClickListener {
+                if (counts[index] > 0) {
+                    counts[index]--
+                    countView.text = counts[index].toString()
+                    subtotalView.text = if (counts[index] == 0) "0" else NumberUtils.formatPrice(counts[index] * denom.value)
+                    updateTotal()
                 }
             }
-        }
 
-        binding.btnBackspace.setOnClickListener {
-            amountCents /= 10
-            updateAmountDisplay()
-        }
+            // Long press on plus for fast increment (+5)
+            btnPlus.setOnLongClickListener {
+                counts[index] += 5
+                countView.text = counts[index].toString()
+                subtotalView.text = NumberUtils.formatPrice(counts[index] * denom.value)
+                updateTotal()
+                true
+            }
 
-        binding.btnBackspace.setOnLongClickListener {
-            amountCents = 0
-            updateAmountDisplay()
-            true
-        }
-
-        // Dot button appends "00" (shift to dollars)
-        binding.btnDot.setOnClickListener {
-            if (amountCents < 99999999) {
-                amountCents *= 100
-                updateAmountDisplay()
+            if (denom.isNote) {
+                notesContainer.addView(row)
+            } else {
+                coinsContainer.addView(row)
             }
         }
     }
 
-    private fun setupQuickAmounts() {
-        binding.btnQuick0?.setOnClickListener {
-            amountCents = 0
-            updateAmountDisplay()
+    private fun updateTotal() {
+        var total = 0.0
+        denominations.forEachIndexed { index, denom ->
+            total += counts[index] * denom.value
         }
-        binding.btnQuick50?.setOnClickListener {
-            amountCents = 5000
-            updateAmountDisplay()
-        }
-        binding.btnQuick100?.setOnClickListener {
-            amountCents = 10000
-            updateAmountDisplay()
-        }
-        binding.btnQuick200?.setOnClickListener {
-            amountCents = 20000
-            updateAmountDisplay()
-        }
+        binding.txtAmountDisplay.text = NumberUtils.formatPrice(total)
     }
 
-    private fun updateAmountDisplay() {
-        val dollars = amountCents / 100.0
-        binding.txtAmountDisplay.text = NumberUtils.formatPrice(dollars)
+    private fun getTotal(): Double {
+        var total = 0.0
+        denominations.forEachIndexed { index, denom ->
+            total += counts[index] * denom.value
+        }
+        return total
     }
 
     private fun setupOpenTillButton() {
         binding.buttonOpenTill.setOnClickListener {
-            val openingAmount = amountCents / 100.0
-
-            // Pre-check: make sure session data is available
+            // Pre-check session data
             if (prefsManager.accountId.isEmpty() || prefsManager.accountId == "null") {
                 Toast.makeText(this, "No account found. Please sync your data first.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -135,6 +151,7 @@ class TillActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val openingAmount = getTotal()
             binding.buttonOpenTill.isEnabled = false
             binding.buttonOpenTill.text = "Opening..."
             tillViewModel.openTill(openingAmount)
@@ -144,7 +161,6 @@ class TillActivity : AppCompatActivity() {
     private fun observeViewModel() {
         tillViewModel.currentTill.observe(this) { till ->
             if (till != null) {
-                // Till is already open, go directly to ProductActivity
                 navigateToProductActivity()
             }
         }
@@ -158,11 +174,7 @@ class TillActivity : AppCompatActivity() {
                     navigateToProductActivity()
                 },
                 onFailure = { error ->
-                    Toast.makeText(
-                        this,
-                        "Failed to open till: ${error.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this, "Failed to open till: ${error.message}", Toast.LENGTH_LONG).show()
                 }
             )
         }
