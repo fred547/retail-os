@@ -9,7 +9,8 @@ Unified retail management platform: one Android app, one web console, one backen
 | `pos-android/` | Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00024) |
+| `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00025) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files |
 
@@ -21,18 +22,28 @@ Unified retail management platform: one Android app, one web console, one backen
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
 - **AI:** Claude Haiku 4.5 via Anthropic API (`CLAUDE_API_KEY` on Vercel) — web search for product discovery
 - **WhatsApp:** Meta Cloud API (direct, no BSP) — single Posterita number for B2C + B2B. AI-first, human escalation via SalesIQ/Slack.
-- **Production:** `https://web.posterita.com` (alias for `posterita-cloud.vercel.app`)
+- **Production Web:** `https://web.posterita.com` (Vercel — web console, dashboard, serverless API)
+- **Production Backend:** `https://posterita-backend.onrender.com` (Render — webhooks, workers, cron, monitoring)
+- **Monitor:** `https://web.posterita.com/api/monitor` — checks all services (Supabase, Render, Vercel sync API)
 - **Legacy (DO NOT USE):** `my.posterita.com/posteritabo` — all `app/*` endpoints are dead
 
 ## Deployment
 
+**Web console (Vercel):**
 ```bash
 cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --prod --yes
 ```
 - Vercel project: `posterita-cloud` (team: `tamakgroup`). If wrong, re-link: `npx vercel link --project posterita-cloud --yes`
-- Supabase migrations: run via Management API (see `reference_supabase.md`). Reload cache: `NOTIFY pgrst, 'reload schema'`
-- Android: `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - **Always `rm -rf .next` before build** — stale cache causes phantom TypeScript errors from deleted code
+
+**Backend (Render):** Auto-deploys on push to `main`. Manual: Render dashboard → posterita-backend → Deploy.
+- Service ID: `srv-d70md87kijhs73dgosb0`
+- URL: `https://posterita-backend.onrender.com`
+- Free tier (sleeps after 15 min idle — first request after sleep takes ~30s)
+
+**Supabase migrations:** Run via Management API (see `reference_supabase.md`). Reload cache: `NOTIFY pgrst, 'reload schema'`
+
+**Android:** `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - **Never** `createClient()` at module scope — use `function getDb() { return createClient(...) }` or `force-dynamic`
 
 ## Rules
