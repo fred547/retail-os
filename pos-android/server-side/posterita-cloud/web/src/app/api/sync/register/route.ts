@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import {
   deriveLifecycleStatus,
   findOwnerByIdentity,
@@ -8,6 +7,7 @@ import {
   normalizePhone,
 } from "@/lib/owner-lifecycle";
 import { ensureDefaultAccountManager } from "@/lib/account-manager";
+import { getDb } from "@/lib/supabase/admin";
 
 /**
  * Auto-register/link a POS account to the cloud.
@@ -19,10 +19,6 @@ import { ensureDefaultAccountManager } from "@/lib/account-manager";
  * The account_id is permanent — even if the owner contact changes later,
  * the account_id stays the same forever.
  */
-
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 
 async function linkAccountOwner(
   accountId: string,

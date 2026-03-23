@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { findOwnerByIdentity, normalizeEmail, normalizePhone } from "@/lib/owner-lifecycle";
-
-function getSupabase() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
+import { getDb } from "@/lib/supabase/admin";
 
 export async function GET(req: NextRequest) {
-  const supabase = getSupabase();
+  const supabase = getDb();
   const email = normalizeEmail(req.nextUrl.searchParams.get("email"));
   const phone = normalizePhone(req.nextUrl.searchParams.get("phone"));
   if (!email && !phone) {
@@ -35,7 +31,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    accounts: (accounts || []).map((account) => ({
+    accounts: (accounts || []).map((account: any) => ({
       ...account,
       owner_email: owner.email,
       owner_phone: owner.phone || "",

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
-function getSupabaseAdmin() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
+import { getDb } from "@/lib/supabase/admin";
 
 /**
  * GET /api/intake — list batches for the current account
@@ -13,7 +9,7 @@ function getSupabaseAdmin() {
  */
 
 async function getAccountId(): Promise<string | null> {
-  const admin = getSupabaseAdmin();
+  const admin = getDb();
   const cookieStore = await cookies();
 
   // Check OTT cookie first (Android WebView)
@@ -56,7 +52,7 @@ export async function GET() {
   const accountId = await getAccountId();
   if (!accountId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getDb();
   const { data, error } = await admin
     .from("intake_batch")
     .select("*")
@@ -78,7 +74,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "source is required" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getDb();
   const { data, error } = await admin
     .from("intake_batch")
     .insert({

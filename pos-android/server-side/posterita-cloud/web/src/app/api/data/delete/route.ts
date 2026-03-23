@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getSessionAccountId } from "@/lib/account-context";
+import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
-
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 
 const ALLOWED_TABLES = new Set([
   "productcategory", "customer", "restaurant_table",

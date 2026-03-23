@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-function getSupabase() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
+import { getDb } from "@/lib/supabase/admin";
 
 /**
  * GET /api/intake/[batchId] — get batch with all its items
@@ -13,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ batchId: string }> }
 ) {
   const { batchId } = await params;
-  const supabase = getSupabase();
+  const supabase = getDb();
 
   const [{ data: batch, error: batchErr }, { data: items, error: itemsErr }] =
     await Promise.all([

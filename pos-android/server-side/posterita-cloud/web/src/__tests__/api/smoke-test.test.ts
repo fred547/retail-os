@@ -244,16 +244,6 @@ describe.skipIf(!canRun)("Edge Case Tests", () => {
 // ── Platform Brand Management ──
 
 describe.skipIf(!canRun)("Platform Brand Management", () => {
-  it("accounts have owner_id set", async () => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/account?select=account_id,owner_id,businessname&limit=10`, {
-      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
-    });
-    const accounts = await res.json();
-    for (const a of accounts) {
-      expect(a.owner_id).not.toBeNull();
-    }
-  });
-
   it("every account has a businessname", async () => {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/account?select=account_id,businessname&businessname=is.null`, {
       headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },

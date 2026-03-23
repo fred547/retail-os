@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ldyoiexyqvklujvwcaqq.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -24,6 +25,11 @@ export async function apiPost(path: string, body: any): Promise<Response> {
 // Generate unique IDs for test data to avoid collisions
 export function testId(prefix: string = 'test'): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// Generate a valid UUID v4 (required for Supabase UUID columns)
+export function testUuid(): string {
+  return randomUUID();
 }
 
 // Clean up test data after tests

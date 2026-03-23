@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getSessionAccountId } from "@/lib/account-context";
+import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +15,6 @@ export const dynamic = "force-dynamic";
  * Usage: POST /api/data
  * Body: { table, select, filters, order, limit, range }
  */
-
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 
 interface DataQuery {
   table: string;

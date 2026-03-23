@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getDb } from "@/lib/supabase/admin";
 
 // Pro plan: allow up to 5 minutes for AI processing with web search
 export const maxDuration = 300;
@@ -20,10 +20,6 @@ export const maxDuration = 300;
  */
 
 const MODEL = "claude-haiku-4-5";
-
-function getSupabaseAdmin() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 function getClaudeApiKey() { return process.env.CLAUDE_API_KEY!; }
 function getCloudinaryCloudName() { return process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy"; }
 
@@ -149,7 +145,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   if (!user) return null;
 
   // Check if super admin with active impersonation
-  const { data: superAdmin } = await getSupabaseAdmin()
+  const { data: superAdmin } = await getDb()
     .from("super_admin")
     .select("id")
     .eq("auth_uid", user.id)
@@ -157,7 +153,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
     .single();
 
   if (superAdmin) {
-    const { data: session } = await getSupabaseAdmin()
+    const { data: session } = await getDb()
       .from("super_admin_session")
       .select("account_id")
       .eq("super_admin_id", superAdmin.id)
@@ -172,7 +168,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   }
 
   // Owner-centric lookup: prefer the explicitly selected owner account.
-  const { data: owner } = await getSupabaseAdmin()
+  const { data: owner } = await getDb()
     .from("owner")
     .select("id")
     .eq("auth_uid", user.id)
@@ -180,7 +176,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
     .single();
 
   if (owner?.id) {
-    const { data: ownerSession } = await getSupabaseAdmin()
+    const { data: ownerSession } = await getDb()
       .from("owner_account_session")
       .select("account_id")
       .eq("owner_id", owner.id)
@@ -192,7 +188,7 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   }
 
   // Fallback for legacy users that still map 1:1 through pos_user.
-  const { data: posUser } = await getSupabaseAdmin()
+  const { data: posUser } = await getDb()
     .from("pos_user")
     .select("account_id")
     .eq("auth_uid", user.id)
@@ -205,7 +201,7 @@ async function setAccountStatus(
   accountId: string,
   status: "draft" | "in_progress" | "ready" | "failed"
 ) {
-  await getSupabaseAdmin()
+  await getDb()
     .from("account")
     .update({ status })
     .eq("account_id", accountId);
@@ -556,7 +552,7 @@ async function handleImages(
 
   // Get existing categories for better matching
   let existingCategories: string[] = [];
-  const { data } = await getSupabaseAdmin()
+  const { data } = await getDb()
     .from("productcategory")
     .select("name")
     .eq("account_id", accountId)
@@ -1021,27 +1017,27 @@ async function saveToSupabase(
   let storesCreated = 0;
 
   // Get existing categories + taxes for this account
-  const { data: existingCategories } = await getSupabaseAdmin()
+  const { data: existingCategories } = await getDb()
     .from("productcategory")
     .select("productcategory_id, name")
     .eq("account_id", accountId)
     .eq("isactive", "Y");
 
-  const { data: existingTaxes } = await getSupabaseAdmin()
+  const { data: existingTaxes } = await getDb()
     .from("tax")
     .select("tax_id, name, rate")
     .eq("account_id", accountId)
     .eq("isactive", "Y");
 
   // Get next IDs
-  const { data: maxCatId } = await getSupabaseAdmin()
+  const { data: maxCatId } = await getDb()
     .from("productcategory")
     .select("productcategory_id")
     .eq("account_id", accountId)
     .order("productcategory_id", { ascending: false })
     .limit(1);
 
-  const { data: maxProdId } = await getSupabaseAdmin()
+  const { data: maxProdId } = await getDb()
     .from("product")
     .select("product_id")
     .eq("account_id", accountId)
@@ -1060,7 +1056,7 @@ async function saveToSupabase(
     if (matchedTax) {
       taxId = matchedTax.tax_id;
     } else {
-      const { data: newTax } = await getSupabaseAdmin()
+      const { data: newTax } = await getDb()
         .from("tax")
         .insert({
           account_id: accountId,
@@ -1094,7 +1090,7 @@ async function saveToSupabase(
       categoryId = existing.productcategory_id;
     } else {
       categoryId = nextCategoryId++;
-      await getSupabaseAdmin().from("productcategory").upsert(
+      await getDb().from("productcategory").upsert(
         {
           productcategory_id: categoryId,
           account_id: accountId,
@@ -1137,7 +1133,7 @@ async function saveToSupabase(
           ? (product.price * setup.tax_rate) / (100 + setup.tax_rate)
           : 0;
 
-      await getSupabaseAdmin().from("product").upsert(
+      await getDb().from("product").upsert(
         {
           product_id: productId,
           account_id: accountId,
@@ -1162,7 +1158,7 @@ async function saveToSupabase(
 
   // Create store records
   if (setup.stores?.length) {
-    const { data: maxStoreId } = await getSupabaseAdmin()
+    const { data: maxStoreId } = await getDb()
       .from("store")
       .select("store_id")
       .eq("account_id", accountId)
@@ -1174,7 +1170,7 @@ async function saveToSupabase(
     for (const store of setup.stores) {
       if (!store.store_name) continue;
 
-      await getSupabaseAdmin().from("store").upsert(
+      await getDb().from("store").upsert(
         {
           store_id: nextStoreId++,
           account_id: accountId,

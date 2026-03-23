@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from "@/lib/supabase/admin";
+import { RENDER_BACKEND_URL, VERCEL_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
-
-const RENDER_BACKEND = "https://posterita-backend.onrender.com";
-const VERCEL_URL = "https://web.posterita.com";
-
-function getDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 /**
  * GET /api/monitor — system health dashboard
@@ -40,7 +31,7 @@ export async function GET() {
   // 2. Render Backend
   try {
     const t = Date.now();
-    const res = await fetch(`${RENDER_BACKEND}/health`, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(`${RENDER_BACKEND_URL}/health`, { signal: AbortSignal.timeout(10000) });
     const json = await res.json();
     checks.render_backend = {
       status: json.status === "ok" ? "ok" : "degraded",
@@ -54,7 +45,7 @@ export async function GET() {
   // 3. Render Monitor endpoints
   try {
     const t = Date.now();
-    const res = await fetch(`${RENDER_BACKEND}/monitor/errors`, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(`${RENDER_BACKEND_URL}/monitor/errors`, { signal: AbortSignal.timeout(10000) });
     const json = await res.json();
     checks.error_monitor = {
       status: json.fatal_count > 0 ? "alert" : "ok",
@@ -68,7 +59,7 @@ export async function GET() {
   // 4. Render Sync monitor
   try {
     const t = Date.now();
-    const res = await fetch(`${RENDER_BACKEND}/monitor/sync`, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(`${RENDER_BACKEND_URL}/monitor/sync`, { signal: AbortSignal.timeout(10000) });
     const json = await res.json();
     checks.sync_monitor = {
       status: json.slow ? "slow" : "ok",

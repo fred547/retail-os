@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import {
   PROTECTED_DELETE_STATUSES,
   defaultStatusForType,
@@ -9,10 +8,7 @@ import {
   normalizeEmail,
   normalizePhone,
 } from "@/lib/owner-lifecycle";
-
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
+import { getDb } from "@/lib/supabase/admin";
 
 async function resolveOwnedAccount(
   accountId: string,

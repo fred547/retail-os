@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.*
 import org.junit.Assert.*
 import org.junit.Before
@@ -23,27 +22,17 @@ import org.junit.runner.RunWith
 class NavigationFlowTest {
 
     private lateinit var device: UiDevice
-    private val PACKAGE = "com.posterita.pos.android"
-    private val TIMEOUT = 10_000L
 
     @Before
     fun setup() {
-        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
-        // Launch Home
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = Intent().apply {
-            setClassName(PACKAGE, "$PACKAGE.ui.activity.HomeActivity")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
-        context.startActivity(intent)
-        Thread.sleep(3000)
+        device = TestHelper.getDevice()
+        TestHelper.launchActivity(device, "HomeActivity")
     }
 
     @Test
     fun homeScreenHasContent() {
         // Home should have some recognizable content
-        val hasContent = device.hasObject(By.pkg(PACKAGE))
+        val hasContent = device.hasObject(By.pkg(TestHelper.PACKAGE))
         assertTrue("Home has content", hasContent)
     }
 
@@ -90,33 +79,21 @@ class NavigationFlowTest {
 
     @Test
     fun posScreenLoads() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = Intent().apply {
-            setClassName(PACKAGE, "$PACKAGE.ui.activity.ProductActivity")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-        Thread.sleep(3000)
+        TestHelper.launchActivity(device, "ProductActivity")
 
         // POS should show cart button or product grid
         val hasPosContent = device.hasObject(By.textContains("CART"))
             || device.hasObject(By.textContains("MORE"))
-            || device.hasObject(By.res("$PACKAGE:id/button_my_cart"))
+            || TestHelper.hasId(device, "button_my_cart")
         assertTrue("POS screen has content", hasPosContent)
     }
 
     @Test
     fun cartOpensFromPos() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = Intent().apply {
-            setClassName(PACKAGE, "$PACKAGE.ui.activity.ProductActivity")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-        Thread.sleep(3000)
+        TestHelper.launchActivity(device, "ProductActivity")
 
         // Tap cart button
-        val cartBtn = device.findObject(By.res("$PACKAGE:id/button_my_cart"))
+        val cartBtn = device.findObject(By.res("${TestHelper.PACKAGE}:id/button_my_cart"))
         cartBtn?.click()
         Thread.sleep(2000)
 
@@ -129,13 +106,7 @@ class NavigationFlowTest {
 
     @Test
     fun kitchenOrdersOpens() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = Intent().apply {
-            setClassName(PACKAGE, "$PACKAGE.ui.activity.KitchenOrdersActivity")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-        Thread.sleep(3000)
+        TestHelper.launchActivity(device, "KitchenOrdersActivity")
 
         val hasContent = device.hasObject(By.textContains("Kitchen"))
             || device.hasObject(By.textContains("No"))
@@ -153,7 +124,7 @@ class NavigationFlowTest {
 
         for (activity in activities) {
             val intent = Intent().apply {
-                setClassName(PACKAGE, "$PACKAGE.ui.activity.$activity")
+                setClassName(TestHelper.PACKAGE, "${TestHelper.PACKAGE}.ui.activity.$activity")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             try {
@@ -165,7 +136,6 @@ class NavigationFlowTest {
         Thread.sleep(2000)
 
         // App should still be running
-        val appRunning = device.hasObject(By.pkg(PACKAGE))
-        assertTrue("App survived rapid navigation", appRunning)
+        TestHelper.assertNotCrashed(device)
     }
 }

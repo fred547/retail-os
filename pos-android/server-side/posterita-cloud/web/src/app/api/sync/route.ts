@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createHmac, timingSafeEqual } from "crypto";
+import { getDb } from "@/lib/supabase/admin";
 
 export const maxDuration = 30;
 
@@ -14,15 +14,6 @@ export const maxDuration = 30;
  */
 const SYNC_API_VERSION = 2;
 const MIN_CLIENT_VERSION = 1; // oldest client version we still accept
-
-// Cache the Supabase client per module — avoid creating 40+ instances per sync request
-let _dbInstance: any = null;
-function getDb(): any {
-  if (!_dbInstance) {
-    _dbInstance = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  }
-  return _dbInstance;
-}
 
 interface SyncRequest {
   account_id: string;

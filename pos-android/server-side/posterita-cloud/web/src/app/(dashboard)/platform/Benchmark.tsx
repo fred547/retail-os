@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Gauge, Play, Zap, Globe, Database, Server, RefreshCw, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { RENDER_BACKEND_URL } from "@/lib/constants";
 
 interface BenchmarkResult {
   name: string;
@@ -146,25 +147,25 @@ export default function Benchmark() {
 
     // Render Backend
     await bench("Backend Health", "Render", async () => {
-      const r = await fetch("https://posterita-backend.onrender.com/health");
+      const r = await fetch(`${RENDER_BACKEND_URL}/health`);
       const j = await r.json();
       return `${j.status}, uptime ${j.uptime_seconds}s`;
     });
 
     await bench("Error Monitor", "Render", async () => {
-      const r = await fetch("https://posterita-backend.onrender.com/monitor/errors");
+      const r = await fetch(`${RENDER_BACKEND_URL}/monitor/errors`);
       const j = await r.json();
       return `${j.open_count} open, ${j.fatal_count} fatal`;
     });
 
     await bench("Sync Monitor", "Render", async () => {
-      const r = await fetch("https://posterita-backend.onrender.com/monitor/sync");
+      const r = await fetch(`${RENDER_BACKEND_URL}/monitor/sync`);
       const j = await r.json();
       return `${j.syncs_last_hour} syncs/hr, avg ${j.avg_duration_ms}ms`;
     });
 
     await bench("Account Stats", "Render", async () => {
-      const r = await fetch("https://posterita-backend.onrender.com/monitor/accounts");
+      const r = await fetch(`${RENDER_BACKEND_URL}/monitor/accounts`);
       const j = await r.json();
       return `${j.accounts} accounts, ${j.owners} owners`;
     });

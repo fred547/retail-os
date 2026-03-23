@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from "@/lib/supabase/admin";
+import { RENDER_BACKEND_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,7 @@ export async function GET() {
 
   // 1. Supabase — DB size + row counts
   try {
-    const db = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const db = getDb();
     const tables = ["account", "owner", "product", "orders", "orderline", "customer",
       "store", "terminal", "pos_user", "error_logs", "sync_request_log", "ci_report"];
     const counts: Record<string, number> = {};
@@ -53,14 +51,14 @@ export async function GET() {
 
   // 3. Render — query health endpoint
   try {
-    const res = await fetch("https://posterita-backend.onrender.com/health", {
+    const res = await fetch(`${RENDER_BACKEND_URL}/health`, {
       signal: AbortSignal.timeout(10000),
     });
     const health = await res.json();
     services.render = {
       status: health.status === "ok" ? "active" : "degraded",
       serviceId: "srv-d70mlka4d50c73f1d2t0",
-      url: "https://posterita-backend.onrender.com",
+      url: RENDER_BACKEND_URL,
       plan: "Starter ($19/month)",
       features: "Always-on, 512MB RAM, 0.5 CPU, auto-deploy on push",
       uptime: `${health.uptime_seconds}s`,

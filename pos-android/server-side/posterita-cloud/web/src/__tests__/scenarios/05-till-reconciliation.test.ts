@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId } from './helpers';
+import { getSupabase, apiPost, testId, testUuid } from './helpers';
 
 const ACCOUNT_ID = testId('till_recon');
 const STORE_ID = 8001;
 const TERMINAL_ID = 8001;
+const TILL_UUID = testUuid();
 
 describe('Scenario: Till Reconciliation', () => {
   beforeAll(async () => {
@@ -37,11 +38,13 @@ describe('Scenario: Till Reconciliation', () => {
         opening_amt: 500,
         date_opened: new Date().toISOString(),
         document_no: 'TILL-001',
-        uuid: testId('till'),
+        uuid: TILL_UUID,
         open_by: 1,
       }],
     });
     expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.tills_synced).toBeGreaterThanOrEqual(1);
   });
 
   it('till record exists in Supabase', async () => {
@@ -59,12 +62,12 @@ describe('Scenario: Till Reconciliation', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       orders: [
-        { order_id: 80001, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 300, subtotal: 260.87, tax_total: 39.13, qty_total: 2, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testId('o1') },
-        { order_id: 80002, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testId('o2') },
+        { order_id: 80001, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 300, subtotal: 260.87, tax_total: 39.13, qty_total: 2, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
+        { order_id: 80002, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
       ],
     });
 
-    // Close the till
+    // Close the till (upsert with same till_id)
     const res = await apiPost('/api/sync', {
       account_id: ACCOUNT_ID,
       terminal_id: TERMINAL_ID,
@@ -81,7 +84,7 @@ describe('Scenario: Till Reconciliation', () => {
         date_opened: new Date(Date.now() - 3600000).toISOString(),
         date_closed: new Date().toISOString(),
         document_no: 'TILL-001',
-        uuid: testId('till_close'),
+        uuid: TILL_UUID,
         open_by: 1,
         close_by: 1,
         subtotal: 434.78,
@@ -99,7 +102,5 @@ describe('Scenario: Till Reconciliation', () => {
     const till = data![0];
     expect(till.opening_amt).toBe(500);
     expect(till.closing_amt).toBe(1000);
-    // Expected cash = opening(500) + cash sales(500) = 1000
-    // Counted cash = 1000 -> discrepancy = 0
   });
 });

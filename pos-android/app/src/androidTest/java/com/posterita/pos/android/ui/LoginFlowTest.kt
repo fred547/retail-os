@@ -1,10 +1,6 @@
 package com.posterita.pos.android.ui
 
-import android.content.Context
-import android.content.Intent
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.*
 import org.junit.Assert.*
 import org.junit.Before
@@ -21,27 +17,18 @@ import org.junit.runner.RunWith
 class LoginFlowTest {
 
     private lateinit var device: UiDevice
-    private val PACKAGE = "com.posterita.pos.android"
-    private val TIMEOUT = 10_000L
 
     @Before
     fun setup() {
-        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = context.packageManager.getLaunchIntentForPackage(PACKAGE)
-            ?: throw AssertionError("App not installed")
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-        device.wait(Until.hasObject(By.pkg(PACKAGE).depth(0)), TIMEOUT)
-        Thread.sleep(3000)
+        device = TestHelper.getDevice()
+        TestHelper.launchApp(device)
     }
 
     @Test
     fun welcomeScreenShowsAllButtons() {
         // Wait for welcome screen
         assertTrue("Sign Up button visible",
-            device.wait(Until.hasObject(By.text("Sign Up")), TIMEOUT))
+            device.wait(Until.hasObject(By.text("Sign Up")), TestHelper.TIMEOUT))
         assertNotNull("Owner Log In button",
             device.findObject(By.text("Owner Log In")))
         assertNotNull("Enroll Device button",
@@ -50,13 +37,13 @@ class LoginFlowTest {
 
     @Test
     fun ownerLoginOpensLoginScreen() {
-        device.wait(Until.hasObject(By.text("Owner Log In")), TIMEOUT)
+        device.wait(Until.hasObject(By.text("Owner Log In")), TestHelper.TIMEOUT)
         device.findObject(By.text("Owner Log In")).click()
         Thread.sleep(2000)
 
         // Should show login form
         assertTrue("Login screen loaded",
-            device.wait(Until.hasObject(By.text("Welcome back")), TIMEOUT))
+            device.wait(Until.hasObject(By.text("Welcome back")), TestHelper.TIMEOUT))
         assertNotNull("Email field exists",
             device.findObject(UiSelector().className("android.widget.EditText").instance(0)))
         assertNotNull("Password field exists",
@@ -68,36 +55,31 @@ class LoginFlowTest {
     @Test
     fun loginWithTestCredentials() {
         val testEmail = "e2e-1774260269260@test.posterita.com"
-        val testPass = "E2eTestPass123!"
 
         // Navigate to login
-        device.wait(Until.hasObject(By.text("Owner Log In")), TIMEOUT)
+        device.wait(Until.hasObject(By.text("Owner Log In")), TestHelper.TIMEOUT)
         device.findObject(By.text("Owner Log In")).click()
-        device.wait(Until.hasObject(By.text("Welcome back")), TIMEOUT)
+        device.wait(Until.hasObject(By.text("Welcome back")), TestHelper.TIMEOUT)
 
         // Enter email — find EditText by instance (0 = email, 1 = password)
-        val emailField = device.findObject(UiSelector().className("android.widget.EditText").instance(0))
-        emailField.clearTextField()
-        emailField.setText(testEmail)
+        TestHelper.enterText(device, 0, testEmail)
 
         // Enter password
-        val passField = device.findObject(UiSelector().className("android.widget.EditText").instance(1))
-        passField.clearTextField()
-        passField.setText(testPass)
+        TestHelper.enterText(device, 1, TestHelper.TEST_PASSWORD)
 
         // Tap Log In
         device.findObject(By.text("Log In")).click()
 
         // Wait for either Home screen or error
         val homeLoaded = device.wait(
-            Until.hasObject(By.textContains("Home").pkg(PACKAGE)),
+            Until.hasObject(By.textContains("Home").pkg(TestHelper.PACKAGE)),
             30_000 // login + sync can take up to 30s
         )
 
         // If we don't get Home, check for PIN screen (also valid — means login succeeded)
         if (!homeLoaded) {
             val pinScreen = device.hasObject(By.textContains("PIN"))
-            val lockScreen = device.hasObject(By.res("$PACKAGE:id/pin_dot_1"))
+            val lockScreen = device.hasObject(By.res("${TestHelper.PACKAGE}:id/pin_dot_1"))
             assertTrue("Login succeeded (Home or PIN screen)",
                 pinScreen || lockScreen)
         }

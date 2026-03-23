@@ -1,13 +1,9 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from "@/lib/supabase/admin";
 
 export const maxDuration = 300;
 
 const MODEL = "claude-sonnet-4-6";
-
-function getSupabaseAdmin() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 
 // ════════════════════════════════════════════════════════
 // SSE helpers
@@ -328,7 +324,7 @@ async function matchAgainstCatalog(
   writer: SSEWriter
 ): Promise<MatchResult[]> {
   // Fetch existing products
-  const { data: existing } = await getSupabaseAdmin()
+  const { data: existing } = await getDb()
     .from("product")
     .select("product_id, name, upc, sellingprice, costprice, productcategory_id")
     .eq("account_id", accountId)
@@ -421,7 +417,7 @@ export async function POST(
   (async () => {
     try {
       // Load the batch
-      const { data: batch, error: batchErr } = await getSupabaseAdmin()
+      const { data: batch, error: batchErr } = await getDb()
         .from("intake_batch")
         .select("*")
         .eq("batch_id", batchId)
@@ -469,7 +465,7 @@ export async function POST(
       }
 
       if (extractedItems.length === 0) {
-        await getSupabaseAdmin().from("intake_batch").update({ status: "failed", item_count: 0 }).eq("batch_id", batchId);
+        await getDb().from("intake_batch").update({ status: "failed", item_count: 0 }).eq("batch_id", batchId);
         writer.sendError("No products could be extracted from the source");
         writer.close();
         return;
@@ -497,7 +493,7 @@ export async function POST(
           } catch { /* skip */ }
         }
 
-        const { data: inserted } = await getSupabaseAdmin()
+        const { data: inserted } = await getDb()
           .from("intake_item")
           .insert({
             batch_id: parseInt(batchId),
@@ -532,7 +528,7 @@ export async function POST(
       const newCount = matchResults.filter(m => m.match_type === "new").length;
       const matchedCount = matchResults.filter(m => m.match_type !== "new").length;
 
-      await getSupabaseAdmin().from("intake_batch").update({
+      await getDb().from("intake_batch").update({
         status: "ready",
         item_count: insertedItems.length,
       }).eq("batch_id", batchId);
@@ -546,7 +542,7 @@ export async function POST(
       });
     } catch (e: any) {
       console.error("Intake processing error:", e);
-      await getSupabaseAdmin().from("intake_batch").update({ status: "failed" }).eq("batch_id", batchId);
+      await getDb().from("intake_batch").update({ status: "failed" }).eq("batch_id", batchId);
       writer.sendError(e.message || "Processing failed");
     } finally {
       writer.close();

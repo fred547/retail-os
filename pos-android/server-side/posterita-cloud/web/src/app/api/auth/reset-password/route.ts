@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
-
-let _supabase: ReturnType<typeof createClient> | null = null;
-
-function getSupabase() {
-  if (!_supabase) {
-    _supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-  }
-  return _supabase;
-}
 
 /**
  * POST /api/auth/reset-password
@@ -34,7 +22,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = getSupabase();
+    const supabase = getDb();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: "https://web.posterita.com/auth/reset-confirm",

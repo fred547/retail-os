@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getSessionAccountId } from "@/lib/account-context";
+import { getDb } from "@/lib/supabase/admin";
 import React from "react";
 import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-}
 
 // ════════════════════════════════════════════════════════
 // Shared styles
