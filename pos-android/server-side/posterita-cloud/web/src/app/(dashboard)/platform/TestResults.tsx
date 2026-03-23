@@ -15,6 +15,10 @@ interface CiReport {
   web_failed: number;
   web_files: number;
   ts_errors: number;
+  firebase_passed: number;
+  firebase_failed: number;
+  firebase_status: string | null;
+  source: string | null;
   status: string;
   created_at: string;
 }
@@ -29,8 +33,11 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
   const webPassed = latest?.web_passed ?? web.totalTests;
   const webFailed = latest?.web_failed ?? 0;
   const tsErrors = latest?.ts_errors ?? 0;
-  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + render.totalTests + adb.totalTests + firebase.totalTests;
-  const allGreen = androidFailed === 0 && webFailed === 0 && tsErrors === 0;
+  const firebasePassed = latest?.firebase_passed ?? 0;
+  const firebaseFailed = latest?.firebase_failed ?? 0;
+  const firebaseStatus = latest?.firebase_status ?? "skipped";
+  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + render.totalTests + adb.totalTests + firebase.totalTests + firebasePassed + firebaseFailed;
+  const allGreen = androidFailed === 0 && webFailed === 0 && tsErrors === 0 && firebaseFailed === 0;
 
   return (
     <div className="space-y-6">
@@ -99,10 +106,12 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
-          <Smartphone size={20} className="text-orange-600" />
+          <Smartphone size={20} className={firebaseStatus === "pass" ? "text-green-600" : firebaseStatus === "fail" ? "text-red-600" : "text-orange-600"} />
           <div>
             <p className="text-xs text-gray-500">Firebase Device</p>
-            <p className="text-xl font-bold text-orange-600">{firebase.totalTests}</p>
+            <p className={`text-xl font-bold ${firebaseStatus === "pass" ? "text-green-600" : firebaseStatus === "fail" ? "text-red-600" : "text-orange-600"}`}>
+              {firebasePassed > 0 || firebaseFailed > 0 ? `${firebasePassed}/${firebasePassed + firebaseFailed}` : firebase.totalTests}
+            </p>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
@@ -132,7 +141,9 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
                 <th>Message</th>
                 <th className="text-center">Android</th>
                 <th className="text-center">Web</th>
+                <th className="text-center">Firebase</th>
                 <th className="text-center">TS</th>
+                <th>Source</th>
                 <th>When</th>
               </tr>
             </thead>
@@ -159,8 +170,26 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
                     </span>
                   </td>
                   <td className="text-center text-sm">
+                    {r.firebase_status === "pass" ? (
+                      <span className="text-green-600">{r.firebase_passed}/{r.firebase_passed + r.firebase_failed}</span>
+                    ) : r.firebase_status === "fail" ? (
+                      <span className="text-red-600 font-medium">{r.firebase_passed}/{r.firebase_passed + r.firebase_failed}</span>
+                    ) : r.firebase_status === "timeout" ? (
+                      <span className="text-orange-500">timeout</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="text-center text-sm">
                     <span className={r.ts_errors > 0 ? "text-red-600 font-medium" : "text-green-600"}>
                       {r.ts_errors}
+                    </span>
+                  </td>
+                  <td className="text-sm">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      r.source === "local" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {r.source ?? "ci"}
                     </span>
                   </td>
                   <td className="text-sm text-gray-500">{new Date(r.created_at).toLocaleString()}</td>

@@ -256,6 +256,27 @@ export async function POST(req: NextRequest) {
 
     const requestStart = Date.now();
     const errors: string[] = [];
+
+    // Store raw sync payload in inbox for recovery
+    let inboxId: number | null = null;
+    try {
+      const itemsSummary = buildItemsSummary(body);
+      const { data: inboxEntry } = await getDb()
+        .from("sync_inbox")
+        .insert({
+          account_id: body.account_id,
+          terminal_id: body.terminal_id,
+          device_id: body.device_id || null,
+          sync_version: body.client_sync_version || SYNC_API_VERSION,
+          payload: body,
+          status: "processing",
+          items_summary: itemsSummary,
+        })
+        .select("id")
+        .single();
+      inboxId = inboxEntry?.id ?? null;
+    } catch (_) { /* never fail sync for inbox logging */ }
+
     let ordersSynced = 0;
     let orderLinesSynced = 0;
     let paymentsSynced = 0;
@@ -908,6 +929,23 @@ export async function POST(req: NextRequest) {
       });
     } catch (_) { /* never fail sync for logging */ }
 
+    // Update inbox entry with processing result
+    if (inboxId) {
+      try {
+        const finalStatus = errors.length === 0 ? "processed" :
+          (ordersSynced > 0 || tillsSynced > 0) ? "partial" : "failed";
+        await getDb()
+          .from("sync_inbox")
+          .update({
+            status: finalStatus,
+            processed_at: new Date().toISOString(),
+            error_message: errors.length > 0 ? errors.join("; ") : null,
+            errors: errors.length > 0 ? errors : null,
+          })
+          .eq("id", inboxId);
+      } catch (_) { /* never fail sync for inbox logging */ }
+    }
+
     return NextResponse.json({
       success: errors.length === 0,
       server_time: serverTime,
@@ -954,6 +992,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function buildItemsSummary(body: any): string {
+  const parts: string[] = [];
+  if (body.orders?.length) parts.push(`${body.orders.length} orders`);
+  if (body.order_lines?.length) parts.push(`${body.order_lines.length} lines`);
+  if (body.tills?.length) parts.push(`${body.tills.length} tills`);
+  if (body.customers?.length) parts.push(`${body.customers.length} customers`);
+  if (body.error_logs?.length) parts.push(`${body.error_logs.length} error logs`);
+  if (body.inventory_count_entries?.length) parts.push(`${body.inventory_count_entries.length} inventory entries`);
+  return parts.join(", ") || "pull only";
 }
 
 // Health check

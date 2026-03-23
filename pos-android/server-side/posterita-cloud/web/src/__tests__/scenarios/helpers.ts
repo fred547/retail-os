@@ -22,6 +22,18 @@ export async function apiPost(path: string, body: any): Promise<Response> {
   });
 }
 
+export async function apiGet(path: string): Promise<Response> {
+  return fetch(apiUrl(path), { method: 'GET' });
+}
+
+export async function apiPatch(path: string, body: any): Promise<Response> {
+  return fetch(apiUrl(path), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
 // Generate unique IDs for test data to avoid collisions
 export function testId(prefix: string = 'test'): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

@@ -40,7 +40,7 @@ const ALLOWED_TABLES = new Set([
   "intake_batch", "intake_item",
   "table_section", "preparation_station", "category_station_mapping",
   "inventory_count_session", "inventory_count_entry",
-  "error_logs",
+  "error_logs", "sync_inbox",
   // SECURITY: "owner" removed — contains all owners' emails/phones, must go through /api/owner/[id]
 ]);
 

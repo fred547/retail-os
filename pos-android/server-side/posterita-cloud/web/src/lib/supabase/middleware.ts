@@ -18,6 +18,7 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/errors",
   "/brands",
   "/tables",
+  "/sync-inbox",
 ]);
 
 /** Also redirect sub-paths like /intake/new, /intake/123 */

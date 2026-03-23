@@ -67,7 +67,7 @@ describe('Scenario: Sync Push Orders', () => {
 
   it('order exists in Supabase after sync', async () => {
     const db = getSupabase();
-    const { data } = await db.from('orders').select('*').eq('account_id', ACCOUNT_ID).eq('order_id', 90001);
+    const { data } = await db.from('orders').select('*').eq('account_id', ACCOUNT_ID).eq('order_id', ORDER_BASE + 1);
     expect(data?.length).toBe(1);
     expect(data![0].grand_total).toBe(500.00);
     expect(data![0].document_no).toBe('TEST-000001');
@@ -76,7 +76,7 @@ describe('Scenario: Sync Push Orders', () => {
 
   it('order line exists with correct amounts', async () => {
     const db = getSupabase();
-    const { data } = await db.from('orderline').select('*').eq('order_id', 90001);
+    const { data } = await db.from('orderline').select('*').eq('order_id', ORDER_BASE + 1);
     expect(data?.length).toBe(1);
     expect(data![0].qtyentered).toBe(3);
     expect(data![0].linenetamt).toBe(500.00);

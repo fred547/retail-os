@@ -29,6 +29,7 @@ import {
   Building2,
   ChevronRight,
   ChefHat,
+  RefreshCw,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -52,6 +53,7 @@ const navigation = [
   { name: "Catalogue", href: "/catalogue", icon: FileText },
   { name: "Brands", href: "/brands", icon: Store },
   { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Sync Inbox", href: "/sync-inbox", icon: RefreshCw },
 ];
 
 export default function Sidebar({

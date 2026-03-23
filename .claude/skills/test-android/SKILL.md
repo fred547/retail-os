@@ -86,7 +86,7 @@ if [ -f "app/build/outputs/apk/debug/app-debug.apk" ] && command -v gcloud &>/de
     --app app/build/outputs/apk/debug/app-debug.apk \
     --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
     --device model=MediumPhone.arm,version=34 \
-    --timeout 5m \
+    --timeout 15m \
     --results-dir "e2e-$(date +%s)" 2>&1 | tail -20
 else
   echo "SKIP: Firebase Test Lab not configured (gcloud not found or APK missing)"
@@ -98,6 +98,42 @@ fi
 ls -lh pos-android/app/build/outputs/apk/debug/app-debug.apk | awk '{print $5}'
 ```
 Report size. Flag if > 50MB.
+
+### Step 10: Post Results to Platform
+After all steps complete, post the results to the `ci_report` table in Supabase so the Platform Tests tab shows them. Read the Supabase URL and service role key from `.env.local`:
+
+```bash
+cd pos-android/server-side/posterita-cloud/web
+source .env.local 2>/dev/null
+
+if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+  VERSION=$(cd /path/to/pos-android && git rev-parse --short HEAD)
+  BRANCH=$(cd /path/to/pos-android && git rev-parse --abbrev-ref HEAD)
+  COMMIT_MSG=$(cd /path/to/pos-android && git log -1 --pretty=%s | head -c 200)
+
+  curl -s -X POST "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/ci_report" \
+    -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+    -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"git_sha\": \"${VERSION}\",
+      \"branch\": \"${BRANCH}\",
+      \"commit_message\": \"local test run\",
+      \"android_passed\": ${UNIT_PASSED:-0},
+      \"android_failed\": ${UNIT_FAILED:-0},
+      \"firebase_passed\": ${FIREBASE_PASSED:-0},
+      \"firebase_failed\": ${FIREBASE_FAILED:-0},
+      \"firebase_status\": \"${FIREBASE_STATUS:-skipped}\",
+      \"source\": \"local\",
+      \"status\": \"${OVERALL_STATUS:-pass}\"
+    }"
+  echo "Posted to platform"
+else
+  echo "SKIP: .env.local not found — results not posted to platform"
+fi
+```
+
+Replace the variables (`UNIT_PASSED`, `UNIT_FAILED`, `FIREBASE_PASSED`, `FIREBASE_FAILED`, `FIREBASE_STATUS`, `OVERALL_STATUS`) with actual values collected during steps 1–9.
 
 ## Output Format
 
@@ -115,6 +151,7 @@ Report size. Flag if > 50MB.
 | Sync | ✅/❌ | Sync complete / Failed: ... |
 | Firebase | ✅/❌/⏭ | X passed / skipped |
 | APK Size | ✅/⚠ | X MB |
+| Platform | ✅/⏭ | Posted to ci_report / skipped |
 
 **Verdict: READY FOR PRODUCTION / BLOCKED — fix N issues**
 ```

@@ -2,13 +2,15 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { getSupabase, apiPost, testId } from './helpers';
 
 const ACCOUNT_ID = testId('ott_sec');
+const OTT_STORE_ID = 70000 + Math.floor(Math.random() * 9000);
+const OTT_TERMINAL_ID = OTT_STORE_ID;
 
 describe('Scenario: OTT Token Security', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'OTT Test', type: 'live', status: 'active', currency: 'MUR' });
-    await db.from('store').insert({ store_id: 7001, account_id: ACCOUNT_ID, name: 'OTT Store', isactive: 'Y' });
-    await db.from('terminal').insert({ terminal_id: 7001, account_id: ACCOUNT_ID, store_id: 7001, name: 'POS 1', isactive: 'Y' });
+    await db.from('store').insert({ store_id: OTT_STORE_ID, account_id: ACCOUNT_ID, name: 'OTT Store', isactive: 'Y' });
+    await db.from('terminal').insert({ terminal_id: OTT_TERMINAL_ID, account_id: ACCOUNT_ID, store_id: OTT_STORE_ID, name: 'POS 1', isactive: 'Y' });
   });
 
   afterAll(async () => {
@@ -23,8 +25,8 @@ describe('Scenario: OTT Token Security', () => {
     const res = await apiPost('/api/auth/ott', {
       account_id: ACCOUNT_ID,
       user_id: 1,
-      store_id: 7001,
-      terminal_id: 7001,
+      store_id: OTT_STORE_ID,
+      terminal_id: OTT_TERMINAL_ID,
     });
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -37,8 +39,8 @@ describe('Scenario: OTT Token Security', () => {
     const genRes = await apiPost('/api/auth/ott', {
       account_id: ACCOUNT_ID,
       user_id: 1,
-      store_id: 7001,
-      terminal_id: 7001,
+      store_id: OTT_STORE_ID,
+      terminal_id: OTT_TERMINAL_ID,
     });
     const { token } = await genRes.json();
 
@@ -54,8 +56,8 @@ describe('Scenario: OTT Token Security', () => {
     const genRes = await apiPost('/api/auth/ott', {
       account_id: ACCOUNT_ID,
       user_id: 1,
-      store_id: 7001,
-      terminal_id: 7001,
+      store_id: OTT_STORE_ID,
+      terminal_id: OTT_TERMINAL_ID,
     });
     const { token } = await genRes.json();
 

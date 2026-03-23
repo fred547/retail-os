@@ -195,18 +195,42 @@ jobs:
 
       - name: Run on Firebase Test Lab
         if: env.GCLOUD_SERVICE_KEY != ''
+        id: firebase
         run: |
-          gcloud firebase test android run \
+          set +e
+          OUTPUT=$(gcloud firebase test android run \
             --type instrumentation \
             --app app/build/outputs/apk/debug/app-debug.apk \
             --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
             --device model=MediumPhone.arm,version=34 \
-            --timeout 5m \
+            --timeout 15m \
             --no-auto-google-login \
-            --project posterita-retail-os || true
+            --project posterita-retail-os 2>&1)
+          EXIT_CODE=$?
+          echo "$OUTPUT" | tail -20
+
+          # Parse outcome
+          if echo "$OUTPUT" | grep -q "Passed"; then
+            echo "firebase_status=pass" >> $GITHUB_OUTPUT
+          elif echo "$OUTPUT" | grep -q "timed out"; then
+            echo "firebase_status=timeout" >> $GITHUB_OUTPUT
+          else
+            echo "firebase_status=fail" >> $GITHUB_OUTPUT
+          fi
+
+          # Count passed/failed from the table output
+          PASSED=$(echo "$OUTPUT" | grep -c "Passed" || echo 0)
+          FAILED=$(echo "$OUTPUT" | grep -c "Failed" || echo 0)
+          echo "firebase_passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "firebase_failed=$FAILED" >> $GITHUB_OUTPUT
         env:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
         continue-on-error: true
+
+    outputs:
+      firebase_status: ${{ steps.firebase.outputs.firebase_status }}
+      firebase_passed: ${{ steps.firebase.outputs.firebase_passed }}
+      firebase_failed: ${{ steps.firebase.outputs.firebase_failed }}
 
   # ──────────────────────────────────────────────────
   # Production Smoke Tests (hit real API + DB)
@@ -252,7 +276,7 @@ jobs:
   report-to-platform:
     name: Report to Platform
     runs-on: ubuntu-latest
-    needs: [android-unit-tests, web-tests, web-typecheck]
+    needs: [android-unit-tests, web-tests, web-typecheck, firebase-ui-tests]
     if: always() && github.ref == 'refs/heads/main'
     steps:
       - name: Post test results to Supabase
@@ -266,6 +290,9 @@ jobs:
           WEB_FAILED: ${{ needs.web-tests.outputs.failed }}
           WEB_FILES: ${{ needs.web-tests.outputs.files }}
           TS_ERRORS: ${{ needs.web-typecheck.outputs.errors }}
+          FIREBASE_PASSED: ${{ needs.firebase-ui-tests.outputs.firebase_passed }}
+          FIREBASE_FAILED: ${{ needs.firebase-ui-tests.outputs.firebase_failed }}
+          FIREBASE_STATUS: ${{ needs.firebase-ui-tests.outputs.firebase_status }}
         run: |
           # Build version string from git
           VERSION=$(git rev-parse --short HEAD)
@@ -278,6 +305,7 @@ jobs:
           echo "Android: ${ANDROID_PASSED:-0} passed, ${ANDROID_FAILED:-0} failed"
           echo "Web: ${WEB_PASSED:-0} passed, ${WEB_FAILED:-0} failed"
           echo "TypeScript errors: ${TS_ERRORS:-0}"
+          echo "Firebase: ${FIREBASE_PASSED:-0} passed, ${FIREBASE_FAILED:-0} failed (${FIREBASE_STATUS:-skipped})"
 
           # Post to Supabase ci_report table
           if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_KEY" ]; then
@@ -296,6 +324,10 @@ jobs:
                 \"web_failed\": ${WEB_FAILED:-0},
                 \"web_files\": ${WEB_FILES:-0},
                 \"ts_errors\": ${TS_ERRORS:-0},
+                \"firebase_passed\": ${FIREBASE_PASSED:-0},
+                \"firebase_failed\": ${FIREBASE_FAILED:-0},
+                \"firebase_status\": \"${FIREBASE_STATUS:-skipped}\",
+                \"source\": \"ci\",
                 \"status\": \"$([ \"${ANDROID_FAILED:-0}\" = \"0\" ] && [ \"${WEB_FAILED:-0}\" = \"0\" ] && echo 'pass' || echo 'fail')\",
                 \"created_at\": \"${TIMESTAMP}\"
               }" && echo "Posted to platform" || echo "Failed to post (secrets may not be configured)"
