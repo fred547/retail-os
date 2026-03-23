@@ -25,6 +25,7 @@ import com.posterita.pos.android.printing.BluetoothPrinter
 import com.posterita.pos.android.printing.PrinterManager
 import com.posterita.pos.android.printing.ReceiptPrinter
 import com.posterita.pos.android.service.TillService
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SharedPreferencesManager
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +47,7 @@ class CloseTillActivity : AppCompatActivity() {
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var printerManager: PrinterManager
     @Inject lateinit var tillService: TillService
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var currentTill: Till? = null
     private var denominationTotal: Double = 0.0
@@ -122,6 +124,7 @@ class CloseTillActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCloseTillBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         setupDenominationFields()
         setupDenominationListeners()
@@ -379,6 +382,7 @@ class CloseTillActivity : AppCompatActivity() {
             )
             currentPhotoUri?.let { takePictureLauncher.launch(it) }
         } catch (e: Exception) {
+            AppErrorLogger.warn(this, "CloseTillActivity", "Cannot open camera", e)
             Toast.makeText(this, "Cannot open camera: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -659,6 +663,7 @@ class CloseTillActivity : AppCompatActivity() {
                     Toast.makeText(this@CloseTillActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(this@CloseTillActivity, "CloseTillActivity", "Failed to open cash drawer", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CloseTillActivity, "Failed to open drawer: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -734,6 +739,7 @@ class CloseTillActivity : AppCompatActivity() {
                     showCloseTillConfirmation(closedDetails)
                 }
             } catch (e: Exception) {
+                AppErrorLogger.log(this@CloseTillActivity, "CloseTillActivity", "Failed to close till", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CloseTillActivity, "Failed to close till: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -935,7 +941,7 @@ class CloseTillActivity : AppCompatActivity() {
                         receiptPrinter.printRawText(text)
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    AppErrorLogger.warn(this@CloseTillActivity, "CloseTillActivity", "Failed to print till report", e)
                 }
             }
         }

@@ -3,13 +3,16 @@ package com.posterita.pos.android.ui.viewmodel
 import androidx.lifecycle.*
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.remote.ApiService
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
+    @ApplicationContext private val appContext: android.content.Context,
     private val apiService: ApiService,
     private val prefsManager: SharedPreferencesManager
 ) : ViewModel() {
@@ -43,6 +46,7 @@ class AuthViewModel @Inject constructor(
                     _loginResult.postValue(Result.failure(Exception("Login failed: ${response.code()}")))
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "AuthViewModel", "Login failed", e)
                 _loginResult.postValue(Result.failure(e))
             }
         }
@@ -60,6 +64,7 @@ class AuthViewModel @Inject constructor(
                     _testEndpointResult.postValue(Result.failure(Exception("Invalid Server Endpoint")))
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "AuthViewModel", "Endpoint test failed", e)
                 _testEndpointResult.postValue(Result.failure(e))
             }
         }

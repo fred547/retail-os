@@ -29,7 +29,17 @@ data class Terminal(
     val mraebs_id: String? = null,
     val updated: String? = null,
     val last_crn_invoice_no: Int = 0,
-    val isselected: String? = null
+    val isselected: String? = null,
+    val terminal_type: String = TYPE_POS_RETAIL,
+    val zone: String? = null
 ) : Serializable {
+    companion object {
+        const val TYPE_POS_RETAIL = "pos_retail"
+        const val TYPE_POS_RESTAURANT = "pos_restaurant"
+        const val TYPE_KDS = "kds"
+        const val TYPE_MOBILE_STAFF = "mobile_staff"
+        const val TYPE_CUSTOMER_DISPLAY = "customer_display"
+        const val TYPE_SELF_SERVICE = "self_service"
+    }
     override fun toString(): String = name ?: ""
 }

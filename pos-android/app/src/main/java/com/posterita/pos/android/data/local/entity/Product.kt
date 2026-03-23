@@ -44,5 +44,7 @@ data class Product(
     /** Lifecycle status: draft, review, live */
     val product_status: String? = "live",
     /** How this product was created: manual, ai_import, quotation, supplier_catalog */
-    val source: String? = "manual"
+    val source: String? = "manual",
+    /** Override station for kitchen routing (null = use category mapping) */
+    val station_override_id: Int? = null
 ) : Serializable

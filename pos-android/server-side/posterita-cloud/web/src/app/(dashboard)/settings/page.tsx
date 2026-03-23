@@ -11,10 +11,8 @@ interface StoreInfo {
   name: string;
   address: string | null;
   city: string | null;
-  phone: string | null;
-  email: string | null;
+  country: string | null;
   currency: string | null;
-  tax_number: string | null;
 }
 
 interface PreferenceInfo {
@@ -39,7 +37,7 @@ export default function SettingsPage() {
     setLoading(true);
     const [storeRes, prefRes] = await Promise.all([
       dataQuery<StoreInfo>("store", {
-        select: "store_id, name, address, city, phone, email, currency, tax_number",
+        select: "store_id, name, address, city, country, currency",
       }),
       dataQuery<PreferenceInfo>("preference", {
         select: "preference_id, ai_api_key",
@@ -68,10 +66,8 @@ export default function SettingsPage() {
         name: form.name,
         address: form.address,
         city: form.city,
-        phone: form.phone,
-        email: form.email,
+        country: form.country,
         currency: form.currency,
-        tax_number: form.tax_number,
       }
     );
     setSaving(false);
@@ -193,28 +189,6 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={form.email ?? ""}
-              onChange={(e) => updateField("email", e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone
-            </label>
-            <input
-              type="text"
-              value={form.phone ?? ""}
-              onChange={(e) => updateField("phone", e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-            />
-          </div>
         </div>
       </div>
 
@@ -237,18 +211,6 @@ export default function SettingsPage() {
               value={form.currency ?? ""}
               onChange={(e) => updateField("currency", e.target.value)}
               placeholder="e.g. MUR, USD, EUR"
-              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tax Registration Number
-            </label>
-            <input
-              type="text"
-              value={form.tax_number ?? ""}
-              onChange={(e) => updateField("tax_number", e.target.value)}
-              placeholder="VAT / TIN number"
               className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
             />
           </div>

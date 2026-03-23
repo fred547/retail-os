@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -145,6 +147,15 @@
             android:name=".ui.activity.KitchenOrdersActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.KdsDisplayActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".ui.activity.KdsSetupActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
 
         <!-- Refund -->
         <activity
@@ -257,6 +268,9 @@
             android:name=".ui.activity.ManageTablesActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.InventoryCountActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 
@@ -265,6 +279,12 @@
             android:name=".service.AiImportService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!-- KDS Server foreground service -->
+        <service
+            android:name=".service.KdsServerService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
 
         <!-- FileProvider for camera image capture -->
         <provider

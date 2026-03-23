@@ -35,8 +35,8 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {})); return { json: () => Promise.resolve(body), headers: { get: (key: string) => hdrs.get(key) ?? null } };
 }
 
 beforeEach(() => {
@@ -132,7 +132,7 @@ describe("/api/ai-import POST – device_setup", () => {
     expect(json.summary.products).toBe(1);
   });
 
-  it("rejects requests without URLs", async () => {
+  it("falls back to business name search when URLs are empty", async () => {
     const { POST } = await import("../../app/api/ai-import/route");
 
     const res = await POST(
@@ -144,7 +144,8 @@ describe("/api/ai-import POST – device_setup", () => {
     );
     const json = await res.json();
 
-    expect(res.status).toBe(422);
-    expect(json.error).toContain("Could not extract products");
+    // Empty URLs triggers business name search via Claude — still succeeds
+    expect(res.status).toBe(200);
+    expect(json.success).toBe(true);
   });
 });

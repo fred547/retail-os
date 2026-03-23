@@ -93,14 +93,34 @@ class BluetoothPrinter {
             val out = java.io.ByteArrayOutputStream()
             out.write(ReceiptPrinter.INIT)
             out.write(ReceiptPrinter.CENTER_ALIGN)
+
+            // Station header from note "[StationName] ..." format
+            val stationHeader = orderDetails.note?.let { Regex("^\\[(.+?)]").find(it)?.groupValues?.get(1) }
             out.write(ReceiptPrinter.FONT_H1)
-            out.write("KITCHEN COPY\n".toByteArray())
+            out.write("${stationHeader?.uppercase() ?: "KITCHEN COPY"}\n".toByteArray())
+
             out.write(ReceiptPrinter.FONT_NORMAL)
             out.write(ReceiptPrinter.LEFT_ALIGN)
-            out.write("Order: ${orderDetails.documentno}\n".toByteArray())
+
+            val displayNote = orderDetails.note?.replace(Regex("^\\[.+?]\\s*"), "")?.ifBlank { null }
+            if (!displayNote.isNullOrBlank()) {
+                out.write("$displayNote\n".toByteArray())
+            }
+            if (orderDetails.documentno != null) {
+                out.write("Order: ${orderDetails.documentno}\n".toByteArray())
+            }
+
             for (line in orderDetails.lines) {
                 if (line.isKitchenItem == "Y") {
+                    out.write(ReceiptPrinter.FONT_BOLD)
                     out.write("${com.posterita.pos.android.util.NumberUtils.formatQuantity(line.qtyentered)} x ${line.name}\n".toByteArray())
+                    out.write(ReceiptPrinter.FONT_NORMAL)
+                    if (!line.modifiers.isNullOrBlank()) {
+                        out.write("  ${line.modifiers}\n".toByteArray())
+                    }
+                    if (!line.note.isNullOrBlank()) {
+                        out.write("  * ${line.note}\n".toByteArray())
+                    }
                 }
             }
             out.write(ReceiptPrinter.LINE_FEED)

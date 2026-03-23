@@ -12,6 +12,7 @@
     "test:report": "vitest run --reporter=json --outputFile=test-results.json && npx tsx scripts/generate-test-report.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.0",
     "cloudinary": "^2.5.1",

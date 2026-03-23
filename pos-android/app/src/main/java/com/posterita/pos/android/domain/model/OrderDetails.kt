@@ -84,7 +84,9 @@ data class OrderDetails(
         var lineamt: Double = 0.0,
         var isKitchenItem: String? = null,
         var istaxincluded: String? = null,
-        var image: String? = null
+        var image: String? = null,
+        var station_id: Int? = null,
+        var station_name: String? = null
     ) : Serializable
 
     data class PaymentDetail(

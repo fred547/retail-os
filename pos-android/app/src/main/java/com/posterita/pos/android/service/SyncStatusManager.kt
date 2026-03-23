@@ -59,6 +59,8 @@ object SyncStatusManager {
         val discountCodesPulled: Int = 0,
         val preferencesPulled: Int = 0,
         val tablesPulled: Int = 0,
+        val sectionsPulled: Int = 0,
+        val stationsPulled: Int = 0,
         val imagesSynced: Int = 0,
         val errors: List<String> = emptyList(),
         val durationMs: Long = 0,
@@ -67,7 +69,8 @@ object SyncStatusManager {
         val totalPulled get() = productsPulled + categoriesPulled + taxesPulled +
                 modifiersPulled + customersPulled + usersPulled +
                 storesPulled + terminalsPulled +
-                discountCodesPulled + preferencesPulled + tablesPulled
+                discountCodesPulled + preferencesPulled + tablesPulled +
+                sectionsPulled + stationsPulled
 
         fun toDisplayString(): String {
             val parts = mutableListOf<String>()
@@ -84,6 +87,8 @@ object SyncStatusManager {
             if (discountCodesPulled > 0) parts.add("$discountCodesPulled discount codes")
             if (preferencesPulled > 0) parts.add("$preferencesPulled preferences")
             if (tablesPulled > 0) parts.add("$tablesPulled tables")
+            if (sectionsPulled > 0) parts.add("$sectionsPulled sections")
+            if (stationsPulled > 0) parts.add("$stationsPulled stations")
 
             return if (parts.isEmpty()) "Everything up to date" else parts.joinToString(", ")
         }

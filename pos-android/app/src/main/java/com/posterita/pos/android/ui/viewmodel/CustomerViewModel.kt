@@ -6,14 +6,17 @@ import com.posterita.pos.android.data.local.dao.CustomerDao
 import com.posterita.pos.android.data.local.entity.Customer
 import com.posterita.pos.android.data.remote.ApiService
 import com.posterita.pos.android.data.remote.model.request.CreateCustomerRequest
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.Constants
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CustomerViewModel @Inject constructor(
+    @ApplicationContext private val appContext: android.content.Context,
     private val customerDao: CustomerDao,
     private val apiService: ApiService,
     private val prefsManager: SharedPreferencesManager
@@ -67,8 +70,8 @@ class CustomerViewModel @Inject constructor(
                             )
                         }
                     }
-                } catch (_: Exception) {
-                    // Server unavailable — will save locally
+                } catch (e: Exception) {
+                    AppErrorLogger.warn(appContext, "CustomerViewModel", "Server unavailable, saving locally", e)
                 }
 
                 // Use server response or create locally with a negative temp ID
@@ -81,6 +84,7 @@ class CustomerViewModel @Inject constructor(
                 customerDao.insertCustomers(listOf(customer))
                 _createResult.postValue(Result.success(customer))
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "CustomerViewModel", "Failed to create customer", e)
                 _createResult.postValue(Result.failure(e))
             }
         }

@@ -21,9 +21,10 @@ export default async function OrdersPage({
   const perPage = 50;
   const offset = (page - 1) * perPage;
 
+  // No FK join on store — FKs dropped for multi-tenant safety
   let query = supabase
     .from("orders")
-    .select("*, store(name)", { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("account_id", accountId)
     .order("date_ordered", { ascending: false })
     .range(offset, offset + perPage - 1);
@@ -32,7 +33,19 @@ export default async function OrdersPage({
   if (params.status === "unpaid") query = query.eq("is_paid", false);
   if (params.date) query = query.gte("date_ordered", params.date);
 
-  const { data: orders, count } = await query;
+  const { data: rawOrders, count } = await query;
+
+  // Map store names separately
+  const { data: stores } = await supabase
+    .from("store")
+    .select("store_id, name")
+    .eq("account_id", accountId);
+  const storeMap: Record<number, string> = {};
+  for (const s of stores ?? []) storeMap[s.store_id] = s.name;
+  const orders = (rawOrders ?? []).map((o: any) => ({
+    ...o,
+    store: o.store ?? { name: storeMap[o.store_id] || null },
+  }));
   const totalPages = Math.ceil((count ?? 0) / perPage);
 
   return (

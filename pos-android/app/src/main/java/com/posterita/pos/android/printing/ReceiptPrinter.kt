@@ -193,18 +193,45 @@ class ReceiptPrinter(
         val out = ByteArrayOutputStream()
         out.write(INIT)
         out.write(CENTER_ALIGN)
-        out.write(FONT_H1)
-        out.write("KITCHEN COPY\n".toByteArray())
+
+        // Station header — if note starts with [StationName], show it prominently
+        val stationHeader = order.note?.let { Regex("^\\[(.+?)]").find(it)?.groupValues?.get(1) }
+        if (stationHeader != null) {
+            out.write(FONT_H1)
+            out.write("${stationHeader.uppercase()}\n".toByteArray())
+        } else {
+            out.write(FONT_H1)
+            out.write("KITCHEN COPY\n".toByteArray())
+        }
+
         out.write(FONT_NORMAL)
         out.write(LEFT_ALIGN)
-        out.write("Order: ${order.documentno}\n".toByteArray())
-        out.write("Customer: ${order.customer_name ?: "Walk-In"}\n".toByteArray())
+
+        // Display note without station prefix
+        val displayNote = order.note?.replace(Regex("^\\[.+?]\\s*"), "")?.ifBlank { null }
+        if (!displayNote.isNullOrBlank()) {
+            out.write("$displayNote\n".toByteArray())
+        }
+        if (order.documentno != null) {
+            out.write("Order: ${order.documentno}\n".toByteArray())
+        }
+        if (order.customer_name != null) {
+            out.write("Customer: ${order.customer_name}\n".toByteArray())
+        }
         out.write((padLine("-", lineWidth) + "\n").toByteArray())
 
         var itemCount = 0
         for (line in order.lines) {
             if (line.isKitchenItem == "Y") {
+                out.write(FONT_BOLD)
                 out.write("${NumberUtils.formatQuantity(line.qtyentered)} x ${line.name}\n".toByteArray())
+                out.write(FONT_NORMAL)
+                if (!line.modifiers.isNullOrBlank()) {
+                    out.write("  ${line.modifiers}\n".toByteArray())
+                }
+                if (!line.note.isNullOrBlank()) {
+                    out.write("  * ${line.note}\n".toByteArray())
+                }
                 itemCount++
             }
         }

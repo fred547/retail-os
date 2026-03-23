@@ -34,7 +34,7 @@ class WebsiteSetupService @Inject constructor(
     companion object {
         private const val TAG = "WebsiteSetupService"
         private const val CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
-        private const val MODEL = "claude-sonnet-4-6"
+        private const val MODEL = "claude-haiku-4-5"
         private const val WEB_SEARCH_BETA = "web-search-2025-03-05"
     }
 

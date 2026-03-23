@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivityLockScreenBinding
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SessionTimeoutManager
@@ -29,6 +30,7 @@ class LockScreenActivity : AppCompatActivity() {
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var accountRegistry: LocalAccountRegistry
     @Inject lateinit var prefsManager: SharedPreferencesManager
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var pinBuffer = ""
     private var correctPin = ""
@@ -38,6 +40,8 @@ class LockScreenActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLockScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         // "Not me" link
         binding.textNotMe?.setOnClickListener {
@@ -71,7 +75,7 @@ class LockScreenActivity : AppCompatActivity() {
                             sessionManager.user = u
                         }
                     } catch (e: Exception) {
-                        Log.w("LockScreenActivity", "Failed to load user", e)
+                        AppErrorLogger.warn(this@LockScreenActivity, "LockScreenActivity", "Failed to load user", e)
                     }
                     Unit
                 }
@@ -153,9 +157,11 @@ class LockScreenActivity : AppCompatActivity() {
         val emptyColor = getColor(R.color.posterita_line)
 
         for (i in dots.indices) {
-            val bg = dots[i].background
+            // mutate() ensures each dot gets its own drawable instance (not shared)
+            val bg = dots[i].background.mutate()
             if (bg is GradientDrawable) {
                 bg.setColor(if (i < pinBuffer.length) filledColor else emptyColor)
+                dots[i].background = bg
             }
         }
 
@@ -175,7 +181,10 @@ class LockScreenActivity : AppCompatActivity() {
             val accounts = accountRegistry.getAllAccounts()
             val lastBrand = prefsManager.getString("last_brand_id", "")
 
-            val target = if (accounts.size > 1 && lastBrand.isEmpty()) {
+            val target = if (prefsManager.isKdsTerminal) {
+                // KDS terminal → go straight to KDS setup/display
+                Intent(this, KdsSetupActivity::class.java)
+            } else if (accounts.size > 1 && lastBrand.isEmpty()) {
                 Intent(this, BrandSelectorActivity::class.java)
             } else {
                 Intent(this, HomeActivity::class.java)

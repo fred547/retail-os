@@ -11,7 +11,9 @@ function getDb() {
 const ALLOWED_TABLES = new Set([
   "product", "productcategory", "orders", "customer", "store",
   "terminal", "tax", "preference", "pos_user",
-  "intake_batch", "intake_item",
+  "intake_batch", "intake_item", "restaurant_table",
+  "table_section", "preparation_station", "category_station_mapping",
+  "modifier",
 ]);
 
 export async function POST(req: NextRequest) {

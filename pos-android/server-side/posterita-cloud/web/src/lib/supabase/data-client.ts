@@ -36,7 +36,14 @@ export async function dataQuery<T = any>(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ table, ...options }),
   });
-  return res.json();
+  const result = await res.json();
+  if (result.error) {
+    // Auto-log query errors
+    import("@/lib/error-logger").then(({ logError }) => {
+      logError("DataProxy", `Query failed: ${result.error}`, { table, select: options.select });
+    });
+  }
+  return result;
 }
 
 export async function dataQueryMulti<T = any>(
@@ -65,7 +72,13 @@ export async function dataUpdate(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ table, id, updates }),
   });
-  return res.json();
+  const result = await res.json();
+  if (result.error) {
+    import("@/lib/error-logger").then(({ logError }) => {
+      logError("DataProxy", `Update failed: ${result.error}`, { table, id: id.value });
+    });
+  }
+  return result;
 }
 
 /** Insert a record via the data proxy (service role, bypasses RLS). */
@@ -78,7 +91,13 @@ export async function dataInsert<T = any>(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ table, data }),
   });
-  return res.json();
+  const result = await res.json();
+  if (result.error) {
+    import("@/lib/error-logger").then(({ logError }) => {
+      logError("DataProxy", `Insert failed: ${result.error}`, { table });
+    });
+  }
+  return result;
 }
 
 /** Delete a record via the data proxy (service role, bypasses RLS). */

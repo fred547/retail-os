@@ -31,10 +31,11 @@ function createChain(table: string) {
   }
 
   const chain: any = {};
-  for (const m of ['select', 'eq', 'gte', 'order', 'limit'] as const) {
+  for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
       if (m === 'eq') state.filters[args[0]] = args[1];
+      if (m === 'in') state.filters[args[0]] = args[1];
       return chain;
     };
   }
@@ -46,7 +47,14 @@ function createChain(table: string) {
       return chain;
     };
   }
-  chain.single = () => Promise.resolve(resolve());
+  chain.single = () => {
+    const r = resolve(); const d = Array.isArray(r.data) ? (r.data[0] ?? null) : r.data;
+    return Promise.resolve({ ...r, data: d });
+  };
+  chain.maybeSingle = () => {
+    const r = resolve(); const d = Array.isArray(r.data) ? (r.data[0] ?? null) : r.data;
+    return Promise.resolve({ ...r, data: d });
+  };
   chain.then = (onFulfilled: Function, onRejected?: Function) =>
     Promise.resolve(resolve()).then(onFulfilled as any, onRejected as any);
 
@@ -61,8 +69,8 @@ vi.mock('@supabase/supabase-js', () => ({
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {})); return { json: () => Promise.resolve(body), headers: { get: (key: string) => hdrs.get(key) ?? null } };
 }
 
 beforeEach(() => {

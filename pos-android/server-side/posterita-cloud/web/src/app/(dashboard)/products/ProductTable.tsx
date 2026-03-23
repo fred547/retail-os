@@ -282,181 +282,118 @@ export default function ProductTable({
         </table>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Bottom Sheet */}
       {editingProduct && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center"
           onClick={closeEdit}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-product-title"
-            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                {editingProduct.image &&
-                editingProduct.image.startsWith("http") ? (
-                  <Image
-                    src={editingProduct.image}
-                    alt={editingProduct.name ?? ""}
-                    width={48}
-                    height={48}
-                    className="rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                    <Package size={24} className="text-gray-400" />
-                  </div>
-                )}
-                <div>
-                  <h2 id="edit-product-title" className="text-lg font-semibold">Edit Product</h2>
-                  <p className="text-sm text-gray-500">
-                    ID: {editingProduct.product_id}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={closeEdit}
-                className="text-gray-400 hover:text-gray-600 p-1"
-                aria-label="Close dialog"
-              >
-                <X size={20} />
-              </button>
+            {/* Handle bar (mobile) */}
+            <div className="flex justify-center pt-2 pb-1 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
 
-            {/* Form */}
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Name *
-                </label>
-                <input
-                  type="text"
-                  value={form.name ?? ""}
-                  onChange={(e) => updateField("name", e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                />
+            {/* Header */}
+            <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100">
+              {editingProduct.image && editingProduct.image.startsWith("http") ? (
+                <Image src={editingProduct.image} alt={editingProduct.name ?? ""} width={40} height={40} className="rounded-lg object-cover" />
+              ) : (
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><Package size={20} className="text-gray-400" /></div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h2 id="edit-product-title" className="font-semibold text-gray-900 truncate">{editingProduct.name}</h2>
+                <p className="text-xs text-gray-400">ID {editingProduct.product_id}</p>
               </div>
+              <button onClick={closeEdit} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={form.description ?? ""}
-                  onChange={(e) => updateField("description", e.target.value)}
-                  rows={2}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none resize-none"
-                />
-              </div>
+            {/* Section Cards */}
+            <div className="px-5 py-4 space-y-3">
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Selling Price *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={form.sellingprice ?? 0}
-                    onChange={(e) =>
-                      updateField("sellingprice", e.target.value)
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cost Price
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={form.costprice ?? 0}
-                    onChange={(e) => updateField("costprice", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
+              {/* Section: Basic Info */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">Basic Info</div>
+                <div className="p-4 space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Name</label>
+                    <input type="text" value={form.name ?? ""} onChange={(e) => updateField("name", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Description</label>
+                    <textarea value={form.description ?? ""} onChange={(e) => updateField("description", e.target.value)} rows={2}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm resize-none" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
+                      <select value={form.productcategory_id ?? ""} onChange={(e) => updateField("productcategory_id", e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm">
+                        <option value="">None</option>
+                        {categories.map((c) => (<option key={c.productcategory_id} value={c.productcategory_id}>{c.name}</option>))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">UPC / Barcode</label>
+                      <input type="text" value={form.upc ?? ""} onChange={(e) => updateField("upc", e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm font-mono" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={form.productcategory_id ?? ""}
-                    onChange={(e) =>
-                      updateField("productcategory_id", e.target.value)
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  >
-                    <option value="">No Category</option>
-                    {categories.map((c) => (
-                      <option
-                        key={c.productcategory_id}
-                        value={c.productcategory_id}
-                      >
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    UPC / Barcode
-                  </label>
-                  <input
-                    type="text"
-                    value={form.upc ?? ""}
-                    onChange={(e) => updateField("upc", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
+              {/* Section: Pricing */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pricing</div>
+                <div className="p-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Selling Price</label>
+                    <input type="number" step="0.01" value={form.sellingprice ?? 0} onChange={(e) => updateField("sellingprice", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Cost Price</label>
+                    <input type="number" step="0.01" value={form.costprice ?? 0} onChange={(e) => updateField("costprice", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm" />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={form.isactive ?? "Y"}
-                  onChange={(e) => updateField("isactive", e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                >
-                  <option value="Y">Active</option>
-                  <option value="N">Inactive</option>
-                </select>
+              {/* Section: Status */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</div>
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Active</span>
+                    <button
+                      onClick={() => updateField("isactive", form.isactive === "Y" ? "N" : "Y")}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isactive === "Y" ? "bg-green-500" : "bg-gray-300"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.isactive === "Y" ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-              <button
-                onClick={() => setConfirmDeactivate(true)}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition"
-              >
-                <Trash2 size={16} />
+            <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50 sm:rounded-b-2xl">
+              <button onClick={() => setConfirmDeactivate(true)}
+                className="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition">
                 {editingProduct.isactive === "Y" ? "Deactivate" : "Activate"}
               </button>
-              <div className="flex gap-3">
-                <button
-                  onClick={closeEdit}
-                  className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-200 transition text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !form.name?.trim()}
-                  className="flex items-center gap-2 bg-posterita-blue text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-50"
-                >
-                  <Save size={16} />
-                  {saving ? "Saving..." : "Save Changes"}
+              <div className="flex gap-2">
+                <button onClick={closeEdit} className="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-200 transition text-sm">Cancel</button>
+                <button onClick={handleSave} disabled={saving || !form.name?.trim()}
+                  className="flex items-center gap-1.5 bg-posterita-blue text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-50">
+                  <Save size={14} /> {saving ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

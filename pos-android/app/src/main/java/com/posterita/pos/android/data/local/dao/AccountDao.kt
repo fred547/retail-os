@@ -13,4 +13,7 @@ interface AccountDao {
 
     @Query("SELECT * FROM account")
     suspend fun getAllAccounts(): List<Account>
+
+    @Query("DELETE FROM account WHERE account_id = :accountId")
+    suspend fun deleteAccountById(accountId: String)
 }

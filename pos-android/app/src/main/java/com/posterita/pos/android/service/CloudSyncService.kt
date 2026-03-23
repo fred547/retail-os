@@ -35,7 +35,10 @@ class CloudSyncService @Inject constructor(
 ) {
     companion object {
         private const val TAG = "CloudSyncService"
-        private const val CLOUD_SYNC_DATE_KEY = "cloud_last_sync_at"
+        private const val CLOUD_SYNC_DATE_KEY_PREFIX = "cloud_last_sync_at_"
+
+        /** Per-account sync timestamp key */
+        fun syncDateKey(accountId: String): String = "$CLOUD_SYNC_DATE_KEY_PREFIX$accountId"
     }
 
     private val objectMapper = ObjectMapper().apply {
@@ -65,14 +68,20 @@ class CloudSyncService @Inject constructor(
         val startTime = System.currentTimeMillis()
         return try {
             val accountId = prefsManager.accountId
-            val terminalId = prefsManager.terminalId
-            val storeId = prefsManager.storeId
 
             if (accountId.isEmpty()) {
                 return Result.failure(Exception("No account configured"))
             }
-            if (terminalId == 0) {
-                return Result.failure(Exception("No terminal selected"))
+
+            // Read store/terminal from local DB (not prefs — prefs may belong to a different brand)
+            val localStore = try { db.storeDao().getAllStores().firstOrNull() } catch (_: Exception) { null }
+            val localTerminal = try { db.terminalDao().getAllTerminals().firstOrNull() } catch (_: Exception) { null }
+            val terminalId = localTerminal?.terminalId ?: prefsManager.terminalId
+            val storeId = localStore?.storeId ?: prefsManager.storeId
+
+            // Allow sync even without terminal (for pulling data on first sync)
+            if (terminalId == 0 && storeId == 0) {
+                // Use 1 as placeholder — server will still return products scoped by account_id
             }
 
             SyncStatusManager.update(
@@ -80,7 +89,7 @@ class CloudSyncService @Inject constructor(
                 "Connecting to cloud..."
             )
 
-            val lastSyncAt = prefsManager.getString(CLOUD_SYNC_DATE_KEY, "1970-01-01T00:00:00.000Z")
+            val lastSyncAt = prefsManager.getString(syncDateKey(accountId), "1970-01-01T00:00:00.000Z")
 
             // Collect local data to push
             val unsyncedOrders = db.orderDao().getUnSyncedOrders()
@@ -98,52 +107,64 @@ class CloudSyncService @Inject constructor(
             // Collect customers to push (all active customers)
             val allCustomers = db.customerDao().getAllCustomersSync()
 
-            // Report push status
+            // Report push status with counts
+            val totalOrderCount = db.orderDao().getOrderCount()
+            val totalTillCount = db.tillDao().getClosedTillByTerminalId(terminalId).size
+
             if (unsyncedOrders.isNotEmpty()) {
                 SyncStatusManager.update(
                     SyncStatusManager.SyncState.PUSHING_ORDERS,
-                    "Uploading orders...",
-                    "${unsyncedOrders.size} orders, ${orderLines.size} lines"
+                    "↑ Uploading ${unsyncedOrders.size} orders...",
+                    "${unsyncedOrders.size}/${totalOrderCount} orders, ${orderLines.size} lines",
+                    percent = 10
                 )
             }
             if (unsyncedTills.isNotEmpty()) {
                 SyncStatusManager.update(
                     SyncStatusManager.SyncState.PUSHING_TILLS,
-                    "Uploading till records...",
-                    "${unsyncedTills.size} tills"
+                    "↑ Uploading ${unsyncedTills.size} tills...",
+                    "${unsyncedTills.size}/${totalTillCount} tills",
+                    percent = 15
                 )
             }
 
-            // Collect master data to push (stores, terminals, users, categories, products, taxes)
-            val allStores = db.storeDao().getAllStores()
-            val allTerminals = db.terminalDao().getAllTerminals()
-            val allUsers = db.userDao().getAllUsers()
-            val allCategories = db.productCategoryDao().getAllProductCategoriesSync()
-            val allProducts = db.productDao().getAllProductsSync()
-            val allTaxes = db.taxDao().getAllTaxesSync()
-            val allTables = db.restaurantTableDao().getTablesByStore(storeId)
+            // Master data (products, categories, taxes, stores, terminals, users) is SERVER-AUTHORITATIVE.
+            // Android NEVER pushes master data — it only pulls. This prevents empty local DBs
+            // from overwriting server data. Master data is managed via web console + API routes.
+            // Only transactional data (orders, tills, customers, error logs, inventory entries)
+            // flows from device → cloud.
+
+            // Collect unsynced inventory count entries
+            val unsyncedInventoryEntries = db.inventoryCountEntryDao().getUnsyncedEntries()
 
             // Collect unsynced error logs
             val unsyncedErrorLogs = db.errorLogDao().getUnsyncedLogs()
 
-            // Build sync request
+            // Build sync request with device registration
+            val syncDeviceId = prefsManager.getString("device_id", "").ifEmpty {
+                val id = "dev_${System.currentTimeMillis()}_${terminalId}"
+                prefsManager.setStringSync("device_id", id)
+                id
+            }
+
             val request = CloudSyncRequest(
                 accountId = accountId,
                 terminalId = terminalId,
                 storeId = storeId,
                 lastSyncAt = lastSyncAt,
+                deviceId = syncDeviceId,
+                deviceModel = android.os.Build.MODEL,
+                deviceName = android.os.Build.DEVICE,
+                osVersion = "Android ${android.os.Build.VERSION.RELEASE}",
+                // PUSH: transactional data only (device → cloud)
                 orders = if (unsyncedOrders.isNotEmpty()) unsyncedOrders.map { it.toSyncOrder() } else null,
                 orderLines = if (orderLines.isNotEmpty()) orderLines.map { it.toSyncOrderLine() } else null,
                 payments = if (payments.isNotEmpty()) payments.map { it.toSyncPayment() } else null,
                 tills = if (unsyncedTills.isNotEmpty()) unsyncedTills.map { it.toSyncTill() } else null,
                 customers = if (allCustomers.isNotEmpty()) allCustomers.map { it.toSyncCustomer() } else null,
-                stores = if (allStores.isNotEmpty()) allStores.map { it.toSyncStore() } else null,
-                terminals = if (allTerminals.isNotEmpty()) allTerminals.map { it.toSyncTerminal() } else null,
-                users = if (allUsers.isNotEmpty()) allUsers.map { it.toSyncUser() } else null,
-                categories = if (allCategories.isNotEmpty()) allCategories.map { it.toSyncCategory() } else null,
-                products = if (allProducts.isNotEmpty()) allProducts.map { it.toSyncProduct() } else null,
-                taxes = if (allTaxes.isNotEmpty()) allTaxes.map { it.toSyncTax() } else null,
-                restaurantTables = if (allTables.isNotEmpty()) allTables.map { it.toSyncRestaurantTable() } else null,
+                // NO master data push — server is authoritative for:
+                // stores, terminals, users, categories, products, taxes, restaurant_tables
+                inventoryCountEntries = if (unsyncedInventoryEntries.isNotEmpty()) unsyncedInventoryEntries.map { it.toSyncInventoryCountEntry() } else null,
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
             )
 
@@ -170,8 +191,29 @@ class CloudSyncService @Inject constructor(
                     SyncStatusManager.error("Empty response from server")
                 })
 
+            // Check version compatibility
+            if (syncResponse.serverSyncVersion > 0) {
+                val clientVersion = com.posterita.pos.android.data.remote.model.request.SYNC_VERSION
+                if (clientVersion < syncResponse.minClientVersion) {
+                    Log.w(TAG, "Client sync version $clientVersion is below server minimum ${syncResponse.minClientVersion}")
+                    SyncStatusManager.error("App update required — please update Posterita to continue syncing")
+                    return Result.failure(Exception("Client too old: v$clientVersion < min v${syncResponse.minClientVersion}"))
+                }
+                if (syncResponse.serverSyncVersion > clientVersion) {
+                    Log.i(TAG, "Server sync version ${syncResponse.serverSyncVersion} > client $clientVersion — update recommended")
+                }
+            }
+
             // Process the response with detailed progress
             processSyncResponse(syncResponse, unsyncedOrders, unsyncedTills)
+
+            // Save sibling brands for the worker to register
+            lastSiblingBrands = syncResponse.siblingBrands
+
+            // Mark inventory count entries as synced
+            if (unsyncedInventoryEntries.isNotEmpty()) {
+                db.inventoryCountEntryDao().markSynced(unsyncedInventoryEntries.map { it.entry_id })
+            }
 
             // Mark error logs as synced and clean up old ones
             if (unsyncedErrorLogs.isNotEmpty()) {
@@ -183,7 +225,7 @@ class CloudSyncService @Inject constructor(
             // Update last sync timestamp
             val syncTime = System.currentTimeMillis()
             syncResponse.serverTime?.let {
-                prefsManager.setString(CLOUD_SYNC_DATE_KEY, it)
+                prefsManager.setString(syncDateKey(accountId), it)
             }
 
             val stats = SyncStats(
@@ -212,6 +254,8 @@ class CloudSyncService @Inject constructor(
                 discountCodesPulled = syncResponse.discountCodes?.size ?: 0,
                 preferencesPulled = syncResponse.preferences?.size ?: 0,
                 tablesPulled = syncResponse.restaurantTables?.size ?: 0,
+                sectionsPulled = syncResponse.tableSections?.size ?: 0,
+                stationsPulled = syncResponse.preparationStations?.size ?: 0,
                 errors = syncResponse.errors ?: emptyList(),
                 durationMs = System.currentTimeMillis() - startTime,
             )
@@ -250,7 +294,7 @@ class CloudSyncService @Inject constructor(
                 orderLines.addAll(db.orderLineDao().getOrderLinesByOrderId(order.orderId))
             }
 
-            val lastSyncAt = prefsManager.getString(CLOUD_SYNC_DATE_KEY, "1970-01-01T00:00:00.000Z")
+            val lastSyncAt = prefsManager.getString(syncDateKey(accountId), "1970-01-01T00:00:00.000Z")
 
             val request = CloudSyncRequest(
                 accountId = accountId,
@@ -279,7 +323,7 @@ class CloudSyncService @Inject constructor(
             processSyncResponse(syncResponse, unsyncedOrders, emptyList())
 
             syncResponse.serverTime?.let {
-                prefsManager.setString(CLOUD_SYNC_DATE_KEY, it)
+                prefsManager.setString(syncDateKey(accountId), it)
             }
 
             Log.d(TAG, "Quick sync: pushed ${syncResponse.ordersSynced} orders")
@@ -322,13 +366,16 @@ class CloudSyncService @Inject constructor(
                 (response.users?.size ?: 0) +
                 (response.discountCodes?.size ?: 0) +
                 (response.preferences?.size ?: 0) +
-                (response.restaurantTables?.size ?: 0)
+                (response.restaurantTables?.size ?: 0) +
+                (response.tableSections?.size ?: 0) +
+                (response.preparationStations?.size ?: 0) +
+                (response.categoryStationMappings?.size ?: 0)
         var processedItems = 0
 
         SyncStatusManager.update(
             SyncStatusManager.SyncState.SAVING,
-            "Saving data locally...",
-            "0 / $totalPullItems items",
+            "↓ Receiving $totalPullItems items from cloud...",
+            "0/$totalPullItems saved",
             percent = 50
         )
 
@@ -336,12 +383,10 @@ class CloudSyncService @Inject constructor(
             // Products
             response.products?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_PRODUCTS,
-                        "Downloading products...",
-                        "${list.size} products",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_PRODUCTS,
+                        "↓ Saving ${list.size} products...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val products = list.mapNotNull { mapToProduct(it) }
                     if (products.isNotEmpty()) {
                         db.productDao().insertProducts(products)
@@ -354,12 +399,10 @@ class CloudSyncService @Inject constructor(
             // Categories
             response.productCategories?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_CATEGORIES,
-                        "Downloading categories...",
-                        "${list.size} categories",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_CATEGORIES,
+                        "↓ Saving ${list.size} categories...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val categories = list.mapNotNull { mapToCategory(it) }
                     if (categories.isNotEmpty()) {
                         db.productCategoryDao().insertProductCategories(categories)
@@ -372,12 +415,10 @@ class CloudSyncService @Inject constructor(
             // Taxes
             response.taxes?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_TAXES,
-                        "Downloading taxes...",
-                        "${list.size} taxes",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_TAXES,
+                        "↓ Saving ${list.size} taxes...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val taxes = list.mapNotNull { mapToTax(it) }
                     if (taxes.isNotEmpty()) {
                         db.taxDao().insertTaxes(taxes)
@@ -390,12 +431,10 @@ class CloudSyncService @Inject constructor(
             // Modifiers
             response.modifiers?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_MODIFIERS,
-                        "Downloading modifiers...",
-                        "${list.size} modifiers",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_MODIFIERS,
+                        "↓ Saving ${list.size} modifiers...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val modifiers = list.mapNotNull { mapToModifier(it) }
                     if (modifiers.isNotEmpty()) {
                         db.modifierDao().insertModifiers(modifiers)
@@ -408,12 +447,10 @@ class CloudSyncService @Inject constructor(
             // Customers
             response.customers?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_CUSTOMERS,
-                        "Downloading customers...",
-                        "${list.size} customers",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_CUSTOMERS,
+                        "↓ Saving ${list.size} customers...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val customers = list.mapNotNull { mapToCustomer(it) }
                     if (customers.isNotEmpty()) {
                         db.customerDao().insertCustomers(customers)
@@ -426,12 +463,10 @@ class CloudSyncService @Inject constructor(
             // Users
             response.users?.let { list ->
                 if (list.isNotEmpty()) {
-                    SyncStatusManager.update(
-                        SyncStatusManager.SyncState.PULLING_USERS,
-                        "Downloading users...",
-                        "${list.size} users",
-                        percent = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
-                    )
+                    val pct = 50 + (processedItems * 50 / totalPullItems.coerceAtLeast(1))
+                    SyncStatusManager.update(SyncStatusManager.SyncState.PULLING_USERS,
+                        "↓ Saving ${list.size} users...",
+                        "$processedItems/$totalPullItems", percent = pct)
                     val users = list.mapNotNull { mapToUser(it) }
                     if (users.isNotEmpty()) {
                         db.userDao().insertUsers(users)
@@ -477,6 +512,43 @@ class CloudSyncService @Inject constructor(
                 }
             }
 
+            // Table sections
+            response.tableSections?.let { list ->
+                if (list.isNotEmpty()) {
+                    val sections = list.mapNotNull { mapToTableSection(it) }
+                    if (sections.isNotEmpty()) {
+                        db.tableSectionDao().insertAll(sections)
+                        Log.d(TAG, "Pulled ${sections.size} table sections")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Preparation stations
+            response.preparationStations?.let { list ->
+                if (list.isNotEmpty()) {
+                    val stations = list.mapNotNull { mapToPreparationStation(it) }
+                    if (stations.isNotEmpty()) {
+                        db.preparationStationDao().insertAll(stations)
+                        Log.d(TAG, "Pulled ${stations.size} preparation stations")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Category station mappings (full replace for consistency)
+            response.categoryStationMappings?.let { list ->
+                db.categoryStationMappingDao().deleteByAccount(prefsManager.accountId)
+                if (list.isNotEmpty()) {
+                    val mappings = list.mapNotNull { mapToCategoryStationMapping(it) }
+                    if (mappings.isNotEmpty()) {
+                        db.categoryStationMappingDao().insertAll(mappings)
+                        Log.d(TAG, "Pulled ${mappings.size} category station mappings")
+                    }
+                    processedItems += list.size
+                }
+            }
+
             // Stores
             response.stores?.let { list ->
                 if (list.isNotEmpty()) {
@@ -498,8 +570,24 @@ class CloudSyncService @Inject constructor(
                     }
                 }
             }
+
+            // Inventory count sessions
+            response.inventorySessions?.let { list ->
+                if (list.isNotEmpty()) {
+                    val sessions = list.mapNotNull { mapToInventoryCountSession(it) }
+                    if (sessions.isNotEmpty()) {
+                        db.inventoryCountSessionDao().insertSessions(sessions)
+                        Log.d(TAG, "Pulled ${sessions.size} inventory count sessions")
+                    }
+                }
+            }
+
         }
     }
+
+    /** Returns sibling brands from the last sync response (for worker to register) */
+    var lastSiblingBrands: List<Map<String, Any?>>? = null
+        private set
 
     // ========================================
     // Entity → SyncModel mappers (push)
@@ -693,6 +781,18 @@ class CloudSyncService @Inject constructor(
             terminalId = terminal_id,
             created = created,
             updated = updated,
+        )
+    }
+
+    private fun InventoryCountEntry.toSyncInventoryCountEntry(): SyncInventoryCountEntry {
+        return SyncInventoryCountEntry(
+            sessionId = session_id,
+            productId = product_id,
+            productName = product_name,
+            upc = upc,
+            quantity = quantity,
+            scannedBy = scanned_by,
+            terminalId = terminal_id,
         )
     }
 
@@ -926,9 +1026,66 @@ class CloudSyncService @Inject constructor(
                 store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
                 seats = (map["seats"] as? Number)?.toInt() ?: (map["capacity"] as? Number)?.toInt() ?: 4,
                 is_occupied = map["is_occupied"] as? Boolean ?: false,
+                section_id = (map["section_id"] as? Number)?.toInt(),
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map restaurant table: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToTableSection(map: Map<String, Any?>): TableSection? {
+        return try {
+            TableSection(
+                section_id = (map["section_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"] as? String ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String ?: "Section",
+                display_order = (map["display_order"] as? Number)?.toInt() ?: 0,
+                color = map["color"] as? String ?: "#6B7280",
+                is_active = map["is_active"] as? Boolean ?: true,
+                is_takeaway = map["is_takeaway"] as? Boolean ?: false,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map table section: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToPreparationStation(map: Map<String, Any?>): PreparationStation? {
+        return try {
+            PreparationStation(
+                station_id = (map["station_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"] as? String ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String ?: "Station",
+                station_type = map["station_type"] as? String ?: "kitchen",
+                printer_id = (map["printer_id"] as? Number)?.toInt(),
+                color = map["color"] as? String ?: "#3B82F6",
+                display_order = (map["display_order"] as? Number)?.toInt() ?: 0,
+                is_active = map["is_active"] as? Boolean ?: true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map preparation station: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToCategoryStationMapping(map: Map<String, Any?>): CategoryStationMapping? {
+        return try {
+            CategoryStationMapping(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"] as? String ?: return null,
+                category_id = (map["category_id"] as? Number)?.toInt() ?: return null,
+                station_id = (map["station_id"] as? Number)?.toInt() ?: return null,
+                created_at = map["created_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map category station mapping: ${e.message}")
             null
         }
     }
@@ -964,9 +1121,33 @@ class CloudSyncService @Inject constructor(
                 cash_up_sequence = (map["cash_up_sequence"] as? Number)?.toInt() ?: 0,
                 isactive = map["isactive"] as? String ?: "Y",
                 account_id = map["account_id"]?.toString() ?: "",
+                terminal_type = map["terminal_type"] as? String ?: "pos_retail",
+                zone = map["zone"] as? String,
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map terminal: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToInventoryCountSession(map: Map<String, Any?>): InventoryCountSession? {
+        return try {
+            InventoryCountSession(
+                session_id = (map["session_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: "",
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                type = map["type"] as? String ?: "spot_check",
+                status = map["status"] as? String ?: "created",
+                name = map["name"] as? String,
+                started_at = map["started_at"] as? String,
+                completed_at = map["completed_at"] as? String,
+                created_by = (map["created_by"] as? Number)?.toInt() ?: 0,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+                notes = map["notes"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map inventory count session: ${e.message}")
             null
         }
     }

@@ -54,4 +54,5 @@ object DatabaseModule {
     @Provides fun providePendingConsentUpdateDao(db: AppDatabase): PendingConsentUpdateDao = db.pendingConsentUpdateDao()
     @Provides fun providePaymentDao(db: AppDatabase): PaymentDao = db.paymentDao()
     @Provides fun provideErrorLogDao(db: AppDatabase): ErrorLogDao = db.errorLogDao()
+    @Provides fun providePreparationStationDao(db: AppDatabase): PreparationStationDao = db.preparationStationDao()
 }

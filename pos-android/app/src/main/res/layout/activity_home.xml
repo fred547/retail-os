@@ -48,11 +48,27 @@
                 android:paddingVertical="2dp">
 
                 <TextView
-                    android:id="@+id/textContextStore"
+                    android:id="@+id/textContextBrand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="13sp"
                     android:textColor="@color/posterita_primary"
+                    android:fontFamily="@font/lexend_semibold"
+                    tools:text="Yadea" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" › "
+                    android:textSize="13sp"
+                    android:textColor="@color/posterita_muted" />
+
+                <TextView
+                    android:id="@+id/textContextStore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/posterita_ink"
                     android:fontFamily="@font/lexend_medium"
                     tools:text="Main Street" />
 
@@ -68,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="13sp"
-                    android:textColor="@color/posterita_ink"
+                    android:textColor="@color/posterita_muted"
                     android:fontFamily="@font/lexend_medium"
                     tools:text="POS 1" />
 

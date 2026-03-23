@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { getSessionAccountId } from "@/lib/account-context";
+
+function getDb() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
+
+/**
+ * Valid account lifecycle transitions:
+ *   draft → onboarding
+ *   onboarding → active | failed
+ *   active → suspended
+ *   suspended → active | archived
+ *   failed → onboarding (retry)
+ *   testing → active (demo graduation)
+ */
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  draft: ["onboarding"],
+  onboarding: ["active", "failed"],
+  active: ["suspended"],
+  suspended: ["active", "archived"],
+  failed: ["onboarding"],
+  testing: ["active"],
+};
+
+/**
+ * PATCH /api/account/lifecycle
+ * Body: { account_id, status, reason? }
+ */
+export async function PATCH(req: NextRequest) {
+  const body = await req.json();
+  const { account_id, status, reason } = body;
+
+  if (!account_id || !status) {
+    return NextResponse.json({ error: "account_id and status are required" }, { status: 400 });
+  }
+
+  const db = getDb();
+
+  // Get current status
+  const { data: account } = await db
+    .from("account")
+    .select("account_id, status")
+    .eq("account_id", account_id)
+    .single();
+
+  if (!account) {
+    return NextResponse.json({ error: "Account not found" }, { status: 404 });
+  }
+
+  const currentStatus = account.status || "draft";
+  const allowed = VALID_TRANSITIONS[currentStatus];
+
+  if (!allowed || !allowed.includes(status)) {
+    return NextResponse.json(
+      { error: `Cannot transition from '${currentStatus}' to '${status}'. Allowed: ${allowed?.join(", ") || "none"}` },
+      { status: 400 }
+    );
+  }
+
+  // Update status
+  const { error } = await db
+    .from("account")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("account_id", account_id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Log the transition
+  await db.from("account_lifecycle_log").insert({
+    account_id,
+    from_status: currentStatus,
+    to_status: status,
+    changed_by: (await getSessionAccountId()) || "system",
+    reason: reason || null,
+  });
+
+  return NextResponse.json({ success: true, from: currentStatus, to: status });
+}
+
+/**
+ * GET /api/account/lifecycle?account_id=xxx
+ * Returns lifecycle history for an account
+ */
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const accountId = searchParams.get("account_id");
+
+  if (!accountId) {
+    return NextResponse.json({ error: "account_id query param required" }, { status: 400 });
+  }
+
+  const { data } = await getDb()
+    .from("account_lifecycle_log")
+    .select("*")
+    .eq("account_id", accountId)
+    .order("created_at", { ascending: false });
+
+  return NextResponse.json({ data: data ?? [] });
+}

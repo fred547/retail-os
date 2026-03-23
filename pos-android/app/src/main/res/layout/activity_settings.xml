@@ -607,6 +607,122 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Restaurant Mode toggle -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/restaurant_mode_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/posterita_orange"
+                        android:contentDescription="Restaurant Mode" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Restaurant Mode"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:id="@+id/text_restaurant_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Off — tap to enable dine-in, tables, kitchen"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_restaurant_mode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- KDS Display (restaurant only, hidden by default) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/kds_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/posterita_secondary"
+                        android:contentDescription="KDS" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Kitchen Display (KDS)"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Connect to a POS terminal for kitchen orders"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- ACCOUNT section (owner only) -->
             <TextView
                 android:id="@+id/tv_account_header"
@@ -674,6 +790,71 @@
                         android:text="›"
                         android:textSize="20sp"
                         android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- DANGER ZONE -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DANGER ZONE"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_error"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                android:id="@+id/tv_danger_header" />
+
+            <!-- Reset Account -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/reset_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_error"
+                app:cardBackgroundColor="@color/posterita_error_light"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_arrow_back"
+                        app:tint="@color/posterita_error"
+                        android:contentDescription="Reset"
+                        android:rotation="180" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Reset Account"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium"
+                            android:textColor="@color/posterita_error" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Clear all local data and re-sign up"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_error" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

@@ -1,26 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock Supabase
+// Fully chainable Supabase mock
+function createChain() {
+  const result = { data: null, error: null };
+  const chain: any = {};
+  const methods = ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike'] as const;
+  for (const m of methods) { chain[m] = () => chain; }
+  for (const m of ['insert', 'update', 'upsert', 'delete'] as const) { chain[m] = () => chain; }
+  chain.single = () => Promise.resolve(result);
+  chain.maybeSingle = () => Promise.resolve(result);
+  chain.then = (ok: Function, err?: Function) => Promise.resolve(result).then(ok as any, err as any);
+  return chain;
+}
+
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: () => Promise.resolve({ data: null, error: null }),
-          gte: () => Promise.resolve({ data: [], error: null }),
-          limit: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
-        }),
-        gte: () => Promise.resolve({ data: [], error: null }),
-      }),
-      insert: () => Promise.resolve({ data: null, error: null }),
-      update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
-      upsert: () => Promise.resolve({ data: null, error: null }),
-    }),
+    from: () => createChain(),
   }),
 }));
 
-function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {})); return { json: () => Promise.resolve(body), headers: { get: (key: string) => hdrs.get(key) ?? null } };
 }
 
 describe('API Security Tests', () => {

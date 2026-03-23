@@ -5,26 +5,24 @@
     android:layout_height="match_parent"
     android:background="@color/posterita_bg">
 
-    <!-- Top bar -->
+    <!-- Minimal top bar: back arrow + loading + connectivity dot -->
     <LinearLayout
         android:id="@+id/layout_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="4dp"
         android:paddingEnd="8dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
         android:background="@color/posterita_paper"
         android:elevation="1dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/button_back"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:padding="10dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
             android:contentDescription="Back"
             android:src="@drawable/ic_arrow_back"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -41,8 +39,8 @@
         <ProgressBar
             android:id="@+id/progress_loading"
             style="?android:attr/progressBarStyleSmall"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_marginEnd="8dp"
             android:indeterminateTint="@color/posterita_primary"
             android:visibility="gone" />
@@ -64,8 +62,8 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
         android:background="@color/posterita_error_light"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar">
@@ -78,7 +76,7 @@
             android:textColor="@color/posterita_error" />
     </LinearLayout>
 
-    <!-- WebView -->
+    <!-- WebView (fills remaining space) -->
     <WebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityWebConsoleBinding
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.ConnectivityMonitor
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,11 +58,7 @@ class WebConsoleActivity : AppCompatActivity() {
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "Web Console"
         binding.textTitle.text = title
         binding.buttonBack.setOnClickListener {
-            if (binding.webView.canGoBack()) {
-                binding.webView.goBack()
-            } else {
-                finish()
-            }
+            finish()
         }
 
         // Connectivity
@@ -97,22 +94,35 @@ class WebConsoleActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 binding.progressLoading.visibility = View.GONE
 
-                // Inject CSS to hide the web console's sidebar and make content full-width
+                // Inject CSS to hide sidebar, fit the native app shell, optimize for mobile
                 view?.evaluateJavascript("""
                     (function() {
                         var style = document.createElement('style');
                         style.textContent = `
-                            /* Hide sidebar (desktop + mobile) */
+                            /* Hide sidebar completely */
                             .sidebar-desktop, .sidebar-mobile, aside { display: none !important; }
-                            /* Hide hamburger menu button and backdrop */
                             .sidebar-hamburger, .sidebar-backdrop { display: none !important; }
                             button[aria-label="Open menu"], button[aria-label="Close sidebar"] { display: none !important; }
-                            /* Make main content full width (remove sidebar margin) */
-                            main, .flex-1 { margin-left: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
+                            /* Full-width content */
+                            main, .flex-1 { margin-left: 0 !important; padding: 8px !important; }
                             .lg\\:ml-64 { margin-left: 0 !important; }
-                            /* Reduce top padding since Android has its own top bar */
-                            .pt-16 { padding-top: 8px !important; }
-                            .lg\\:pt-8 { padding-top: 8px !important; }
+                            /* Minimal top padding */
+                            .pt-16, .lg\\:pt-8 { padding-top: 4px !important; }
+                            /* Hide breadcrumb and page heading (Android top bar has it) */
+                            nav[aria-label="Breadcrumb"] { display: none !important; }
+                            /* Mobile-optimize data tables: hide less important columns */
+                            .data-table th:nth-child(n+4), .data-table td:nth-child(n+4) { display: none !important; }
+                            .data-table th:first-child, .data-table td:first-child { width: 40px !important; padding: 6px !important; }
+                            .data-table th, .data-table td { padding: 8px 6px !important; font-size: 13px !important; }
+                            /* Make rows tappable with better touch targets */
+                            .data-table tbody tr { min-height: 48px; }
+                            /* Compact spacing */
+                            .space-y-6 > * + * { margin-top: 8px !important; }
+                            .space-y-4 > * + * { margin-top: 6px !important; }
+                            /* Bottom sheet: ensure it fits mobile */
+                            [role="dialog"] { max-height: 85vh !important; }
+                            .sm\\:max-w-md { max-width: 100% !important; }
+                            .sm\\:rounded-2xl { border-radius: 16px 16px 0 0 !important; }
                         `;
                         document.head.appendChild(style);
                     })();
@@ -164,6 +174,9 @@ class WebConsoleActivity : AppCompatActivity() {
      * Requests a One-Time Token from the web console API.
      * Returns the token string on success, or null on any failure (offline, error, etc.).
      */
+    @Inject lateinit var db: com.posterita.pos.android.data.local.AppDatabase
+    @Inject lateinit var sessionManager: com.posterita.pos.android.util.SessionManager
+
     private suspend fun fetchOttToken(): String? = withContext(Dispatchers.IO) {
         try {
             val rawAccountId = prefsManager.accountId
@@ -175,9 +188,13 @@ class WebConsoleActivity : AppCompatActivity() {
                 Log.e("WebConsoleActivity", "OTT: accountId is invalid ($accountId)")
                 return@withContext null
             }
-            val userId = prefsManager.userId
-            val storeId = prefsManager.storeId
-            val terminalId = prefsManager.terminalId
+            // Read user/store/terminal from session or DB (not prefs — prefs may belong to another brand)
+            val user = sessionManager.user ?: try { db.userDao().getAllUsers().firstOrNull() } catch (_: Exception) { null }
+            val store = sessionManager.store ?: try { db.storeDao().getAllStores().firstOrNull() } catch (_: Exception) { null }
+            val terminal = sessionManager.terminal ?: try { db.terminalDao().getAllTerminals().firstOrNull() } catch (_: Exception) { null }
+            val userId = user?.user_id ?: 0
+            val storeId = store?.storeId ?: prefsManager.storeId
+            val terminalId = terminal?.terminalId ?: prefsManager.terminalId
             Log.d("WebConsoleActivity", "OTT: requesting token for account=$accountId user=$userId store=$storeId terminal=$terminalId")
 
             val url = URL("$WEB_CONSOLE_BASE/api/auth/ott")
@@ -215,18 +232,14 @@ class WebConsoleActivity : AppCompatActivity() {
                 null
             }
         } catch (e: Exception) {
-            Log.w("WebConsoleActivity", "OTT fetch failed (will load without auth)", e)
+            AppErrorLogger.warn(this@WebConsoleActivity, "WebConsoleActivity", "OTT fetch failed (will load without auth)", e)
             null
         }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (binding.webView.canGoBack()) {
-            binding.webView.goBack()
-        } else {
-            @Suppress("DEPRECATION")
-            super.onBackPressed()
-        }
+        @Suppress("DEPRECATION")
+        super.onBackPressed()
     }
 }

@@ -11,17 +11,16 @@ import SortableHeader from "@/components/SortableHeader";
 interface Category {
   productcategory_id: number;
   name: string;
-  description: string | null;
   isactive: string;
+  position: number;
   product_count?: number;
 }
 
 interface CategoryFormData {
   name: string;
-  description: string;
 }
 
-const emptyForm: CategoryFormData = { name: "", description: "" };
+const emptyForm: CategoryFormData = { name: "" };
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -42,7 +41,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     const { data } = await dataQuery<Category>("productcategory", {
-      select: "productcategory_id, name, description, isactive",
+      select: "productcategory_id, name, isactive, position",
       order: { column: "name" },
     });
 
@@ -80,7 +79,7 @@ export default function CategoriesPage() {
   };
 
   const openEditModal = (cat: Category) => {
-    setForm({ name: cat.name, description: cat.description ?? "" });
+    setForm({ name: cat.name });
     setEditingCategory(cat);
     setModalMode("edit");
     setModalOpen(true);
@@ -99,7 +98,6 @@ export default function CategoriesPage() {
     if (modalMode === "create") {
       await dataInsert("productcategory", {
         name: form.name.trim(),
-        description: form.description.trim() || null,
         isactive: "Y",
       });
     } else if (editingCategory) {
@@ -108,7 +106,6 @@ export default function CategoriesPage() {
         { column: "productcategory_id", value: editingCategory.productcategory_id },
         {
           name: form.name.trim(),
-          description: form.description.trim() || null,
         }
       );
     }
@@ -130,11 +127,7 @@ export default function CategoriesPage() {
 
   // --- Client-side search ---
   const filtered = search
-    ? categories.filter(
-        (c) =>
-          c.name?.toLowerCase().includes(search.toLowerCase()) ||
-          c.description?.toLowerCase().includes(search.toLowerCase())
-      )
+    ? categories.filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()))
     : categories;
 
   const handleSort = (key: string) => {
@@ -228,7 +221,6 @@ export default function CategoriesPage() {
             <thead>
               <tr>
                 <SortableHeader label="Name" sortKey="name" currentSort={sort} onSort={handleSort} />
-                <th>Description</th>
                 <SortableHeader label="Products" sortKey="product_count" currentSort={sort} onSort={handleSort} />
                 <SortableHeader label="Status" sortKey="status" currentSort={sort} onSort={handleSort} />
                 <th className="text-right">Actions</th>
@@ -248,11 +240,6 @@ export default function CategoriesPage() {
                       </div>
                       <span className="font-medium">{c.name}</span>
                     </div>
-                  </td>
-                  <td>
-                    <span className="text-sm text-gray-500 max-w-xs truncate block">
-                      {c.description || "\u2014"}
-                    </span>
                   </td>
                   <td className="text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
@@ -353,28 +340,6 @@ export default function CategoriesPage() {
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && form.name.trim()) handleSubmit();
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="cat-desc"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="cat-desc"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  placeholder="Optional description..."
-                  rows={3}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.metaKey && form.name.trim())
-                      handleSubmit();
                   }}
                 />
               </div>

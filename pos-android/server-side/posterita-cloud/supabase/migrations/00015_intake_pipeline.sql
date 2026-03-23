@@ -8,7 +8,7 @@
 
 CREATE TABLE IF NOT EXISTS intake_batch (
   batch_id SERIAL PRIMARY KEY,
-  account_id INT NOT NULL,
+  account_id TEXT NOT NULL,
   source TEXT NOT NULL CHECK (source IN (
     'website', 'catalogue', 'purchase_order', 'invoice', 'ai_search', 'supplier_feed'
   )),
@@ -38,7 +38,7 @@ CREATE INDEX idx_intake_batch_status ON intake_batch(status) WHERE status != 'co
 CREATE TABLE IF NOT EXISTS intake_item (
   item_id SERIAL PRIMARY KEY,
   batch_id INT NOT NULL REFERENCES intake_batch(batch_id) ON DELETE CASCADE,
-  account_id INT NOT NULL,
+  account_id TEXT NOT NULL,
 
   -- Extracted data (raw from source)
   name TEXT NOT NULL,

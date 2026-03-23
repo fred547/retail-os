@@ -51,12 +51,16 @@ export async function getSessionAccountId(): Promise<string | null> {
   }
 
   // 2. Owner account session
-  const { data: owner } = await admin
+  const { data: owner, error: ownerError } = await admin
     .from("owner")
-    .select("id, owner_id, email")
+    .select("id")
     .eq("auth_uid", user.id)
     .eq("is_active", true)
     .single();
+
+  if (ownerError) {
+    console.error("[account-context] owner lookup failed:", ownerError.message);
+  }
 
   if (owner?.id) {
     const { data: ownerSession } = await admin
@@ -66,6 +70,17 @@ export async function getSessionAccountId(): Promise<string | null> {
       .single();
 
     if (ownerSession?.account_id) return ownerSession.account_id;
+
+    // No session — find first account for this owner
+    const { data: firstAccount } = await admin
+      .from("account")
+      .select("account_id")
+      .eq("owner_id", owner.id)
+      .order("created_at")
+      .limit(1)
+      .single();
+
+    if (firstAccount?.account_id) return firstAccount.account_id;
   }
 
   // 3. Regular user — look up account from pos_user
@@ -79,10 +94,10 @@ export async function getSessionAccountId(): Promise<string | null> {
   if (posUser) return posUser.account_id;
 
   // 4. Fallback — check owner table by email
-  if (!owner) {
+  if (!owner && user.email) {
     const { data: ownerByEmail } = await admin
       .from("owner")
-      .select("owner_id")
+      .select("id")
       .eq("email", user.email)
       .single();
 
@@ -90,21 +105,12 @@ export async function getSessionAccountId(): Promise<string | null> {
       const { data: account } = await admin
         .from("account")
         .select("account_id")
-        .eq("owner_id", ownerByEmail.owner_id)
+        .eq("owner_id", ownerByEmail.id)
         .limit(1)
         .single();
 
       if (account) return account.account_id;
     }
-  } else if (owner?.owner_id) {
-    const { data: account } = await admin
-      .from("account")
-      .select("account_id")
-      .eq("owner_id", owner.owner_id)
-      .limit(1)
-      .single();
-
-    if (account) return account.account_id;
   }
 
   return null;

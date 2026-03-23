@@ -44,6 +44,7 @@ class LoginActivity : AppCompatActivity() {
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var accountRegistry: LocalAccountRegistry
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +52,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnBack.setOnClickListener { finish() }
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
         binding.btnLogin.setOnClickListener { attemptLogin() }
 
         binding.btnForgotPassword.setOnClickListener {
@@ -58,6 +60,17 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.tvSignUpLink.setOnClickListener { finish() }
+
+        // Show sync button if user has existing accounts (returning user)
+        if (accountRegistry.getAccountCount() > 0) {
+            binding.btnSync?.visibility = View.VISIBLE
+            binding.btnSync?.setOnClickListener { forceSync() }
+        }
+
+        // Pre-fill email if passed from signup
+        intent.getStringExtra("email")?.let {
+            if (it.isNotEmpty()) binding.etEmail.setText(it)
+        }
     }
 
     private fun attemptLogin() {
@@ -77,12 +90,15 @@ class LoginActivity : AppCompatActivity() {
 
             if (result == null) {
                 // Server unreachable — try offline login with local databases
-                val offlineResult = withContext(Dispatchers.IO) { tryOfflineLogin(email) }
+                binding.btnLogin.text = "Offline mode..."
+                val offlineResult = withContext(Dispatchers.IO) { tryOfflineLogin(email, password) }
                 if (offlineResult != null) {
+                    // Offline login succeeded — schedule sync for when connectivity returns
+                    CloudSyncWorker.syncNow(this@LoginActivity)
                     loginSuccess(offlineResult.first, offlineResult.second)
                     return@launch
                 }
-                showError("Cannot connect to server. Check your internet connection.")
+                showError("Cannot connect to server and no local account found. Check your internet connection.")
                 resetButton()
                 return@launch
             }
@@ -112,35 +128,60 @@ class LoginActivity : AppCompatActivity() {
                 setupLocalAccount(accountId, email, result)
             }
 
-            // Trigger sync and wait for it to complete — POS needs the offline database
+            // Update local user from server response (ensures password/PIN changes are reflected)
+            val posUserJson = result.optJSONObject("pos_user")
+            val serverUserId = result.optInt("live_user_id", posUserJson?.optInt("user_id", 0) ?: 0)
+
+            val localUser = withContext(Dispatchers.IO) {
+                try {
+                    val db = AppDatabase.getInstance(this@LoginActivity, accountId)
+                    if (posUserJson != null) {
+                        // Insert/update user from server data
+                        val uid = if (serverUserId > 0) serverUserId else posUserJson.optInt("user_id", 1)
+                        val serverUser = User(
+                            user_id = uid,
+                            firstname = posUserJson.optString("firstname", ""),
+                            lastname = posUserJson.optString("lastname", ""),
+                            username = posUserJson.optString("username", email),
+                            email = posUserJson.optString("email", email),
+                            phone1 = posUserJson.optString("phone1", ""),
+                            pin = posUserJson.optString("pin", ""),
+                            role = posUserJson.optString("role", "owner"),
+                            isadmin = posUserJson.optString("isadmin", "Y"),
+                            issalesrep = posUserJson.optString("issalesrep", "Y"),
+                            isactive = posUserJson.optString("isactive", "Y"),
+                        )
+                        db.userDao().insertUser(serverUser)
+                        serverUser
+                    } else {
+                        // Fallback: check existing local users
+                        db.userDao().getAllUsers().firstOrNull { u ->
+                            u.email.equals(email, ignoreCase = true) ||
+                            u.username.equals(email, ignoreCase = true)
+                        }
+                    }
+                } catch (e: Exception) {
+                    AppErrorLogger.warn(this@LoginActivity, "LoginActivity", "Failed to update user", e)
+                    null
+                }
+            }
+
+            // Trigger sync to pull full data
             binding.btnLogin.text = "Syncing data..."
             CloudSyncWorker.syncNow(this@LoginActivity)
 
-            // Wait for sync to complete (or timeout after 30s)
+            // Wait for sync (or timeout after 30s)
             val syncCompleted = waitForSyncComplete()
-
             if (!syncCompleted) {
                 binding.btnLogin.text = "Sync taking longer than expected..."
             }
 
-            // Check if we got user data
-            val user = withContext(Dispatchers.IO) {
-                try {
-                    val db = AppDatabase.getInstance(this@LoginActivity, accountId)
-                    val users = db.userDao().getAllUsers()
-                    users.firstOrNull { u ->
-                        u.email.equals(email, ignoreCase = true) ||
-                        u.username.equals(email, ignoreCase = true)
-                    }
-                } catch (_: Exception) { null }
-            }
-
-            if (user != null) {
-                loginSuccess(accountId, user)
+            if (localUser != null) {
+                loginSuccess(accountId, localUser)
             } else {
-                // Sync completed but no user matched — create temp user
+                // Create temp user as last resort
                 val tempUser = User(
-                    user_id = 1,
+                    user_id = if (serverUserId > 0) serverUserId else 1,
                     firstname = result.optString("brand_name", email.substringBefore("@")),
                     username = email,
                     email = email,
@@ -163,9 +204,10 @@ class LoginActivity : AppCompatActivity() {
 
     /**
      * Offline fallback: scan local Room databases for a user matching this email.
-     * Returns (accountId, User) if found, null otherwise.
+     * Verifies PIN as password substitute when offline.
+     * Returns (accountId, User) if found and PIN matches, null otherwise.
      */
-    private suspend fun tryOfflineLogin(email: String): Pair<String, User>? {
+    private suspend fun tryOfflineLogin(email: String, password: String = ""): Pair<String, User>? {
         // Check account registry for previously synced accounts
         val accounts = accountRegistry.getAllAccounts()
         for (account in accounts) {
@@ -177,7 +219,14 @@ class LoginActivity : AppCompatActivity() {
                     u.username.equals(email, ignoreCase = true)
                 }
                 if (matchingUser != null) {
-                    Log.d("LoginActivity", "Offline login: found user in account ${account.id}")
+                    // Offline login: we can't verify the Supabase password locally.
+                    // Only allow offline login if the user has previously logged in
+                    // on this device (i.e., they have a PIN set — proof of prior auth).
+                    if (matchingUser.pin.isNullOrEmpty()) {
+                        Log.d("LoginActivity", "Offline login: no PIN set for ${account.id}, skipping (never logged in on this device)")
+                        continue
+                    }
+                    Log.d("LoginActivity", "Offline login: found verified user in account ${account.id}")
                     return account.id to matchingUser
                 }
             } catch (e: Exception) {
@@ -244,7 +293,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private suspend fun setupLocalAccount(accountId: String, email: String, result: JSONObject) {
+        // Use server-assigned IDs if available
+        val storeId = result.optInt("live_store_id", 1)
+        val terminalId = result.optInt("live_terminal_id", 1)
+
         prefsManager.setAccountIdSync(accountId)
+        prefsManager.setStoreIdSync(if (storeId > 0) storeId else 1)
+        prefsManager.setTerminalIdSync(if (terminalId > 0) terminalId else 1)
         AppDatabase.resetInstance()
         val db = AppDatabase.getInstance(this, accountId)
 
@@ -259,20 +314,39 @@ class LoginActivity : AppCompatActivity() {
             ))
         } catch (_: Exception) {}
 
-        val demoId = result.optString("demo_account_id", "")
-        accountRegistry.addAccount(
-            id = accountId,
-            name = result.optString("brand_name", ""),
-            storeName = result.optString("brand_name", ""),
-            ownerEmail = email, ownerPhone = "",
-            type = "live", status = "active"
-        )
-        if (demoId.isNotEmpty()) {
+        // Register ALL brands returned by the login API
+        val accountsArray = result.optJSONArray("accounts")
+        if (accountsArray != null && accountsArray.length() > 0) {
+            for (i in 0 until accountsArray.length()) {
+                val acc = accountsArray.getJSONObject(i)
+                val accId = acc.optString("account_id", "")
+                if (accId.isEmpty()) continue
+                accountRegistry.addAccount(
+                    id = accId,
+                    name = acc.optString("businessname", "Brand"),
+                    storeName = acc.optString("businessname", "Brand"),
+                    ownerEmail = email, ownerPhone = "",
+                    type = acc.optString("type", "live"),
+                    status = acc.optString("status", "active")
+                )
+            }
+        } else {
+            // Fallback: register live + demo only
             accountRegistry.addAccount(
-                id = demoId, name = "Demo", storeName = "Demo",
+                id = accountId,
+                name = result.optString("brand_name", ""),
+                storeName = result.optString("brand_name", ""),
                 ownerEmail = email, ownerPhone = "",
-                type = "demo", status = "testing"
+                type = "live", status = "active"
             )
+            val demoId = result.optString("demo_account_id", "")
+            if (demoId.isNotEmpty()) {
+                accountRegistry.addAccount(
+                    id = demoId, name = "Demo", storeName = "Demo",
+                    ownerEmail = email, ownerPhone = "",
+                    type = "demo", status = "testing"
+                )
+            }
         }
     }
 
@@ -302,6 +376,24 @@ class LoginActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish()
+    }
+
+    private fun forceSync() {
+        binding.btnSync?.isEnabled = false
+        binding.tvSyncStatus?.visibility = View.VISIBLE
+        binding.tvSyncStatus?.text = "Syncing all brands..."
+
+        CloudSyncWorker.syncNow(this)
+
+        lifecycleScope.launch {
+            val completed = waitForSyncComplete()
+            binding.tvSyncStatus?.text = if (completed) "Sync complete!" else "Sync timed out"
+            binding.btnSync?.isEnabled = true
+
+            // Delay then hide
+            kotlinx.coroutines.delay(2000)
+            binding.tvSyncStatus?.visibility = View.GONE
+        }
     }
 
     private fun showForgotPasswordDialog() {

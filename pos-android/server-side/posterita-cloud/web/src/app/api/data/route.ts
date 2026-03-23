@@ -37,15 +37,28 @@ const ALLOWED_TABLES = new Set([
   "payment", "tax", "store", "terminal", "customer", "till",
   "till_adjustment", "hold_order", "restaurant_table", "preference",
   "modifier", "pos_user", "printer", "sync_log", "ai_import_job",
+  "error_log", "discountcode",
   "v_daily_sales", "v_hourly_sales", "v_payment_methods",
   "v_platform_overview", "v_price_review", "v_terminal_status",
   "v_top_products",
   "intake_batch", "intake_item",
+  "table_section", "preparation_station", "category_station_mapping",
+  "inventory_count_session", "inventory_count_entry",
+  "error_logs", "owner",
 ]);
 
 // Tables that don't have account_id column (skip auto-injection)
 const NO_ACCOUNT_ID_TABLES = new Set([
   "v_platform_overview",
+  "owner",           // PK is id, no account_id column
+  "orderline",       // linked via order_id FK, no own account_id
+  "payment",         // linked via order_id FK, no own account_id
+  "till_adjustment",  // linked via till_id FK, no own account_id
+]);
+
+// Tables with soft-delete (is_deleted column) — auto-filter unless client explicitly includes deleted
+const SOFT_DELETE_TABLES = new Set([
+  "product", "store", "terminal", "pos_user", "customer", "productcategory", "orders",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -88,6 +101,14 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // Auto-filter soft-deleted records (unless client explicitly filters is_deleted)
+        if (SOFT_DELETE_TABLES.has(q.table)) {
+          const hasDeletedFilter = q.filters?.some((f) => f.column === "is_deleted");
+          if (!hasDeletedFilter) {
+            query = query.eq("is_deleted", false);
+          }
+        }
+
         if (q.filters) {
           for (const f of q.filters) {
             switch (f.op) {
@@ -117,6 +138,20 @@ export async function POST(req: NextRequest) {
         }
 
         const { data, error, count } = await query;
+        if (error) {
+          // Log query errors to error_logs table for debugging
+          console.error(`[DataProxy] ${q.table}: ${error.message}`);
+          try {
+            await getDb().from("error_logs").insert({
+              account_id: accountId,
+              severity: "ERROR",
+              tag: "DataProxy",
+              message: `Query failed on '${q.table}': ${error.message}`.substring(0, 2000),
+              device_info: "web_server",
+              app_version: "web",
+            });
+          } catch (_) {}
+        }
         return { data, error: error?.message ?? null, count };
       })
     );

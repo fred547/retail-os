@@ -344,6 +344,25 @@
                 android:textSize="@dimen/_14sdp"
                 android:layout_marginTop="15dp" />
 
+            <!-- Station assignment (visible when kitchen is on) -->
+            <TextView
+                android:id="@+id/label_stations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Stations this printer handles:"
+                android:textSize="@dimen/_12sdp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/stations_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/cash_drawer_switch"
                 android:layout_width="match_parent"

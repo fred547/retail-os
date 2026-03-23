@@ -9,8 +9,6 @@ import {
   Save,
   X,
   MapPin,
-  Phone,
-  Mail,
   Monitor,
   Users,
 } from "lucide-react";
@@ -22,10 +20,8 @@ interface StoreInfo {
   name: string;
   address: string | null;
   city: string | null;
-  phone: string | null;
-  email: string | null;
+  country: string | null;
   currency: string | null;
-  tax_number: string | null;
   isactive: string;
 }
 
@@ -46,8 +42,7 @@ export default function StoresPage() {
   const fetchStores = async () => {
     setLoading(true);
     const { data: storeData } = await dataQuery<StoreInfo>("store", {
-      select:
-        "store_id, name, address, city, phone, email, currency, tax_number, isactive",
+      select: "store_id, name, address, city, country, currency, isactive",
       order: { column: "name" },
     });
 
@@ -56,9 +51,9 @@ export default function StoresPage() {
       select: "terminal_id, store_id",
     });
 
-    // Get user counts per store
+    // Users don't have store_id — count all users instead
     const { data: users } = await dataQuery("pos_user", {
-      select: "user_id, store_id",
+      select: "user_id",
     });
 
     const terminalCounts: Record<number, number> = {};
@@ -66,16 +61,13 @@ export default function StoresPage() {
       terminalCounts[t.store_id] = (terminalCounts[t.store_id] || 0) + 1;
     });
 
-    const userCounts: Record<number, number> = {};
-    users?.forEach((u: any) => {
-      userCounts[u.store_id] = (userCounts[u.store_id] || 0) + 1;
-    });
+    const totalUsers = users?.length ?? 0;
 
     setStores(
       (storeData ?? []).map((s) => ({
         ...s,
         terminal_count: terminalCounts[s.store_id] || 0,
-        user_count: userCounts[s.store_id] || 0,
+        user_count: totalUsers,
       }))
     );
     setLoading(false);
@@ -91,10 +83,8 @@ export default function StoresPage() {
       name: store.name,
       address: store.address,
       city: store.city,
-      phone: store.phone,
-      email: store.email,
+      country: store.country,
       currency: store.currency,
-      tax_number: store.tax_number,
       isactive: store.isactive,
     });
   };
@@ -121,10 +111,8 @@ export default function StoresPage() {
       name: form.name,
       address: form.address || null,
       city: form.city || null,
-      phone: form.phone || null,
-      email: form.email || null,
+      country: form.country || null,
       currency: form.currency || null,
-      tax_number: form.tax_number || null,
       isactive: "Y",
     });
     setSaving(false);
@@ -158,10 +146,8 @@ export default function StoresPage() {
         name: form.name,
         address: form.address || null,
         city: form.city || null,
-        phone: form.phone || null,
-        email: form.email || null,
+        country: form.country || null,
         currency: form.currency || null,
-        tax_number: form.tax_number || null,
         isactive: form.isactive,
       }
     );
@@ -249,17 +235,8 @@ export default function StoresPage() {
                 )}
 
                 <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
-                  {store.phone && (
-                    <div className="flex items-center gap-1">
-                      <Phone size={14} />
-                      {store.phone}
-                    </div>
-                  )}
-                  {store.email && (
-                    <div className="flex items-center gap-1">
-                      <Mail size={14} />
-                      {store.email}
-                    </div>
+                  {store.country && (
+                    <div className="text-xs text-gray-400">{store.country}</div>
                   )}
                 </div>
 
@@ -371,43 +348,6 @@ export default function StoresPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="text"
-                    value={form.phone ?? ""}
-                    onChange={(e) => updateField("phone", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email ?? ""}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax Registration Number
-                </label>
-                <input
-                  type="text"
-                  value={form.tax_number ?? ""}
-                  onChange={(e) => updateField("tax_number", e.target.value)}
-                  placeholder="VAT / TIN"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                />
-              </div>
             </div>
 
             {/* Footer */}
@@ -519,43 +459,6 @@ export default function StoresPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="text"
-                    value={form.phone ?? ""}
-                    onChange={(e) => updateField("phone", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email ?? ""}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tax Registration Number
-                  </label>
-                  <input
-                    type="text"
-                    value={form.tax_number ?? ""}
-                    onChange={(e) => updateField("tax_number", e.target.value)}
-                    placeholder="VAT / TIN"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
-                  />
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Status

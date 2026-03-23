@@ -27,7 +27,10 @@ class ConnectivityMonitor @Inject constructor(
         }
 
         override fun onLost(network: Network) {
-            _isConnected.postValue(false)
+            // A specific network was lost, but another may still be active
+            // (e.g., WiFi lost but cellular still connected).
+            // Re-check the active network instead of going straight to false.
+            _isConnected.postValue(checkConnectivity())
         }
 
         override fun onUnavailable() {

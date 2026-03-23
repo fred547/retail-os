@@ -8,17 +8,35 @@ import Breadcrumb from "@/components/Breadcrumb";
 export const dynamic = "force-dynamic";
 
 export default async function BrandsPage() {
-  const accountId = await getSessionAccountId();
+  let accountId: string | null = null;
+  try {
+    accountId = await getSessionAccountId();
+  } catch (e: any) {
+    console.error("[brands] getSessionAccountId failed:", e.message);
+  }
   if (!accountId) redirect("/manager/platform");
 
   const supabase = await createServerSupabaseAdmin();
 
   // Get the owner for this account
-  const { data: account } = await supabase
+  const { data: account, error: accountError } = await supabase
     .from("account")
     .select("owner_id")
     .eq("account_id", accountId)
     .single();
+
+  if (accountError) {
+    console.error("[brands] Account lookup failed:", accountError.message, "accountId:", accountId);
+    // Log to error_logs
+    await supabase.from("error_logs").insert({
+      account_id: accountId,
+      severity: "ERROR",
+      tag: "BrandsPage",
+      message: `Account lookup failed: ${accountError.message}`,
+      device_info: "web_server",
+      app_version: "web",
+    });
+  }
 
   if (!account?.owner_id) redirect("/manager/platform");
 
@@ -110,11 +128,11 @@ export default async function BrandsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeBadge(brand.type)}`}>
-                    {brand.type.toUpperCase()}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeBadge(brand.type ?? "")}`}>
+                    {(brand.type ?? "").toUpperCase() || "—"}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(brand.status)}`}>
-                    {brand.status}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(brand.status ?? "")}`}>
+                    {brand.status ?? "—"}
                   </span>
                 </div>
               </div>

@@ -19,7 +19,7 @@ export const maxDuration = 300;
  *  4. "images"    — Analyze uploaded product images
  */
 
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-haiku-4-5";
 
 function getSupabaseAdmin() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -342,29 +342,40 @@ If you cannot find any relevant websites, return an empty array: []`;
 }
 
 async function handleDeviceSetup(body: any) {
-  const setupData = await extractSetupFromSources(body);
+  try {
+    console.log("[ai-import] device_setup: business_name=", body.business_name, "urls=", body.urls?.length ?? 0);
+    const setupData = await extractSetupFromSources(body);
 
-  if (!setupData || !setupData.categories?.length) {
-    return Response.json(
-      {
-        error:
-          "Could not extract products from the provided sources. Try different URLs or add more business details.",
+    if (!setupData || !setupData.categories?.length) {
+      console.warn("[ai-import] device_setup: no products found for", body.business_name);
+      return Response.json(
+        {
+          error:
+            "Could not extract products from the provided sources. Try different URLs or add more business details.",
+        },
+        { status: 422 }
+      );
+    }
+
+    const totalProducts = countProducts(setupData);
+    console.log("[ai-import] device_setup: found", totalProducts, "products for", body.business_name);
+
+    return Response.json({
+      success: true,
+      setup: setupData,
+      summary: {
+        categories: setupData.categories.length,
+        products: totalProducts,
+        stores: setupData.stores?.length || 0,
       },
-      { status: 422 }
+    });
+  } catch (error: any) {
+    console.error("[ai-import] device_setup error:", error.message || error);
+    return Response.json(
+      { error: `AI import failed: ${error.message || "Unknown error"}` },
+      { status: 500 }
     );
   }
-
-  const totalProducts = countProducts(setupData);
-
-  return Response.json({
-    success: true,
-    setup: setupData,
-    summary: {
-      categories: setupData.categories.length,
-      products: totalProducts,
-      stores: setupData.stores?.length || 0,
-    },
-  });
 }
 
 // ════════════════════════════════════════════════════════
@@ -378,52 +389,54 @@ function countProducts(setup: StoreSetupResult): number {
 async function extractSetupFromSources(body: any): Promise<StoreSetupResult | null> {
   const { urls, business_name, location, business_type } = body;
 
-  if (!urls?.length) {
-    return null;
-  }
+  let setupData: StoreSetupResult | null = null;
 
-  const fetchResults = await Promise.allSettled(
-    urls.map((url: string) => fetchWebPage(url))
-  );
+  // Try URL-based extraction first (if URLs were provided)
+  if (urls?.length) {
+    const fetchResults = await Promise.allSettled(
+      urls.map((url: string) => fetchWebPage(url))
+    );
 
-  const successfulPages: { url: string; content: string }[] = [];
+    const successfulPages: { url: string; content: string }[] = [];
 
-  for (let i = 0; i < fetchResults.length; i++) {
-    const result = fetchResults[i];
-    if (result.status === "fulfilled" && result.value) {
-      successfulPages.push({ url: urls[i], content: result.value });
+    for (let i = 0; i < fetchResults.length; i++) {
+      const result = fetchResults[i];
+      if (result.status === "fulfilled" && result.value) {
+        successfulPages.push({ url: urls[i], content: result.value });
+      }
+    }
+
+    if (successfulPages.length > 0) {
+      const combined = successfulPages
+        .map(({ url, content }) => {
+          const budget = Math.min(
+            4000,
+            Math.floor(20000 / successfulPages.length)
+          );
+          return `═══ SOURCE: ${url} ═══\n${content.substring(0, budget)}`;
+        })
+        .join("\n\n");
+
+      setupData = await extractStoreSetup(
+        combined,
+        successfulPages.map((p) => p.url),
+        business_name || "",
+        location || "",
+        business_type || ""
+      );
     }
   }
 
-  let setupData: StoreSetupResult | null = null;
-
-  if (successfulPages.length > 0) {
-    const combined = successfulPages
-      .map(({ url, content }) => {
-        const budget = Math.min(
-          4000,
-          Math.floor(20000 / successfulPages.length)
-        );
-        return `═══ SOURCE: ${url} ═══\n${content.substring(0, budget)}`;
-      })
-      .join("\n\n");
-
-    setupData = await extractStoreSetup(
-      combined,
-      successfulPages.map((p) => p.url),
-      business_name || "",
-      location || "",
-      business_type || ""
-    );
-  }
-
+  // Fallback: web search by business name (works even without URLs)
   if (!setupData || !setupData.categories?.length) {
-    setupData = await extractStoreSetupWithWebSearch(
-      business_name || "",
-      location || "",
-      business_type || "",
-      urls
-    );
+    if (business_name) {
+      setupData = await extractStoreSetupWithWebSearch(
+        business_name,
+        location || "",
+        business_type || "",
+        urls || []
+      );
+    }
   }
 
   return setupData;
@@ -606,20 +619,22 @@ async function callClaudeWithWebSearch(
   const timeout = setTimeout(() => controller.abort(), 280000); // 280s (leave 20s buffer for DB saves)
 
   try {
+    const apiKey = getClaudeApiKey();
+    console.log("[ai-import] callClaudeWithWebSearch: model=", MODEL, "key_prefix=", apiKey?.substring(0, 10) || "MISSING");
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": getClaudeApiKey(),
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
-        "anthropic-beta": "web-search-2025-03-05",
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 16000,
         tools: [
           {
-            type: "web_search_20250305",
+            type: "web_search_20260209",
             name: "web_search",
             max_uses: maxSearches,
           },
@@ -634,12 +649,13 @@ async function callClaudeWithWebSearch(
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Claude API error:", JSON.stringify(data));
+      console.error("[ai-import] Claude API error:", response.status, JSON.stringify(data));
       throw new Error(
-        `Claude API error: ${data.error?.message || response.statusText}`
+        `Claude API error (${response.status}): ${data.error?.message || response.statusText}`
       );
     }
 
+    console.log("[ai-import] Claude API success, stop_reason=", data.stop_reason, "content_blocks=", data.content?.length);
     return extractTextFromBlocks(data.content || []);
   } catch (e: any) {
     clearTimeout(timeout);
@@ -648,6 +664,7 @@ async function callClaudeWithWebSearch(
         "AI analysis timed out. Try a more specific business name or fewer URLs."
       );
     }
+    console.error("[ai-import] callClaudeWithWebSearch exception:", e.message);
     throw e;
   }
 }

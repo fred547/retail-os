@@ -366,6 +366,17 @@
                 android:layout_marginEnd="6dp"
                 android:text="MORE" />
 
+            <!-- TABLES button (restaurant only, hidden by default) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_tables"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="TABLES"
+                android:visibility="gone" />
+
             <!-- MY CART button -->
             <FrameLayout
                 android:layout_width="0dp"

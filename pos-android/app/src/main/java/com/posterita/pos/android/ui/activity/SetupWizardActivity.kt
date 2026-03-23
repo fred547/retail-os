@@ -25,6 +25,10 @@ import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.DemoDataSeeder
 import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.util.SharedPreferencesManager
+import com.posterita.pos.android.util.ConnectivityMonitor
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+import com.posterita.pos.android.util.SessionTimeoutManager
 import com.posterita.pos.android.util.WebsiteSetupService
 import com.posterita.pos.android.worker.CloudSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +62,7 @@ class SetupWizardActivity : AppCompatActivity() {
     @Inject lateinit var accountRegistry: LocalAccountRegistry
     @Inject lateinit var demoSeeder: DemoDataSeeder
     @Inject lateinit var websiteSetupService: WebsiteSetupService
+    @Inject lateinit var connectivityMonitor: ConnectivityMonitor
 
     private var currentStep = 0
 
@@ -134,6 +139,22 @@ class SetupWizardActivity : AppCompatActivity() {
 
         checkInternetStatus()
         binding.layoutInternetIndicator.setOnClickListener { checkInternetStatus() }
+
+        // Reactive connectivity — updates dot + label in real-time
+        connectivityMonitor.isConnected.observe(this) { connected ->
+            isOnline = connected
+            val dot = binding.viewInternetDot
+            val label = binding.tvInternetLabel
+            if (connected) {
+                dot.background.setTint(0xFF4CAF50.toInt())
+                label.text = "Online"
+                label.setTextColor(0xFF4CAF50.toInt())
+            } else {
+                dot.background.setTint(0xFFF44336.toInt())
+                label.text = "Offline"
+                label.setTextColor(0xFFF44336.toInt())
+            }
+        }
 
         showStep(0)
     }
@@ -235,7 +256,46 @@ class SetupWizardActivity : AppCompatActivity() {
 
         // Owner Log In → email + password
         view.findViewById<MaterialButton>(R.id.btnLogIn)?.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
+            // If there's already an owner with a PIN on this device, go to PIN screen
+            lifecycleScope.launch {
+                val restoredEntry = withContext(Dispatchers.IO) {
+                    for (entry in accountRegistry.getAllAccounts()) {
+                        val dbName = "${com.posterita.pos.android.util.Constants.DATABASE_NAME}_${entry.id}"
+                        val dbFile = this@SetupWizardActivity.getDatabasePath(dbName)
+                        if (!dbFile.exists()) continue
+                        try {
+                            val brandDb = androidx.room.Room.databaseBuilder(
+                                this@SetupWizardActivity.applicationContext,
+                                AppDatabase::class.java, dbName
+                            ).fallbackToDestructiveMigration().build()
+                            try {
+                                val user = brandDb.userDao().getAllUsers().firstOrNull()
+                                if (user != null && !user.pin.isNullOrEmpty()) {
+                                    return@withContext entry
+                                }
+                            } finally {
+                                brandDb.close()
+                            }
+                        } catch (_: Exception) {}
+                    }
+                    null
+                }
+
+                if (restoredEntry != null) {
+                    // Restore this account as active and go to PIN screen
+                    prefsManager.setAccountIdSync(restoredEntry.id)
+                    prefsManager.setStringSync("setup_completed", "true")
+                    AppDatabase.resetInstance()
+                    SessionTimeoutManager.lock()
+                    val intent = Intent(this@SetupWizardActivity, LockScreenActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // No local user with PIN — need email+password login
+                    startActivity(Intent(this@SetupWizardActivity, LoginActivity::class.java))
+                }
+            }
         }
 
         // Enroll Device → scan QR to set up for a store
@@ -246,17 +306,6 @@ class SetupWizardActivity : AppCompatActivity() {
             startActivityForResult(scanIntent, REQUEST_CODE_ENROLL)
         }
 
-        // Try Demo → load demo and go to home
-        view.findViewById<MaterialButton>(R.id.btnTryDemo)?.setOnClickListener {
-            it.isEnabled = false
-            (it as MaterialButton).text = "Loading demo..."
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    demoSeeder.activateDemoAccount()
-                }
-                restartApp()
-            }
-        }
     }
 
     private fun restartApp() {
@@ -272,15 +321,62 @@ class SetupWizardActivity : AppCompatActivity() {
 
     private var selectedDialCode = "+230" // default Mauritius
 
+    private var signupEmailExists = false
+    private var signupPhoneExists = false
+
     private fun setupSignupStep(view: View) {
         val etEmail = view.findViewById<TextInputEditText>(R.id.etEmail)
         val etPassword = view.findViewById<TextInputEditText>(R.id.etPassword)
         val etPhone = view.findViewById<TextInputEditText>(R.id.etPhone)
         val tvCountryCode = view.findViewById<android.widget.TextView>(R.id.tvCountryCode)
         val btnCountryCode = view.findViewById<View>(R.id.btnCountryCode)
+        val tvError = view.findViewById<android.widget.TextView>(R.id.tvSignupError)
+        val tvSignIn = view.findViewById<android.widget.TextView>(R.id.tvSignInLink)
+        val emailLayout = etEmail?.parent?.parent as? com.google.android.material.textfield.TextInputLayout
+        val phoneLayout = etPhone?.parent?.parent as? com.google.android.material.textfield.TextInputLayout
+
+        // Pre-populate email from Google account if not yet collected
+        if (collectedEmail.isEmpty()) {
+            try {
+                val am = android.accounts.AccountManager.get(this)
+                val googleAccounts = am.getAccountsByType("com.google")
+                if (googleAccounts.isNotEmpty()) {
+                    collectedEmail = googleAccounts[0].name
+                }
+            } catch (_: Exception) {}
+        }
 
         if (collectedEmail.isNotEmpty()) etEmail.setText(collectedEmail)
         if (collectedPhone.isNotEmpty()) etPhone.setText(collectedPhone)
+
+        // Real-time email uniqueness check on focus loss
+        etEmail.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val email = etEmail.text?.toString()?.trim() ?: ""
+                if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    checkFieldUniqueness(email, "", emailLayout, null, tvError, tvSignIn)
+                }
+            }
+        }
+
+        // Real-time phone uniqueness check on focus loss
+        etPhone.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val phone = etPhone.text?.toString()?.trim() ?: ""
+                if (phone.isNotEmpty()) {
+                    val fullPhone = if (!phone.startsWith("+")) "$selectedDialCode$phone" else phone
+                    checkFieldUniqueness("", fullPhone, null, phoneLayout, tvError, tvSignIn)
+                }
+            }
+        }
+
+        // Sign in link
+        tvSignIn?.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.putExtra("email", etEmail.text?.toString()?.trim() ?: "")
+            startActivity(intent)
+            finish()
+        }
 
         // Detect device locale and default country code
         val deviceCountryCode = try {
@@ -318,6 +414,71 @@ class SetupWizardActivity : AppCompatActivity() {
         etEmail.requestFocus()
     }
 
+    /** Calls /api/auth/check to see if email or phone already exists */
+    private fun checkFieldUniqueness(
+        email: String,
+        phone: String,
+        emailLayout: com.google.android.material.textfield.TextInputLayout?,
+        phoneLayout: com.google.android.material.textfield.TextInputLayout?,
+        tvError: android.widget.TextView?,
+        tvSignIn: android.widget.TextView?
+    ) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val url = java.net.URL("https://web.posterita.com/api/auth/check")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.connectTimeout = 5000
+                    conn.readTimeout = 5000
+                    conn.doOutput = true
+                    val payload = org.json.JSONObject().apply {
+                        if (email.isNotEmpty()) put("email", email)
+                        if (phone.isNotEmpty()) put("phone", phone)
+                    }
+                    conn.outputStream.bufferedWriter().use { it.write(payload.toString()) }
+                    if (conn.responseCode == 200) {
+                        org.json.JSONObject(conn.inputStream.bufferedReader().readText())
+                    } else null
+                } catch (_: Exception) { null }
+            }
+
+            val exists = result?.optBoolean("exists", false) ?: false
+            val matchedOn = result?.optString("matched_on", "") ?: ""
+
+            if (exists && matchedOn == "email") {
+                signupEmailExists = true
+                emailLayout?.error = "This email is already registered"
+                tvError?.text = "An account with this email already exists."
+                tvError?.visibility = View.VISIBLE
+                tvSignIn?.visibility = View.VISIBLE
+            } else if (email.isNotEmpty()) {
+                signupEmailExists = false
+                emailLayout?.error = null
+                if (!signupPhoneExists) {
+                    tvError?.visibility = View.GONE
+                    tvSignIn?.visibility = View.GONE
+                }
+            }
+
+            if (exists && matchedOn == "phone") {
+                signupPhoneExists = true
+                phoneLayout?.error = "This mobile number is already registered"
+                tvError?.text = "An account with this mobile number already exists."
+                tvError?.visibility = View.VISIBLE
+                tvSignIn?.visibility = View.VISIBLE
+            } else if (phone.isNotEmpty()) {
+                signupPhoneExists = false
+                phoneLayout?.error = null
+                if (!signupEmailExists) {
+                    tvError?.visibility = View.GONE
+                    tvSignIn?.visibility = View.GONE
+                }
+            }
+        }
+    }
+
     private fun countryIsoToDialCode(iso: String): String {
         return when (iso.uppercase()) {
             "MU" -> "+230"
@@ -351,6 +512,14 @@ class SetupWizardActivity : AppCompatActivity() {
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             toast("Please enter a valid email"); return false
         }
+        if (signupEmailExists) {
+            toast("This email is already registered. Please sign in instead.")
+            return false
+        }
+        if (signupPhoneExists) {
+            toast("This mobile number is already registered. Please sign in instead.")
+            return false
+        }
         if (password.length < 6) { toast("Password must be at least 6 characters"); return false }
         if (password != confirmPassword) { toast("Passwords don't match"); return false }
 
@@ -375,8 +544,39 @@ class SetupWizardActivity : AppCompatActivity() {
 
     private fun setupNameStep(view: View) {
         val etName = view.findViewById<TextInputEditText>(R.id.etName)
+
+        // Pre-populate from device owner profile if name not yet collected
+        if (collectedName.isEmpty()) {
+            val deviceName = getDeviceOwnerName()
+            if (deviceName.isNotEmpty()) {
+                collectedName = deviceName
+            }
+        }
+
         if (collectedName.isNotEmpty()) etName.setText(collectedName)
         etName.requestFocus()
+    }
+
+    /** Try to get the device owner's name from the primary Google account or device profile */
+    private fun getDeviceOwnerName(): String {
+        // Try AccountManager for Google account display name
+        try {
+            val am = android.accounts.AccountManager.get(this)
+            val googleAccounts = am.getAccountsByType("com.google")
+            if (googleAccounts.isNotEmpty()) {
+                // Google account email → extract first name from email prefix
+                val email = googleAccounts[0].name
+                collectedEmail = email // also pre-fill email
+                val namePart = email.substringBefore("@")
+                    .replace(".", " ")
+                    .replace("_", " ")
+                    .split(" ")
+                    .joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+                return namePart
+            }
+        } catch (_: Exception) {}
+
+        return ""
     }
 
     private fun validateNameStep(): Boolean {
@@ -531,9 +731,10 @@ class SetupWizardActivity : AppCompatActivity() {
         val emptyColor = getColor(R.color.posterita_line)
 
         for (i in dots.indices) {
-            val bg = dots[i]?.background
+            val bg = dots[i]?.background?.mutate()
             if (bg is android.graphics.drawable.GradientDrawable) {
                 bg.setColor(if (i < pinBuffer.length) filledColor else emptyColor)
+                dots[i]?.background = bg
             }
         }
 
@@ -548,8 +749,11 @@ class SetupWizardActivity : AppCompatActivity() {
             view.findViewById<View>(R.id.dot4)
         )
         for (dot in dots) {
-            val bg = dot?.background
-            if (bg is android.graphics.drawable.GradientDrawable) bg.setColor(color)
+            val bg = dot?.background?.mutate()
+            if (bg is android.graphics.drawable.GradientDrawable) {
+                bg.setColor(color)
+                dot?.background = bg
+            }
         }
     }
 
@@ -652,6 +856,7 @@ class SetupWizardActivity : AppCompatActivity() {
 
         val businessType = inferBusinessType(collectedCategory)
         prefsManager.businessType = businessType
+        prefsManager.terminalType = if (businessType == "restaurant") "pos_restaurant" else "pos_retail"
 
         lifecycleScope.launch {
             try {
@@ -669,6 +874,30 @@ class SetupWizardActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                // Check for account-exists error (409)
+                if (signupResult.optString("error_code") == "ACCOUNT_EXISTS") {
+                    val errorMsg = signupResult.optString("error", "An account with this email already exists")
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(this@SetupWizardActivity)
+                            .setTitle("Account Already Exists")
+                            .setMessage("$errorMsg\n\nWould you like to sign in with your existing account instead?")
+                            .setPositiveButton("Sign In") { _, _ ->
+                                val intent = Intent(this@SetupWizardActivity, LoginActivity::class.java)
+                                intent.putExtra("email", collectedEmail)
+                                startActivity(intent)
+                                finish()
+                            }
+                            .setNegativeButton("Use Different Email") { _, _ ->
+                                // Go back to the signup step
+                                collectedEmail = ""
+                                showStep(1) // signup step
+                            }
+                            .setCancelable(false)
+                            .show()
+                    }
+                    return@launch
+                }
+
                 // optString returns "null" for JSON null — guard against it
                 serverAccountId = signupResult.optString("live_account_id", "").let {
                     if (it == "null") "" else it
@@ -682,6 +911,14 @@ class SetupWizardActivity : AppCompatActivity() {
                 if (syncSecret.isNotEmpty()) {
                     prefsManager.syncSecret = syncSecret
                 }
+
+                // Server-assigned IDs (globally unique, no PK collisions)
+                val serverStoreId = signupResult.optInt("live_store_id", 0)
+                val serverTerminalId = signupResult.optInt("live_terminal_id", 0)
+                val serverUserId = signupResult.optInt("live_user_id", 0)
+                val serverDemoStoreId = signupResult.optInt("demo_store_id", 0)
+                val serverDemoTerminalId = signupResult.optInt("demo_terminal_id", 0)
+                val serverDemoUserId = signupResult.optInt("demo_user_id", 0)
 
                 if (serverAccountId.isNullOrEmpty()) {
                     showSetupError(view, "Account creation failed — no valid account ID returned. Please try again or use a different email.")
@@ -717,23 +954,28 @@ class SetupWizardActivity : AppCompatActivity() {
                             address1 = collectedCountry, isactive = "Y", currency = currency)
                     ))
 
-                    // Store — use ID 1 as placeholder, sync will update with real server IDs
+                    // Store — use server-assigned ID (globally unique, no PK collisions)
+                    val localStoreId = if (serverStoreId > 0) serverStoreId else 1
                     freshDb.storeDao().insertStore(
-                        Store(storeId = 1, name = collectedBrand, address = "",
-                            country = selectedCountry.name, currency = currency, isactive = "Y")
+                        Store(storeId = localStoreId, name = collectedBrand, address = "",
+                            country = selectedCountry.name, currency = currency, isactive = "Y",
+                            account_id = finalAccountId)
                     )
-                    prefsManager.setStoreIdSync(1)
+                    prefsManager.setStoreIdSync(localStoreId)
                     prefsManager.setStoreNameSync(collectedBrand)
 
+                    val localTerminalId = if (serverTerminalId > 0) serverTerminalId else 1
                     freshDb.terminalDao().insertTerminal(
-                        Terminal(terminalId = 1, name = "POS 1", store_id = 1, prefix = "INV", isactive = "Y")
+                        Terminal(terminalId = localTerminalId, name = "POS 1", store_id = localStoreId,
+                            prefix = "INV", isactive = "Y", account_id = finalAccountId)
                     )
-                    prefsManager.setTerminalIdSync(1)
+                    prefsManager.setTerminalIdSync(localTerminalId)
                     prefsManager.setTerminalNameSync("POS 1")
 
-                    // Owner user
+                    // Owner user — use server-assigned ID
+                    val localUserId = if (serverUserId > 0) serverUserId else 1
                     freshDb.userDao().insertUser(User(
-                        user_id = 1, firstname = collectedName, lastname = "",
+                        user_id = localUserId, firstname = collectedName, lastname = "",
                         username = collectedEmail, pin = collectedPin,
                         isadmin = "Y", isactive = "Y", issalesrep = "Y",
                         role = User.ROLE_OWNER, email = collectedEmail, phone1 = collectedPhone
@@ -763,43 +1005,43 @@ class SetupWizardActivity : AppCompatActivity() {
                 tvStatusProducts?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
                 tvStatusProducts?.compoundDrawablePadding = 8
 
-                // Step 3: Sync with server + queue AI product discovery
+                // Step 3: Sync with server to pull demo brand data
                 layoutFinish?.alpha = 1f
                 progressFinish?.visibility = View.VISIBLE
                 tvStatusFinish?.text = "Syncing with server..."
 
+                // Reset sync timestamps to epoch so first sync pulls EVERYTHING
                 withContext(Dispatchers.IO) {
-                    CloudSyncWorker.syncNow(this@SetupWizardActivity)
-                }
-
-                // Queue AI import — discovers business online, extracts products
-                tvStatusFinish?.text = "Queuing AI product discovery..."
-                withContext(Dispatchers.IO) {
-                    try {
-                        AiImportService.queueStart(
-                            prefs = prefsManager, urls = emptyList(),
-                            businessName = collectedBrand, businessLocation = collectedCountry,
-                            businessType = businessType, accountId = serverAccountId!!,
-                            ownerEmail = collectedEmail, ownerPhone = collectedPhone,
-                            accountType = "live"
-                        )
-                        AiImportService.startPendingIfNeeded(this@SetupWizardActivity, prefsManager)
-                    } catch (e: Exception) {
-                        AppErrorLogger.warn(this@SetupWizardActivity, "SetupWizard", "AI import queue failed", e)
+                    val epoch = "1970-01-01T00:00:00.000Z"
+                    prefsManager.setStringSync(
+                        com.posterita.pos.android.service.CloudSyncService.syncDateKey(finalAccountId), epoch)
+                    if (!serverDemoAccountId.isNullOrEmpty()) {
+                        prefsManager.setStringSync(
+                            com.posterita.pos.android.service.CloudSyncService.syncDateKey(serverDemoAccountId!!), epoch)
                     }
                 }
 
-                // Give sync a moment to pull data
-                delay(2000)
-                tvStatusFinish?.text = "All set!"
+                // Trigger sync and wait for it to complete
+                CloudSyncWorker.syncNow(this@SetupWizardActivity)
+                val syncCompleted = withTimeoutOrNull(30_000L) {
+                    com.posterita.pos.android.service.SyncStatusManager.status.first { s ->
+                        s.state == com.posterita.pos.android.service.SyncStatusManager.SyncState.COMPLETE ||
+                        s.state == com.posterita.pos.android.service.SyncStatusManager.SyncState.ERROR
+                    }
+                    true
+                } ?: false
 
-                // Step 3 done
+                if (syncCompleted) {
+                    tvStatusFinish?.text = "Sync complete!"
+                } else {
+                    tvStatusFinish?.text = "Sync in progress — data will arrive shortly"
+                }
                 progressFinish?.visibility = View.GONE
                 tvStatusFinish?.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_circle, 0, 0, 0)
                 tvStatusFinish?.compoundDrawablePadding = 8
 
                 // Auto-advance to review step
-                delay(500)
+                delay(1000)
                 showStep(currentStep + 1)
 
             } catch (e: Exception) {
@@ -975,10 +1217,15 @@ class SetupWizardActivity : AppCompatActivity() {
             android.util.Log.d("SetupWizard", "Signup API success")
             org.json.JSONObject(response)
         } else if (responseCode == 409) {
-            // Account already exists — try to fetch existing account ID
+            // Account already exists — return structured error for the UI to handle
             val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
             android.util.Log.w("SetupWizard", "Account already exists (409): $errorBody")
-            fetchExistingAccountId(collectedEmail, collectedPhone)
+            val errorJson = try { org.json.JSONObject(errorBody ?: "{}") } catch (_: Exception) { org.json.JSONObject() }
+            // Return a marker so the caller knows this is a 409
+            org.json.JSONObject().apply {
+                put("error_code", "ACCOUNT_EXISTS")
+                put("error", errorJson.optString("error", "An account with this email already exists"))
+            }
         } else {
             val errorBody = try { conn.errorStream?.bufferedReader()?.readText() } catch (_: Exception) { null }
             android.util.Log.w("SetupWizard", "Signup API failed: $responseCode $errorBody")

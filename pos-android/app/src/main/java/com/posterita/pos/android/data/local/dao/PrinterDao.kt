@@ -6,7 +6,7 @@ import com.posterita.pos.android.data.local.entity.Printer
 @Dao
 interface PrinterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPrinter(printer: Printer)
+    suspend fun insertPrinter(printer: Printer): Long
 
     @Query("SELECT * FROM printer WHERE printer_id = :printerId")
     suspend fun getPrinterById(printerId: Int): Printer?

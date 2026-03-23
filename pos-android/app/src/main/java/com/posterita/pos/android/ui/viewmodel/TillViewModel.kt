@@ -6,27 +6,33 @@ import com.posterita.pos.android.data.local.dao.AccountDao
 import com.posterita.pos.android.data.local.dao.StoreDao
 import com.posterita.pos.android.data.local.dao.TaxDao
 import com.posterita.pos.android.data.local.dao.TerminalDao
+import com.posterita.pos.android.data.local.dao.UserDao
 import com.posterita.pos.android.data.local.entity.Account
+import com.posterita.pos.android.data.local.entity.User
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.data.local.entity.Terminal
 import com.posterita.pos.android.data.local.entity.Till
 import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.service.TillService
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TillViewModel @Inject constructor(
+    @ApplicationContext private val appContext: android.content.Context,
     private val tillService: TillService,
     private val sessionManager: SessionManager,
     private val prefsManager: SharedPreferencesManager,
     private val accountDao: AccountDao,
     private val storeDao: StoreDao,
     private val terminalDao: TerminalDao,
-    private val taxDao: TaxDao
+    private val taxDao: TaxDao,
+    private val userDao: UserDao
 ) : ViewModel() {
 
     private val _openTillResult = MutableLiveData<Result<Till>>()
@@ -92,6 +98,25 @@ class TillViewModel @Inject constructor(
                 sessionManager.terminal = terminal
             }
         }
+        if (sessionManager.user == null) {
+            val userId = prefsManager.userId
+            if (userId > 0) {
+                val user = userDao.getUserById(userId)
+                if (user != null) {
+                    sessionManager.user = user
+                }
+            }
+            // If still null, try first owner/admin user in DB
+            if (sessionManager.user == null) {
+                val allUsers = userDao.getAllUsers()
+                val owner = allUsers.firstOrNull { it.role == "owner" || it.isadmin == "Y" }
+                    ?: allUsers.firstOrNull()
+                if (owner != null) {
+                    sessionManager.user = owner
+                    prefsManager.userId = owner.user_id
+                }
+            }
+        }
         // Load tax cache if empty
         if (sessionManager.taxCache.isEmpty()) {
             val taxes = taxDao.getAllTaxesSync()
@@ -114,6 +139,7 @@ class TillViewModel @Inject constructor(
                 sessionManager.till = till
                 _currentTill.postValue(till)
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "TillViewModel", "Failed to load open till", e)
                 _currentTill.postValue(null)
             }
         }
@@ -137,6 +163,7 @@ class TillViewModel @Inject constructor(
                 sessionManager.till = till
                 _openTillResult.postValue(Result.success(till))
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "TillViewModel", "Failed to open till", e)
                 _openTillResult.postValue(Result.failure(e))
             }
         }
@@ -152,6 +179,7 @@ class TillViewModel @Inject constructor(
                 sessionManager.till = null
                 _closeTillResult.postValue(Result.success(details))
             } catch (e: Exception) {
+                AppErrorLogger.warn(appContext, "TillViewModel", "Failed to close till", e)
                 _closeTillResult.postValue(Result.failure(e))
             }
         }

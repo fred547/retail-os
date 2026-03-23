@@ -261,11 +261,24 @@ class AiImportService : Service() {
                 clearResumeData()
             } catch (e: Exception) {
                 Log.e(TAG, "Import pipeline failed", e)
-                setStatus("Failed: ${e.message}", 0)
+                val errorMsg = e.message ?: "Unknown error"
+                setStatus("Failed: $errorMsg", 0)
+                prefsManager.setString("ai_import_error", errorMsg)
                 if (targetAccountId.isNotBlank()) {
                     accountRegistry.updateStatus(targetAccountId, "failed")
                 }
-                updateNotification("Import failed — tap to retry", 0, 5)
+                // Show specific error in notification
+                val notifMsg = when {
+                    errorMsg.contains("credit balance", ignoreCase = true) ->
+                        "AI Import failed: API credits exhausted. Contact support."
+                    errorMsg.contains("rate limit", ignoreCase = true) ->
+                        "AI Import failed: Rate limited. Will retry automatically."
+                    errorMsg.contains("timed out", ignoreCase = true) ->
+                        "AI Import timed out. Tap to retry."
+                    else -> "AI Import failed: $errorMsg"
+                }
+                updateNotification(notifMsg, 0, 5)
+                showDoneNotification(notifMsg, false)
                 // Keep resume data so user can retry
                 delay(3000)
             } finally {
@@ -525,6 +538,11 @@ class AiImportService : Service() {
 
     // ─── Save to Database ────────────────────────────────────
 
+    /**
+     * Saves AI import results to the SERVER via /api/ai-import/save.
+     * Server is source of truth — never save master data to local Room DB.
+     * After saving, triggers sync to pull data locally.
+     */
     private suspend fun saveImportToDatabase(
         data: WebsiteSetupService.StoreSetupResult,
         businessName: String,
@@ -533,128 +551,65 @@ class AiImportService : Service() {
         ownerPhone: String,
         accountType: String
     ): String {
-        val accountId = targetAccountId.ifBlank {
-            val prefix = when (accountType) {
-                "live" -> "live"
-                "trial" -> "trial"
-                else -> "demo"
-            }
-            "${prefix}_${System.currentTimeMillis()}"
+        if (targetAccountId.isBlank()) {
+            throw IllegalStateException("No target account ID — standalone account creation is no longer supported")
         }
+        val accountId = targetAccountId
         val storeName = data.storeName.orEmpty().ifBlank { businessName }
 
-        AppDatabase.resetInstance()
-        val freshDb = AppDatabase.getInstance(applicationContext, accountId)
-
-        // Account
-        freshDb.accountDao().insertAccounts(listOf(
-            Account(
-                account_id = accountId,
-                businessname = storeName,
-                address1 = data.address,
-                isactive = "Y"
-            )
-        ))
-
-        // Store(s)
-        val aiStores = data.stores
-        val currency = data.currency ?: "USD"
-        if (aiStores.size > 1) {
-            for ((index, aiStore) in aiStores.withIndex()) {
-                val sid = index + 1
-                val sName = aiStore.storeName.orEmpty().ifBlank { "$storeName — Branch $sid" }
-                freshDb.storeDao().insertStore(
-                    Store(storeId = sid, name = sName,
-                        address = aiStore.address.orEmpty(),
-                        country = aiStore.country.orEmpty().ifBlank { data.country.orEmpty() },
-                        currency = aiStore.currency.orEmpty().ifBlank { currency },
-                        isactive = "Y")
-                )
-                freshDb.terminalDao().insertTerminal(
-                    Terminal(terminalId = sid, name = "Terminal $sid",
-                        store_id = sid, prefix = "INV${if (sid > 1) sid else ""}",
-                        isactive = "Y")
-                )
-            }
-        } else {
-            val singleName = aiStores.firstOrNull()?.storeName?.ifBlank { null } ?: storeName
-            freshDb.storeDao().insertStore(
-                Store(storeId = 1, name = singleName,
-                    address = data.address.orEmpty(),
-                    country = data.country.orEmpty(),
-                    currency = currency,
-                    isactive = "Y")
-            )
-            freshDb.terminalDao().insertTerminal(
-                Terminal(terminalId = 1, name = "Terminal 1",
-                    store_id = 1, prefix = "INV",
-                    isactive = "Y")
-            )
-        }
-
-        // Default admin user
-        freshDb.userDao().insertUser(
-            User(user_id = 1, firstname = "Admin", lastname = "",
-                username = "admin", pin = "000000", password = "000000",
-                isadmin = "Y", isactive = "Y", issalesrep = "Y",
-                role = User.ROLE_OWNER, email = ownerEmail, phone1 = ownerPhone)
-        )
-
-        // Tax
-        val taxId = 1
-        freshDb.taxDao().insertTax(
-            Tax(tax_id = taxId,
-                name = data.taxName.orEmpty().ifEmpty { "Tax" },
-                rate = data.taxRate,
-                taxcode = data.taxName.orEmpty().uppercase().replace(" ", "").ifEmpty { "TAX" },
-                isactive = "Y")
-        )
-        freshDb.taxDao().insertTax(
-            Tax(tax_id = 2, name = "No Tax", rate = 0.0, taxcode = "NONE", isactive = "Y")
-        )
-
-        // Categories & Products
-        var categoryId = 1
-        var productId = 1
+        // Build payload for server
+        val categoriesJson = org.json.JSONArray()
         for (catData in data.categories) {
             if (catData.name.isNullOrBlank()) continue
-
-            freshDb.productCategoryDao().insertProductCategory(
-                ProductCategory(
-                    productcategory_id = categoryId,
-                    name = catData.name,
-                    isactive = "Y",
-                    position = categoryId
-                )
-            )
-
-            val products = catData.products.map { prodData ->
-                val taxAmount = if (data.taxRate > 0) {
-                    prodData.price * data.taxRate / 100.0
-                } else 0.0
-
-                Product(
-                    product_id = productId++,
-                    name = prodData.name,
-                    sellingprice = prodData.price,
-                    costprice = 0.0,
-                    productcategory_id = categoryId,
-                    tax_id = if (data.taxRate > 0) taxId else 2,
-                    taxamount = taxAmount,
-                    isactive = "Y",
-                    description = prodData.description,
-                    image = prodData.imageUrl?.ifEmpty { null },
-                    iskitchenitem = if (data.businessType == "restaurant") "Y" else "N",
-                    product_status = "review",
-                    source = "ai_import"
-                )
+            val catObj = org.json.JSONObject()
+            catObj.put("name", catData.name)
+            val productsArr = org.json.JSONArray()
+            for (prod in catData.products) {
+                val pObj = org.json.JSONObject()
+                pObj.put("name", prod.name ?: "Product")
+                pObj.put("price", prod.price)
+                pObj.put("description", prod.description ?: "")
+                pObj.put("image_url", prod.imageUrl ?: "")
+                productsArr.put(pObj)
             }
-            if (products.isNotEmpty()) {
-                freshDb.productDao().insertProducts(products)
-            }
-            categoryId++
+            catObj.put("products", productsArr)
+            categoriesJson.put(catObj)
         }
 
+        val payload = org.json.JSONObject().apply {
+            put("account_id", accountId)
+            put("store_name", storeName)
+            put("currency", data.currency ?: "USD")
+            put("tax_name", data.taxName ?: "Tax")
+            put("tax_rate", data.taxRate)
+            put("categories", categoriesJson)
+        }
+
+        // POST to server
+        val url = java.net.URL("https://web.posterita.com/api/ai-import/save")
+        val conn = url.openConnection() as java.net.HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.connectTimeout = 30_000
+        conn.readTimeout = 30_000
+        conn.doOutput = true
+        conn.outputStream.bufferedWriter().use { it.write(payload.toString()) }
+
+        val responseCode = conn.responseCode
+        val responseBody = if (responseCode in 200..299) {
+            conn.inputStream.bufferedReader().readText()
+        } else {
+            val err = conn.errorStream?.bufferedReader()?.readText() ?: "Unknown error"
+            throw Exception("Server save failed ($responseCode): $err")
+        }
+
+        val result = org.json.JSONObject(responseBody)
+        val productsCreated = result.optInt("products_created", 0)
+        val categoriesCreated = result.optInt("categories_created", 0)
+
+        Log.d(TAG, "Server saved $accountId: $productsCreated products, $categoriesCreated categories")
+
+        // Register in local account registry
         accountRegistry.addAccount(
             id = accountId,
             name = storeName,
@@ -664,7 +619,14 @@ class AiImportService : Service() {
             type = accountType,
             status = defaultStatusForType(accountType)
         )
-        Log.d(TAG, "Saved $accountId: ${productId - 1} products, ${categoryId - 1} categories")
+
+        // Reset sync timestamp so next sync pulls everything
+        val syncKey = CloudSyncService.syncDateKey(accountId)
+        prefsManager.setString(syncKey, "1970-01-01T00:00:00.000Z")
+
+        // Trigger sync to pull server data locally
+        com.posterita.pos.android.worker.CloudSyncWorker.syncNow(applicationContext)
+
         return accountId
     }
 

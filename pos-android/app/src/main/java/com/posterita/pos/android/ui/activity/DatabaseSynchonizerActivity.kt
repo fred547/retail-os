@@ -214,6 +214,10 @@ class DatabaseSynchonizerActivity : AppCompatActivity() {
                 rows.add(DbRow("Orders", db.orderDao().getAllOrders().size))
                 rows.add(DbRow("Preferences", db.preferenceDao().getAllPreferences().size))
                 rows.add(DbRow("Printers", db.printerDao().getAllPrinters().size))
+                val unsentErrors = try { db.errorLogDao().getUnsyncedCount() } catch (_: Exception) { 0 }
+                val recentErrors = try { db.errorLogDao().getRecentLogs(999).size } catch (_: Exception) { 0 }
+                rows.add(DbRow("⚠ Errors (unsent)", unsentErrors))
+                rows.add(DbRow("⚠ Errors (total)", recentErrors))
             } catch (_: Exception) {}
 
             withContext(Dispatchers.Main) {

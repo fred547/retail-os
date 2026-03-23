@@ -24,6 +24,7 @@ import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.data.local.entity.Terminal
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,6 +44,7 @@ class EditTerminalActivity : AppCompatActivity() {
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var terminalId = 0
     private var storeId = 0
@@ -67,6 +69,7 @@ class EditTerminalActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_terminal)
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
         supportActionBar?.hide()
 
         // Admin/owner check
@@ -428,6 +431,7 @@ class EditTerminalActivity : AppCompatActivity() {
             }
             bitmap
         } catch (e: Exception) {
+            AppErrorLogger.warn(this, "EditTerminalActivity", "Failed to generate QR bitmap", e)
             null
         }
     }
@@ -506,6 +510,7 @@ class EditTerminalActivity : AppCompatActivity() {
             }
             startActivity(android.content.Intent.createChooser(shareIntent, "Export QR Code"))
         } catch (e: Exception) {
+            AppErrorLogger.warn(this, "EditTerminalActivity", "Failed to export QR PDF", e)
             Toast.makeText(this, "Failed to export PDF: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }

@@ -17,6 +17,7 @@ import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.remote.CloudSyncApi
 import com.posterita.pos.android.service.CloudSyncService
 import com.posterita.pos.android.service.SyncStatusManager
+import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.util.SharedPreferencesManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -112,10 +113,10 @@ class CloudSyncWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             val prefsManager = SharedPreferencesManager(applicationContext)
-            val accountId = prefsManager.accountId
+            val activeAccountId = prefsManager.accountId
 
-            if (accountId.isEmpty() || accountId == "null" || accountId == "0") {
-                Log.d(TAG, "No valid account configured (got '$accountId'), skipping sync")
+            if (activeAccountId.isEmpty() || activeAccountId == "null" || activeAccountId == "0") {
+                Log.d(TAG, "No valid account configured (got '$activeAccountId'), skipping sync")
                 return@withContext Result.success()
             }
 
@@ -124,39 +125,120 @@ class CloudSyncWorker(
                 return@withContext Result.success()
             }
 
-            val cloudSyncUrl = prefsManager.cloudSyncUrl
-            val db = AppDatabase.getInstance(applicationContext, accountId)
+            // Save active brand context to restore after multi-brand sync
+            val savedStoreId = prefsManager.storeId
+            val savedStoreName = prefsManager.storeName
+            val savedTerminalId = prefsManager.terminalId
+            val savedTerminalName = prefsManager.terminalName
 
-            val isRegistered = prefsManager.getString(REGISTERED_KEY) == "true"
-            if (!isRegistered) {
-                SyncStatusManager.update(
-                    SyncStatusManager.SyncState.REGISTERING,
-                    "Registering account with cloud..."
-                )
-                val registered = registerAccount(db, prefsManager, cloudSyncUrl)
-                if (!registered) {
-                    Log.w(TAG, "Account registration failed, will retry next cycle")
-                    SyncStatusManager.error("Account registration failed")
-                    return@withContext if (runAttemptCount < 3) Result.retry() else Result.failure()
+            // Collect all brands to sync: active first, then others
+            val accountRegistry = LocalAccountRegistry(applicationContext)
+            val allBrands = accountRegistry.getAllAccounts()
+            val brandIds = mutableListOf<String>()
+
+            // Active brand always first
+            brandIds.add(activeAccountId)
+            // Add other brands (skip demo_account local demo, skip duplicates)
+            for (brand in allBrands) {
+                if (brand.id != activeAccountId && brand.id != "demo_account" && !brandIds.contains(brand.id)) {
+                    brandIds.add(brand.id)
                 }
-                prefsManager.setString(REGISTERED_KEY, "true")
-                Log.d(TAG, "Account registered with cloud successfully")
             }
 
-            val cloudSyncApi = createCloudSyncApi(cloudSyncUrl)
-            val syncService = CloudSyncService(db, prefsManager)
-            val result = syncService.performSync(cloudSyncApi)
+            Log.d(TAG, "Syncing ${brandIds.size} brand(s): ${brandIds.joinToString(", ")}")
 
-            result.fold(
-                onSuccess = { stats ->
-                    Log.d(TAG, "Cloud sync successful: $stats")
-                    Result.success()
-                },
-                onFailure = { error ->
-                    Log.e(TAG, "Cloud sync failed: ${error.message}")
-                    if (runAttemptCount < 3) Result.retry() else Result.failure()
+            val cloudSyncUrl = prefsManager.cloudSyncUrl
+            var anyFailed = false
+
+            for ((index, accountId) in brandIds.withIndex()) {
+                try {
+                    val isActive = accountId == activeAccountId
+                    if (isActive) {
+                        SyncStatusManager.update(
+                            SyncStatusManager.SyncState.CONNECTING,
+                            "Syncing active brand..."
+                        )
+                    }
+
+                    // Temporarily set accountId in prefs so CloudSyncService reads it
+                    prefsManager.setAccountIdSync(accountId)
+                    AppDatabase.resetInstance()
+                    val db = AppDatabase.getInstance(applicationContext, accountId)
+
+                    // Register if needed
+                    val regKey = "${REGISTERED_KEY}_$accountId"
+                    val isRegistered = prefsManager.getString(regKey) == "true"
+                    if (!isRegistered) {
+                        if (isActive) {
+                            SyncStatusManager.update(
+                                SyncStatusManager.SyncState.REGISTERING,
+                                "Registering account with cloud..."
+                            )
+                        }
+                        val registered = registerAccount(db, prefsManager, cloudSyncUrl)
+                        if (registered) {
+                            prefsManager.setString(regKey, "true")
+                        } else {
+                            Log.w(TAG, "Registration failed for $accountId, skipping")
+                            continue
+                        }
+                    }
+
+                    val cloudSyncApi = createCloudSyncApi(cloudSyncUrl)
+                    val syncService = CloudSyncService(db, prefsManager)
+                    val result = syncService.performSync(cloudSyncApi)
+
+                    result.fold(
+                        onSuccess = { stats ->
+                            Log.d(TAG, "Sync [$accountId]: $stats")
+                        },
+                        onFailure = { error ->
+                            Log.e(TAG, "Sync [$accountId] failed: ${error.message}")
+                            if (isActive) anyFailed = true
+                        }
+                    )
+
+                    // Register sibling brands from sync response
+                    syncService.lastSiblingBrands?.let { brands ->
+                        for (brand in brands) {
+                            val brandId = brand["account_id"]?.toString() ?: continue
+                            val brandName = brand["businessname"]?.toString() ?: "Brand"
+                            val brandType = brand["type"]?.toString() ?: "live"
+                            val brandStatus = brand["status"]?.toString() ?: "active"
+                            if (!accountRegistry.getAllAccounts().any { it.id == brandId }) {
+                                accountRegistry.addAccount(
+                                    id = brandId, name = brandName, storeName = brandName,
+                                    ownerEmail = prefsManager.email, ownerPhone = "",
+                                    type = brandType, status = brandStatus
+                                )
+                                Log.d(TAG, "Registered sibling brand: $brandName ($brandId)")
+                                // Add to sync list if not already there
+                                if (!brandIds.contains(brandId)) {
+                                    brandIds.add(brandId)
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Sync [$accountId] exception: ${e.message}")
+                    if (accountId == activeAccountId) anyFailed = true
                 }
-            )
+            }
+
+            // Restore active account in prefs and DB singleton
+            prefsManager.setAccountIdSync(activeAccountId)
+            prefsManager.setStoreIdSync(savedStoreId)
+            prefsManager.setStoreNameSync(savedStoreName)
+            prefsManager.setTerminalIdSync(savedTerminalId)
+            prefsManager.setTerminalNameSync(savedTerminalName)
+            AppDatabase.resetInstance()
+            AppDatabase.getInstance(applicationContext, activeAccountId)
+
+            if (anyFailed) {
+                if (runAttemptCount < 3) Result.retry() else Result.failure()
+            } else {
+                Result.success()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Cloud sync worker failed", e)
             if (runAttemptCount < 3) Result.retry() else Result.failure()

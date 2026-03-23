@@ -23,9 +23,14 @@ import com.posterita.pos.android.util.Constants
         LoyaltyCache::class, PendingLoyaltyAward::class,
         PendingConsentUpdate::class,
         AuditEvent::class,
-        ErrorLog::class
+        ErrorLog::class,
+        InventoryCountSession::class,
+        InventoryCountEntry::class,
+        TableSection::class,
+        PreparationStation::class,
+        CategoryStationMapping::class
     ],
-    version = 22,
+    version = 25,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -57,6 +62,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun paymentDao(): PaymentDao
     abstract fun auditEventDao(): AuditEventDao
     abstract fun errorLogDao(): ErrorLogDao
+    abstract fun inventoryCountSessionDao(): InventoryCountSessionDao
+    abstract fun inventoryCountEntryDao(): InventoryCountEntryDao
+    abstract fun tableSectionDao(): TableSectionDao
+    abstract fun preparationStationDao(): PreparationStationDao
+    abstract fun categoryStationMappingDao(): CategoryStationMappingDao
 
     companion object {
         @Volatile
@@ -78,7 +88,11 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_15_16, MIGRATION_16_17,
                         MIGRATION_17_18, MIGRATION_18_19,
                         MIGRATION_19_20,
-                        MIGRATION_20_21
+                        MIGRATION_20_21,
+                        MIGRATION_21_22,
+                        MIGRATION_22_23,
+                        MIGRATION_23_24,
+                        MIGRATION_24_25
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -248,6 +262,106 @@ abstract class AppDatabase : RoomDatabase() {
                         isSynced TEXT NOT NULL DEFAULT 'N'
                     )
                 """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_21_22 = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // No-op: bridge migration for version alignment
+            }
+        }
+
+        private val MIGRATION_22_23 = object : Migration(22, 23) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS inventory_count_session (
+                        session_id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        type TEXT NOT NULL DEFAULT 'spot_check',
+                        status TEXT NOT NULL DEFAULT 'created',
+                        name TEXT,
+                        started_at TEXT,
+                        completed_at TEXT,
+                        created_by INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT,
+                        notes TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS inventory_count_entry (
+                        entry_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        session_id INTEGER NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        product_id INTEGER NOT NULL DEFAULT 0,
+                        product_name TEXT,
+                        upc TEXT,
+                        quantity INTEGER NOT NULL DEFAULT 1,
+                        scanned_by INTEGER NOT NULL DEFAULT 0,
+                        terminal_id INTEGER NOT NULL DEFAULT 0,
+                        scanned_at INTEGER NOT NULL DEFAULT 0,
+                        is_synced TEXT NOT NULL DEFAULT 'N'
+                    )
+                """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // New tables
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS table_section (
+                        section_id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        name TEXT NOT NULL DEFAULT '',
+                        display_order INTEGER NOT NULL DEFAULT 0,
+                        color TEXT NOT NULL DEFAULT '#6B7280',
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        is_takeaway INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS preparation_station (
+                        station_id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        name TEXT NOT NULL DEFAULT '',
+                        station_type TEXT NOT NULL DEFAULT 'kitchen',
+                        printer_id INTEGER,
+                        color TEXT NOT NULL DEFAULT '#3B82F6',
+                        display_order INTEGER NOT NULL DEFAULT 0,
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS category_station_mapping (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        category_id INTEGER NOT NULL DEFAULT 0,
+                        station_id INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT
+                    )
+                """.trimIndent())
+
+                // Alter existing tables
+                db.execSQL("ALTER TABLE restaurant_table ADD COLUMN section_id INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE product ADD COLUMN station_override_id INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE printer ADD COLUMN station_id INTEGER DEFAULT NULL")
+            }
+        }
+
+        private val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE terminal ADD COLUMN terminal_type TEXT NOT NULL DEFAULT 'pos_retail'")
+                db.execSQL("ALTER TABLE terminal ADD COLUMN zone TEXT DEFAULT NULL")
             }
         }
     }

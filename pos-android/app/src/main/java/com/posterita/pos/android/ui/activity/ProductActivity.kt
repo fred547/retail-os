@@ -155,6 +155,7 @@ class ProductActivity : BaseDrawerActivity() {
         setupLandscapeCart()
         setupLandscapeCartButtons()
         setupOrderType()
+        setupTablesButton()
         applyCustomizationSettings()
         observeViewModel()
     }
@@ -359,6 +360,182 @@ class ProductActivity : BaseDrawerActivity() {
         if (totalCategories > maxSlots) {
             adapter.setMaxVisible(maxSlots)
         }
+    }
+
+    private fun setupTablesButton() {
+        val btnTables = binding.buttonTables ?: return
+        if (!prefsManager.isRestaurant) return
+
+        btnTables.visibility = View.VISIBLE
+        btnTables.setOnClickListener {
+            // Show table grid — occupied tables can be opened, free tables shown
+            val storeId = prefsManager.storeId
+            lifecycleScope.launch(Dispatchers.IO) {
+                val tables = db.restaurantTableDao().getTablesByStore(storeId)
+                val sections = db.tableSectionDao().getSectionsByStore(storeId)
+                withContext(Dispatchers.Main) {
+                    showTablesOverview(tables, sections)
+                }
+            }
+        }
+    }
+
+    private fun showTablesOverview(
+        allTables: List<com.posterita.pos.android.data.local.entity.RestaurantTable>,
+        sections: List<com.posterita.pos.android.data.local.entity.TableSection>
+    ) {
+        if (allTables.isEmpty()) {
+            Toast.makeText(this, "No tables configured — add in web console", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val occupied = allTables.count { it.is_occupied }
+
+        // Root layout
+        val root = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(24, 16, 24, 8)
+        }
+
+        // Section tabs
+        val tabRow = android.widget.HorizontalScrollView(this)
+        val tabContainer = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(0, 0, 0, 16)
+        }
+        tabRow.addView(tabContainer)
+
+        // Table grid
+        val gridScroll = android.widget.ScrollView(this).apply {
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+            )
+        }
+        val grid = android.widget.GridLayout(this).apply { columnCount = 3 }
+        gridScroll.addView(grid)
+
+        fun populateGrid(tables: List<com.posterita.pos.android.data.local.entity.RestaurantTable>) {
+            grid.removeAllViews()
+            for (table in tables) {
+                val section = sections.find { it.section_id == table.section_id }
+                val sectionColor = try { android.graphics.Color.parseColor(section?.color ?: "#6B7280") } catch (_: Exception) { android.graphics.Color.GRAY }
+
+                val card = android.widget.LinearLayout(this).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(8, 16, 8, 16)
+                    val bg = android.graphics.drawable.GradientDrawable().apply {
+                        cornerRadius = 16f
+                        if (table.is_occupied) {
+                            setColor(sectionColor)
+                        } else {
+                            setColor(android.graphics.Color.WHITE)
+                            setStroke(2, sectionColor)
+                        }
+                    }
+                    background = bg
+                    val lp = android.widget.GridLayout.LayoutParams().apply {
+                        width = 0
+                        height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                        columnSpec = android.widget.GridLayout.spec(android.widget.GridLayout.UNDEFINED, 1f)
+                        setMargins(6, 6, 6, 6)
+                    }
+                    layoutParams = lp
+
+                    setOnClickListener {
+                        if (table.is_occupied && table.current_order_id != null) {
+                            (it.context as? android.app.Activity)?.let { act ->
+                                val intent = Intent(act, CartActivity::class.java)
+                                intent.putExtra("REOPEN_TABLE_ID", table.table_id)
+                                act.startActivity(intent)
+                            }
+                        }
+                    }
+                }
+
+                val nameColor = if (table.is_occupied) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#1F2937")
+                val subColor = if (table.is_occupied) 0xCCFFFFFF.toInt() else android.graphics.Color.parseColor("#6B7280")
+
+                card.addView(android.widget.TextView(this).apply {
+                    text = table.table_name
+                    textSize = 16f
+                    setTextColor(nameColor)
+                    gravity = android.view.Gravity.CENTER
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                })
+
+                card.addView(android.widget.TextView(this).apply {
+                    text = if (table.is_occupied) "Occupied" else "${table.seats} seats"
+                    textSize = 11f
+                    setTextColor(subColor)
+                    gravity = android.view.Gravity.CENTER
+                })
+
+                grid.addView(card)
+            }
+        }
+
+        // Build tabs
+        var selectedTabIdx = 0
+        val tabButtons = mutableListOf<android.widget.TextView>()
+
+        fun selectTab(idx: Int) {
+            selectedTabIdx = idx
+            tabButtons.forEachIndexed { i, btn ->
+                val sel = i == idx
+                val bg = android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius = 32f
+                    if (sel) setColor(android.graphics.Color.parseColor("#2563EB"))
+                    else { setColor(android.graphics.Color.WHITE); setStroke(2, android.graphics.Color.parseColor("#D1D5DB")) }
+                }
+                btn.background = bg
+                btn.setTextColor(if (sel) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#374151"))
+            }
+        }
+
+        // "All" tab
+        tabButtons.add(android.widget.TextView(this).apply {
+            text = "All ($occupied/${allTables.size})"
+            textSize = 13f
+            gravity = android.view.Gravity.CENTER
+            setPadding(32, 12, 32, 12)
+            setOnClickListener { selectTab(0); populateGrid(allTables) }
+        })
+        tabContainer.addView(tabButtons.last())
+
+        for ((idx, section) in sections.withIndex()) {
+            val count = allTables.count { it.section_id == section.section_id }
+            tabButtons.add(android.widget.TextView(this).apply {
+                text = "${section.name} ($count)"
+                textSize = 13f
+                gravity = android.view.Gravity.CENTER
+                setPadding(32, 12, 32, 12)
+                setOnClickListener {
+                    selectTab(idx + 1)
+                    populateGrid(allTables.filter { it.section_id == section.section_id })
+                }
+            })
+            tabContainer.addView(tabButtons.last())
+        }
+
+        selectTab(0)
+        populateGrid(allTables)
+
+        if (sections.isNotEmpty()) root.addView(tabRow)
+        root.addView(gridScroll)
+
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setTitle("Tables")
+            .setView(root)
+            .setNegativeButton("Close", null)
+            .create()
+
+        dialog.show()
+        // Make the dialog wider
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.9).toInt(),
+            (resources.displayMetrics.heightPixels * 0.7).toInt()
+        )
     }
 
     private fun setupOrderType() {

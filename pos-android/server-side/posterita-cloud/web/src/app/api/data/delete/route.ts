@@ -9,7 +9,15 @@ function getDb() {
 }
 
 const ALLOWED_TABLES = new Set([
-  "productcategory", "customer",
+  "productcategory", "customer", "restaurant_table",
+  "product", "store", "terminal", "pos_user", "orders",
+  "table_section", "preparation_station", "category_station_mapping",
+  "modifier",
+]);
+
+// Tables that support soft delete — mark as deleted instead of removing
+const SOFT_DELETE_TABLES = new Set([
+  "product", "store", "terminal", "pos_user", "customer", "productcategory", "orders",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -29,7 +37,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "id with column and value is required" }, { status: 400 });
     }
 
-    // Scope delete to user's account to prevent cross-account deletions
+    // Soft delete for supported tables; hard delete for others
+    if (SOFT_DELETE_TABLES.has(table)) {
+      const { error } = await (getDb()
+        .from(table) as any)
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+        .eq(id.column, id.value)
+        .eq("account_id", accountId);
+      return NextResponse.json({ error: error?.message ?? null, soft_deleted: true });
+    }
+
+    // Hard delete for tables without soft-delete support
     const { error } = await (getDb()
       .from(table) as any)
       .delete()

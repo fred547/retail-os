@@ -21,11 +21,14 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
-import com.posterita.pos.android.data.local.entity.Account
+import com.posterita.pos.android.data.local.entity.*
 import com.posterita.pos.android.databinding.ActivityManageListBinding
 import com.posterita.pos.android.service.AiImportService
+import com.posterita.pos.android.util.LocalAccountRegistry
+import com.posterita.pos.android.worker.CloudSyncWorker
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import com.posterita.pos.android.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,8 +42,14 @@ class ManageBrandsActivity : AppCompatActivity() {
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var accountRegistry: LocalAccountRegistry
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var accounts = mutableListOf<Account>()
+
+    /** Cached stats per account_id: products, categories, stores, DB size */
+    data class BrandStats(val products: Int, val categories: Int, val stores: Int, val sizeKb: Long = 0)
+    private var brandStats = mutableMapOf<String, BrandStats>()
 
     private val countries = listOf(
         "Mauritius", "Reunion", "South Africa", "Kenya", "Tanzania",
@@ -54,6 +63,7 @@ class ManageBrandsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityManageListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.tvTitle.text = "Brands"
         binding.buttonBack.setOnClickListener { finish() }
@@ -79,10 +89,64 @@ class ManageBrandsActivity : AppCompatActivity() {
     private fun loadData() {
         binding.progressLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                db.accountDao().getAllAccounts().toMutableList()
+            // Load ALL brands from the registry (not just current DB)
+            val registryAccounts = accountRegistry.getAllAccounts()
+
+            // Build Account entities from registry + stats from each brand's DB
+            // IMPORTANT: open each DB independently (not via singleton) to avoid cross-contamination
+            val accountList = mutableListOf<Account>()
+            withContext(Dispatchers.IO) {
+                for (entry in registryAccounts) {
+                    try {
+                        val dbName = "${Constants.DATABASE_NAME}_${entry.id}"
+                        val dbFile = this@ManageBrandsActivity.getDatabasePath(dbName)
+
+                        if (!dbFile.exists()) {
+                            // No Room DB yet — just use registry info
+                            accountList.add(Account(account_id = entry.id, businessname = entry.name, isactive = "Y"))
+                            brandStats[entry.id] = BrandStats(0, 0, 0, 0)
+                            continue
+                        }
+
+                        // Open a dedicated DB instance (NOT the singleton)
+                        val brandDb = androidx.room.Room.databaseBuilder(
+                            this@ManageBrandsActivity.applicationContext,
+                            AppDatabase::class.java,
+                            dbName
+                        ).fallbackToDestructiveMigration().build()
+
+                        try {
+                            val acct = brandDb.accountDao().getAccountById(entry.id)
+                            // Use registry name as override — it comes from server via sibling discovery
+                            val displayName = entry.name.takeIf { it.isNotBlank() } ?: acct?.businessname ?: entry.id
+                            accountList.add(
+                                (acct ?: Account(account_id = entry.id, isactive = "Y"))
+                                    .copy(businessname = displayName)
+                            )
+
+                            val products = brandDb.productDao().getAllProductsSync().size
+                            val categories = brandDb.productCategoryDao().getAllProductCategoriesSync().size
+                            val stores = brandDb.storeDao().getAllStores().size
+
+                            val walFile = java.io.File("${dbFile.absolutePath}-wal")
+                            val shmFile = java.io.File("${dbFile.absolutePath}-shm")
+                            val totalBytes = dbFile.length() +
+                                (if (walFile.exists()) walFile.length() else 0L) +
+                                (if (shmFile.exists()) shmFile.length() else 0L)
+
+                            brandStats[entry.id] = BrandStats(products, categories, stores, totalBytes / 1024)
+                        } finally {
+                            brandDb.close()
+                        }
+                    } catch (e: Exception) {
+                        Log.w("ManageBrands", "Failed to load brand ${entry.id}", e)
+                        accountList.add(Account(account_id = entry.id, businessname = entry.name, isactive = "Y"))
+                        brandStats[entry.id] = BrandStats(0, 0, 0, 0)
+                    }
+                }
             }
-            accounts = result
+
+            accounts = accountList
             binding.progressLoading.visibility = View.GONE
             val isEmpty = accounts.isEmpty()
             binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
@@ -95,6 +159,131 @@ class ManageBrandsActivity : AppCompatActivity() {
     }
 
     private fun showNewBrandDialog() {
+        val items = arrayOf(
+            "Demo Brand — sample products & images",
+            "AI Import — discover products online"
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle("New Brand")
+            .setItems(items) { dialog, which ->
+                dialog.dismiss()
+                when (which) {
+                    0 -> showCreateDemoBrandDialog()
+                    1 -> showCreateAiBrandDialog()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCreateDemoBrandDialog() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(60, 40, 60, 20)
+        }
+        val nameInput = EditText(this).apply {
+            hint = "Brand name (e.g. My Demo Store)"
+            inputType = android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            textSize = 16f
+            setText("Demo Store")
+        }
+        layout.addView(nameInput)
+
+        AlertDialog.Builder(this)
+            .setTitle("Create Demo Brand")
+            .setMessage("Creates a brand with 15 sample products (food, drinks, snacks, desserts) with images. Great for testing the POS.")
+            .setView(layout)
+            .setPositiveButton("Create") { _, _ ->
+                val name = nameInput.text.toString().trim().ifEmpty { "Demo Store" }
+                createDemoBrand(name)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun createDemoBrand(name: String) {
+        Toast.makeText(this, "Creating demo brand on server...", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val url = java.net.URL("https://web.posterita.com/api/account/create-demo")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.connectTimeout = 15_000
+                    conn.readTimeout = 15_000
+                    conn.doOutput = true
+                    val email = prefsManager.email.let { if (it == "null" || it.isBlank()) sessionManager.user?.email ?: "" else it }
+                    val phone = prefsManager.getString("owner_phone", "").let { if (it == "null") "" else it }
+                    val payload = org.json.JSONObject().apply {
+                        put("name", name)
+                        put("owner_email", email)
+                        put("phone", phone)
+                        put("currency", prefsManager.getString("currency", "MUR"))
+                    }
+                    conn.outputStream.bufferedWriter().use { it.write(payload.toString()) }
+                    if (conn.responseCode == 200) {
+                        org.json.JSONObject(conn.inputStream.bufferedReader().readText())
+                    } else {
+                        val err = conn.errorStream?.bufferedReader()?.readText() ?: "Failed"
+                        Log.e("ManageBrands", "Create demo failed: $err")
+                        null
+                    }
+                } catch (e: Exception) {
+                    Log.e("ManageBrands", "Create demo error", e)
+                    null
+                }
+            }
+
+            if (result == null) {
+                Toast.makeText(this@ManageBrandsActivity, "Failed to create demo brand. Check your connection.", Toast.LENGTH_LONG).show()
+                return@launch
+            }
+
+            val demoId = result.optString("account_id", "")
+            val storeId = result.optInt("store_id", 1)
+            val terminalId = result.optInt("terminal_id", 1)
+            val userId = result.optInt("user_id", 1)
+            val productCount = result.optInt("product_count", 0)
+
+            // Register in local account registry
+            accountRegistry.addAccount(
+                id = demoId, name = name, storeName = name,
+                ownerEmail = prefsManager.email, ownerPhone = "",
+                type = "demo", status = "testing"
+            )
+
+            // Create local Room DB shell with account entity — sync will pull everything else
+            withContext(Dispatchers.IO) {
+                val activeAccountId = prefsManager.accountId
+                AppDatabase.resetInstance()
+                val demoDb = AppDatabase.getInstance(this@ManageBrandsActivity, demoId)
+
+                demoDb.accountDao().insertAccounts(listOf(
+                    Account(account_id = demoId, businessname = name, isactive = "Y", currency = "MUR")
+                ))
+
+                // Ensure sync timestamp is at epoch so first sync pulls everything
+                val syncKey = com.posterita.pos.android.service.CloudSyncService.syncDateKey(demoId)
+                prefsManager.setStringSync(syncKey, "1970-01-01T00:00:00.000Z")
+
+                // Restore active brand DB
+                AppDatabase.resetInstance()
+                AppDatabase.getInstance(this@ManageBrandsActivity, activeAccountId)
+            }
+
+            // Trigger sync to pull the demo data from server
+            CloudSyncWorker.syncNow(this@ManageBrandsActivity)
+
+            Toast.makeText(this@ManageBrandsActivity, "Demo brand created with $productCount products! Syncing...", Toast.LENGTH_LONG).show()
+
+            // Wait briefly for sync to pull, then reload
+            kotlinx.coroutines.delay(5000)
+            loadData()
+        }
+    }
+
+    private fun showCreateAiBrandDialog() {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(60, 40, 60, 20)
@@ -149,7 +338,7 @@ class ManageBrandsActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle("Create Brand with AI")
-            .setMessage("AI will generate products, categories, and tax rates based on your business type and country.")
+            .setMessage("AI will search the web for your business and discover products, categories, and pricing.")
             .setView(layout)
             .setPositiveButton("Create") { _, _ ->
                 val name = nameInput.text.toString().trim()
@@ -242,6 +431,66 @@ class ManageBrandsActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun deleteBrand(account: Account) {
+        val brandName = account.businessname ?: account.account_id
+        val isActive = account.account_id == prefsManager.accountId
+
+        if (isActive) {
+            Toast.makeText(this, "Cannot delete the active brand. Switch to another brand first.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Delete Brand")
+            .setMessage("Delete \"$brandName\" and all its data?\n\nThis will remove:\n• All products, orders, and tills\n• Store and terminal configuration\n• Cloud data (if synced)\n\nThis cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    Toast.makeText(this@ManageBrandsActivity, "Deleting brand...", Toast.LENGTH_SHORT).show()
+
+                    withContext(Dispatchers.IO) {
+                        // 1. Delete cloud data (best-effort)
+                        try {
+                            val url = java.net.URL("https://web.posterita.com/api/auth/reset")
+                            val conn = url.openConnection() as java.net.HttpURLConnection
+                            conn.requestMethod = "POST"
+                            conn.setRequestProperty("Content-Type", "application/json")
+                            conn.connectTimeout = 5000
+                            conn.readTimeout = 5000
+                            conn.doOutput = true
+                            val payload = org.json.JSONObject().apply {
+                                put("account_id", account.account_id)
+                            }
+                            conn.outputStream.bufferedWriter().use { it.write(payload.toString()) }
+                            conn.responseCode
+                            conn.disconnect()
+                        } catch (_: Exception) {}
+
+                        // 2. Delete local Room database
+                        try {
+                            val dbName = "${Constants.DATABASE_NAME}_${account.account_id}"
+                            this@ManageBrandsActivity.deleteDatabase(dbName)
+                            val dbPath = this@ManageBrandsActivity.getDatabasePath(dbName).absolutePath
+                            java.io.File("${dbPath}-wal").delete()
+                            java.io.File("${dbPath}-shm").delete()
+                        } catch (_: Exception) {}
+
+                        // 3. Remove from current DB's account table
+                        try {
+                            db.accountDao().deleteAccountById(account.account_id)
+                        } catch (_: Exception) {}
+
+                        // 4. Remove from account registry
+                        accountRegistry.removeAccount(account.account_id)
+                    }
+
+                    Toast.makeText(this@ManageBrandsActivity, "\"$brandName\" deleted", Toast.LENGTH_SHORT).show()
+                    loadData()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     inner class BrandAdapter : RecyclerView.Adapter<BrandAdapter.VH>() {
         inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val card: MaterialCardView = itemView.findViewById(R.id.cardBrand)
@@ -251,7 +500,13 @@ class ManageBrandsActivity : AppCompatActivity() {
             val tvCurrency: TextView = itemView.findViewById(R.id.tvBrandCurrency)
             val tvActiveBadge: TextView = itemView.findViewById(R.id.tvActiveBadge)
             val tvWebsite: TextView = itemView.findViewById(R.id.tvBrandWebsite)
+            val tvImportStatus: TextView = itemView.findViewById(R.id.tvImportStatus)
+            val layoutStats: LinearLayout = itemView.findViewById(R.id.layoutStats)
+            val tvProductCount: TextView = itemView.findViewById(R.id.tvProductCount)
+            val tvCategoryCount: TextView = itemView.findViewById(R.id.tvCategoryCount)
+            val tvStoreCount: TextView = itemView.findViewById(R.id.tvStoreCount)
             val btnSwitch: com.google.android.material.button.MaterialButton = itemView.findViewById(R.id.btnSwitchBrand)
+            val btnDelete: com.google.android.material.button.MaterialButton = itemView.findViewById(R.id.btnDeleteBrand)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -293,9 +548,86 @@ class ManageBrandsActivity : AppCompatActivity() {
             holder.tvWebsite.text = if (!account.website.isNullOrBlank()) account.website else ""
             holder.tvWebsite.visibility = if (!account.website.isNullOrBlank()) View.VISIBLE else View.GONE
 
+            // Show product/category/store stats + DB size
+            val stats = brandStats[account.account_id]
+            if (stats != null) {
+                holder.layoutStats.visibility = View.VISIBLE
+                holder.tvProductCount.text = "${stats.products} products"
+                holder.tvCategoryCount.text = "${stats.categories} categories"
+                val sizeStr = if (stats.sizeKb >= 1024) {
+                    "${"%.1f".format(stats.sizeKb / 1024.0)} MB"
+                } else {
+                    "${stats.sizeKb} KB"
+                }
+                holder.tvStoreCount.text = "${stats.stores} stores · $sizeStr"
+            } else {
+                holder.layoutStats.visibility = View.GONE
+            }
+
+            // Show AI import status from registry
+            val registryEntry = accountRegistry.getAccount(account.account_id)
+            val importRunning = prefsManager.getString(AiImportService.PREF_IMPORT_RUNNING) == "true" &&
+                prefsManager.getString(AiImportService.PREF_IMPORT_TARGET_ACCOUNT_ID) == account.account_id
+            val importStatus = if (importRunning) {
+                prefsManager.getString(AiImportService.PREF_IMPORT_STATUS)
+            } else null
+            val importStats = prefsManager.getString(AiImportService.PREF_IMPORT_STATS)
+                .takeIf { prefsManager.getString(AiImportService.PREF_IMPORT_ACCOUNT_ID) == account.account_id }
+
+            if (importRunning && !importStatus.isNullOrBlank()) {
+                holder.tvImportStatus.visibility = View.VISIBLE
+                holder.tvImportStatus.text = "⏳ $importStatus"
+                holder.tvImportStatus.setTextColor(getColor(R.color.posterita_primary))
+            } else if (!importStats.isNullOrBlank()) {
+                holder.tvImportStatus.visibility = View.VISIBLE
+                holder.tvImportStatus.text = "✓ AI Import: $importStats"
+                holder.tvImportStatus.setTextColor(getColor(R.color.posterita_secondary))
+            } else if (registryEntry?.status == "failed") {
+                holder.tvImportStatus.visibility = View.VISIBLE
+                holder.tvImportStatus.text = "✗ AI Import failed — tap to retry"
+                holder.tvImportStatus.setTextColor(getColor(R.color.posterita_error))
+            } else if (stats != null && stats.products == 0 && registryEntry?.status == "in_progress") {
+                holder.tvImportStatus.visibility = View.VISIBLE
+                holder.tvImportStatus.text = "⏳ AI Import in progress..."
+                holder.tvImportStatus.setTextColor(getColor(R.color.posterita_primary))
+            } else {
+                holder.tvImportStatus.visibility = View.GONE
+            }
+
+            // Tap card to switch brand
+            holder.card.setOnClickListener {
+                if (!isActive) {
+                    switchToBrand(account)
+                }
+            }
+
+            // Retry failed import on status tap
+            holder.tvImportStatus.setOnClickListener {
+                if (registryEntry?.status == "failed" && !importRunning) {
+                    AiImportService.resume(this@ManageBrandsActivity, prefsManager)
+                    Toast.makeText(this@ManageBrandsActivity, "Retrying AI import...", Toast.LENGTH_SHORT).show()
+                }
+            }
+
             holder.btnSwitch.visibility = if (!isActive && accounts.size > 1) View.VISIBLE else View.GONE
             holder.btnSwitch.setOnClickListener {
                 switchToBrand(account)
+            }
+
+            // Delete button — only for non-active demo/test/trial brands
+            val registryEntryForDelete = accountRegistry.getAccount(account.account_id)
+            val isDeletable = !isActive && (
+                registryEntryForDelete?.type == "demo" ||
+                registryEntryForDelete?.type == "trial" ||
+                registryEntryForDelete?.status == "testing" ||
+                registryEntryForDelete?.status == "failed" ||
+                account.account_id.startsWith("demo_") ||
+                account.account_id.startsWith("standalone_") ||
+                account.account_id.startsWith("ai_")
+            )
+            holder.btnDelete.visibility = if (isDeletable) View.VISIBLE else View.GONE
+            holder.btnDelete.setOnClickListener {
+                deleteBrand(account)
             }
         }
 

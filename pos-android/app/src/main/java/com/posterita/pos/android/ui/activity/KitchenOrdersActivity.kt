@@ -140,6 +140,15 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
             json.put("status", nextStatus)
             val updatedOrder = holdOrder.copy(json = json)
             db.holdOrderDao().insertHoldOrder(updatedOrder)
+
+            // Notify KDS displays
+            com.posterita.pos.android.kds.KdsEventBus.emit(
+                com.posterita.pos.android.kds.KdsEventBus.KdsEvent.OrderBumped(
+                    holdOrderId = holdOrder.holdOrderId,
+                    newStatus = nextStatus
+                )
+            )
+
             withContext(Dispatchers.Main) {
                 val label = when (nextStatus) {
                     KitchenOrderAdapter.STATUS_IN_PROGRESS -> "Preparing"
@@ -223,6 +232,11 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
 
             // Delete the hold order
             db.holdOrderDao().deleteHoldOrderById(holdOrder.holdOrderId)
+
+            // Notify KDS displays
+            com.posterita.pos.android.kds.KdsEventBus.emit(
+                com.posterita.pos.android.kds.KdsEventBus.KdsEvent.OrderRecalled(holdOrder.holdOrderId)
+            )
 
             withContext(Dispatchers.Main) {
                 adapter.removeAt(position)
@@ -381,6 +395,11 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
 
                     db.holdOrderDao().deleteHoldOrderById(holdOrder.holdOrderId)
 
+                    // Notify KDS displays
+                    com.posterita.pos.android.kds.KdsEventBus.emit(
+                        com.posterita.pos.android.kds.KdsEventBus.KdsEvent.OrderDeleted(holdOrder.holdOrderId)
+                    )
+
                     withContext(Dispatchers.Main) {
                         adapter.removeAt(position)
                         if (adapter.itemCount == 0) {
@@ -424,6 +443,197 @@ class KitchenOrdersActivity : BaseDrawerActivity(), KitchenOrderAdapter.OnKitche
                 val intent = Intent(this@KitchenOrdersActivity, CartActivity::class.java)
                 intent.putExtra("FROM_KITCHEN", true)
                 startActivity(intent)
+            }
+        }
+    }
+
+    // ==================== TRANSFER TABLE ====================
+    override fun onTransferTable(holdOrder: HoldOrder, position: Int) {
+        val json = holdOrder.json ?: return
+        val currentTableId = json.optInt("tableId", 0)
+        val currentTableName = json.optString("tableName", "")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val storeId = prefsManager.storeId
+            val tables = db.restaurantTableDao().getTablesByStore(storeId)
+            val sections = db.tableSectionDao().getSectionsByStore(storeId)
+            // Exclude current table
+            val available = tables.filter { it.table_id != currentTableId }
+
+            withContext(Dispatchers.Main) {
+                if (available.isEmpty()) {
+                    Toast.makeText(this@KitchenOrdersActivity, "No other tables available", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+
+                // Build table names grouped by section
+                val names = available.map { t ->
+                    val section = sections.find { it.section_id == t.section_id }
+                    val prefix = section?.let { "[${it.name}] " } ?: ""
+                    val suffix = if (t.is_occupied) " (occupied)" else ""
+                    "$prefix${t.table_name}$suffix"
+                }.toTypedArray()
+
+                AlertDialog.Builder(this@KitchenOrdersActivity)
+                    .setTitle("Transfer from $currentTableName to:")
+                    .setItems(names) { _, which ->
+                        val targetTable = available[which]
+                        if (targetTable.is_occupied) {
+                            Toast.makeText(this@KitchenOrdersActivity, "${targetTable.table_name} is occupied", Toast.LENGTH_SHORT).show()
+                            return@setItems
+                        }
+                        performTransfer(holdOrder, currentTableId, targetTable)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun performTransfer(
+        holdOrder: HoldOrder,
+        oldTableId: Int,
+        newTable: com.posterita.pos.android.data.local.entity.RestaurantTable
+    ) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val json = holdOrder.json ?: return@launch
+            val oldTableName = json.optString("tableName", "")
+
+            // Update hold order JSON
+            json.put("tableId", newTable.table_id)
+            json.put("tableName", newTable.table_name)
+
+            // Update section name
+            val sectionName = newTable.section_id?.let { db.tableSectionDao().getSectionById(it)?.name }
+            if (sectionName != null) json.put("sectionName", sectionName) else json.remove("sectionName")
+
+            val updated = holdOrder.copy(json = json)
+            db.holdOrderDao().insertHoldOrder(updated)
+
+            // Free old table, occupy new table
+            if (oldTableId > 0) {
+                db.restaurantTableDao().updateTableStatus(oldTableId, false, null)
+            }
+            db.restaurantTableDao().updateTableStatus(
+                newTable.table_id, true, holdOrder.holdOrderId.toString()
+            )
+
+            // Notify KDS
+            com.posterita.pos.android.kds.KdsEventBus.emit(
+                com.posterita.pos.android.kds.KdsEventBus.KdsEvent.TableTransferred(
+                    holdOrderId = holdOrder.holdOrderId,
+                    fromTable = oldTableName,
+                    toTable = newTable.table_name
+                )
+            )
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    this@KitchenOrdersActivity,
+                    "Transferred: $oldTableName → ${newTable.table_name}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                loadKitchenOrders()
+            }
+        }
+    }
+
+    // ==================== MERGE ORDER ====================
+    override fun onMergeOrder(holdOrder: HoldOrder, position: Int) {
+        val json = holdOrder.json ?: return
+        val tableName = json.optString("tableName", "Order #${holdOrder.holdOrderId}")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val terminalId = prefsManager.terminalId
+            val allHolds = db.holdOrderDao().getHoldOrdersByTerminal(terminalId)
+            val otherOrders = allHolds.filter { hold ->
+                hold.holdOrderId != holdOrder.holdOrderId &&
+                (hold.json?.optBoolean("isKitchenOrder", false) == true)
+            }
+
+            withContext(Dispatchers.Main) {
+                if (otherOrders.isEmpty()) {
+                    Toast.makeText(this@KitchenOrdersActivity, "No other orders to merge with", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+
+                val names = otherOrders.map { o ->
+                    val oJson = o.json
+                    val oTable = oJson?.optString("tableName", "") ?: ""
+                    if (oTable.isNotBlank()) oTable else "Order #${o.holdOrderId}"
+                }.toTypedArray()
+
+                AlertDialog.Builder(this@KitchenOrdersActivity)
+                    .setTitle("Merge $tableName into:")
+                    .setItems(names) { _, which ->
+                        val targetOrder = otherOrders[which]
+                        val targetName = names[which]
+                        AlertDialog.Builder(this@KitchenOrdersActivity)
+                            .setTitle("Confirm Merge")
+                            .setMessage("Move all items from $tableName into $targetName?")
+                            .setPositiveButton("Merge") { _, _ ->
+                                performMerge(holdOrder, targetOrder)
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun performMerge(sourceOrder: HoldOrder, targetOrder: HoldOrder) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val sourceJson = sourceOrder.json ?: return@launch
+            val targetJson = targetOrder.json ?: return@launch
+
+            val sourceItems = sourceJson.optJSONArray("items") ?: org.json.JSONArray()
+            val targetItems = targetJson.optJSONArray("items") ?: org.json.JSONArray()
+
+            // Tag merged items with origin
+            val sourceTableName = sourceJson.optString("tableName", "")
+            for (i in 0 until sourceItems.length()) {
+                val item = sourceItems.optJSONObject(i) ?: continue
+                item.put("merged_from", sourceTableName)
+                targetItems.put(item)
+            }
+            targetJson.put("items", targetItems)
+
+            // Recalculate grand total
+            var newGrand = 0.0
+            for (i in 0 until targetItems.length()) {
+                val item = targetItems.optJSONObject(i) ?: continue
+                newGrand += item.optDouble("lineNetAmt", 0.0)
+            }
+            targetJson.put("grandtotal", newGrand)
+
+            // Save target, delete source
+            val updatedTarget = targetOrder.copy(json = targetJson)
+            db.holdOrderDao().insertHoldOrder(updatedTarget)
+
+            // Free source table
+            val sourceTableId = sourceJson.optInt("tableId", 0)
+            if (sourceTableId > 0) {
+                db.restaurantTableDao().updateTableStatus(sourceTableId, false, null)
+            }
+            db.holdOrderDao().deleteHoldOrderById(sourceOrder.holdOrderId)
+
+            // Notify KDS
+            com.posterita.pos.android.kds.KdsEventBus.emit(
+                com.posterita.pos.android.kds.KdsEventBus.KdsEvent.OrderMerged(
+                    sourceOrderId = sourceOrder.holdOrderId,
+                    targetOrderId = targetOrder.holdOrderId
+                )
+            )
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    this@KitchenOrdersActivity,
+                    "Orders merged",
+                    Toast.LENGTH_SHORT
+                ).show()
+                loadKitchenOrders()
             }
         }
     }

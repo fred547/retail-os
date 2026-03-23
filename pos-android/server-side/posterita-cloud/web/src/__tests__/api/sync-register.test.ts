@@ -59,8 +59,8 @@ vi.mock('@supabase/supabase-js', () => ({
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {})); return { json: () => Promise.resolve(body), headers: { get: (key: string) => hdrs.get(key) ?? null } };
 }
 
 beforeEach(() => {

@@ -23,6 +23,12 @@ import {
   Menu,
   Inbox,
   UtensilsCrossed,
+  AlertTriangle,
+  FileText,
+  ClipboardList,
+  Building2,
+  ChevronRight,
+  ChefHat,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -31,15 +37,19 @@ const navigation = [
   { name: "Products", href: "/products", icon: Package },
   { name: "Categories", href: "/categories", icon: FolderTree },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
+  { name: "Inventory", href: "/inventory", icon: ClipboardList },
   { name: "Customers", href: "/customers", icon: Users },
   { name: "Stores", href: "/stores", icon: Store },
   { name: "Users", href: "/users", icon: UserCog },
   { name: "Terminals", href: "/terminals", icon: Monitor },
   { name: "Tables", href: "/tables", icon: UtensilsCrossed },
+  { name: "Stations", href: "/stations", icon: ChefHat },
   { name: "Reports", href: "/reports", icon: BarChart3 },
+  { name: "Errors", href: "/errors", icon: AlertTriangle },
   { name: "Price Review", href: "/price-review", icon: DollarSign },
   { name: "AI Import", href: "/ai-import", icon: Sparkles },
   { name: "Product Intake", href: "/intake", icon: Inbox },
+  { name: "Catalogue", href: "/catalogue", icon: FileText },
   { name: "Brands", href: "/brands", icon: Store },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -55,10 +65,43 @@ export default function Sidebar({
   const [superAdmin, setSuperAdmin] = useState<any>(null);
   const [impersonating, setImpersonating] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [brandContext, setBrandContext] = useState<{ brand: string; store: string; terminal: string } | null>(null);
 
   useEffect(() => {
-    checkSuperAdmin();
+    checkSuperAdmin().finally(() => setAuthChecked(true));
+    fetchBrandContext();
   }, []);
+
+  const fetchBrandContext = async () => {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "account", select: "account_id, businessname", limit: 1 }),
+      });
+      const { data } = await res.json();
+      const brand = data?.[0]?.businessname || "";
+
+      const storeRes = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "store", select: "name", filters: [{ column: "isactive", op: "eq", value: "Y" }], limit: 1 }),
+      });
+      const storeData = await storeRes.json();
+      const store = storeData?.data?.[0]?.name || "";
+
+      const termRes = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "terminal", select: "name", filters: [{ column: "isactive", op: "eq", value: "Y" }], limit: 1 }),
+      });
+      const termData = await termRes.json();
+      const terminal = termData?.data?.[0]?.name || "";
+
+      if (brand) setBrandContext({ brand, store, terminal });
+    } catch (_) {}
+  };
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -143,6 +186,20 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* Brand > Store > Terminal context */}
+      {brandContext && !superAdmin && (
+        <div className="mx-3 mt-3 px-3 py-2.5 bg-white/5 rounded-lg">
+          <div className="text-xs text-white font-semibold truncate">{brandContext.brand}</div>
+          {(brandContext.store || brandContext.terminal) && (
+            <div className="flex items-center gap-1 mt-0.5 text-[11px] text-gray-400">
+              {brandContext.store && <span className="truncate">{brandContext.store}</span>}
+              {brandContext.store && brandContext.terminal && <span className="text-gray-600">›</span>}
+              {brandContext.terminal && <span className="truncate text-gray-500">{brandContext.terminal}</span>}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Super Admin Impersonation Banner */}
       {impersonating && (
         <div className="mx-2 mt-3 bg-amber-500/20 border border-amber-500/30 rounded-lg px-3 py-2">
@@ -188,7 +245,7 @@ export default function Sidebar({
           </>
         )}
 
-        {(portal !== "manager" && (!superAdmin || impersonating)) && portalNavigation.map((item) => {
+        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalNavigation.map((item) => {
           const isActive =
             item.href === "/customer"
               ? pathname === "/customer"
@@ -209,7 +266,7 @@ export default function Sidebar({
           );
         })}
 
-        {superAdmin && !impersonating && portal !== "manager" && (
+        {authChecked && superAdmin && !impersonating && portal !== "manager" && (
           <div className="px-4 py-6 text-center">
             <p className="text-sm text-gray-500">
               Select an account from the account manager portal to view its data.

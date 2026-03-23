@@ -49,11 +49,12 @@ export function createChain(table: string) {
   }
 
   const chain: any = {};
-  const passthrough = ['select', 'eq', 'gte', 'order', 'limit'] as const;
+  const passthrough = ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const;
   for (const m of passthrough) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
       if (m === 'eq') state.filters[args[0]] = args[1];
+      if (m === 'in') state.filters[args[0]] = args[1];
       return chain;
     };
   }
@@ -65,7 +66,14 @@ export function createChain(table: string) {
       return chain;
     };
   }
-  chain.single = () => Promise.resolve(resolve());
+  chain.single = () => {
+    const r = resolve(); const d = Array.isArray(r.data) ? (r.data[0] ?? null) : r.data;
+    return Promise.resolve({ ...r, data: d });
+  };
+  chain.maybeSingle = () => {
+    const r = resolve(); const d = Array.isArray(r.data) ? (r.data[0] ?? null) : r.data;
+    return Promise.resolve({ ...r, data: d });
+  };
   // Make the chain thenable so `const { data } = await supabase.from(...).select(...)...` works
   chain.then = (onFulfilled: Function, onRejected?: Function) =>
     Promise.resolve(resolve()).then(onFulfilled as any, onRejected as any);
@@ -82,8 +90,12 @@ export function resetMockState() {
 /**
  * Build a minimal Request-like object whose `.json()` resolves to `body`.
  */
-export function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+export function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {}));
+  return {
+    json: () => Promise.resolve(body),
+    headers: { get: (key: string) => hdrs.get(key) ?? null },
+  };
 }
 
 /** Seed the pull tables with empty arrays so the route doesn't crash. */

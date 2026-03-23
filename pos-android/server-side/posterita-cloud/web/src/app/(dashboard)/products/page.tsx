@@ -28,10 +28,10 @@ export default async function ProductsPage({
   // Determine which status tab is active (default: live)
   const statusTab = params.status ?? "live";
 
-  // Build query — scoped to account
+  // Build query — scoped to account (no FK join — FKs dropped for multi-tenant safety)
   let query = supabase
     .from("product")
-    .select("*, productcategory(name)", { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("account_id", accountId)
     .eq("isactive", "Y")
     .order("name")
@@ -61,7 +61,9 @@ export default async function ProductsPage({
     query = query.eq("productcategory_id", params.category);
   }
 
-  const { data: products, count } = await query;
+  const { data: products, count, error: queryError } = await query;
+  // DEBUG: temporarily visible
+  if (queryError) console.error("[products] query error:", queryError.message);
 
   // Get counts for each status tab
   const [
@@ -90,6 +92,14 @@ export default async function ProductsPage({
     .eq("isactive", "Y")
     .order("name");
 
+  // Map category names onto products (since FK join was dropped)
+  const catMap: Record<number, string> = {};
+  for (const c of categories ?? []) catMap[c.productcategory_id] = c.name;
+  const enrichedProducts = (products ?? []).map((p: any) => ({
+    ...p,
+    productcategory: p.productcategory ?? { name: catMap[p.productcategory_id] || null },
+  }));
+
   const totalPages = Math.ceil((count ?? 0) / perPage);
 
   // Build URL helper preserving search/category params
@@ -102,36 +112,31 @@ export default async function ProductsPage({
   };
 
   // Collect product IDs for bulk approve (review tab only)
-  const reviewProductIds = statusTab === "review" ? (products ?? []).map((p: any) => p.product_id) : [];
+  const reviewProductIds = statusTab === "review" ? enrichedProducts.map((p: any) => p.product_id) : [];
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Products" }]} />
+    <div className="space-y-4">
       {params.filter === "price_review" && (
         <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-xl px-5 py-3">
           <p className="text-sm text-orange-700">
             Showing <strong>products needing price review</strong> &mdash; approve or adjust prices set by staff.
           </p>
           <Link href="/customer/products" className="text-sm text-orange-600 hover:text-orange-800 font-medium underline">
-            Show all products
+            Show all
           </Link>
         </div>
       )}
 
+      {/* Compact header: count + action */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-500 mt-1">
-            {count ?? 0} product{(count ?? 0) !== 1 ? "s" : ""}
-            {statusTab === "review" ? " pending review" : statusTab === "draft" ? " in draft" : ""}
-            {params.filter === "price_review" ? " needing price review" : ""}
-          </p>
-        </div>
+        <p className="text-sm text-gray-500">
+          {count ?? 0} product{(count ?? 0) !== 1 ? "s" : ""}
+        </p>
         <Link
           href="/customer/ai-import"
-          className="flex items-center gap-2 bg-posterita-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-posterita-blue text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition text-sm"
         >
-          <Plus size={18} />
+          <Plus size={16} />
           AI Import
         </Link>
       </div>
@@ -208,7 +213,7 @@ export default async function ProductsPage({
       </div>
 
       {/* Product Table */}
-      <ProductTable products={products ?? []} categories={categories ?? []} showStatusColumn={statusTab === "review" || statusTab === "draft"} />
+      <ProductTable products={enrichedProducts} categories={categories ?? []} showStatusColumn={statusTab === "review" || statusTab === "draft"} />
 
       {/* Pagination */}
       {totalPages > 1 && (

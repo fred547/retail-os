@@ -53,6 +53,7 @@ import com.posterita.pos.android.ui.adapter.CartProductAdapter
 import com.posterita.pos.android.ui.viewmodel.CustomerViewModel
 import com.posterita.pos.android.ui.viewmodel.ShoppingCartViewModel
 import com.posterita.pos.android.util.NumberUtils
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -142,6 +143,17 @@ class CartActivity : BaseDrawerActivity() {
 
         // Tap on total to show discount dialog
         binding.textViewGrandTotal?.setOnClickListener { showDiscountOnTotalDialog() }
+
+        // Handle reopen table order from ProductActivity tables button
+        val reopenTableId = intent.getIntExtra("REOPEN_TABLE_ID", 0)
+        if (reopenTableId > 0) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val table = db.restaurantTableDao().getTableById(reopenTableId)
+                if (table != null) {
+                    withContext(Dispatchers.Main) { reopenTableOrder(table) }
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -556,7 +568,70 @@ class CartActivity : BaseDrawerActivity() {
             showPaymentDialog()
         }
 
+        dialogView.findViewById<View>(R.id.btn_delivery).setOnClickListener {
+            shoppingCartViewModel.shoppingCart.orderType = "delivery"
+            dialog.dismiss()
+            showDeliveryDetailsDialog()
+        }
+
         dialog.show()
+    }
+
+    private fun showDeliveryDetailsDialog() {
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 24)
+        }
+
+        val nameInput = EditText(this).apply {
+            hint = "Customer name"
+            inputType = android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        }
+        container.addView(nameInput)
+
+        val phoneInput = EditText(this).apply {
+            hint = "Phone number"
+            inputType = android.text.InputType.TYPE_CLASS_PHONE
+        }
+        container.addView(phoneInput)
+
+        val addressInput = EditText(this).apply {
+            hint = "Delivery address"
+            inputType = android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            minLines = 2
+        }
+        container.addView(addressInput)
+
+        val notesInput = EditText(this).apply {
+            hint = "Driver notes (optional)"
+            inputType = android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        }
+        container.addView(notesInput)
+
+        AlertDialog.Builder(this)
+            .setTitle("Delivery Details")
+            .setView(container)
+            .setPositiveButton("Continue") { _, _ ->
+                val deliveryNote = buildString {
+                    append("DELIVERY")
+                    val name = nameInput.text.toString().trim()
+                    if (name.isNotBlank()) append(" | $name")
+                    val phone = phoneInput.text.toString().trim()
+                    if (phone.isNotBlank()) append(" | $phone")
+                    val address = addressInput.text.toString().trim()
+                    if (address.isNotBlank()) append(" | $address")
+                    val notes = notesInput.text.toString().trim()
+                    if (notes.isNotBlank()) append(" | $notes")
+                }
+                val currentNote = shoppingCartViewModel.shoppingCart.note ?: ""
+                shoppingCartViewModel.setNote(
+                    if (currentNote.isNotBlank()) "$currentNote | $deliveryNote" else deliveryNote
+                )
+
+                showPaymentDialog()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showTableSelectionDialog() {
@@ -564,12 +639,13 @@ class CartActivity : BaseDrawerActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val tables = db.restaurantTableDao().getTablesByStore(storeId)
+            val sections = db.tableSectionDao().getSectionsByStore(storeId)
             withContext(Dispatchers.Main) {
                 if (tables.isEmpty()) {
                     // No tables set up — ask to create some or go straight to payment
                     showCreateTablesDialog(storeId)
                 } else {
-                    showTablePickerDialog(tables)
+                    showTablePickerDialog(tables, sections)
                 }
             }
         }
@@ -613,7 +689,10 @@ class CartActivity : BaseDrawerActivity() {
             .show()
     }
 
-    private fun showTablePickerDialog(tables: List<com.posterita.pos.android.data.local.entity.RestaurantTable>) {
+    private fun showTablePickerDialog(
+        tables: List<com.posterita.pos.android.data.local.entity.RestaurantTable>,
+        sections: List<com.posterita.pos.android.data.local.entity.TableSection> = emptyList()
+    ) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_table_selection, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -626,50 +705,127 @@ class CartActivity : BaseDrawerActivity() {
 
         var selectedTable: com.posterita.pos.android.data.local.entity.RestaurantTable? = null
         val tableViews = mutableListOf<TextView>()
+        var displayedTables = tables
 
-        gridLayout.columnCount = 3
-
-        tables.forEach { table ->
-            val tv = TextView(this).apply {
-                text = table.table_name
-                textSize = 14f
-                gravity = android.view.Gravity.CENTER
-                setPadding(12, 20, 12, 20)
-                setTextColor(if (table.is_occupied) resources.getColor(R.color.white, null) else resources.getColor(R.color.black, null))
-                setBackgroundResource(if (table.is_occupied) R.drawable.btn_rounded_red else R.drawable.stroke_btn)
-
-                val params = android.widget.GridLayout.LayoutParams().apply {
-                    width = 0
-                    height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-                    columnSpec = android.widget.GridLayout.spec(android.widget.GridLayout.UNDEFINED, 1f)
-                    setMargins(4, 4, 4, 4)
-                }
-                layoutParams = params
-
-                setOnClickListener {
-                    selectedTable = table
-                    // Highlight selected — reset all to default first
-                    tableViews.forEachIndexed { idx, v ->
-                        if (idx < tables.size) {
-                            val t = tables[idx]
-                            v.setBackgroundResource(if (t.is_occupied) R.drawable.btn_rounded_red else R.drawable.stroke_btn)
-                            v.setTextColor(if (t.is_occupied) resources.getColor(R.color.white, null) else resources.getColor(R.color.black, null))
-                        }
-                    }
-                    setBackgroundResource(R.drawable.btn_rounded)
-                    setTextColor(resources.getColor(R.color.white, null))
-
-                    // If table is occupied, load its existing order
-                    if (table.is_occupied && table.current_order_id != null) {
-                        Toast.makeText(this@CartActivity, "${table.table_name} has an open order", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            tableViews.add(tv)
-            gridLayout.addView(tv)
+        // Section tab container — insert above the grid
+        val parentLayout = gridLayout.parent as? android.view.ViewGroup
+        val tabContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(8, 8, 8, 8)
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
 
-        // Send to Kitchen = hold order on the selected table (or merge if occupied)
+        fun populateGrid(tablesToShow: List<com.posterita.pos.android.data.local.entity.RestaurantTable>) {
+            gridLayout.removeAllViews()
+            tableViews.clear()
+            displayedTables = tablesToShow
+            selectedTable = null
+            gridLayout.columnCount = 3
+
+            tablesToShow.forEach { table ->
+                val tv = TextView(this).apply {
+                    text = table.table_name
+                    textSize = 14f
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(12, 20, 12, 20)
+                    setTextColor(if (table.is_occupied) resources.getColor(R.color.white, null) else resources.getColor(R.color.black, null))
+                    setBackgroundResource(if (table.is_occupied) R.drawable.btn_rounded_red else R.drawable.stroke_btn)
+
+                    val params = android.widget.GridLayout.LayoutParams().apply {
+                        width = 0
+                        height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                        columnSpec = android.widget.GridLayout.spec(android.widget.GridLayout.UNDEFINED, 1f)
+                        setMargins(4, 4, 4, 4)
+                    }
+                    layoutParams = params
+
+                    setOnClickListener {
+                        selectedTable = table
+                        tableViews.forEachIndexed { idx, v ->
+                            if (idx < displayedTables.size) {
+                                val t = displayedTables[idx]
+                                v.setBackgroundResource(if (t.is_occupied) R.drawable.btn_rounded_red else R.drawable.stroke_btn)
+                                v.setTextColor(if (t.is_occupied) resources.getColor(R.color.white, null) else resources.getColor(R.color.black, null))
+                            }
+                        }
+                        setBackgroundResource(R.drawable.btn_rounded)
+                        setTextColor(resources.getColor(R.color.white, null))
+
+                        if (table.is_occupied && table.current_order_id != null && shoppingCartViewModel.shoppingCart.isEmpty()) {
+                            // Cart is empty + table has order — offer to reopen directly
+                            dialog.dismiss()
+                            AlertDialog.Builder(this@CartActivity)
+                                .setTitle(table.table_name)
+                                .setMessage("This table has an open order.")
+                                .setPositiveButton("Open Order") { _, _ ->
+                                    reopenTableOrder(table)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    }
+                }
+                tableViews.add(tv)
+                gridLayout.addView(tv)
+            }
+        }
+
+        // Build section tabs if sections exist
+        if (sections.isNotEmpty()) {
+            val tabButtons = mutableListOf<TextView>()
+
+            fun selectTab(index: Int) {
+                tabButtons.forEachIndexed { i, btn ->
+                    val selected = i == index
+                    btn.setBackgroundColor(if (selected) 0xFF2563EB.toInt() else 0xFFE5E7EB.toInt())
+                    btn.setTextColor(if (selected) 0xFFFFFFFF.toInt() else 0xFF374151.toInt())
+                }
+            }
+
+            // "All" tab
+            val allTab = TextView(this).apply {
+                text = "All"
+                textSize = 13f
+                gravity = android.view.Gravity.CENTER
+                setPadding(24, 12, 24, 12)
+                setOnClickListener {
+                    selectTab(0)
+                    populateGrid(tables)
+                }
+            }
+            tabButtons.add(allTab)
+            tabContainer.addView(allTab)
+
+            sections.forEachIndexed { idx, section ->
+                val tab = TextView(this).apply {
+                    text = section.name
+                    textSize = 13f
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(24, 12, 24, 12)
+                    setOnClickListener {
+                        selectTab(idx + 1)
+                        populateGrid(tables.filter { it.section_id == section.section_id })
+                    }
+                }
+                tabButtons.add(tab)
+                tabContainer.addView(tab)
+            }
+
+            selectTab(0)
+
+            // Insert tabs before the grid
+            val gridIndex = parentLayout?.indexOfChild(gridLayout) ?: -1
+            if (gridIndex >= 0 && parentLayout != null) {
+                parentLayout.addView(tabContainer, gridIndex)
+            }
+        }
+
+        populateGrid(tables)
+
+        // Send to Kitchen
         btnSendToKitchen.setOnClickListener {
             val table = selectedTable
             if (table == null) {
@@ -677,26 +833,36 @@ class CartActivity : BaseDrawerActivity() {
                 return@setOnClickListener
             }
             if (table.is_occupied && table.current_order_id != null) {
-                // Table has existing order — ask to merge
                 dialog.dismiss()
-                AlertDialog.Builder(this)
-                    .setTitle("Add to ${table.table_name}?")
-                    .setMessage("This table already has an open order. Add current items to the existing order?")
-                    .setPositiveButton("Add Items") { _, _ ->
+                val cartEmpty = shoppingCartViewModel.shoppingCart.isEmpty()
+                val builder = AlertDialog.Builder(this)
+                    .setTitle(table.table_name)
+                    .setNegativeButton("Cancel", null)
+
+                if (cartEmpty) {
+                    // Cart is empty — primary action is to reopen the existing order
+                    builder.setMessage("This table has an open order.")
+                    builder.setPositiveButton("Open Order") { _, _ ->
+                        reopenTableOrder(table)
+                    }
+                } else {
+                    // Cart has items — offer add, replace, or view existing
+                    builder.setMessage("This table has an open order. What would you like to do?")
+                    builder.setPositiveButton("Add Items") { _, _ ->
                         addItemsToExistingOrder(table)
                     }
-                    .setNeutralButton("Replace") { _, _ ->
+                    builder.setNeutralButton("Replace") { _, _ ->
                         holdOrderOnTable(table)
                     }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                }
+                builder.show()
             } else {
                 dialog.dismiss()
                 holdOrderOnTable(table)
             }
         }
 
-        // Pay Now = proceed to payment
+        // Pay Now
         btnPayNow.setOnClickListener {
             val table = selectedTable
             if (table == null) {
@@ -704,7 +870,6 @@ class CartActivity : BaseDrawerActivity() {
                 return@setOnClickListener
             }
             dialog.dismiss()
-            // Set note with table info
             val currentNote = shoppingCartViewModel.shoppingCart.note ?: ""
             val tableNote = "Table: ${table.table_name}"
             if (!currentNote.contains(tableNote)) {
@@ -714,6 +879,57 @@ class CartActivity : BaseDrawerActivity() {
         }
 
         dialog.show()
+    }
+
+    /**
+     * Reopen an existing table order into the cart for viewing/editing.
+     * Loads the hold order JSON back into the shopping cart without deleting the hold order.
+     */
+    private fun reopenTableOrder(table: com.posterita.pos.android.data.local.entity.RestaurantTable) {
+        val orderId = table.current_order_id?.toIntOrNull()
+        if (orderId == null) {
+            Toast.makeText(this, "No order found on ${table.table_name}", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val existingOrders = db.holdOrderDao().getHoldOrdersByTerminal(prefsManager.terminalId)
+                val holdOrder = existingOrders.find { it.holdOrderId == orderId }
+
+                if (holdOrder == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CartActivity, "Order not found — may have been completed", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+
+                val json = holdOrder.json
+                if (json != null) {
+                    shoppingCartViewModel.shoppingCart.restoreFromJson(
+                        json,
+                        db.productDao(),
+                        sessionManager.taxCache
+                    )
+                }
+
+                // Delete the hold order so it doesn't appear as a duplicate
+                db.holdOrderDao().deleteHoldOrderById(holdOrder.holdOrderId)
+                // Free the table (will be re-occupied when sent back to kitchen)
+                db.restaurantTableDao().updateTableStatus(table.table_id, false, null)
+
+                withContext(Dispatchers.Main) {
+                    // Refresh cart display
+                    shoppingCartViewModel.refreshFromCart()
+                    Toast.makeText(this@CartActivity, "Order loaded from ${table.table_name}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                AppErrorLogger.warn(this@CartActivity, "CartActivity", "Failed to reopen table order", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@CartActivity, "Failed to load order: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     private fun holdOrderOnTable(table: com.posterita.pos.android.data.local.entity.RestaurantTable) {
@@ -726,24 +942,50 @@ class CartActivity : BaseDrawerActivity() {
         val terminalId = prefsManager.terminalId
         val storeId = prefsManager.storeId
         val tillId = sessionManager.till?.tillId ?: 0
-
-        val holdJson = cart.toJson().apply {
-            put("tableId", table.table_id)
-            put("tableName", table.table_name)
-            put("isKitchenOrder", true)
-        }
-
-        val holdOrder = HoldOrder(
-            dateHold = java.sql.Timestamp(System.currentTimeMillis()),
-            json = holdJson,
-            description = "${table.table_name} - Dine In",
-            tillId = tillId,
-            terminalId = terminalId,
-            storeId = storeId
-        )
+        val accountId = prefsManager.accountId
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                // Resolve stations for all cart items
+                val cartItemRefs = cart.cartItems.values.map { item ->
+                    com.posterita.pos.android.util.StationResolver.CartItemRef(
+                        productId = item.product.product_id,
+                        productCategoryId = item.product.productcategory_id,
+                        productStationOverrideId = item.product.station_override_id
+                    )
+                }
+                val stationMap = com.posterita.pos.android.util.StationResolver.resolveForCart(
+                    db, accountId, storeId, cartItemRefs
+                )
+
+                // Tag each cart item with its resolved station
+                for (item in cart.cartItems.values) {
+                    val resolved = stationMap[item.product.product_id]
+                    item.stationId = resolved?.stationId
+                    item.stationName = resolved?.stationName
+                }
+
+                // Look up section name for the table
+                val sectionName = table.section_id?.let { sId ->
+                    db.tableSectionDao().getSectionById(sId)?.name
+                }
+
+                val holdJson = cart.toJson().apply {
+                    put("tableId", table.table_id)
+                    put("tableName", table.table_name)
+                    put("isKitchenOrder", true)
+                    if (sectionName != null) put("sectionName", sectionName)
+                }
+
+                val holdOrder = HoldOrder(
+                    dateHold = java.sql.Timestamp(System.currentTimeMillis()),
+                    json = holdJson,
+                    description = "${table.table_name} - Dine In",
+                    tillId = tillId,
+                    terminalId = terminalId,
+                    storeId = storeId
+                )
+
                 val holdId = db.holdOrderDao().insertHoldOrder(holdOrder)
                 // Mark table as occupied
                 db.restaurantTableDao().updateTableStatus(
@@ -752,11 +994,19 @@ class CartActivity : BaseDrawerActivity() {
                     orderId = holdId.toString()
                 )
 
-                // Print to kitchen printers only
+                // Print to kitchen printers (station-routed)
                 val kitchenOrderDetails = buildKitchenOrderDetails(cart, table.table_name)
                 if (kitchenOrderDetails != null) {
-                    printerManager.printKitchenOnly(kitchenOrderDetails)
+                    printerManager.printKitchenByStation(kitchenOrderDetails)
                 }
+
+                // Notify KDS displays
+                com.posterita.pos.android.kds.KdsEventBus.emit(
+                    com.posterita.pos.android.kds.KdsEventBus.KdsEvent.OrderCreated(
+                        holdOrderId = holdId.toInt(),
+                        tableName = table.table_name
+                    )
+                )
 
                 withContext(Dispatchers.Main) {
                     shoppingCartViewModel.clearCart()
@@ -764,6 +1014,7 @@ class CartActivity : BaseDrawerActivity() {
                     finish()
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(this@CartActivity, "CartActivity", "Failed to send dine-in order", e)
                 // Rollback: if hold order was saved but table update failed, clean up
                 try {
                     db.restaurantTableDao().updateTableStatus(table.table_id, false, null)
@@ -792,8 +1043,28 @@ class CartActivity : BaseDrawerActivity() {
             return
         }
 
+        val accountId = prefsManager.accountId
+        val storeId = prefsManager.storeId
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                // Resolve stations for new cart items
+                val cartItemRefs = cart.cartItems.values.map { item ->
+                    com.posterita.pos.android.util.StationResolver.CartItemRef(
+                        productId = item.product.product_id,
+                        productCategoryId = item.product.productcategory_id,
+                        productStationOverrideId = item.product.station_override_id
+                    )
+                }
+                val stationMap = com.posterita.pos.android.util.StationResolver.resolveForCart(
+                    db, accountId, storeId, cartItemRefs
+                )
+                for (item in cart.cartItems.values) {
+                    val resolved = stationMap[item.product.product_id]
+                    item.stationId = resolved?.stationId
+                    item.stationName = resolved?.stationName
+                }
+
                 val existingOrders = db.holdOrderDao().getHoldOrdersByTerminal(prefsManager.terminalId)
                 val existingOrder = existingOrders.find { it.holdOrderId == orderId }
 
@@ -826,10 +1097,10 @@ class CartActivity : BaseDrawerActivity() {
                 val updatedOrder = existingOrder.copy(json = existingJson)
                 db.holdOrderDao().insertHoldOrder(updatedOrder)
 
-                // Print only the NEW items to kitchen
+                // Print only the NEW items to kitchen (station-routed)
                 val kitchenOrderDetails = buildKitchenOrderDetails(cart, table.table_name)
                 if (kitchenOrderDetails != null) {
-                    printerManager.printKitchenOnly(kitchenOrderDetails)
+                    printerManager.printKitchenByStation(kitchenOrderDetails)
                 }
 
                 withContext(Dispatchers.Main) {
@@ -838,6 +1109,7 @@ class CartActivity : BaseDrawerActivity() {
                     finish()
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(this@CartActivity, "CartActivity", "Failed to add items to table", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CartActivity, "Failed to add items: ${e.message}", Toast.LENGTH_LONG).show()
                 }
@@ -863,7 +1135,9 @@ class CartActivity : BaseDrawerActivity() {
                 taxamt = item.taxAmt,
                 modifiers = item.modifiers,
                 note = item.note,
-                isKitchenItem = item.product.iskitchenitem
+                isKitchenItem = item.product.iskitchenitem,
+                station_id = item.stationId,
+                station_name = item.stationName
             )
         }
 
@@ -1244,6 +1518,7 @@ class CartActivity : BaseDrawerActivity() {
                     textStatus.setTextColor(Color.RED)
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(this@CartActivity, "CartActivity", "Blink payment error", e)
                 progressLoading.visibility = View.GONE
                 textStatus.text = "Error: ${e.message}"
                 textStatus.setTextColor(Color.RED)
@@ -1319,7 +1594,7 @@ class CartActivity : BaseDrawerActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // Continue polling even on errors
+                AppErrorLogger.warn(this@CartActivity, "CartActivity", "Blink poll error (retrying)", e)
                 withContext(Dispatchers.Main) {
                     textStatus.text = "Checking status..."
                 }
@@ -1346,6 +1621,7 @@ class CartActivity : BaseDrawerActivity() {
             }
             bitmap
         } catch (e: Exception) {
+            AppErrorLogger.warn(this, "CartActivity", "Failed to generate QR bitmap", e)
             null
         }
     }
@@ -1636,11 +1912,7 @@ class CartActivity : BaseDrawerActivity() {
                 startActivity(intent)
                 finish()
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@CartActivity,
-                    "Failed to create order: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                AppErrorLogger.log(this@CartActivity, "CartActivity", "Failed to create order", e)
             }
         }
     }

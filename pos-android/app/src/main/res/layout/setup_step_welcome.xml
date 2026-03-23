@@ -249,19 +249,6 @@
                 android:textSize="11sp"
                 android:textColor="@color/posterita_muted" />
 
-            <!-- Try Demo -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTryDemo"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="6dp"
-                android:text="Try the demo"
-                android:textAllCaps="false"
-                android:textSize="13sp"
-                android:textColor="@color/posterita_muted" />
-
         </LinearLayout>
 
     </LinearLayout>

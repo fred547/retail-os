@@ -9,6 +9,9 @@ import com.google.gson.annotations.SerializedName
 data class CloudSyncResponse(
     @SerializedName("success") val success: Boolean = false,
     @SerializedName("server_time") val serverTime: String? = null,
+    // Version info
+    @SerializedName("server_sync_version") val serverSyncVersion: Int = 0,
+    @SerializedName("min_client_version") val minClientVersion: Int = 0,
 
     // Pull: cloud → terminal
     @SerializedName("products") val products: List<Map<String, Any?>>? = null,
@@ -22,6 +25,11 @@ data class CloudSyncResponse(
     @SerializedName("restaurant_tables") val restaurantTables: List<Map<String, Any?>>? = null,
     @SerializedName("stores") val stores: List<Map<String, Any?>>? = null,
     @SerializedName("terminals") val terminals: List<Map<String, Any?>>? = null,
+    @SerializedName("inventory_sessions") val inventorySessions: List<Map<String, Any?>>? = null,
+    @SerializedName("table_sections") val tableSections: List<Map<String, Any?>>? = null,
+    @SerializedName("preparation_stations") val preparationStations: List<Map<String, Any?>>? = null,
+    @SerializedName("category_station_mappings") val categoryStationMappings: List<Map<String, Any?>>? = null,
+    @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
 
     // Stats
     @SerializedName("orders_synced") val ordersSynced: Int = 0,

@@ -47,11 +47,10 @@ export async function POST(
     return NextResponse.json({ error: "No items found" }, { status: 404 });
   }
 
-  // Get next product_id
+  // Get next product_id (global max, not per-account, to avoid PK conflicts)
   const { data: maxProduct } = await supabaseAdmin
     .from("product")
     .select("product_id")
-    .eq("account_id", batch.account_id)
     .order("product_id", { ascending: false })
     .limit(1);
 
@@ -98,7 +97,6 @@ export async function POST(
         const { data: maxCat } = await supabaseAdmin
           .from("productcategory")
           .select("productcategory_id")
-          .eq("account_id", batch.account_id)
           .order("productcategory_id", { ascending: false })
           .limit(1);
 

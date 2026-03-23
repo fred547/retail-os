@@ -3,6 +3,12 @@ package com.posterita.pos.android.data.remote.model.request
 import com.google.gson.annotations.SerializedName
 
 /**
+ * Sync protocol version — increment when making breaking changes.
+ * Server checks this and returns 426 if the client is too old.
+ */
+const val SYNC_VERSION = 2
+
+/**
  * Request body for the cloud sync endpoint.
  * Sends local changes and receives server updates.
  */
@@ -11,6 +17,13 @@ data class CloudSyncRequest(
     @SerializedName("terminal_id") val terminalId: Int,
     @SerializedName("store_id") val storeId: Int,
     @SerializedName("last_sync_at") val lastSyncAt: String,
+    @SerializedName("client_sync_version") val clientSyncVersion: Int = SYNC_VERSION,
+    // Device registration
+    @SerializedName("device_id") val deviceId: String? = null,
+    @SerializedName("device_name") val deviceName: String? = null,
+    @SerializedName("device_model") val deviceModel: String? = null,
+    @SerializedName("os_version") val osVersion: String? = null,
+    @SerializedName("app_version") val appVersion: String? = null,
     // Push: terminal → cloud (transactional)
     @SerializedName("orders") val orders: List<SyncOrder>? = null,
     @SerializedName("order_lines") val orderLines: List<SyncOrderLine>? = null,
@@ -26,6 +39,8 @@ data class CloudSyncRequest(
     @SerializedName("taxes") val taxes: List<SyncTax>? = null,
     // Push: restaurant tables
     @SerializedName("restaurant_tables") val restaurantTables: List<SyncRestaurantTable>? = null,
+    // Push: inventory count entries
+    @SerializedName("inventory_count_entries") val inventoryCountEntries: List<SyncInventoryCountEntry>? = null,
     // Push: error logs for remote debugging
     @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
 )
@@ -216,6 +231,16 @@ data class SyncRestaurantTable(
     @SerializedName("terminal_id") val terminalId: Int = 0,
     @SerializedName("created") val created: Long = 0,
     @SerializedName("updated") val updated: Long = 0,
+)
+
+data class SyncInventoryCountEntry(
+    @SerializedName("session_id") val sessionId: Int,
+    @SerializedName("product_id") val productId: Int,
+    @SerializedName("product_name") val productName: String? = null,
+    @SerializedName("upc") val upc: String? = null,
+    @SerializedName("quantity") val quantity: Int = 1,
+    @SerializedName("scanned_by") val scannedBy: Int = 0,
+    @SerializedName("terminal_id") val terminalId: Int = 0,
 )
 
 data class SyncErrorLog(

@@ -7,7 +7,9 @@
     android:layout_marginTop="6dp"
     android:layout_marginBottom="6dp"
     app:cardCornerRadius="14dp"
-    app:cardElevation="2dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line"
     app:cardBackgroundColor="@color/posterita_paper">
 
     <LinearLayout
@@ -92,6 +94,54 @@
             android:textColor="@color/posterita_primary"
             android:visibility="gone" />
 
+        <!-- Row: Import status -->
+        <TextView
+            android:id="@+id/tvImportStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginStart="48dp"
+            android:textSize="12sp"
+            android:textColor="@color/posterita_secondary"
+            android:visibility="gone" />
+
+        <!-- Row: Stats (products, categories, stores) -->
+        <LinearLayout
+            android:id="@+id/layoutStats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="48dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvProductCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/posterita_ink"
+                android:layout_marginEnd="16dp" />
+
+            <TextView
+                android:id="@+id/tvCategoryCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/posterita_ink"
+                android:layout_marginEnd="16dp" />
+
+            <TextView
+                android:id="@+id/tvStoreCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/posterita_ink" />
+        </LinearLayout>
+
         <!-- Divider -->
         <View
             android:layout_width="match_parent"
@@ -100,7 +150,7 @@
             android:layout_marginBottom="8dp"
             android:background="@color/posterita_line" />
 
-        <!-- Row 5: Currency + Switch button -->
+        <!-- Row: Currency + Switch button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -114,6 +164,19 @@
                 android:layout_weight="1"
                 style="@style/TextAppearance.Posterita.Caption"
                 android:textColor="@color/posterita_muted" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteBrand"
+                style="@style/Widget.Posterita.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Delete"
+                android:textSize="12sp"
+                android:textColor="@color/posterita_error"
+                app:strokeColor="@color/posterita_error"
+                app:rippleColor="@color/posterita_error_light"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSwitchBrand"

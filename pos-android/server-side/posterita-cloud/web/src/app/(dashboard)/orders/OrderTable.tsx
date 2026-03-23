@@ -29,11 +29,11 @@ interface OrderLine {
   orderline_id: number;
   product_id: number;
   productname: string;
-  qty: number;
-  priceactual: number;
+  qtyentered: number;
+  priceentered: number;
+  lineamt: number;
   linenetamt: number;
-  tax_amount: number;
-  discount: number;
+  costamt: number;
 }
 
 export default function OrderTable({ orders }: { orders: Order[] }) {
@@ -51,7 +51,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
 
     const { data } = await dataQuery<OrderLine>("orderline", {
       select:
-        "orderline_id, product_id, productname, qty, priceactual, linenetamt, tax_amount, discount",
+        "orderline_id, product_id, productname, qtyentered, priceentered, lineamt, linenetamt, costamt",
       filters: [{ column: "order_id", op: "eq", value: orderId }],
       order: { column: "orderline_id" },
     });
@@ -167,7 +167,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                                     Qty
                                   </th>
                                   <th className="pb-2 font-medium text-right">
-                                    Discount
+                                    Subtotal
                                   </th>
                                   <th className="pb-2 font-medium text-right">
                                     Tax
@@ -187,18 +187,16 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                                       {line.productname}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {formatCurrency(line.priceactual)}
+                                      {formatCurrency(line.priceentered)}
                                     </td>
                                     <td className="py-2 text-right text-gray-600">
-                                      {line.qty}
+                                      {line.qtyentered}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {line.discount > 0
-                                        ? formatCurrency(line.discount)
-                                        : "—"}
+                                      {formatCurrency(line.lineamt)}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {formatCurrency(line.tax_amount ?? 0)}
+                                      {formatCurrency(line.linenetamt - line.lineamt)}
                                     </td>
                                     <td className="py-2 text-right font-medium text-gray-800">
                                       {formatCurrency(line.linenetamt)}

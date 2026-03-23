@@ -48,11 +48,12 @@ function createChain(table: string) {
   }
 
   const chain: any = {};
-  const passthrough = ['select', 'eq', 'gte', 'order', 'limit'] as const;
+  const passthrough = ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const;
   for (const m of passthrough) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
       if (m === 'eq') state.filters[args[0]] = args[1];
+      if (m === 'in') state.filters[args[0]] = args[1];
       return chain;
     };
   }
@@ -64,7 +65,18 @@ function createChain(table: string) {
       return chain;
     };
   }
-  chain.single = () => Promise.resolve(resolve());
+  chain.single = () => {
+    const result = resolve();
+    // .single() expects a single object, not an array
+    const d = Array.isArray(result.data) ? (result.data[0] ?? null) : result.data;
+    return Promise.resolve({ ...result, data: d });
+  };
+  chain.maybeSingle = () => {
+    const result = resolve();
+    // .maybeSingle() returns null if no row, single object if one row
+    const d = Array.isArray(result.data) ? (result.data[0] ?? null) : result.data;
+    return Promise.resolve({ ...result, data: d });
+  };
   // Make the chain thenable so `const { data } = await supabase.from(...).select(...)...` works
   chain.then = (onFulfilled: Function, onRejected?: Function) =>
     Promise.resolve(resolve()).then(onFulfilled as any, onRejected as any);
@@ -80,8 +92,12 @@ vi.mock('@supabase/supabase-js', () => ({
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function mockRequest(body: any): any {
-  return { json: () => Promise.resolve(body) };
+function mockRequest(body: any, headers?: Record<string, string>): any {
+  const hdrs = new Map(Object.entries(headers ?? {}));
+  return {
+    json: () => Promise.resolve(body),
+    headers: { get: (key: string) => hdrs.get(key) ?? null },
+  };
 }
 
 /** Set env vars and reset state before every test. */
@@ -103,6 +119,7 @@ function seedEmptyPullTables() {
     'product', 'productcategory', 'tax', 'modifier', 'customer',
     'preference', 'pos_user', 'discountcode', 'restaurant_table',
     'store', 'terminal',
+    'table_section', 'preparation_station', 'category_station_mapping',
   ];
   for (const t of pullTables) {
     tableResults[t] = { data: [], error: null };
@@ -467,6 +484,9 @@ describe('/api/sync POST – combined push + pull', () => {
     tableResults['pos_user'] = { data: [], error: null };
     tableResults['discountcode'] = { data: [], error: null };
     tableResults['restaurant_table'] = { data: [], error: null };
+    tableResults['table_section'] = { data: [], error: null };
+    tableResults['preparation_station'] = { data: [], error: null };
+    tableResults['category_station_mapping'] = { data: [], error: null };
     tableResults['store'] = { data: [], error: null };
     tableResults['terminal'] = { data: [], error: null };
     // Push tables succeed

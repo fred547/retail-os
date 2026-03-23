@@ -35,6 +35,7 @@ class EditStoreActivity : AppCompatActivity() {
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var storeId = 0
     private var store: Store? = null
@@ -45,6 +46,7 @@ class EditStoreActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_store)
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
         supportActionBar?.hide()
 
         // Admin/owner check

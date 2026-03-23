@@ -75,6 +75,10 @@ data class CartItem(
 
     public override fun clone(): CartItem = copy()
 
+    // Station routing (set before hold/print, null = legacy mode)
+    var stationId: Int? = null
+    var stationName: String? = null
+
     /** Serialize this cart item to JSON for hold/kitchen order storage. */
     fun toJson(): JSONObject = JSONObject().apply {
         put("product_id", product.product_id)
@@ -88,5 +92,9 @@ data class CartItem(
         put("discountAmt", discountAmt)
         put("modifiers", modifiers ?: "")
         put("note", note ?: "")
+        put("isKitchenItem", product.iskitchenitem ?: "N")
+        stationId?.let { put("station_id", it) }
+        stationName?.let { put("station_name", it) }
+        put("item_status", "new")
     }
 }

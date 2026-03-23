@@ -7,6 +7,16 @@
     android:background="@color/posterita_bg"
     android:fitsSystemWindows="true">
 
+    <!-- Connectivity dot -->
+    <View
+        android:id="@+id/connectivity_dot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_internet_dot" />
+
     <!-- Back arrow -->
     <ImageView
         android:id="@+id/btnBack"
@@ -51,10 +61,7 @@
                 android:layout_marginTop="16dp"
                 android:gravity="center"
                 android:text="Welcome back"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="-0.02"
+                style="@style/TextAppearance.Posterita.Title"
                 android:textColor="@color/posterita_ink" />
 
             <TextView
@@ -63,8 +70,7 @@
                 android:layout_marginTop="6dp"
                 android:gravity="center"
                 android:text="Log in with your email and password"
-                android:textSize="14sp"
-                android:textColor="@color/posterita_muted" />
+                style="@style/TextAppearance.Posterita.Body.Muted" />
 
             <!-- Spacer -->
             <View
@@ -152,6 +158,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="2" />
+
+            <!-- Sync status -->
+            <TextView
+                android:id="@+id/tvSyncStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:textColor="@color/posterita_secondary"
+                android:visibility="gone" />
+
+            <!-- Sync button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSync"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:text="Force Sync"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:strokeColor="@color/posterita_primary"
+                app:cornerRadius="10dp"
+                android:visibility="gone" />
 
             <!-- Sign up link -->
             <TextView

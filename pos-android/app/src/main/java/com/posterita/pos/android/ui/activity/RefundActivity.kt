@@ -19,6 +19,7 @@ import com.posterita.pos.android.domain.model.ShoppingCart
 import com.posterita.pos.android.service.OrderService
 import com.posterita.pos.android.service.PaymentInfo
 import com.posterita.pos.android.ui.adapter.RefundCartAdapter
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.Constants
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SessionManager
@@ -40,6 +41,7 @@ class RefundActivity : AppCompatActivity(), RefundCartAdapter.OnRefundSelectionL
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var orderService: OrderService
     @Inject lateinit var db: AppDatabase
+    @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
 
     private var orderDetails: OrderDetails? = null
     private var allCartItems: List<CartItem> = emptyList()
@@ -50,6 +52,7 @@ class RefundActivity : AppCompatActivity(), RefundCartAdapter.OnRefundSelectionL
         super.onCreate(savedInstanceState)
         binding = ActivityRefundBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         @Suppress("DEPRECATION")
         orderDetails = intent.getSerializableExtra(Constants.ORDER_DETAILS) as? OrderDetails
@@ -229,6 +232,7 @@ class RefundActivity : AppCompatActivity(), RefundCartAdapter.OnRefundSelectionL
                     }
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(this@RefundActivity, "RefundActivity", "Error verifying supervisor PIN", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@RefundActivity,

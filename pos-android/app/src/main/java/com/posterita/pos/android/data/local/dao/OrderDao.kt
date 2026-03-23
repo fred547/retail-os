@@ -47,6 +47,9 @@ interface OrderDao {
     @Query("SELECT COUNT(*) FROM orders WHERE customerId = :customerId")
     suspend fun getOrderCountForCustomer(customerId: Int): Int
 
+    @Query("SELECT COUNT(*) FROM orders")
+    suspend fun getOrderCount(): Int
+
     @Query("SELECT COALESCE(SUM(grandTotal), 0.0) FROM orders WHERE customerId = :customerId AND docStatus = 'CO'")
     suspend fun getTotalSpentByCustomer(customerId: Int): Double
 }

@@ -24,6 +24,8 @@ class KitchenOrderAdapter(
         fun onComplete(holdOrder: HoldOrder, position: Int)
         fun onStatusChange(holdOrder: HoldOrder, position: Int)
         fun onSplit(holdOrder: HoldOrder, position: Int)
+        fun onTransferTable(holdOrder: HoldOrder, position: Int)
+        fun onMergeOrder(holdOrder: HoldOrder, position: Int)
     }
 
     private val orders = mutableListOf<HoldOrder>()
@@ -216,6 +218,26 @@ class KitchenOrderAdapter(
             btnComplete.setOnClickListener {
                 val pos = adapterPosition
                 if (pos != RecyclerView.NO_POSITION) listener.onComplete(orders[pos], pos)
+            }
+
+            // Long-press for transfer/merge actions
+            itemView.setOnLongClickListener {
+                val pos = adapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    val order = orders[pos]
+                    val popup = android.widget.PopupMenu(itemView.context, itemView)
+                    popup.menu.add(0, 1, 0, "Transfer Table")
+                    popup.menu.add(0, 2, 1, "Merge With...")
+                    popup.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            1 -> listener.onTransferTable(order, pos)
+                            2 -> listener.onMergeOrder(order, pos)
+                        }
+                        true
+                    }
+                    popup.show()
+                }
+                true
             }
         }
     }

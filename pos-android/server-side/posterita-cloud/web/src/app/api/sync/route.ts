@@ -4,6 +4,17 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 export const maxDuration = 30;
 
+/**
+ * Sync API version — increment when making breaking changes to the sync protocol.
+ * Android checks this against its expected version and warns/blocks if mismatched.
+ *
+ * History:
+ *   1 — initial sync protocol
+ *   2 — added soft delete, device registration, inventory count, server-assigned IDs
+ */
+const SYNC_API_VERSION = 2;
+const MIN_CLIENT_VERSION = 1; // oldest client version we still accept
+
 function getDb() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 }
@@ -13,6 +24,14 @@ interface SyncRequest {
   terminal_id: number;
   store_id: number;
   last_sync_at: string;
+  // Client version — for compatibility checking
+  client_sync_version?: number;
+  // Device registration
+  device_id?: string;
+  device_name?: string;
+  device_model?: string;
+  os_version?: string;
+  app_version?: string;
   // Push: terminal → cloud (transactional)
   orders?: any[];
   order_lines?: any[];
@@ -29,6 +48,8 @@ interface SyncRequest {
   taxes?: any[];
   // Push: restaurant tables
   restaurant_tables?: any[];
+  // Push: inventory count entries
+  inventory_count_entries?: any[];
   // Push: error logs for remote debugging
   error_logs?: any[];
 }
@@ -125,6 +146,20 @@ export async function POST(req: NextRequest) {
   try {
     const body: SyncRequest = await req.json();
 
+    // Check client sync version compatibility
+    const clientVersion = body.client_sync_version ?? 1;
+    if (clientVersion < MIN_CLIENT_VERSION) {
+      return NextResponse.json(
+        {
+          error: "Your app is outdated. Please update to continue syncing.",
+          code: "CLIENT_TOO_OLD",
+          server_sync_version: SYNC_API_VERSION,
+          min_client_version: MIN_CLIENT_VERSION,
+        },
+        { status: 426 } // 426 Upgrade Required
+      );
+    }
+
     // Validate required fields
     if (!body.account_id || body.account_id === "null" || !body.terminal_id) {
       return NextResponse.json(
@@ -218,6 +253,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Register/update device if device_id provided
+    if (body.device_id) {
+      await getDb().from("registered_device").upsert({
+        device_id: body.device_id,
+        account_id: body.account_id,
+        device_name: body.device_name || null,
+        device_model: body.device_model || null,
+        os_version: body.os_version || null,
+        app_version: body.app_version || null,
+        terminal_id: body.terminal_id,
+        last_sync_at: new Date().toISOString(),
+        is_active: true,
+      }, { onConflict: "device_id,account_id" });
+    }
+
+    const requestStart = Date.now();
     const errors: string[] = [];
     let ordersSynced = 0;
     let orderLinesSynced = 0;
@@ -230,6 +281,7 @@ export async function POST(req: NextRequest) {
     let productsSynced = 0;
     let taxesSynced = 0;
     let tablesSynced = 0;
+    let inventoryEntriesSynced = 0;
     let errorLogsSynced = 0;
 
     // ========================================
@@ -691,8 +743,7 @@ export async function POST(req: NextRequest) {
             store_id: table.store_id ?? table.storeId ?? body.store_id,
             terminal_id: table.terminal_id ?? table.terminalId ?? body.terminal_id,
             account_id: body.account_id,
-            created: table.created ?? Date.now(),
-            updated: table.updated ?? Date.now(),
+            updated_at: new Date().toISOString(),
           };
           const { error } = await tenantUpsert("restaurant_table", dbTable, "table_id", tableId, body.account_id);
           if (error) {
@@ -706,24 +757,95 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sync inventory count entries
+    if (body.inventory_count_entries?.length) {
+      for (const entry of body.inventory_count_entries) {
+        try {
+          const sessionId = entry.session_id ?? entry.sessionId;
+          const productId = entry.product_id ?? entry.productId;
+
+          // Check if entry already exists for this product in this session
+          const { data: existing } = await getDb()
+            .from("inventory_count_entry")
+            .select("entry_id, quantity")
+            .eq("session_id", sessionId)
+            .eq("product_id", productId)
+            .maybeSingle();
+
+          if (existing) {
+            // Increment quantity
+            const newQty = existing.quantity + (entry.quantity ?? 1);
+            await getDb()
+              .from("inventory_count_entry")
+              .update({
+                quantity: newQty,
+                scanned_at: new Date().toISOString(),
+                scanned_by: entry.scanned_by ?? entry.scannedBy ?? 0,
+              })
+              .eq("entry_id", existing.entry_id);
+          } else {
+            await getDb().from("inventory_count_entry").insert({
+              session_id: sessionId,
+              account_id: body.account_id,
+              product_id: productId,
+              product_name: entry.product_name ?? entry.productName,
+              upc: entry.upc,
+              quantity: entry.quantity ?? 1,
+              scanned_by: entry.scanned_by ?? entry.scannedBy ?? 0,
+              terminal_id: entry.terminal_id ?? entry.terminalId ?? body.terminal_id,
+            });
+          }
+
+          // Auto-transition session created → active
+          const { data: session } = await getDb()
+            .from("inventory_count_session")
+            .select("status")
+            .eq("session_id", sessionId)
+            .single();
+
+          if (session?.status === "created") {
+            await getDb()
+              .from("inventory_count_session")
+              .update({
+                status: "active",
+                started_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("session_id", sessionId);
+          } else {
+            await getDb()
+              .from("inventory_count_session")
+              .update({ updated_at: new Date().toISOString() })
+              .eq("session_id", sessionId);
+          }
+
+          inventoryEntriesSynced++;
+        } catch (e: any) {
+          errors.push(`InventoryEntry: ${e.message}`);
+        }
+      }
+    }
+
     // ========================================
     // PULL: Cloud → Terminal
     // ========================================
     const lastSync = body.last_sync_at || "1970-01-01T00:00:00Z";
 
-    // Get updated products
+    // Get updated products (exclude soft-deleted)
     const { data: products } = await getDb()
       .from("product")
       .select("*")
       .eq("account_id", body.account_id)
       .eq("product_status", "live")
+      .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
-    // Get updated categories
+    // Get updated categories (exclude soft-deleted)
     const { data: categories } = await getDb()
       .from("productcategory")
       .select("*")
       .eq("account_id", body.account_id)
+      .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
     // Get updated taxes
@@ -740,11 +862,12 @@ export async function POST(req: NextRequest) {
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
-    // Get updated customers
+    // Get updated customers (exclude soft-deleted)
     const { data: customers } = await getDb()
       .from("customer")
       .select("*")
       .eq("account_id", body.account_id)
+      .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
     // Get preferences
@@ -754,13 +877,14 @@ export async function POST(req: NextRequest) {
       .eq("account_id", body.account_id)
       .gte("updated_at", lastSync);
 
-    // Get updated users
+    // Get updated users (exclude soft-deleted)
     const { data: users } = await getDb()
       .from("pos_user")
       .select(
-        "user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive"
+        "user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted"
       )
       .eq("account_id", body.account_id)
+      .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
     // Get discount codes
@@ -777,24 +901,102 @@ export async function POST(req: NextRequest) {
       .eq("store_id", body.store_id)
       .gte("updated_at", lastSync);
 
-    // Get stores and terminals (for config changes)
+    // Get table sections for this store
+    const { data: tableSections } = await getDb()
+      .from("table_section")
+      .select("*")
+      .eq("account_id", body.account_id)
+      .eq("store_id", body.store_id)
+      .gte("updated_at", lastSync);
+
+    // Get preparation stations for this store
+    const { data: preparationStations } = await getDb()
+      .from("preparation_station")
+      .select("*")
+      .eq("account_id", body.account_id)
+      .eq("store_id", body.store_id)
+      .gte("updated_at", lastSync);
+
+    // Get category → station mappings (always pull full set for consistency)
+    const { data: categoryStationMappings } = await getDb()
+      .from("category_station_mapping")
+      .select("*")
+      .eq("account_id", body.account_id);
+
+    // Get stores and terminals (for config changes, exclude soft-deleted)
     const { data: stores } = await getDb()
       .from("store")
       .select("*")
       .eq("account_id", body.account_id)
+      .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
     const { data: terminals } = await getDb()
       .from("terminal")
       .select("*")
       .eq("account_id", body.account_id)
+      .eq("is_deleted", false)
+      .gte("updated_at", lastSync);
+
+    // Get all sibling brands for this owner (so Android can register them)
+    let siblingBrands: any[] = [];
+    const { data: thisAccount } = await getDb()
+      .from("account")
+      .select("owner_id")
+      .eq("account_id", body.account_id)
+      .single();
+    if (thisAccount?.owner_id) {
+      const { data: allBrands } = await getDb()
+        .from("account")
+        .select("account_id, businessname, type, status, currency")
+        .eq("owner_id", thisAccount.owner_id);
+      siblingBrands = allBrands ?? [];
+    }
+
+    // Get active/created inventory count sessions for this store
+    const { data: inventorySessions } = await getDb()
+      .from("inventory_count_session")
+      .select("*")
+      .eq("account_id", body.account_id)
+      .in("status", ["created", "active"])
       .gte("updated_at", lastSync);
 
     const serverTime = new Date().toISOString();
 
+    // Log sync request for monitoring
+    try {
+      await getDb().from("sync_request_log").insert({
+        account_id: body.account_id,
+        terminal_id: body.terminal_id,
+        store_id: body.store_id,
+        device_id: body.device_id || null,
+        device_model: body.device_model || null,
+        app_version: body.app_version || null,
+        client_sync_version: body.client_sync_version || 0,
+        request_at: new Date(requestStart).toISOString(),
+        response_at: serverTime,
+        duration_ms: Date.now() - requestStart,
+        status: errors.length > 0 ? "partial" : "success",
+        error_message: errors.length > 0 ? errors.slice(0, 5).join("; ") : null,
+        orders_pushed: ordersSynced,
+        tills_pushed: tillsSynced,
+        customers_pushed: body.customers?.length ?? 0,
+        error_logs_pushed: errorLogsSynced,
+        products_pulled: (products ?? []).length,
+        categories_pulled: (categories ?? []).length,
+        users_pulled: (users ?? []).length,
+        stores_pulled: (stores ?? []).length,
+        terminals_pulled: (terminals ?? []).length,
+        sync_errors: errors.length > 0 ? errors : null,
+      });
+    } catch (_) { /* never fail sync for logging */ }
+
     return NextResponse.json({
       success: errors.length === 0,
       server_time: serverTime,
+      // Version info — client should check and warn if outdated
+      server_sync_version: SYNC_API_VERSION,
+      min_client_version: MIN_CLIENT_VERSION,
       // Pull data
       products: products ?? [],
       product_categories: categories ?? [],
@@ -805,8 +1007,13 @@ export async function POST(req: NextRequest) {
       users: users ?? [],
       discount_codes: discountCodes ?? [],
       restaurant_tables: tables ?? [],
+      table_sections: tableSections ?? [],
+      preparation_stations: preparationStations ?? [],
+      category_station_mappings: categoryStationMappings ?? [],
       stores: stores ?? [],
       terminals: terminals ?? [],
+      inventory_sessions: inventorySessions ?? [],
+      sibling_brands: siblingBrands,
       // Stats
       error_logs_synced: errorLogsSynced,
       orders_synced: ordersSynced,
@@ -820,6 +1027,7 @@ export async function POST(req: NextRequest) {
       products_synced: productsSynced,
       taxes_synced: taxesSynced,
       tables_synced: tablesSynced,
+      inventory_entries_synced: inventoryEntriesSynced,
       errors,
     });
   } catch (error: any) {
@@ -836,6 +1044,8 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     service: "posterita-cloud-sync",
+    sync_api_version: SYNC_API_VERSION,
+    min_client_version: MIN_CLIENT_VERSION,
     timestamp: new Date().toISOString(),
   });
 }

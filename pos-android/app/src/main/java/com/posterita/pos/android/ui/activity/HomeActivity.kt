@@ -17,6 +17,7 @@ import com.google.android.material.card.MaterialCardView
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivityHomeBinding
+import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.DemoDataSeeder
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.ConnectivityMonitor
@@ -34,6 +35,11 @@ import com.posterita.pos.android.data.local.entity.Terminal
 import com.posterita.pos.android.util.LocalAccountRegistry
 import java.util.Calendar
 import javax.inject.Inject
+
+private sealed class PickerItem {
+    data class BrandSwitch(val account: com.posterita.pos.android.util.AccountEntry) : PickerItem()
+    data class StoreTerminal(val store: Store, val terminal: Terminal?) : PickerItem()
+}
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
@@ -75,8 +81,8 @@ class HomeActivity : AppCompatActivity() {
         // Check idle timeout
         SessionTimeoutManager.checkAndLock(this)
 
-        // For demo accounts, auto-load the session so POS/Till work without login
-        if (sessionManager.user == null && DemoDataSeeder.isDemoAccount(prefsManager.accountId)) {
+        // Always ensure session has a user (handles brand switching, demo accounts, etc.)
+        if (sessionManager.user == null) {
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     try {
@@ -84,13 +90,35 @@ class HomeActivity : AppCompatActivity() {
                         if (user != null) {
                             sessionManager.user = user
                         }
+                        // Also load account/store/terminal if missing
+                        if (sessionManager.account == null) {
+                            sessionManager.account = db.accountDao().getAccountById(prefsManager.accountId)
+                        }
+                        if (sessionManager.store == null) {
+                            val store = db.storeDao().getAllStores().firstOrNull()
+                            if (store != null) {
+                                sessionManager.store = store
+                                prefsManager.setStoreIdSync(store.storeId)
+                                prefsManager.setStoreNameSync(store.name ?: "")
+                            }
+                        }
+                        if (sessionManager.terminal == null) {
+                            val terminal = db.terminalDao().getAllTerminals().firstOrNull()
+                            if (terminal != null) {
+                                sessionManager.terminal = terminal
+                                prefsManager.setTerminalIdSync(terminal.terminalId)
+                                prefsManager.setTerminalNameSync(terminal.name ?: "")
+                                prefsManager.terminalType = terminal.terminal_type
+                            }
+                        }
                     } catch (e: Exception) {
-                        Log.w("HomeActivity", "Failed to load demo user", e)
+                        AppErrorLogger.warn(this@HomeActivity, "HomeActivity", "Failed to load session data", e)
                     }
                     Unit
                 }
-                // Refresh UI after user is loaded
+                // Refresh UI after session is loaded
                 setupGreeting()
+                setupContextBar()
                 setupAppGrid()
             }
         }
@@ -111,6 +139,7 @@ class HomeActivity : AppCompatActivity() {
     private fun setupGreeting() {
         val user = sessionManager.user
         val displayName = user?.firstname?.ifBlank { null }
+            ?: sessionManager.account?.businessname?.ifBlank { null }
             ?: prefsManager.storeName.ifEmpty { "there" }
         val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             in 0..11 -> "Good morning"
@@ -121,9 +150,16 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupContextBar() {
-        val storeName = prefsManager.storeName.ifEmpty { "Store" }
-        val terminalName = prefsManager.terminalName.ifEmpty { "POS 1" }
+        // Read from session (loaded from Room DB) — not prefs which get contaminated by multi-brand sync
+        val brandName = sessionManager.account?.businessname
+            ?: accountRegistry.getAccount(prefsManager.accountId)?.name
+            ?: prefsManager.accountId
+        val storeName = sessionManager.store?.name
+            ?: prefsManager.storeName.ifEmpty { "Store" }
+        val terminalName = sessionManager.terminal?.name
+            ?: prefsManager.terminalName.ifEmpty { "POS 1" }
 
+        binding.textContextBrand.text = brandName
         binding.textContextStore.text = storeName
         binding.textContextTerminal.text = terminalName
 
@@ -132,28 +168,44 @@ class HomeActivity : AppCompatActivity() {
 
     private fun showContextPicker() {
         lifecycleScope.launch {
+            // Load brands (other accounts) from the registry
+            val allBrands = accountRegistry.getAllAccounts()
+            val currentAccountId = prefsManager.accountId
+
             val stores = withContext(Dispatchers.IO) {
                 try { db.storeDao().getAllStores().filter { it.isactive == "Y" } }
-                catch (_: Exception) { emptyList() }
+                catch (e: Exception) { AppErrorLogger.warn(this@HomeActivity, "HomeActivity", "Failed to load stores", e); emptyList() }
             }
             val terminals = withContext(Dispatchers.IO) {
                 try { db.terminalDao().getAllTerminals().filter { it.isactive == "Y" } }
-                catch (_: Exception) { emptyList() }
+                catch (e: Exception) { AppErrorLogger.warn(this@HomeActivity, "HomeActivity", "Failed to load terminals", e); emptyList() }
             }
 
-            // Build picker items: Store → Terminal hierarchy
+            // Build picker items: brands first, then stores/terminals
             val items = mutableListOf<String>()
-            val storeTerminalMap = mutableListOf<Pair<Store, Terminal?>>()
+            // Track what each item represents
+            val pickerItems = mutableListOf<PickerItem>()
 
+            // Add other brands at the top
+            val otherBrands = allBrands.filter { it.id != currentAccountId }
+            if (otherBrands.isNotEmpty()) {
+                for (brand in otherBrands) {
+                    val label = "⟳ ${brand.name}" + if (brand.type == "demo") " (Demo)" else ""
+                    items.add(label)
+                    pickerItems.add(PickerItem.BrandSwitch(brand))
+                }
+            }
+
+            // Add current brand's stores/terminals
             for (store in stores) {
                 val storeTerminals = terminals.filter { it.store_id == store.storeId }
                 if (storeTerminals.isEmpty()) {
-                    items.add("${store.name ?: "Store ${store.storeId}"}")
-                    storeTerminalMap.add(store to null)
+                    items.add(store.name ?: "Store ${store.storeId}")
+                    pickerItems.add(PickerItem.StoreTerminal(store, null))
                 } else {
                     for (terminal in storeTerminals) {
                         items.add("${store.name ?: "Store"} › ${terminal.name ?: "Terminal"}")
-                        storeTerminalMap.add(store to terminal)
+                        pickerItems.add(PickerItem.StoreTerminal(store, terminal))
                     }
                 }
             }
@@ -163,22 +215,78 @@ class HomeActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // Find currently selected index
+            // Find currently selected index (skip brand items)
             val currentStoreId = prefsManager.storeId
             val currentTerminalId = prefsManager.terminalId
-            val currentIndex = storeTerminalMap.indexOfFirst {
-                it.first.storeId == currentStoreId && (it.second?.terminalId ?: 0) == currentTerminalId
+            val currentIndex = pickerItems.indexOfFirst { item ->
+                item is PickerItem.StoreTerminal &&
+                    item.store.storeId == currentStoreId &&
+                    (item.terminal?.terminalId ?: 0) == currentTerminalId
             }.coerceAtLeast(0)
 
+            val currentBrandName = sessionManager.account?.businessname ?: prefsManager.storeName
             androidx.appcompat.app.AlertDialog.Builder(this@HomeActivity)
-                .setTitle("Switch Store & Terminal")
+                .setTitle("Switch — $currentBrandName")
                 .setSingleChoiceItems(items.toTypedArray(), currentIndex) { dialog, which ->
-                    val (store, terminal) = storeTerminalMap[which]
-                    switchContext(store, terminal)
-                    dialog.dismiss()
+                    when (val picked = pickerItems[which]) {
+                        is PickerItem.BrandSwitch -> {
+                            dialog.dismiss()
+                            switchBrand(picked.account)
+                        }
+                        is PickerItem.StoreTerminal -> {
+                            switchContext(picked.store, picked.terminal)
+                            dialog.dismiss()
+                        }
+                    }
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
+        }
+    }
+
+    private fun switchBrand(brand: com.posterita.pos.android.util.AccountEntry) {
+        // Reuse the ManageBrandsActivity switchToBrand logic
+        sessionManager.resetSession()
+        prefsManager.setAccountIdSync(brand.id)
+        prefsManager.setStoreNameSync(brand.name)
+        AppDatabase.resetInstance()
+        prefsManager.setStringSync("last_brand_id", brand.id)
+        accountRegistry.touchAccount(brand.id)
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val newDb = AppDatabase.getInstance(this@HomeActivity, brand.id)
+                    val user = newDb.userDao().getAllUsers().firstOrNull()
+                    if (user != null) sessionManager.user = user
+                    val acct = newDb.accountDao().getAccountById(brand.id)
+                    if (acct != null) sessionManager.account = acct
+                    val store = newDb.storeDao().getAllStores().firstOrNull()
+                    if (store != null) {
+                        sessionManager.store = store
+                        prefsManager.setStoreIdSync(store.storeId)
+                        prefsManager.setStoreNameSync(store.name ?: brand.name)
+                    }
+                    val terminal = if (store != null) {
+                        newDb.terminalDao().getTerminalsForStore(store.storeId).firstOrNull()
+                    } else null
+                    if (terminal != null) {
+                        sessionManager.terminal = terminal
+                        prefsManager.setTerminalIdSync(terminal.terminalId)
+                        prefsManager.setTerminalNameSync(terminal.name ?: "Terminal")
+                        prefsManager.terminalType = terminal.terminal_type
+                    }
+                } catch (e: Exception) {
+                    AppErrorLogger.warn(this@HomeActivity, "HomeActivity", "Failed to switch brand", e)
+                }
+                Unit
+            }
+
+            // Restart HomeActivity to reload everything
+            val intent = Intent(this@HomeActivity, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
         }
     }
 
@@ -189,6 +297,7 @@ class HomeActivity : AppCompatActivity() {
         if (terminal != null) {
             prefsManager.setTerminalIdSync(terminal.terminalId)
             prefsManager.setTerminalNameSync(terminal.name ?: "")
+            prefsManager.terminalType = terminal.terminal_type
             sessionManager.terminal = terminal
         }
 
@@ -324,7 +433,7 @@ class HomeActivity : AppCompatActivity() {
             AppTile("pos", "Point of Sale", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java, TileVisibility.ALL),
             AppTile("orders", "Orders", R.drawable.ic_check_circle, 0xFF5E35B1.toInt(), true, OrdersActivity::class.java, TileVisibility.ALL),
             AppTile("tills", "Tills", R.drawable.till, 0xFF00838F.toInt(), true, TillHistoryActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
-            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), false, null, TileVisibility.SUPERVISOR_PLUS),
+            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), true, InventoryCountActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
             AppTile("customers", "Customers", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), true, SearchCustomerActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("staff", "Staff", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), false, null, TileVisibility.ADMIN_OWNER),

@@ -6,12 +6,16 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Printer
+import com.posterita.pos.android.data.local.entity.PreparationStation
 import com.posterita.pos.android.databinding.ActivityCreatePrinterBinding
 import com.posterita.pos.android.printing.PrinterManager
+import com.posterita.pos.android.util.SharedPreferencesManager
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -29,11 +33,15 @@ class CreatePrinterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreatePrinterBinding
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var printerManager: PrinterManager
+    @Inject lateinit var prefsManager: SharedPreferencesManager
 
     private var selectedInterface = ""
     private var selectedBluetoothDevice = ""
     private var selectedWidth = 48
     private var printerRole = Printer.ROLE_RECEIPT
+
+    private val allStations = mutableListOf<PreparationStation>()
+    private val selectedStationIds = mutableSetOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +53,7 @@ class CreatePrinterActivity : AppCompatActivity() {
         setupInterfaceSpinner()
         setupPaperWidthSpinner()
         setupButtons()
+        setupKitchenStations()
     }
 
     private fun setupInterfaceSpinner() {
@@ -95,6 +104,61 @@ class CreatePrinterActivity : AppCompatActivity() {
 
         binding.buttonSavePrinter.setOnClickListener {
             savePrinter()
+        }
+    }
+
+    private fun setupKitchenStations() {
+        val stationsContainer = binding.stationsContainer
+        val stationsLabel = binding.labelStations
+
+        // Show/hide stations when kitchen toggle changes
+        binding.printKitchenReceiptSwitch.setOnCheckedChangeListener { _, isChecked ->
+            val vis = if (isChecked) View.VISIBLE else View.GONE
+            stationsLabel.visibility = vis
+            stationsContainer.visibility = vis
+            if (isChecked && allStations.isEmpty()) {
+                loadStations()
+            }
+        }
+
+        // If role is already kitchen/bar, load stations immediately
+        if (printerRole == Printer.ROLE_KITCHEN || printerRole == Printer.ROLE_BAR) {
+            binding.printKitchenReceiptSwitch.isChecked = true
+        }
+    }
+
+    private fun loadStations() {
+        val storeId = prefsManager.storeId
+        lifecycleScope.launch(Dispatchers.IO) {
+            val stations = db.preparationStationDao().getStationsByStore(storeId)
+            allStations.clear()
+            allStations.addAll(stations)
+
+            withContext(Dispatchers.Main) {
+                val container = binding.stationsContainer
+                container.removeAllViews()
+
+                if (stations.isEmpty()) {
+                    binding.labelStations.text = "No stations configured — set up stations in the web console"
+                    return@withContext
+                }
+
+                binding.labelStations.text = "Stations this printer handles:"
+
+                for (station in stations) {
+                    val cb = CheckBox(this@CreatePrinterActivity).apply {
+                        text = "${station.name} (${station.station_type})"
+                        textSize = 14f
+                        isChecked = selectedStationIds.contains(station.station_id)
+                        setPadding(0, 8, 0, 8)
+                        setOnCheckedChangeListener { _, checked ->
+                            if (checked) selectedStationIds.add(station.station_id)
+                            else selectedStationIds.remove(station.station_id)
+                        }
+                    }
+                    container.addView(cb)
+                }
+            }
         }
     }
 
@@ -188,7 +252,24 @@ class CreatePrinterActivity : AppCompatActivity() {
         val printer = buildPrinter()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            db.printerDao().insertPrinter(printer)
+            val printerId = db.printerDao().insertPrinter(printer).toInt()
+
+            // Assign selected stations to this printer
+            if (selectedStationIds.isNotEmpty()) {
+                for (stationId in selectedStationIds) {
+                    val station = db.preparationStationDao().getStationById(stationId)
+                    if (station != null) {
+                        db.preparationStationDao().insertAll(listOf(station.copy(printer_id = printerId)))
+                    }
+                }
+                // Clear printer_id from stations that were un-checked
+                for (station in allStations) {
+                    if (station.printer_id == printerId && !selectedStationIds.contains(station.station_id)) {
+                        db.preparationStationDao().insertAll(listOf(station.copy(printer_id = null)))
+                    }
+                }
+            }
+
             withContext(Dispatchers.Main) {
                 Toast.makeText(this@CreatePrinterActivity, "Printer saved successfully", Toast.LENGTH_SHORT).show()
                 finish()

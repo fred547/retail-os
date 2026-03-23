@@ -45,6 +45,7 @@ class TerminalSelectionViewModel @Inject constructor(
             prefsManager.terminalId = terminal.terminalId
             prefsManager.storeName = store.name ?: ""
             prefsManager.terminalName = terminal.name ?: ""
+            prefsManager.terminalType = terminal.terminal_type
 
             // Set session values so TillActivity can access them
             sessionManager.store = store

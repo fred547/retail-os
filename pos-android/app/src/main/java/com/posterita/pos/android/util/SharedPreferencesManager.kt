@@ -192,6 +192,12 @@ class SharedPreferencesManager @Inject constructor(
     fun setString(key: String, value: String) =
         prefs.edit().putString(key, value).apply()
 
+    /** Wipe all preferences — used by factory reset */
+    fun clearAll() {
+        prefs.edit().clear().commit()
+        try { securePrefs.edit().clear().commit() } catch (_: Exception) {}
+    }
+
     // Biometric login (stored encrypted)
     var biometricEnabled: Boolean
         get() = securePrefs.getBoolean(Constants.BIOMETRIC_ENABLED, false)
@@ -276,8 +282,26 @@ class SharedPreferencesManager @Inject constructor(
         get() = prefs.getString(Constants.POS_BUSINESS_TYPE, "retail") ?: "retail"
         set(value) = prefs.edit().putString(Constants.POS_BUSINESS_TYPE, value).apply()
 
+    /** Terminal type from the enrolled terminal (synced from Room DB). */
+    var terminalType: String
+        get() = prefs.getString("terminal_type", "pos_retail") ?: "pos_retail"
+        set(value) = prefs.edit().putString("terminal_type", value).apply()
+
+    /** True if this terminal is a restaurant POS (has tables, kitchen, order types). */
+    val isRestaurantTerminal: Boolean
+        get() = terminalType == "pos_restaurant"
+
+    /** True if this terminal is a KDS display (boots into full-screen kitchen grid). */
+    val isKdsTerminal: Boolean
+        get() = terminalType == "kds"
+
+    /** True if this terminal is a staff mobile device (limited features). */
+    val isMobileStaff: Boolean
+        get() = terminalType == "mobile_staff"
+
+    /** Backward compat — checks both terminal type and legacy businessType. */
     val isRestaurant: Boolean
-        get() = businessType == "restaurant"
+        get() = isRestaurantTerminal || businessType == "restaurant"
 
     var accountSwitchingEnabled: Boolean
         get() = prefs.getBoolean("account_switching_enabled", true)

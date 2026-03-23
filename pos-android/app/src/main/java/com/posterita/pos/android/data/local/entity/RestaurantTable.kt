@@ -12,6 +12,7 @@ data class RestaurantTable(
     val store_id: Int = 0,
     val terminal_id: Int = 0,
     val seats: Int = 4,
+    val section_id: Int? = null,
     val created: Long = System.currentTimeMillis(),
     val updated: Long = System.currentTimeMillis()
 )
