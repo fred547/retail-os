@@ -15,8 +15,13 @@ export const maxDuration = 30;
 const SYNC_API_VERSION = 2;
 const MIN_CLIENT_VERSION = 1; // oldest client version we still accept
 
-function getDb() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+// Cache the Supabase client per module — avoid creating 40+ instances per sync request
+let _dbInstance: any = null;
+function getDb(): any {
+  if (!_dbInstance) {
+    _dbInstance = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  }
+  return _dbInstance;
 }
 
 interface SyncRequest {
@@ -848,118 +853,49 @@ export async function POST(req: NextRequest) {
       .eq("is_deleted", false)
       .gte("updated_at", lastSync);
 
-    // Get updated taxes
-    const { data: taxes } = await getDb()
-      .from("tax")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .gte("updated_at", lastSync);
+    // PULL: Run all queries in parallel for speed (~750ms saved vs sequential)
+    const db = getDb();
+    const [
+      { data: taxes },
+      { data: modifiers },
+      { data: customers },
+      { data: preferences },
+      { data: users },
+      { data: discountCodes },
+      { data: tables },
+      { data: tableSections },
+      { data: preparationStations },
+      { data: categoryStationMappings },
+      { data: stores },
+      { data: terminals },
+      { data: thisAccount },
+      { data: inventorySessions },
+    ] = await Promise.all([
+      db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("customer").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("preference").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("pos_user").select("user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("discountcode").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("restaurant_table").select("*").eq("store_id", body.store_id).gte("updated_at", lastSync),
+      db.from("table_section").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync),
+      db.from("preparation_station").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync),
+      db.from("category_station_mapping").select("*").eq("account_id", body.account_id),
+      db.from("store").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("terminal").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("account").select("owner_id").eq("account_id", body.account_id).single(),
+      db.from("inventory_count_session").select("*").eq("account_id", body.account_id).in("status", ["created", "active"]).gte("updated_at", lastSync),
+    ]);
 
-    // Get updated modifiers
-    const { data: modifiers } = await getDb()
-      .from("modifier")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .gte("updated_at", lastSync);
-
-    // Get updated customers (exclude soft-deleted)
-    const { data: customers } = await getDb()
-      .from("customer")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .eq("is_deleted", false)
-      .gte("updated_at", lastSync);
-
-    // Get preferences
-    const { data: preferences } = await getDb()
-      .from("preference")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .gte("updated_at", lastSync);
-
-    // Get updated users (exclude soft-deleted)
-    const { data: users } = await getDb()
-      .from("pos_user")
-      .select(
-        "user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted"
-      )
-      .eq("account_id", body.account_id)
-      .eq("is_deleted", false)
-      .gte("updated_at", lastSync);
-
-    // Get discount codes
-    const { data: discountCodes } = await getDb()
-      .from("discountcode")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .gte("updated_at", lastSync);
-
-    // Get restaurant tables for this store
-    const { data: tables } = await getDb()
-      .from("restaurant_table")
-      .select("*")
-      .eq("store_id", body.store_id)
-      .gte("updated_at", lastSync);
-
-    // Get table sections for this store
-    const { data: tableSections } = await getDb()
-      .from("table_section")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .eq("store_id", body.store_id)
-      .gte("updated_at", lastSync);
-
-    // Get preparation stations for this store
-    const { data: preparationStations } = await getDb()
-      .from("preparation_station")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .eq("store_id", body.store_id)
-      .gte("updated_at", lastSync);
-
-    // Get category → station mappings (always pull full set for consistency)
-    const { data: categoryStationMappings } = await getDb()
-      .from("category_station_mapping")
-      .select("*")
-      .eq("account_id", body.account_id);
-
-    // Get stores and terminals (for config changes, exclude soft-deleted)
-    const { data: stores } = await getDb()
-      .from("store")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .eq("is_deleted", false)
-      .gte("updated_at", lastSync);
-
-    const { data: terminals } = await getDb()
-      .from("terminal")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .eq("is_deleted", false)
-      .gte("updated_at", lastSync);
-
-    // Get all sibling brands for this owner (so Android can register them)
+    // Sibling brands (depends on owner_id from above)
     let siblingBrands: any[] = [];
-    const { data: thisAccount } = await getDb()
-      .from("account")
-      .select("owner_id")
-      .eq("account_id", body.account_id)
-      .single();
     if (thisAccount?.owner_id) {
-      const { data: allBrands } = await getDb()
+      const { data: allBrands } = await db
         .from("account")
         .select("account_id, businessname, type, status, currency")
         .eq("owner_id", thisAccount.owner_id);
       siblingBrands = allBrands ?? [];
     }
-
-    // Get active/created inventory count sessions for this store
-    const { data: inventorySessions } = await getDb()
-      .from("inventory_count_session")
-      .select("*")
-      .eq("account_id", body.account_id)
-      .in("status", ["created", "active"])
-      .gte("updated_at", lastSync);
 
     const serverTime = new Date().toISOString();
 

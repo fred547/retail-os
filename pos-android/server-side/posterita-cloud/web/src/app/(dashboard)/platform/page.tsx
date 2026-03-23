@@ -166,15 +166,11 @@ async function BrandsTab({ admin, params }: { admin: any; params: any }) {
 // ── Owners Tab ──────────────────────────────────────────
 
 async function OwnersTab({ admin }: { admin: any }) {
-  const { data: owners } = await admin
-    .from("owner")
-    .select("id, name, email, phone, is_active, created_at")
-    .order("created_at", { ascending: false });
-
-  // Get brand counts per owner
-  const { data: accounts } = await admin
-    .from("account")
-    .select("owner_id");
+  // Run owners + account counts in parallel
+  const [{ data: owners }, { data: accounts }] = await Promise.all([
+    admin.from("owner").select("id, name, email, phone, is_active, created_at").order("created_at", { ascending: false }),
+    admin.from("account").select("owner_id"),  // Only fetches owner_id column, not full rows
+  ]);
 
   const brandCounts: Record<number, number> = {};
   for (const a of accounts ?? []) {
@@ -232,8 +228,8 @@ async function ErrorsTab({ admin }: { admin: any }) {
     admin.from("error_logs").select("id", { count: "exact", head: true }).eq("severity", "FATAL"),
   ]);
 
-  // Get unique tags
-  const { data: tagRows } = await admin.from("error_logs").select("tag");
+  // Get unique tags (limit to recent 500 rows to avoid full table scan)
+  const { data: tagRows } = await admin.from("error_logs").select("tag").order("created_at", { ascending: false }).limit(500);
   const uniqueTags = [...new Set((tagRows ?? []).map((r: any) => r.tag).filter(Boolean))].sort();
 
   return (
