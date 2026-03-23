@@ -59,6 +59,20 @@ export const TEST_SUITES = {
       { name: "adb-smoke-test.sh", tests: 8, area: "App launch, crash detection, connectivity, UI nodes, ANR, memory, DB, logcat" },
     ],
   },
+  firebase: {
+    totalTests: 42,
+    totalFiles: 4,
+    allPassed: false,
+    lastVerified: "2026-03-23",
+    version: "Firebase Test Lab, MediumPhone.arm Android 14",
+    videoUrl: "https://console.firebase.google.com/project/posterita-retail-os/testlab/histories/bh.a6c51873ad5e7aff/matrices/7872229024844517716",
+    files: [
+      { name: "LoginFlowTest", tests: 3, area: "Welcome screen, login form, credential entry (1 failed: test account)" },
+      { name: "NavigationFlowTest", tests: 7, area: "Home, Settings, Terminals WebView, POS, Cart, Kitchen, rapid nav stress" },
+      { name: "HoldOrderDaoTest", tests: 15, area: "Room DB: hold order CRUD, JSON persistence, kitchen flags, split bill" },
+      { name: "RestaurantTableDaoTest", tests: 17, area: "Room DB: table CRUD, occupancy lifecycle, store scoping" },
+    ],
+  },
   web: {
     totalTests: 156,
     totalFiles: 13,

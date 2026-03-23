@@ -20,7 +20,7 @@ interface CiReport {
 }
 
 export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
-  const { android, web, smoke, render, adb } = TEST_SUITES;
+  const { android, web, smoke, render, adb, firebase } = TEST_SUITES;
   const latest = ciReports[0];
 
   // Use CI data if available, otherwise static
@@ -29,7 +29,7 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
   const webPassed = latest?.web_passed ?? web.totalTests;
   const webFailed = latest?.web_failed ?? 0;
   const tsErrors = latest?.ts_errors ?? 0;
-  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + render.totalTests + adb.totalTests;
+  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + render.totalTests + adb.totalTests + firebase.totalTests;
   const allGreen = androidFailed === 0 && webFailed === 0 && tsErrors === 0;
 
   return (
@@ -96,6 +96,13 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
           <div>
             <p className="text-xs text-gray-500">Smoke + Render</p>
             <p className="text-xl font-bold text-green-600">{smoke.totalTests + render.totalTests}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
+          <Smartphone size={20} className="text-orange-600" />
+          <div>
+            <p className="text-xs text-gray-500">Firebase Device</p>
+            <p className="text-xl font-bold text-orange-600">{firebase.totalTests}</p>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
@@ -211,6 +218,40 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Firebase Test Lab */}
+      <div className="bg-white rounded-xl border border-orange-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-orange-100 flex items-center justify-between bg-orange-50">
+          <div className="flex items-center gap-3">
+            <Smartphone size={18} className="text-orange-600" />
+            <h3 className="font-semibold">Firebase Test Lab — {firebase.totalTests} tests on cloud device</h3>
+            <span className="text-xs text-gray-400">{firebase.version}</span>
+          </div>
+          {(firebase as any).videoUrl && (
+            <a
+              href={(firebase as any).videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-medium hover:bg-orange-700 transition"
+            >
+              Watch Video Recording
+            </a>
+          )}
+        </div>
+        <table className="data-table">
+          <thead><tr><th style={{width:30}}></th><th>Test Class</th><th className="text-center">Tests</th><th>Coverage</th></tr></thead>
+          <tbody>
+            {firebase.files.map((f) => (
+              <tr key={f.name}>
+                <td>{f.area.includes("failed") ? <XCircle size={14} className="text-yellow-500" /> : <CheckCircle size={14} className="text-green-500" />}</td>
+                <td className="font-mono text-sm">{f.name}</td>
+                <td className="text-center font-medium">{f.tests}</td>
+                <td className="text-sm text-gray-500">{f.area}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Static test file breakdown */}

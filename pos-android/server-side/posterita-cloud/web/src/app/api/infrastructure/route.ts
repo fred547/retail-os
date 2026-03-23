@@ -86,7 +86,20 @@ export async function GET() {
     services.anthropic = { status: "unknown" };
   }
 
-  // 5. Cloudinary
+  // 5. Firebase
+  services.firebase = {
+    status: "active",
+    project: "posterita-retail-os",
+    url: "https://console.firebase.google.com/project/posterita-retail-os/testlab",
+    plan: "Spark (free)",
+    features: "Test Lab: 10 virtual + 5 physical device tests/day. Video recording. Multi-device parallel.",
+    cost: "$0/month (free tier)",
+    usage: "Android UI tests on cloud devices (LoginFlow + NavigationFlow + Room DAO = 42 tests)",
+    limits: "10 virtual tests/day, 5 physical tests/day",
+    lastRun: "https://console.firebase.google.com/project/posterita-retail-os/testlab/histories/bh.a6c51873ad5e7aff/matrices/7872229024844517716",
+  };
+
+  // 6. Cloudinary
   services.cloudinary = {
     status: "active",
     cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy",
@@ -113,6 +126,7 @@ export async function GET() {
     render: 19,
     supabase: 0,
     anthropic: "5–25 (variable)",
+    firebase: 0,
     cloudinary: 0,
     github: 0,
     estimated_total: "$44–64/month",

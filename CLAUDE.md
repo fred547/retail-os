@@ -22,10 +22,26 @@ Unified retail management platform: one Android app, one web console, one backen
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
 - **AI:** Claude Haiku 4.5 via Anthropic API (`CLAUDE_API_KEY` on Vercel) — web search for product discovery
 - **WhatsApp:** Meta Cloud API (direct, no BSP) — single Posterita number for B2C + B2B. AI-first, human escalation via SalesIQ/Slack.
+- **Firebase:** Test Lab for Android UI tests on cloud devices. Project: `posterita-retail-os`. Console: https://console.firebase.google.com/project/posterita-retail-os/testlab
 - **Production Web:** `https://web.posterita.com` (Vercel — web console, dashboard, serverless API)
 - **Production Backend:** `https://posterita-backend.onrender.com` (Render — webhooks, workers, cron, monitoring)
 - **Monitor:** `https://web.posterita.com/api/monitor` — checks all services (Supabase, Render, Vercel sync API)
 - **Legacy (DO NOT USE):** `my.posterita.com/posteritabo` — all `app/*` endpoints are dead
+
+## Infrastructure & Costs
+
+| Service | Plan | Monthly Cost | Usage |
+|---------|------|-------------|-------|
+| **Vercel** | Pro | $20 | Web console, serverless API, 3 regions, 300s timeout |
+| **Render** | Starter | $19 | Backend: webhooks, cron, monitoring. Always-on. |
+| **Supabase** | Free | $0 | Postgres DB, 500MB, RLS, Auth, Realtime |
+| **Anthropic** | Pay-as-you-go | ~$5–25 | Claude Haiku 4.5 for AI import ($0.25/M input tokens) |
+| **Firebase** | Spark (free) | $0 | Test Lab: 10 virtual + 5 physical device tests/day |
+| **Cloudinary** | Free | $0 | Product images: 25 credits/month, 25GB storage |
+| **GitHub** | Free | $0 | Private repo, 2000 CI minutes/month |
+| **Total** | | **~$44–64/month** | |
+
+Dashboard: `/platform?tab=infra` shows live service status + DB row counts.
 
 ## Deployment
 
@@ -48,7 +64,17 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 **Supabase migrations:** Run via Management API (see `reference_supabase.md`). Reload cache: `NOTIFY pgrst, 'reload schema'`
 
 **Android:** `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
-- **Never** `createClient()` at module scope — use `function getDb() { return createClient(...) }` or `force-dynamic`
+
+**Firebase Test Lab:** Runs UI Automator tests on cloud devices on every push to main.
+- Project: `posterita-retail-os` | Console: https://console.firebase.google.com/project/posterita-retail-os/testlab
+- Plan: Spark (free) — 10 virtual + 5 physical device tests/day
+- Device: MediumPhone.arm (Pixel-like), Android 14
+- Tests: `LoginFlowTest` (3 tests) + `NavigationFlowTest` (7 tests) = 10 UI flow tests
+- Also runs existing Room DAO tests (32 tests) on real device
+- Video recordings: stored in GCS, viewable from Firebase Console
+- CI: `firebase-ui-tests` job in GitHub Actions (needs `GCLOUD_SERVICE_KEY` secret)
+
+**Never** `createClient()` at module scope — use `function getDb() { return createClient(...) }` or `force-dynamic`
 
 ## Rules
 
