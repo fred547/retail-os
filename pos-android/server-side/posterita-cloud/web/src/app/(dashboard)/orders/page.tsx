@@ -33,13 +33,13 @@ export default async function OrdersPage({
   if (params.status === "unpaid") query = query.eq("is_paid", false);
   if (params.date) query = query.gte("date_ordered", params.date);
 
-  const { data: rawOrders, count } = await query;
-
-  // Map store names separately
-  const { data: stores } = await supabase
-    .from("store")
-    .select("store_id, name")
-    .eq("account_id", accountId);
+  // Run orders + stores queries in parallel
+  const [ordersResult, storesResult] = await Promise.all([
+    query,
+    supabase.from("store").select("store_id, name").eq("account_id", accountId),
+  ]);
+  const { data: rawOrders, count } = ordersResult;
+  const { data: stores } = storesResult;
   const storeMap: Record<number, string> = {};
   for (const s of stores ?? []) storeMap[s.store_id] = s.name;
   const orders = (rawOrders ?? []).map((o: any) => ({

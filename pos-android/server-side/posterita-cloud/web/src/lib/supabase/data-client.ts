@@ -38,10 +38,21 @@ export async function dataQuery<T = any>(
   });
   const result = await res.json();
   if (result.error) {
-    // Auto-log query errors
-    import("@/lib/error-logger").then(({ logError }) => {
-      logError("DataProxy", `Query failed: ${result.error}`, { table, select: options.select });
-    });
+    // Log query errors immediately (don't rely on async import)
+    const info = JSON.stringify({ table, select: options.select });
+    console.error(`[dataQuery] ${table}: ${result.error}`);
+    try {
+      fetch("/api/errors/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          severity: "ERROR",
+          tag: "DataProxy",
+          message: `Query failed: ${result.error} | ${info}`,
+          extra: typeof window !== "undefined" ? window.location.pathname : undefined,
+        }),
+      }).catch(() => {});
+    } catch (_) {}
   }
   return result;
 }

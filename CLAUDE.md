@@ -11,14 +11,13 @@ Unified retail management platform: one Android app, one web console, one backen
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
 | `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00025) |
-| `specs/modules/` | Specs: 19-kitchen, 20-terminal-types, 22-whatsapp-support |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
-| `specs/` | Specification files |
+| `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
 
 ## Stack & URLs
 
 - **Android:** Kotlin, Room (v25), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
-- **Web:** Next.js 14+ (App Router) on Vercel
+- **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
 - **DB:** Supabase Postgres — `account_id` is TEXT. **RLS is enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
 - **AI:** Claude Haiku 4.5 via Anthropic API (`CLAUDE_API_KEY` on Vercel) — web search for product discovery
@@ -158,7 +157,19 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 | `/api/intake/[batchId]` | GET | Get intake batch details |
 | `/api/intake/[batchId]/process` | POST | Process intake batch (AI matching) |
 | `/api/intake/[batchId]/review` | POST | Review + approve/reject intake items |
+| `/api/monitor` | GET | System health — checks Supabase, Render backend, sync API, error monitor |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
+
+**Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/health` | GET | Backend health + Supabase connectivity check |
+| `/webhook/whatsapp` | GET | Meta webhook verification handshake |
+| `/webhook/whatsapp` | POST | Incoming WhatsApp messages (B2C + B2B routing) |
+| `/monitor/errors` | GET | Open error count + recent fatals |
+| `/monitor/sync` | GET | Sync health (last hour: count, avg duration, failures) |
+| `/monitor/accounts` | GET | Total accounts, owners, active devices |
 
 ## Auth Flow
 
@@ -210,7 +221,7 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 
 **Table sections:** `table_section` table — zones/areas (Indoor, Patio, Bar, Takeaway). Tables have optional `section_id`. Takeaway sections auto-assign order numbers.
 
-**Preparation stations:** `preparation_station` + `category_station_mapping`. Station types: kitchen/bar/dessert/custom. Each station can link to a printer via `printer.station_id`.
+**Preparation stations:** `preparation_station` + `category_station_mapping`. Station types: kitchen/bar/dessert/custom. Each station links to a printer via `preparation_station.printer_id` (one printer can serve many stations). Configured on Android via printer create screen (multi-select checkboxes) or web console `/stations`.
 
 **Station routing priority:** (1) `product.station_override_id` → (2) `category_station_mapping` → (3) default kitchen station. Resolved via `StationResolver.resolveForCart()`. Falls back to legacy `printKitchenOnly()` if no stations configured.
 
@@ -277,7 +288,7 @@ All errors from Android, Web Console, and API routes go to the **same `error_log
 Owner → Brand (Account) → Store → Terminal (login context)
                         → Users (owner/admin/supervisor/cashier/staff)
 ```
-Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 products + images **on the server**. One Room DB per brand (not shared). Brands tracked cross-DB via `LocalAccountRegistry`.
+Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 products + images + 12 modifiers (8 food, 4 drinks) + 3 table sections + 10 tables **on the server**. One Room DB per brand (not shared). Brands tracked cross-DB via `LocalAccountRegistry`.
 
 ## Terminal Types
 
@@ -292,13 +303,13 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 | `customer_display` | Customer-facing cart mirror (future) | Auto-start |
 | `self_service` | Self-ordering kiosk (future) | Auto-start |
 
-**Terminal type replaces global `businessType`** — `prefsManager.isRestaurant` now reads from `terminal.terminal_type`, not a global pref. Set via EditTerminalActivity or web console `/terminals`.
+**Terminal type replaces global `businessType`** — `prefsManager.isRestaurant` checks both `terminalType` AND legacy `businessType` for backward compat. Set via Settings toggle (writes to both), EditTerminalActivity, or web console `/terminals`.
 
 **Feature gating:** Use `prefsManager.isRestaurantTerminal` / `prefsManager.isKdsTerminal` instead of the old `prefsManager.isRestaurant`. See `specs/modules/20-terminal-types.md` for full feature visibility matrix.
 
 ## Brand Management
 
-- **Signup creates 2 brands on server:** live (empty) + demo (15 products with images, 4 categories, 2 taxes). Android pulls both via sync.
+- **Signup creates 2 brands on server:** live (empty) + demo (15 products with images, 4 categories, 2 taxes, 12 modifiers). Android pulls both via sync.
 - **Create demo brand:** `POST /api/account/create-demo` → requires valid owner (rejects "null" email) → server creates full brand → Android creates Room DB shell → resets sync timestamp → CloudSync pulls.
 - **AI Import:** `POST /api/ai-import` discovers products → `POST /api/ai-import/save` saves to Supabase (server-first) → sync pulls to Android. Never saves locally.
 - **Delete brand (Web):** account manager only. Live brands must be archived first. Confirmation modal.
@@ -337,7 +348,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Owners tab** — all owners with name, email, phone, brand count, join date, active status. Edit panel: change name/email/phone, send password reset. Summary cards.
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
-- **Test Results tab** — 625 total tests: 419 Android unit (21 files) + 156 web unit (13 files) + 42 production smoke tests (API, DB, pages, edge cases, SQL injection) + 8 ADB device tests (launch, crash, ANR, memory, logcat). CI reports from `ci_report` table with git SHA, commit message, pass/fail per push. Static breakdown in `test-data.ts`.
+- **Test Results tab** — 641 total tests: 419 Android unit (21 files) + 156 web unit (13 files) + 42 production smoke (API, DB, pages, SQL injection) + 16 Render backend (health, monitors, WhatsApp webhook, CORS) + 8 ADB device (launch, crash, ANR, memory). CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 
 ## DB Column Reference (common mistakes)
 
@@ -356,6 +367,9 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `category_station_mapping` | id, account_id, category_id, station_id | |
 | `terminal` | terminal_id, store_id, account_id, name, prefix, floatamt, isactive, **terminal_type**, zone | ~~type~~ (use `terminal_type`) |
 | `printer` | printer_id, name, printer_type, width, ip, device_name, print_receipt, print_kitchen, cash_drawer, role, account_id, store_id, station_id | |
+| `sync_request_log` | id, account_id, terminal_id, store_id, device_id, device_model, app_version, request_at, duration_ms, status, orders_pushed, products_pulled, sync_errors (JSONB) | |
+| `ci_report` | id, git_sha, branch, commit_message, android_passed/failed, web_passed/failed, ts_errors, status, created_at | |
+| `modifier` | modifier_id, account_id, product_id, productcategory_id, name, sellingprice, isactive, ismodifier | |
 
 ## Current Phase
 

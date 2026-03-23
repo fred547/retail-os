@@ -1,59 +1,74 @@
 # Agentic Tester
 
-Autonomous QA agent for Posterita Retail OS. When invoked, it:
-
-1. Runs all test suites (Android + Web)
-2. Checks production error_logs for new errors
-3. Tests critical API endpoints
-4. Verifies web console pages load
-5. Reports findings
+Autonomous QA agent for Posterita Retail OS. Runs 641 tests across 4 layers + checks production health.
 
 ## Execution Plan
 
-### Step 1: Run Test Suites
+### Step 1: Run Unit Tests
 ```bash
-# Android
+# Android (419 tests, 21 files)
 cd pos-android && ./gradlew testDebugUnitTest 2>&1 | tail -20
 
-# Web
+# Web (156 tests, 13 files)
 cd pos-android/server-side/posterita-cloud/web && npx vitest run 2>&1 | tail -20
 ```
 
-### Step 2: Check Production Errors
+### Step 2: Run Smoke Tests (hits production)
+```bash
+cd pos-android/server-side/posterita-cloud/web
+
+# Vercel + Supabase (42 tests)
+SUPABASE_SERVICE_ROLE_KEY="$KEY" npx vitest run src/__tests__/api/smoke-test.test.ts
+
+# Render backend (16 tests)
+SUPABASE_SERVICE_ROLE_KEY="$KEY" npx vitest run src/__tests__/api/render-backend.test.ts
+```
+
+### Step 3: System Health Monitor
+```bash
+curl -s "https://web.posterita.com/api/monitor" | python3 -m json.tool
+```
+Checks: Supabase, Render backend, error monitor, sync monitor, Vercel sync API.
+All should be `"ok"`. Report any `"down"`, `"degraded"`, or `"error"`.
+
+### Step 4: Check Production Errors
 ```bash
 curl -s "https://ldyoiexyqvklujvwcaqq.supabase.co/rest/v1/error_logs?status=eq.open&select=id,severity,tag,message,created_at&order=created_at.desc&limit=10" \
   -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
 ```
 
-### Step 3: Test Critical API Endpoints
-Test each endpoint and verify response status + structure:
-- `GET /api/sync` → 200, has `sync_api_version`
-- `POST /api/data` with `{"table":"product","select":"product_id,name","limit":1}` → 200, has data
-- `GET /api/debug/session` → 200
-
-### Step 4: Test Web Console Pages
-Fetch each page and check for 200 (not 500):
-```
-/products, /orders, /customers, /stores, /terminals, /categories,
-/tables, /stations, /settings, /inventory, /platform
-```
-
-### Step 5: Check Sync Monitor
-Query `sync_request_log` for recent failures:
+### Step 5: Check Render Backend Health
 ```bash
-curl -s ".../sync_request_log?status=neq.success&order=request_at.desc&limit=5"
+curl -s "https://posterita-backend.onrender.com/health"
+curl -s "https://posterita-backend.onrender.com/monitor/errors"
+curl -s "https://posterita-backend.onrender.com/monitor/sync"
+curl -s "https://posterita-backend.onrender.com/monitor/accounts"
 ```
 
-### Step 6: TypeScript Check
+### Step 6: Check Sync Health
 ```bash
-cd web && npx tsc --noEmit 2>&1 | tail -10
+curl -s "https://ldyoiexyqvklujvwcaqq.supabase.co/rest/v1/sync_request_log?status=neq.success&order=request_at.desc&limit=5" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
+```
+
+### Step 7: TypeScript Check
+```bash
+cd pos-android/server-side/posterita-cloud/web && npx tsc --noEmit 2>&1 | tail -10
+```
+
+### Step 8: ADB Device Test (if device connected)
+```bash
+cd pos-android && ./scripts/adb-smoke-test.sh
 ```
 
 ### Output
 Report with:
-- ✅/❌ per check
-- New errors found (with IDs)
-- Failed tests (with names)
-- API endpoints that returned non-200
-- Recommendations
+- ✅/❌ per step
+- Test counts: passed/failed per suite
+- System health: all 5 service checks
+- Open errors (count + any FATAL)
+- Sync failures (count + details)
+- Render backend uptime + response time
+- Recommendations for anything failing

@@ -175,6 +175,33 @@ Create Wizard (new entity)
 ### Refund: order search → item checkboxes → reason → supervisor PIN
 ### Scanner: viewfinder + auto-scan toggle + product toast + MY CART with badge
 
+## Web Console Patterns
+
+### Sidebar Navigation
+- `prefetch={true}` on all `<Link>` components — pages pre-load in background
+- Brand › Store › Terminal context shown below header
+- Responsive: collapses to hamburger on mobile
+
+### Terminal Config Page (`/terminals`)
+- Table layout: Terminal name (with type icon), Type badge, Store, Zone, Prefix, Status, Actions (Edit + QR)
+- Terminal type: visual card selector with icons (Monitor, ChefHat, ScreenShare, Smartphone), not a dropdown
+- Edit panel opens above the table, not in an accordion
+
+### Platform Tabs (`/platform`)
+- URL-based tabs: `?tab=brands|owners|errors|sync|tests`
+- `<Link prefetch={true}>` for each tab — near-instant switching
+- Each tab fetches its own data (not all at once)
+
+### Table Section Picker (Android)
+- Color-coded cards: occupied tables filled with section color, free tables outlined
+- Section tabs at top (All / Indoor / Patio / Takeaway) with counts
+- Dialog sized at 90% width / 70% height
+
+### Printer Station Assignment (Android)
+- When "Print Kitchen Receipts" toggled on, show station checkboxes below
+- Multi-select: check which stations this printer handles
+- Label: "Stations this printer handles:" with station name + type
+
 ## Rules
 1. **NEVER use @color/black** — use `posterita_ink`
 2. **NEVER use hardcoded grays** — use `posterita_muted`
@@ -185,3 +212,5 @@ Create Wizard (new entity)
 7. **NEVER build monolithic edit forms** — use Section Editor pattern (progressive disclosure)
 8. **NEVER show data as a flat label-value table** — use Detail Brochure pattern
 9. **NEVER use CRUD scaffolds** — every screen should feel designed, not generated
+10. **Responsive design, NOT adaptive** — one layout that flexes, use Tailwind responsive classes
+11. **Prefetch all nav links** — `prefetch={true}` on sidebar and tab `<Link>` components

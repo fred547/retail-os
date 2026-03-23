@@ -231,6 +231,7 @@ export default function Sidebar({
           <>
             <Link
               href={portal === "manager" ? "/manager/platform" : "/platform"}
+              prefetch={true}
               className={`sidebar-link ${
                 pathname === "/platform" || pathname === "/manager/platform" ? "active !bg-red-600" : ""
               }`}
@@ -258,6 +259,7 @@ export default function Sidebar({
             <Link
               key={item.name}
               href={item.href}
+              prefetch={true}
               className={`sidebar-link ${isActive ? "active" : ""}`}
             >
               <Icon size={20} />

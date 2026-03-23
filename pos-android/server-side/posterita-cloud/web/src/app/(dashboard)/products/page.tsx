@@ -61,36 +61,22 @@ export default async function ProductsPage({
     query = query.eq("productcategory_id", params.category);
   }
 
-  const { data: products, count, error: queryError } = await query;
-  // DEBUG: temporarily visible
-  if (queryError) console.error("[products] query error:", queryError.message);
-
-  // Get counts for each status tab
+  // Run all queries in parallel for speed
   const [
+    { data: products, count, error: queryError },
     { count: reviewCount },
     { count: draftCount },
+    { data: categories },
   ] = await Promise.all([
-    supabase
-      .from("product")
-      .select("product_id", { count: "exact", head: true })
-      .eq("account_id", accountId)
-      .eq("isactive", "Y")
-      .eq("product_status", "review"),
-    supabase
-      .from("product")
-      .select("product_id", { count: "exact", head: true })
-      .eq("account_id", accountId)
-      .eq("isactive", "Y")
-      .eq("product_status", "draft"),
+    query,
+    supabase.from("product").select("product_id", { count: "exact", head: true })
+      .eq("account_id", accountId).eq("isactive", "Y").eq("product_status", "review"),
+    supabase.from("product").select("product_id", { count: "exact", head: true })
+      .eq("account_id", accountId).eq("isactive", "Y").eq("product_status", "draft"),
+    supabase.from("productcategory").select("productcategory_id, name")
+      .eq("account_id", accountId).eq("isactive", "Y").order("name"),
   ]);
-
-  // Get categories for filter (scoped to this account)
-  const { data: categories } = await supabase
-    .from("productcategory")
-    .select("productcategory_id, name")
-    .eq("account_id", accountId)
-    .eq("isactive", "Y")
-    .order("name");
+  if (queryError) console.error("[products] query error:", queryError.message);
 
   // Map category names onto products (since FK join was dropped)
   const catMap: Record<number, string> = {};

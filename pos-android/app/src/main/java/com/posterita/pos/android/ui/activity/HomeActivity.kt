@@ -129,6 +129,12 @@ class HomeActivity : AppCompatActivity() {
         loadTodaySummary()
         setupBottomNav()
         setupConnectivityDot()
+
+        // Pre-fetch common WebView pages so they load instantly when tapped
+        val base = "https://web.posterita.com"
+        for (path in listOf("/products", "/stores", "/terminals", "/categories", "/users")) {
+            com.posterita.pos.android.util.WebViewWarmUp.prefetchUrl("$base$path")
+        }
     }
 
     override fun onResume() {

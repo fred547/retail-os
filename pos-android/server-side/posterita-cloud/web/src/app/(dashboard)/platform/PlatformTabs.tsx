@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical } from "lucide-react";
+import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical, Gauge, Server, GitCommit } from "lucide-react";
 
 const TABS = [
   { key: "brands", label: "Brands", icon: Building2 },
   { key: "owners", label: "Owners", icon: Users },
   { key: "errors", label: "Errors", icon: AlertTriangle },
-  { key: "sync", label: "Sync Monitor", icon: RefreshCw },
-  { key: "tests", label: "Test Results", icon: FlaskConical },
+  { key: "sync", label: "Sync", icon: RefreshCw },
+  { key: "tests", label: "Tests", icon: FlaskConical },
+  { key: "benchmark", label: "Benchmark", icon: Gauge },
+  { key: "infra", label: "Infrastructure", icon: Server },
+  { key: "changelog", label: "Changelog", icon: GitCommit },
 ];
 
 export default function PlatformTabs() {
@@ -25,6 +28,7 @@ export default function PlatformTabs() {
           <Link
             key={tab.key}
             href={`/platform?tab=${tab.key}`}
+            prefetch={true}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
               isActive
                 ? "border-posterita-blue text-posterita-blue"

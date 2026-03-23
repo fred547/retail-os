@@ -10,6 +10,9 @@ import PlatformTabs from "./PlatformTabs";
 import OwnerList from "./OwnerList";
 import SyncMonitor from "./SyncMonitor";
 import TestResults from "./TestResults";
+import Benchmark from "./Benchmark";
+import Infrastructure from "./Infrastructure";
+import Changelog from "./Changelog";
 
 const PAGE_SIZE = 25;
 
@@ -55,6 +58,15 @@ export default async function PlatformPage({
       )}
       {tab === "tests" && (
         <TestsTab admin={admin} />
+      )}
+      {tab === "benchmark" && (
+        <Benchmark />
+      )}
+      {tab === "infra" && (
+        <Infrastructure />
+      )}
+      {tab === "changelog" && (
+        <Changelog />
       )}
     </div>
   );

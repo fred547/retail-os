@@ -2,20 +2,34 @@ import { createServerSupabase, createServerSupabaseAdmin } from "./supabase/serv
 import { cookies } from "next/headers";
 
 const OTT_COOKIE = "posterita_ott_session";
+const ACCOUNT_CACHE_COOKIE = "posterita_account_cache";
 
 /**
  * Resolves the current user's account_id for data scoping.
  *
+ * Uses a session cookie cache to avoid 5-7 DB queries on every request.
+ * Cache is invalidated on super admin switch or owner session change.
+ *
  * Priority:
- * 1. Super admin impersonation session
- * 2. Owner account session (owner_account_session table)
- * 3. pos_user.account_id (regular user's account)
- * 4. Owner fallback by email
- * 5. OTT cookie (Android WebView sessions)
+ * 1. Cached account_id cookie (fast path — skips all DB lookups)
+ * 2. Super admin impersonation session
+ * 3. Owner account session (owner_account_session table)
+ * 4. pos_user.account_id (regular user's account)
+ * 5. Owner fallback by email
+ * 6. OTT cookie (Android WebView sessions)
  *
  * Returns null if no account can be determined.
  */
 export async function getSessionAccountId(): Promise<string | null> {
+  // Fast path: check cached account_id cookie
+  try {
+    const cookieStore = await cookies();
+    const cached = cookieStore.get(ACCOUNT_CACHE_COOKIE);
+    if (cached?.value) {
+      return cached.value;
+    }
+  } catch (_) {}
+
   const supabase = await createServerSupabase();
   const {
     data: { user },
@@ -27,6 +41,25 @@ export async function getSessionAccountId(): Promise<string | null> {
   }
 
   const admin = await createServerSupabaseAdmin();
+
+  // Helper to cache the resolved account_id in a cookie for fast subsequent lookups
+  const cacheAndReturn = async (accountId: string | null): Promise<string | null> => {
+    if (accountId) {
+      try {
+        const cookieStore = await cookies();
+        cookieStore.set(ACCOUNT_CACHE_COOKIE, accountId, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          maxAge: 3600, // 1 hour — re-resolves after that
+          path: "/",
+        });
+      } catch (_) {
+        // Can't set cookies in Server Components — that's fine, API routes can
+      }
+    }
+    return accountId;
+  };
 
   // 1. Check super admin impersonation
   const { data: superAdmin } = await admin
@@ -45,7 +78,7 @@ export async function getSessionAccountId(): Promise<string | null> {
       .limit(1)
       .single();
 
-    if (session) return session.account_id;
+    if (session) return cacheAndReturn(session.account_id);
     // Super admin without impersonation — no account context
     return null;
   }
@@ -69,7 +102,7 @@ export async function getSessionAccountId(): Promise<string | null> {
       .eq("owner_id", owner.id)
       .single();
 
-    if (ownerSession?.account_id) return ownerSession.account_id;
+    if (ownerSession?.account_id) return cacheAndReturn(ownerSession.account_id);
 
     // No session — find first account for this owner
     const { data: firstAccount } = await admin
@@ -80,7 +113,7 @@ export async function getSessionAccountId(): Promise<string | null> {
       .limit(1)
       .single();
 
-    if (firstAccount?.account_id) return firstAccount.account_id;
+    if (firstAccount?.account_id) return cacheAndReturn(firstAccount.account_id);
   }
 
   // 3. Regular user — look up account from pos_user
@@ -91,7 +124,7 @@ export async function getSessionAccountId(): Promise<string | null> {
     .limit(1)
     .single();
 
-  if (posUser) return posUser.account_id;
+  if (posUser) return cacheAndReturn(posUser.account_id);
 
   // 4. Fallback — check owner table by email
   if (!owner && user.email) {
@@ -109,7 +142,7 @@ export async function getSessionAccountId(): Promise<string | null> {
         .limit(1)
         .single();
 
-      if (account) return account.account_id;
+      if (account) return cacheAndReturn(account.account_id);
     }
   }
 

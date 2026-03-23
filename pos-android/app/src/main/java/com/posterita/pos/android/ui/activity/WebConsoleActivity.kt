@@ -58,7 +58,11 @@ class WebConsoleActivity : AppCompatActivity() {
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "Web Console"
         binding.textTitle.text = title
         binding.buttonBack.setOnClickListener {
-            finish()
+            if (binding.webView.canGoBack()) {
+                binding.webView.goBack()
+            } else {
+                finish()
+            }
         }
 
         // Connectivity
@@ -110,10 +114,10 @@ class WebConsoleActivity : AppCompatActivity() {
                             .pt-16, .lg\\:pt-8 { padding-top: 4px !important; }
                             /* Hide breadcrumb and page heading (Android top bar has it) */
                             nav[aria-label="Breadcrumb"] { display: none !important; }
-                            /* Mobile-optimize data tables: hide less important columns */
-                            .data-table th:nth-child(n+4), .data-table td:nth-child(n+4) { display: none !important; }
-                            .data-table th:first-child, .data-table td:first-child { width: 40px !important; padding: 6px !important; }
+                            /* Mobile-optimize data tables: compact but keep all columns visible */
+                            .data-table { font-size: 13px !important; }
                             .data-table th, .data-table td { padding: 8px 6px !important; font-size: 13px !important; }
+                            .data-table { overflow-x: auto !important; display: block !important; }
                             /* Make rows tappable with better touch targets */
                             .data-table tbody tr { min-height: 48px; }
                             /* Compact spacing */
@@ -172,7 +176,7 @@ class WebConsoleActivity : AppCompatActivity() {
 
     /**
      * Requests a One-Time Token from the web console API.
-     * Returns the token string on success, or null on any failure (offline, error, etc.).
+     * Returns the token string on success, or null on any failure (offline, error, etc).
      */
     @Inject lateinit var db: com.posterita.pos.android.data.local.AppDatabase
     @Inject lateinit var sessionManager: com.posterita.pos.android.util.SessionManager
@@ -239,7 +243,11 @@ class WebConsoleActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        @Suppress("DEPRECATION")
-        super.onBackPressed()
+        if (binding.webView.canGoBack()) {
+            binding.webView.goBack()
+        } else {
+            @Suppress("DEPRECATION")
+            super.onBackPressed()
+        }
     }
 }

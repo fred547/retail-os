@@ -28,5 +28,8 @@ class PosteritaApp : Application() {
 
         // Schedule cloud sync (Supabase) — every 5 minutes, requires network
         CloudSyncWorker.schedulePeriodicSync(this)
+
+        // Warm up WebView engine — eliminates 300-800ms cold start on first WebView load
+        com.posterita.pos.android.util.WebViewWarmUp.warmUp(this)
     }
 }

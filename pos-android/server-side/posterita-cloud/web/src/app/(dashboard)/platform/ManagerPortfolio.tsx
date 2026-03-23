@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import React, { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2, Filter, Users, Activity, Briefcase,
@@ -92,6 +92,7 @@ export default function ManagerPortfolio({
 
   const navigate = (overrides: Record<string, string>) => {
     const params = new URLSearchParams();
+    params.set("tab", "brands");
     const merged = { type: typeFilter, status: statusFilter, q: search, page: String(page), ...overrides };
     for (const [k, v] of Object.entries(merged)) {
       if (v && v !== "all" && v !== "1" && v !== "") params.set(k, v);
@@ -344,7 +345,22 @@ export default function ManagerPortfolio({
         {ownerGroups.length === 0 ? (
           <div className="text-center py-12 text-slate-400">No accounts match your filters</div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="overflow-x-auto">
+            <table className="data-table w-full">
+              <thead>
+                <tr>
+                  <th>Brand</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th className="text-center">Stores</th>
+                  <th className="text-center">Products</th>
+                  <th className="text-center">Orders</th>
+                  <th className="text-center">Users</th>
+                  <th>Manager</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
             {ownerGroups.map((group) => {
               const owner = group.owner;
               const ownerId = owner?.id ?? group.ownerId;
@@ -352,87 +368,90 @@ export default function ManagerPortfolio({
               const visible = isExpanded ? group.accounts : group.accounts.slice(0, 2);
 
               return (
-                <div key={group.key}>
-                  {/* Owner header */}
-                  <div className="px-6 py-3 bg-slate-50 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                      <User size={14} className="text-slate-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-slate-900">{owner?.name || "Unknown"}</div>
-                      <div className="text-xs text-slate-500 truncate">{[owner?.email, owner?.phone].filter(Boolean).join(" · ") || "No contact"}</div>
-                    </div>
-                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{group.accounts.length} brand{group.accounts.length !== 1 ? "s" : ""}</span>
-                    {owner?.account_manager && (
-                      <span className="text-xs text-slate-500">AM: {owner.account_manager.name || owner.account_manager.email}</span>
-                    )}
-                    {owner?.id && (
-                      <button onClick={() => openEditOwner(owner)} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium">
-                        <Pencil size={12} /> Edit
-                      </button>
-                    )}
-                  </div>
+                <React.Fragment key={group.key}>
+                  {/* Owner header row */}
+                  <tr className="bg-slate-50">
+                    <td colSpan={9} className="!py-2 !px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center">
+                          <User size={12} className="text-slate-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-sm text-slate-900">{owner?.name || "Unknown"}</span>
+                          <span className="text-xs text-slate-400 ml-2">{[owner?.email, owner?.phone].filter(Boolean).join(" · ") || ""}</span>
+                        </div>
+                        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{group.accounts.length}</span>
+                        {owner?.id && (
+                          <button onClick={() => openEditOwner(owner)} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium">
+                            <Pencil size={11} /> Edit
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
 
                   {/* Brand rows */}
-                  <table className="data-table">
-                    <tbody>
-                      {visible.map((account) => (
-                        <tr key={account.account_id} className={actionLoading === account.account_id ? "opacity-50" : ""}>
-                          <td className="pl-16">
-                            <div className="font-medium text-slate-900">{account.businessname || "Unnamed"}</div>
-                            <div className="text-xs text-slate-400 font-mono">{account.account_id}</div>
-                          </td>
-                          <td>
-                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${TYPE_COLORS[account.type] || "bg-gray-100"}`}>
-                              {account.type}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${STATUS_COLORS[account.status] || "bg-gray-100"}`}>
-                              {account.status}
-                            </span>
-                          </td>
-                          <td className="text-center text-sm">{account.store_count}</td>
-                          <td className="text-center text-sm">{account.product_count}</td>
-                          <td className="text-center text-sm">{account.user_count}</td>
-                          <td>
-                            <select value={String(account.owner?.account_manager?.id ?? managers[0]?.id ?? "")}
-                              onChange={(e) => handleAssign(account.account_id, e.target.value)}
-                              disabled={isPending && pendingAccount === account.account_id}
-                              className="px-2 py-1 rounded-lg border border-slate-200 text-xs min-w-[140px]">
-                              {managers.map((m) => (<option key={m.id} value={String(m.id)}>{m.name || m.email}</option>))}
-                            </select>
-                          </td>
-                          <td>
-                            <div className="flex items-center gap-2">
-                              <AccountSwitcher accountId={account.account_id} businessName={account.businessname} />
-                              {account.type === "live" && account.status !== "archived" && (
-                                <button onClick={() => setModal({ type: "archive_required", account })}
-                                  className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-800 font-medium">
-                                  <Archive size={13} /> Archive
-                                </button>
-                              )}
-                              <button onClick={() => openDeleteConfirm(account)}
-                                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium">
-                                <Trash2 size={13} /> Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
+                  {visible.map((account) => (
+                    <tr key={account.account_id} className={actionLoading === account.account_id ? "opacity-50" : ""}>
+                      <td className="pl-10">
+                        <div className="font-medium text-slate-900">{account.businessname || "Unnamed"}</div>
+                        <div className="text-xs text-slate-400 font-mono">{account.account_id}</div>
+                      </td>
+                      <td>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${TYPE_COLORS[account.type] || "bg-gray-100"}`}>
+                          {account.type}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${STATUS_COLORS[account.status] || "bg-gray-100"}`}>
+                          {account.status}
+                        </span>
+                      </td>
+                      <td className="text-center text-sm font-medium">{account.store_count}</td>
+                      <td className="text-center text-sm font-medium">{account.product_count}</td>
+                      <td className="text-center text-sm font-medium">{account.order_count}</td>
+                      <td className="text-center text-sm font-medium">{account.user_count}</td>
+                      <td>
+                        <select value={String(account.owner?.account_manager?.id ?? managers[0]?.id ?? "")}
+                          onChange={(e) => handleAssign(account.account_id, e.target.value)}
+                          disabled={isPending && pendingAccount === account.account_id}
+                          className="px-2 py-1 rounded-lg border border-slate-200 text-xs min-w-[100px]">
+                          {managers.map((m) => (<option key={m.id} value={String(m.id)}>{m.name || m.email}</option>))}
+                        </select>
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <AccountSwitcher accountId={account.account_id} businessName={account.businessname} />
+                          {account.type === "live" && account.status !== "archived" && (
+                            <button onClick={() => setModal({ type: "archive_required", account })}
+                              className="text-xs text-orange-600 hover:text-orange-800 px-1.5 py-1 rounded hover:bg-orange-50">
+                              <Archive size={12} />
+                            </button>
+                          )}
+                          <button onClick={() => openDeleteConfirm(account)}
+                            className="text-xs text-red-500 hover:text-red-700 px-1.5 py-1 rounded hover:bg-red-50">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                   {group.accounts.length > 2 && (
-                    <button onClick={() => toggleOwner(ownerId)}
-                      className="w-full px-6 py-2 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1">
-                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                      {isExpanded ? "Show less" : `Show ${group.accounts.length - 2} more`}
-                    </button>
+                    <tr key={`${group.key}-expand`}>
+                      <td colSpan={9} className="!p-0">
+                        <button onClick={() => toggleOwner(ownerId)}
+                          className="w-full px-6 py-2 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1">
+                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {isExpanded ? "Show less" : `Show ${group.accounts.length - 2} more`}
+                        </button>
+                      </td>
+                    </tr>
                   )}
-                </div>
+                </React.Fragment>
               );
             })}
+              </tbody>
+            </table>
           </div>
         )}
 

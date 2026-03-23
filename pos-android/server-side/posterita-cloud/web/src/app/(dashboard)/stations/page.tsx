@@ -38,7 +38,7 @@ interface CategoryStationMapping {
 }
 
 interface ProductCategory {
-  category_id: number;
+  productcategory_id: number;
   name: string;
   isactive: string;
 }
@@ -100,7 +100,7 @@ export default function StationsPage() {
       }),
       dataQuery<CategoryStationMapping>("category_station_mapping"),
       dataQuery<ProductCategory>("productcategory", {
-        select: "category_id, name, isactive",
+        select: "productcategory_id, name, isactive",
         filters: [{ column: "isactive", op: "eq", value: "Y" }],
         order: { column: "name" },
       }),
@@ -392,29 +392,29 @@ export default function StationsPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
             {categories.map((cat) => {
               const otherStation = mappings.find(
-                (m) => m.category_id === cat.category_id && m.station_id !== showMappingFor
+                (m) => m.category_id === cat.productcategory_id && m.station_id !== showMappingFor
               );
               const otherStationName = otherStation
                 ? stations.find((s) => s.station_id === otherStation.station_id)?.name
                 : null;
               return (
                 <label
-                  key={cat.category_id}
+                  key={cat.productcategory_id}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition ${
-                    selectedCategories.has(cat.category_id)
+                    selectedCategories.has(cat.productcategory_id)
                       ? "border-posterita-blue bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={selectedCategories.has(cat.category_id)}
-                    onChange={() => toggleCategory(cat.category_id)}
+                    checked={selectedCategories.has(cat.productcategory_id)}
+                    onChange={() => toggleCategory(cat.productcategory_id)}
                     className="w-4 h-4 rounded border-gray-300 text-posterita-blue focus:ring-posterita-blue"
                   />
                   <div>
                     <span className="text-sm font-medium">{cat.name}</span>
-                    {otherStationName && !selectedCategories.has(cat.category_id) && (
+                    {otherStationName && !selectedCategories.has(cat.productcategory_id) && (
                       <span className="block text-xs text-gray-400">
                         Currently: {otherStationName}
                       </span>
