@@ -40,13 +40,14 @@ const ALLOWED_TABLES = new Set([
   "intake_batch", "intake_item",
   "table_section", "preparation_station", "category_station_mapping",
   "inventory_count_session", "inventory_count_entry",
-  "error_logs", "owner",
+  "error_logs",
+  // SECURITY: "owner" removed — contains all owners' emails/phones, must go through /api/owner/[id]
 ]);
 
 // Tables that don't have account_id column (skip auto-injection)
 const NO_ACCOUNT_ID_TABLES = new Set([
   "v_platform_overview",
-  "owner",           // PK is id, no account_id column
+  // "owner" removed from allowed tables — no longer needs skip
   "orderline",       // linked via order_id FK, no own account_id
   "payment",         // linked via order_id FK, no own account_id
   "till_adjustment",  // linked via till_id FK, no own account_id
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
               case "lte": query = query.lte(f.column, f.value); break;
               case "like": query = query.like(f.column, f.value); break;
               case "ilike": query = query.ilike(f.column, f.value); break;
-              case "or": query = query.or(f.value); break;
+              // SECURITY: "or" filter removed — can bypass account_id scoping
             }
           }
         }

@@ -144,7 +144,11 @@ export async function GET(request: NextRequest) {
   const accountId = searchParams.get("account_id");
   const storeId = searchParams.get("store_id");
   const terminalId = searchParams.get("terminal_id");
-  const redirectTo = searchParams.get("redirect") || "/";
+  // SECURITY: Validate redirect to prevent open redirect attacks
+  let redirectTo = searchParams.get("redirect") || "/";
+  if (redirectTo.includes("://") || redirectTo.startsWith("//") || !redirectTo.startsWith("/")) {
+    redirectTo = "/";
+  }
 
   if (!accountId || !storeId || !terminalId) {
     return NextResponse.redirect(new URL("/platform", request.url));

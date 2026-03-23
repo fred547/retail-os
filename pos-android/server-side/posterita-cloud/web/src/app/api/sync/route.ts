@@ -231,22 +231,12 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!account) {
-      const { error: createErr } = await getDb().from("account").insert({
-        account_id: body.account_id,
-        businessname: body.account_id, // placeholder — will be updated on next register call
-        currency: "MUR",
-        isactive: "Y",
-      });
-      if (createErr) {
-        // Only fail if it's not a duplicate (another request created it concurrently)
-        const code = (createErr as any).code;
-        if (code !== "23505") {
-          return NextResponse.json(
-            { error: "Failed to auto-create account" },
-            { status: 500 }
-          );
-        }
-      }
+      // SECURITY: Do NOT auto-create accounts — accounts must be created via /api/auth/signup
+      // or /api/platform/create-account. Reject unknown account_ids.
+      return NextResponse.json(
+        { error: `Account '${body.account_id}' not found. Create via signup first.` },
+        { status: 404 }
+      );
     }
 
     // Register/update device if device_id provided

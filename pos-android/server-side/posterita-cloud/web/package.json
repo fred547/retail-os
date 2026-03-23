@@ -13,7 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:scenarios": "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY vitest run src/__tests__/scenarios/"
+    "test:scenarios": "vitest run src/__tests__/scenarios/ --pool=forks --fileParallelism=false --testTimeout=60000"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",

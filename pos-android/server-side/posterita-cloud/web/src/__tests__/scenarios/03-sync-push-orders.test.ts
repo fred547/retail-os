@@ -2,8 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { getSupabase, apiPost, testId, testUuid } from './helpers';
 
 const ACCOUNT_ID = testId('sync_order');
-const STORE_ID = 9001;
-const TERMINAL_ID = 9001;
+const STORE_ID = 60000 + Math.floor(Math.random() * 9000);
+const TERMINAL_ID = STORE_ID;
+const ORDER_BASE = STORE_ID * 10;
 
 describe('Scenario: Sync Push Orders', () => {
   beforeAll(async () => {
@@ -17,7 +18,7 @@ describe('Scenario: Sync Push Orders', () => {
     const db = getSupabase();
     await db.from('orders').delete().eq('account_id', ACCOUNT_ID);
     // orderline has no account_id — clean up by order_ids we used
-    await db.from('orderline').delete().in('order_id', [90001, 90002, 90003]);
+    await db.from('orderline').delete().in('order_id', [ORDER_BASE + 1, ORDER_BASE + 2, ORDER_BASE + 3]);
     await db.from('product').delete().eq('account_id', ACCOUNT_ID);
     await db.from('productcategory').delete().eq('account_id', ACCOUNT_ID);
     await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
@@ -32,7 +33,7 @@ describe('Scenario: Sync Push Orders', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       orders: [{
-        order_id: 90001,
+        order_id: ORDER_BASE + 1,
         terminal_id: TERMINAL_ID,
         store_id: STORE_ID,
         document_no: 'TEST-000001',
@@ -47,8 +48,8 @@ describe('Scenario: Sync Push Orders', () => {
         uuid: testUuid(),
       }],
       order_lines: [{
-        orderline_id: 80001,
-        order_id: 90001,
+        orderline_id: ORDER_BASE + 101,
+        order_id: ORDER_BASE + 1,
         product_id: 1,
         productname: 'Test Product',
         qtyentered: 3,
@@ -88,8 +89,8 @@ describe('Scenario: Sync Push Orders', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       orders: [
-        { order_id: 90002, terminal_id: TERMINAL_ID, store_id: STORE_ID, document_no: 'TEST-000002', grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
-        { order_id: 90003, terminal_id: TERMINAL_ID, store_id: STORE_ID, document_no: 'TEST-000003', grand_total: 750, subtotal: 652.17, tax_total: 97.83, qty_total: 5, is_paid: false, doc_status: 'DR', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
+        { order_id: ORDER_BASE + 2, terminal_id: TERMINAL_ID, store_id: STORE_ID, document_no: 'TEST-000002', grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
+        { order_id: ORDER_BASE + 3, terminal_id: TERMINAL_ID, store_id: STORE_ID, document_no: 'TEST-000003', grand_total: 750, subtotal: 652.17, tax_total: 97.83, qty_total: 5, is_paid: false, doc_status: 'DR', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
       ],
     });
     expect(res.status).toBe(200);
@@ -99,8 +100,8 @@ describe('Scenario: Sync Push Orders', () => {
 
   it('sync returns products for this account', async () => {
     const db = getSupabase();
-    await db.from('productcategory').insert({ productcategory_id: 9001, account_id: ACCOUNT_ID, name: 'Test Cat', isactive: 'Y' });
-    await db.from('product').insert({ product_id: 9001, account_id: ACCOUNT_ID, name: 'Sync Test Product', sellingprice: 100, productcategory_id: 9001, isactive: 'Y' });
+    await db.from('productcategory').insert({ productcategory_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Test Cat', isactive: 'Y' });
+    await db.from('product').insert({ product_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Sync Test Product', sellingprice: 100, productcategory_id: STORE_ID, isactive: 'Y' });
 
     const res = await apiPost('/api/sync', {
       account_id: ACCOUNT_ID,

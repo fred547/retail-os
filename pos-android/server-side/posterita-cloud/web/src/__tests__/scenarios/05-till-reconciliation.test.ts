@@ -2,8 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { getSupabase, apiPost, testId, testUuid } from './helpers';
 
 const ACCOUNT_ID = testId('till_recon');
-const STORE_ID = 8001;
-const TERMINAL_ID = 8001;
+const STORE_ID = 50000 + Math.floor(Math.random() * 9000);
+const TERMINAL_ID = STORE_ID;
+const TILL_ID = STORE_ID;
 const TILL_UUID = testUuid();
 
 describe('Scenario: Till Reconciliation', () => {
@@ -32,7 +33,7 @@ describe('Scenario: Till Reconciliation', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       tills: [{
-        till_id: 8001,
+        till_id: TILL_ID,
         terminal_id: TERMINAL_ID,
         store_id: STORE_ID,
         opening_amt: 500,
@@ -62,8 +63,8 @@ describe('Scenario: Till Reconciliation', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       orders: [
-        { order_id: 80001, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 300, subtotal: 260.87, tax_total: 39.13, qty_total: 2, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
-        { order_id: 80002, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: 8001, grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
+        { order_id: STORE_ID + 1, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: TILL_ID, grand_total: 300, subtotal: 260.87, tax_total: 39.13, qty_total: 2, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
+        { order_id: STORE_ID + 2, terminal_id: TERMINAL_ID, store_id: STORE_ID, till_id: TILL_ID, grand_total: 200, subtotal: 173.91, tax_total: 26.09, qty_total: 1, is_paid: true, doc_status: 'CO', order_type: 'Sale', date_ordered: new Date().toISOString(), uuid: testUuid() },
       ],
     });
 
@@ -74,7 +75,7 @@ describe('Scenario: Till Reconciliation', () => {
       store_id: STORE_ID,
       last_sync_at: '1970-01-01T00:00:00.000Z',
       tills: [{
-        till_id: 8001,
+        till_id: TILL_ID,
         terminal_id: TERMINAL_ID,
         store_id: STORE_ID,
         opening_amt: 500,

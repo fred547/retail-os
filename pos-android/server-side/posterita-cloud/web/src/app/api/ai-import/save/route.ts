@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/supabase/admin";
+import { getSessionAccountId } from "@/lib/account-context";
 
 /**
  * POST /api/ai-import/save
  * Saves AI-discovered products to Supabase for an existing account.
  * Called by Android AiImportService after Claude returns products.
- *
- * Body: {
- *   account_id: string,
- *   store_name?: string,
- *   currency?: string,
- *   tax_name?: string,
- *   tax_rate?: number,
- *   categories: [{ name: string, products: [{ name, price, description?, image_url? }] }]
- * }
+ * SECURITY: Requires authenticated session matching account_id, OR valid HMAC headers.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +15,16 @@ export async function POST(req: NextRequest) {
 
     if (!account_id || !categories?.length) {
       return NextResponse.json({ error: "account_id and categories required" }, { status: 400 });
+    }
+
+    // SECURITY: Verify caller owns this account
+    const sessionAccountId = await getSessionAccountId();
+    const hasHmac = req.headers.get("x-sync-signature") && req.headers.get("x-sync-timestamp");
+    if (!sessionAccountId && !hasHmac) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+    if (sessionAccountId && sessionAccountId !== account_id) {
+      return NextResponse.json({ error: "Account mismatch" }, { status: 403 });
     }
 
     const db = getDb();

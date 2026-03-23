@@ -10,7 +10,8 @@ const ALLOWED_TABLES = new Set([
   "intake_batch", "intake_item", "restaurant_table",
   "error_logs",
   "table_section", "preparation_station", "category_station_mapping",
-  "modifier", "owner",
+  "modifier",
+  // SECURITY: "owner" removed — must go through /api/owner/[id]
 ]);
 
 export async function POST(req: NextRequest) {

@@ -34,10 +34,11 @@ export default function OwnerList({ owners }: { owners: Owner[] }) {
   const saveOwner = async () => {
     if (!editOwner) return;
     setSaving(true);
-    await dataUpdate("owner", { column: "id", value: editOwner.id }, {
-      name: form.name || null,
-      email: form.email,
-      phone: form.phone || null,
+    // Use dedicated owner API (not data proxy — owner table blocked for security)
+    await fetch(`/api/owner/${editOwner.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: form.name || null, email: form.email, phone: form.phone || null }),
     });
     setSaving(false);
     setSaveOk(true);

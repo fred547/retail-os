@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { getDb } from "@/lib/supabase/admin";
 
+/**
+ * POST /api/auth/ott — Generate a One-Time Token for Android WebView auth.
+ * SECURITY: Requires HMAC authentication (sync_secret) to prevent token creation by attackers.
+ */
 export async function POST(req: NextRequest) {
   const supabase = getDb();
 
@@ -11,6 +16,42 @@ export async function POST(req: NextRequest) {
 
     if (!account_id || user_id == null) {
       return NextResponse.json({ error: "account_id and user_id required" }, { status: 400 });
+    }
+
+    // SECURITY: Require HMAC authentication
+    const timestamp = req.headers.get("x-sync-timestamp");
+    const signature = req.headers.get("x-sync-signature");
+
+    if (!timestamp || !signature) {
+      return NextResponse.json({ error: "Authentication required (HMAC headers missing)" }, { status: 401 });
+    }
+
+    // Verify timestamp within 5 minutes
+    const now = Math.floor(Date.now() / 1000);
+    const ts = parseInt(timestamp, 10);
+    if (isNaN(ts) || Math.abs(now - ts) > 300) {
+      return NextResponse.json({ error: "Timestamp expired" }, { status: 401 });
+    }
+
+    // Verify HMAC
+    const { data: acc } = await supabase
+      .from("account")
+      .select("sync_secret")
+      .eq("account_id", account_id)
+      .single();
+
+    if (acc?.sync_secret) {
+      const payload = `${timestamp}.${JSON.stringify(body)}`;
+      const expected = createHmac("sha256", acc.sync_secret).update(payload).digest("hex");
+      try {
+        const sigBuf = Buffer.from(signature, "hex");
+        const expBuf = Buffer.from(expected, "hex");
+        if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+          return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid signature format" }, { status: 401 });
+      }
     }
 
     // Generate a secure random token
