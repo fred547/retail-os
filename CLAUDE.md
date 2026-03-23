@@ -74,6 +74,17 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Video recordings: stored in GCS, viewable from Firebase Console
 - CI: `firebase-ui-tests` job in GitHub Actions (needs `GCLOUD_SERVICE_KEY` secret)
 
+**Playwright E2E (Web Console):**
+```bash
+cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
+```
+- Runs against production (`web.posterita.com`) by default, or set `PLAYWRIGHT_BASE_URL` for local
+- Set `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD` for authenticated tests (platform, dashboard pages)
+- Without credentials: API health tests + public page tests still run
+- Test files: `e2e/api-health.spec.ts` (6), `e2e/customer-portal.spec.ts` (3), `e2e/platform.spec.ts` (11), `e2e/ott-flow.spec.ts` (2)
+- Commands: `npm run test:e2e` (headless), `npm run test:e2e:ui` (interactive), `npm run test:e2e:report` (HTML report)
+- Projects: `chromium` (desktop), `mobile` (Pixel 5 viewport)
+
 **Never** `createClient()` at module scope — use `function getDb() { return createClient(...) }` or `force-dynamic`
 
 ## Rules

@@ -9,7 +9,10 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:report": "vitest run --reporter=json --outputFile=test-results.json && npx tsx scripts/generate-test-report.ts"
+    "test:report": "vitest run --reporter=json --outputFile=test-results.json && npx tsx scripts/generate-test-report.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
@@ -27,6 +30,7 @@
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
