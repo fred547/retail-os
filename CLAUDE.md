@@ -11,6 +11,7 @@ Unified retail management platform: one Android app, one web console, one backen
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
 | `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00025) |
+| `specs/modules/` | Specs: 19-kitchen, 20-terminal-types, 22-whatsapp-support |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files |
 
@@ -36,10 +37,14 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Vercel project: `posterita-cloud` (team: `tamakgroup`). If wrong, re-link: `npx vercel link --project posterita-cloud --yes`
 - **Always `rm -rf .next` before build** — stale cache causes phantom TypeScript errors from deleted code
 
-**Backend (Render):** Auto-deploys on push to `main`. Manual: Render dashboard → posterita-backend → Deploy.
-- Service ID: `srv-d70md87kijhs73dgosb0`
+**Backend (Render):** Auto-deploys on push to `main` (repo must be public for Render to fetch — make public, deploy, make private).
+- Service ID: `srv-d70mlka4d50c73f1d2t0`
 - URL: `https://posterita-backend.onrender.com`
-- Free tier (sleeps after 15 min idle — first request after sleep takes ~30s)
+- Plan: Starter ($19/mo) — always-on, no sleep
+- Root dir: `pos-android/server-side/posterita-cloud/backend`
+- Runtime: Node.js, build: `npm install && npx tsc || true`, start: `node dist/index.js`
+- Endpoints: `/health`, `/webhook/whatsapp`, `/monitor/errors`, `/monitor/sync`, `/monitor/accounts`
+- Cron: hourly FATAL error check, 6hr stale error cleanup (>30d), daily sync log purge (>90d)
 
 **Supabase migrations:** Run via Management API (see `reference_supabase.md`). Reload cache: `NOTIFY pgrst, 'reload schema'`
 

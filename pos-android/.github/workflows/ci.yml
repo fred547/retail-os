@@ -187,10 +187,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run smoke tests
+      - name: Run smoke tests (Vercel + Supabase)
         run: npx vitest run src/__tests__/api/smoke-test.test.ts
         continue-on-error: true
         env:
+          SMOKE_TEST_URL: https://web.posterita.com
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Run Render backend tests
+        run: npx vitest run src/__tests__/api/render-backend.test.ts
+        continue-on-error: true
+        env:
+          RENDER_URL: https://posterita-backend.onrender.com
           SMOKE_TEST_URL: https://web.posterita.com
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 

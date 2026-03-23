@@ -39,6 +39,16 @@ export const TEST_SUITES = {
       { name: "smoke-test.test.ts", tests: 42, area: "API health, DB tables, data integrity, sync contract, web pages, edge cases, SQL injection" },
     ],
   },
+  render: {
+    totalTests: 16,
+    totalFiles: 1,
+    allPassed: true,
+    lastVerified: "2026-03-23",
+    version: "Vitest 4.1, hits Render backend",
+    files: [
+      { name: "render-backend.test.ts", tests: 16, area: "Health, monitoring (errors/sync/accounts), WhatsApp webhook verify+payload, CORS, security, cross-service monitor" },
+    ],
+  },
   adb: {
     totalTests: 8,
     totalFiles: 1,

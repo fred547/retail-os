@@ -20,7 +20,7 @@ interface CiReport {
 }
 
 export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
-  const { android, web, smoke, adb } = TEST_SUITES;
+  const { android, web, smoke, render, adb } = TEST_SUITES;
   const latest = ciReports[0];
 
   // Use CI data if available, otherwise static
@@ -29,7 +29,7 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
   const webPassed = latest?.web_passed ?? web.totalTests;
   const webFailed = latest?.web_failed ?? 0;
   const tsErrors = latest?.ts_errors ?? 0;
-  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + adb.totalTests;
+  const total = androidPassed + androidFailed + webPassed + webFailed + smoke.totalTests + render.totalTests + adb.totalTests;
   const allGreen = androidFailed === 0 && webFailed === 0 && tsErrors === 0;
 
   return (
@@ -94,8 +94,8 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
           <Zap size={20} className="text-green-600" />
           <div>
-            <p className="text-xs text-gray-500">Smoke Tests</p>
-            <p className="text-xl font-bold text-green-600">{smoke.totalTests}</p>
+            <p className="text-xs text-gray-500">Smoke + Render</p>
+            <p className="text-xl font-bold text-green-600">{smoke.totalTests + render.totalTests}</p>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
@@ -182,6 +182,14 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
               <li>{12} web console pages load (200 or auth redirect)</li>
               <li>SQL injection attempts blocked</li>
               <li>Edge cases (empty/long/negative inputs)</li>
+            </ul>
+            <p className="mt-3 font-medium">+ {render.totalTests} Render Backend Tests:</p>
+            <ul className="mt-1 space-y-1 list-disc list-inside">
+              <li>Backend health + DB connectivity</li>
+              <li>Monitor endpoints (errors, sync, accounts)</li>
+              <li>WhatsApp webhook verification + payload handling</li>
+              <li>CORS headers, security (malformed JSON)</li>
+              <li>Cross-service monitor (/api/monitor)</li>
             </ul>
           </div>
         </div>
