@@ -346,6 +346,19 @@ describe.skipIf(!canRun)("Platform Brand Management", () => {
     }
   });
 
+  it("changelog API returns commits", async () => {
+    const res = await fetch(`${BASE}/api/changelog`);
+    if (res.status === 200) {
+      const json = await res.json();
+      expect(json.commits).toBeDefined();
+      expect(json.version).toBeDefined();
+      // Should have commits if GitHub token is configured
+      if (!json.error) {
+        expect(json.commits.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("monitor API returns all checks", async () => {
     const res = await fetch(`${BASE}/api/monitor`);
     if (res.status === 200) {

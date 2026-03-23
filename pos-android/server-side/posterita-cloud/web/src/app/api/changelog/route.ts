@@ -14,8 +14,9 @@ export async function GET() {
         headers: {
           Accept: "application/vnd.github+json",
           "User-Agent": "posterita-cloud",
+          ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
         },
-        next: { revalidate: 300 }, // Cache for 5 minutes
+        next: { revalidate: 300 },
       }
     );
 
