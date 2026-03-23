@@ -40,10 +40,10 @@ export async function GET() {
     return NextResponse.json({
       commits,
       version: {
-        web: `v1.0.${commits.length}`,
-        android: "v1.0.25", // Room DB version
-        api: "v2", // SYNC_API_VERSION
-        backend: "v1.0.0",
+        web: latestSha,
+        android: "Room v25",
+        api: "Sync v2",
+        backend: "Render v1",
         sha: latestSha,
       },
     });

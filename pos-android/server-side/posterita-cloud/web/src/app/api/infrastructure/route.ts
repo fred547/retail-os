@@ -80,7 +80,7 @@ export async function GET() {
       plan: "Pay-as-you-go",
       pricing: "$0.25/M input tokens, $1.25/M output tokens (Haiku 4.5)",
       cost: "~$5–25/month (depends on AI import volume)",
-      keyPrefix: process.env.CLAUDE_API_KEY?.substring(0, 15) + "...",
+      keyConfigured: !!process.env.CLAUDE_API_KEY,
     };
   } catch (_) {
     services.anthropic = { status: "unknown" };

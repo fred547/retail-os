@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 
-export default function BrandsError({
+export default function StationsError({
   error,
   reset,
 }: {
@@ -17,9 +17,9 @@ export default function BrandsError({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         severity: "ERROR",
-        tag: "BrandsPage",
+        tag: "StationsPage",
         message: error.message,
-        stacktrace: error.stack,
+        stack_trace: error.stack,
       }),
     }).catch(() => {});
   }, [error]);
@@ -28,7 +28,7 @@ export default function BrandsError({
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <AlertTriangle className="text-orange-500 mb-4" size={48} />
       <h2 className="text-xl font-semibold text-gray-900 mb-2">
-        Failed to load brands
+        Failed to load stations
       </h2>
       <p className="text-gray-500 mb-6 max-w-md">
         {error.message}

@@ -88,7 +88,8 @@ class RestaurantModeTest {
                 TestHelper.hasText(device, "TAKE AWAY") ||
                 TestHelper.hasText(device, "DELIVERY") ||
                 TestHelper.hasText(device, "Order Type")
-            assertTrue("Order type dialog", hasOrderType || true) // May go to payment directly
+            // May go to payment directly depending on mode — verify no crash
+            TestHelper.assertNotCrashed(device)
         }
     }
 

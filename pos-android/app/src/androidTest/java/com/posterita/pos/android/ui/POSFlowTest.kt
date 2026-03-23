@@ -100,7 +100,8 @@ class POSFlowTest {
             Thread.sleep(1000)
             // Should show popup menu
             val hasMenu = TestHelper.hasText(device, "Hold") || TestHelper.hasText(device, "Note")
-            assertTrue("More menu visible", hasMenu || true) // Menu may not be visible on all devices
+            // Menu content varies — just verify no crash
+            TestHelper.assertNotCrashed(device)
         }
     }
 
