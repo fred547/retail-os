@@ -365,9 +365,9 @@
                 android:textStyle="bold"
                 android:background="@drawable/stroke_btn" />
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_more_bottom"
-                android:layout_width="0dp"
+                android:saveEnabled="false"                android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:layout_marginStart="3dp"

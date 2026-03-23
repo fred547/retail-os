@@ -359,6 +359,7 @@
             <!-- MORE button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_more_bottom"
+                android:saveEnabled="false"
                 style="@style/Widget.Posterita.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
