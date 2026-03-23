@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId, testUuid } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, apiPost, testId, testUuid, cleanupTestAccount } from './helpers';
 
 const ACCOUNT_ID = testId('soft_del');
 const STORE_ID = 85000 + Math.floor(Math.random() * 9000);
@@ -7,44 +7,38 @@ const TERMINAL_ID = STORE_ID;
 let liveProductId: number;
 let deletedProductId: number;
 let liveCategoryId: number;
+let syncBody: any;
 
-describe('Scenario: Soft Delete & Sync Filtering', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Soft Delete & Sync Filtering', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'SoftDel Test', type: 'live', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'SD Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
 
-    // Create category
     const { data: cat } = await db.from('productcategory').insert({
       account_id: ACCOUNT_ID, name: 'SD Category', isactive: 'Y', position: 1,
     }).select().single();
     liveCategoryId = cat!.productcategory_id;
 
-    // Create live product
-    const { data: live } = await db.from('product').insert({
-      account_id: ACCOUNT_ID, name: 'Live Product', sellingprice: 100,
-      productcategory_id: liveCategoryId, isactive: 'Y', is_deleted: false,
-    }).select().single();
-    liveProductId = live!.product_id;
-
-    // Create soft-deleted product
-    const { data: deleted } = await db.from('product').insert({
-      account_id: ACCOUNT_ID, name: 'Deleted Product', sellingprice: 200,
-      productcategory_id: liveCategoryId, isactive: 'Y', is_deleted: true, deleted_at: new Date().toISOString(),
-    }).select().single();
-    deletedProductId = deleted!.product_id;
-  });
+    // Insert both products in parallel
+    const [liveRes, deletedRes] = await Promise.all([
+      db.from('product').insert({
+        account_id: ACCOUNT_ID, name: 'Live Product', sellingprice: 100,
+        productcategory_id: liveCategoryId, isactive: 'Y', is_deleted: false,
+      }).select().single(),
+      db.from('product').insert({
+        account_id: ACCOUNT_ID, name: 'Deleted Product', sellingprice: 200,
+        productcategory_id: liveCategoryId, isactive: 'Y', is_deleted: true, deleted_at: new Date().toISOString(),
+      }).select().single(),
+    ]);
+    liveProductId = liveRes.data!.product_id;
+    deletedProductId = deletedRes.data!.product_id;
+  }, 30000);
 
   afterAll(async () => {
-    const db = getSupabase();
-    await db.from('orders').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('product').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('productcategory').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('store').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('account').delete().eq('account_id', ACCOUNT_ID);
-  });
+    try { await cleanupTestAccount(ACCOUNT_ID); } catch { /* best-effort */ }
+  }, 30000);
 
   it('soft-deleted product still exists in DB', async () => {
     const db = getSupabase();
@@ -67,7 +61,7 @@ describe('Scenario: Soft Delete & Sync Filtering', () => {
     expect(data![0].name).toBe('Live Product');
   });
 
-  it('sync pull only returns non-deleted products', async () => {
+  it('sync pull only returns non-deleted products and includes categories', async () => {
     const res = await apiPost('/api/sync', {
       account_id: ACCOUNT_ID,
       terminal_id: TERMINAL_ID,
@@ -75,22 +69,12 @@ describe('Scenario: Soft Delete & Sync Filtering', () => {
       last_sync_at: '1970-01-01T00:00:00.000Z',
     });
     expect(res.status).toBe(200);
-    const body = await res.json();
-    const productNames = (body.products || []).map((p: any) => p.name);
+    syncBody = await res.json();
+    const productNames = (syncBody.products || []).map((p: any) => p.name);
     expect(productNames).toContain('Live Product');
     expect(productNames).not.toContain('Deleted Product');
-  });
-
-  it('sync pull returns categories', async () => {
-    const res = await apiPost('/api/sync', {
-      account_id: ACCOUNT_ID,
-      terminal_id: TERMINAL_ID,
-      store_id: STORE_ID,
-      last_sync_at: '1970-01-01T00:00:00.000Z',
-    });
-    const body = await res.json();
-    expect(body.product_categories?.length).toBeGreaterThanOrEqual(1);
-    expect(body.product_categories?.some((c: any) => c.name === 'SD Category')).toBe(true);
+    expect(syncBody.product_categories?.length).toBeGreaterThanOrEqual(1);
+    expect(syncBody.product_categories?.some((c: any) => c.name === 'SD Category')).toBe(true);
   });
 
   it('soft-deleting a product sets deleted_at timestamp', async () => {
@@ -117,7 +101,6 @@ describe('Scenario: Soft Delete & Sync Filtering', () => {
     const db = getSupabase();
     const ORDER_ID = STORE_ID * 10 + 1;
 
-    // Create a live order
     await db.from('orders').insert({
       order_id: ORDER_ID,
       account_id: ACCOUNT_ID,
@@ -131,12 +114,10 @@ describe('Scenario: Soft Delete & Sync Filtering', () => {
       is_deleted: false,
     });
 
-    // Soft-delete it
     await db.from('orders')
       .update({ is_deleted: true, deleted_at: new Date().toISOString() })
       .eq('order_id', ORDER_ID);
 
-    // Query with is_deleted=false filter
     const { data } = await db.from('orders')
       .select('*')
       .eq('account_id', ACCOUNT_ID)

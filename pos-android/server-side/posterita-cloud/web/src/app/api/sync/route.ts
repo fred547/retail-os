@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getDb } from "@/lib/supabase/admin";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 /**
  * Sync API version — increment when making breaking changes to the sync protocol.

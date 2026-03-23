@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, testId } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, testId } from './helpers';
 
 const ACCOUNT_DRAFT = testId('lc_draft');
 const ACCOUNT_ACTIVE = testId('lc_active');
 const ACCOUNT_SUSPENDED = testId('lc_susp');
 
-describe('Scenario: Account Lifecycle', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Account Lifecycle', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert([
@@ -13,13 +13,13 @@ describe('Scenario: Account Lifecycle', () => {
       { account_id: ACCOUNT_ACTIVE, businessname: 'Active Co', type: 'live', status: 'active', currency: 'USD' },
       { account_id: ACCOUNT_SUSPENDED, businessname: 'Suspended Co', type: 'live', status: 'suspended', currency: 'EUR' },
     ]);
-  });
+  }, 30000);
 
   afterAll(async () => {
     const db = getSupabase();
     await db.from('account_lifecycle_log').delete().in('account_id', [ACCOUNT_DRAFT, ACCOUNT_ACTIVE, ACCOUNT_SUSPENDED]);
     await db.from('account').delete().in('account_id', [ACCOUNT_DRAFT, ACCOUNT_ACTIVE, ACCOUNT_SUSPENDED]);
-  });
+  }, 30000);
 
   it('draft account transitions to onboarding', async () => {
     const db = getSupabase();

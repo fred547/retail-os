@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionAccountId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
 
+export const maxDuration = 30;
+
 /**
  * POST /api/errors/log
  * Logs errors from web console (client + API) to the error_logs table.

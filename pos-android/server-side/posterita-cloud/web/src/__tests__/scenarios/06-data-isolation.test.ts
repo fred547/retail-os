@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, testId } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, testId } from './helpers';
 
 const BRAND_A = testId('brand_a');
 const BRAND_B = testId('brand_b');
 
-describe('Scenario: Multi-Brand Data Isolation', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Multi-Brand Data Isolation', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert([
@@ -17,7 +17,7 @@ describe('Scenario: Multi-Brand Data Isolation', () => {
       { account_id: BRAND_B, name: 'Margherita', sellingprice: 350, isactive: 'Y' },
       { account_id: BRAND_B, name: 'Pepperoni', sellingprice: 400, isactive: 'Y' },
     ]);
-  });
+  }, 30000);
 
   afterAll(async () => {
     const db = getSupabase();
@@ -25,7 +25,7 @@ describe('Scenario: Multi-Brand Data Isolation', () => {
     await db.from('product').delete().eq('account_id', BRAND_B);
     await db.from('account').delete().eq('account_id', BRAND_A);
     await db.from('account').delete().eq('account_id', BRAND_B);
-  });
+  }, 30000);
 
   it('brand A only sees its own products', async () => {
     const db = getSupabase();

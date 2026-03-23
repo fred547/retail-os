@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId, testUuid } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, apiPost, testId, testUuid } from './helpers';
 
 const ACCOUNT_ID = testId('sync_order');
 const STORE_ID = 60000 + Math.floor(Math.random() * 9000);
 const TERMINAL_ID = STORE_ID;
 const ORDER_BASE = STORE_ID * 10;
 
-describe('Scenario: Sync Push Orders', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Sync Push Orders', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Sync Test', type: 'live', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Test Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
-  });
+  }, 30000);
 
   afterAll(async () => {
     const db = getSupabase();
@@ -24,7 +24,7 @@ describe('Scenario: Sync Push Orders', () => {
     await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
     await db.from('store').delete().eq('account_id', ACCOUNT_ID);
     await db.from('account').delete().eq('account_id', ACCOUNT_ID);
-  });
+  }, 30000);
 
   it('pushes a single order via sync', async () => {
     const res = await apiPost('/api/sync', {

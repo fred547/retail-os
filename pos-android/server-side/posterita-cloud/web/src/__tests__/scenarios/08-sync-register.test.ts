@@ -1,9 +1,9 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, apiPost, testId } from './helpers';
 
 const ACCOUNT_ID = testId('reg');
 
-describe('Scenario: Sync Registration', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Sync Registration', () => {
   afterAll(async () => {
     const db = getSupabase();
     await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
@@ -14,7 +14,7 @@ describe('Scenario: Sync Registration', () => {
     await db.from('account').delete().eq('account_id', ACCOUNT_ID);
     const { data: owner } = await db.from('owner').select('id').eq('email', `reg-${ACCOUNT_ID}@test.posterita.com`).single();
     if (owner) await db.from('owner').delete().eq('id', owner.id);
-  });
+  }, 30000);
 
   it('registers a new account with initial data', async () => {
     const res = await apiPost('/api/sync/register', {

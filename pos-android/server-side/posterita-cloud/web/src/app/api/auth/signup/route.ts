@@ -7,6 +7,8 @@ import {
 import crypto from "crypto";
 import { getDb } from "@/lib/supabase/admin";
 
+export const maxDuration = 60;
+
 /**
  * POST /api/auth/signup
  *

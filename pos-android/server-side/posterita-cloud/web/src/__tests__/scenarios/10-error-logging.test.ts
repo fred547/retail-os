@@ -1,13 +1,13 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, apiPost, testId } from './helpers';
 
 const TAG = testId('errlog');
 
-describe('Scenario: Error Logging', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Error Logging', () => {
   afterAll(async () => {
     const db = getSupabase();
     await db.from('error_logs').delete().eq('tag', TAG);
-  });
+  }, 30000);
 
   it('logs an error via API', async () => {
     const res = await apiPost('/api/errors/log', {

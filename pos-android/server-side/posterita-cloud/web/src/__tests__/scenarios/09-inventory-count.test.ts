@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, testId } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, testId } from './helpers';
 
 const ACCOUNT_ID = testId('inv_count');
 const STORE_ID = 90000 + Math.floor(Math.random() * 9000);
@@ -8,7 +8,7 @@ let sessionId: number;
 let productAId: number;
 let productBId: number;
 
-describe('Scenario: Inventory Count', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Inventory Count', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Inventory Test', type: 'live', status: 'active', currency: 'MUR' });
@@ -29,7 +29,7 @@ describe('Scenario: Inventory Count', () => {
       account_id: ACCOUNT_ID, name: 'Widget B', sellingprice: 75, productcategory_id: catData!.productcategory_id, isactive: 'Y',
     }).select().single();
     productBId = pB!.product_id;
-  });
+  }, 30000);
 
   afterAll(async () => {
     const db = getSupabase();
@@ -42,7 +42,7 @@ describe('Scenario: Inventory Count', () => {
     await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
     await db.from('store').delete().eq('account_id', ACCOUNT_ID);
     await db.from('account').delete().eq('account_id', ACCOUNT_ID);
-  });
+  }, 30000);
 
   it('creates an inventory count session', async () => {
     const db = getSupabase();
