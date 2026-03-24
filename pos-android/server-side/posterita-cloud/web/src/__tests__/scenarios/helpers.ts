@@ -47,6 +47,45 @@ export async function apiDelete(path: string): Promise<Response> {
   return fetch(apiUrl(path), { method: 'DELETE' });
 }
 
+// Authenticated API helpers — set posterita_account_cache cookie to bypass auth
+// This cookie is the fast path in getSessionAccountId() (1-hour TTL, skips all DB lookups)
+
+export async function apiPostAuth(path: string, body: any, accountId: string): Promise<Response> {
+  return fetch(apiUrl(path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `posterita_account_cache=${accountId}`,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function apiGetAuth(path: string, accountId: string): Promise<Response> {
+  return fetch(apiUrl(path), {
+    method: 'GET',
+    headers: { 'Cookie': `posterita_account_cache=${accountId}` },
+  });
+}
+
+export async function apiPatchAuth(path: string, body: any, accountId: string): Promise<Response> {
+  return fetch(apiUrl(path), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `posterita_account_cache=${accountId}`,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function apiDeleteAuth(path: string, accountId: string): Promise<Response> {
+  return fetch(apiUrl(path), {
+    method: 'DELETE',
+    headers: { 'Cookie': `posterita_account_cache=${accountId}` },
+  });
+}
+
 // Generate unique IDs for test data to avoid collisions
 export function testId(prefix: string = 'test'): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

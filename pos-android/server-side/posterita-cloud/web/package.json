@@ -13,7 +13,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:scenarios": "vitest run src/__tests__/scenarios/ --pool=forks --fileParallelism=false --testTimeout=60000 --hookTimeout=60000"
+    "test:scenarios": "vitest run src/__tests__/scenarios/ --pool=forks --fileParallelism=false --testTimeout=60000 --hookTimeout=60000",
+    "test:scenarios:report": "vitest run src/__tests__/scenarios/ --pool=forks --fileParallelism=false --testTimeout=60000 --hookTimeout=60000 --reporter=json --outputFile=scenario-results.json && npx tsx scripts/report-scenarios.ts",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
@@ -35,6 +37,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
