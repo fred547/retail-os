@@ -33,28 +33,69 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Products", href: "/products", icon: Package },
-  { name: "Categories", href: "/categories", icon: FolderTree },
-  { name: "Orders", href: "/orders", icon: ShoppingCart },
-  { name: "Inventory", href: "/inventory", icon: ClipboardList },
-  { name: "Customers", href: "/customers", icon: Users },
-  { name: "Stores", href: "/stores", icon: Store },
-  { name: "Users", href: "/users", icon: UserCog },
-  { name: "Terminals", href: "/terminals", icon: Monitor },
-  { name: "Tables", href: "/tables", icon: UtensilsCrossed },
-  { name: "Stations", href: "/stations", icon: ChefHat },
-  { name: "Reports", href: "/reports", icon: BarChart3 },
-  { name: "Errors", href: "/errors", icon: AlertTriangle },
-  { name: "Price Review", href: "/price-review", icon: DollarSign },
-  { name: "AI Import", href: "/ai-import", icon: Sparkles },
-  { name: "Product Intake", href: "/intake", icon: Inbox },
-  { name: "Catalogue", href: "/catalogue", icon: FileText },
-  { name: "Brands", href: "/brands", icon: Store },
-  { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Sync Inbox", href: "/sync-inbox", icon: RefreshCw },
+interface NavItem { name: string; href: string; icon: any }
+interface NavSection { label: string; items: NavItem[] }
+
+const sections: NavSection[] = [
+  {
+    label: "",
+    items: [
+      { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Catalogue",
+    items: [
+      { name: "Products", href: "/products", icon: Package },
+      { name: "Categories", href: "/categories", icon: FolderTree },
+      { name: "Price Review", href: "/price-review", icon: DollarSign },
+      { name: "AI Import", href: "/ai-import", icon: Sparkles },
+      { name: "Product Intake", href: "/intake", icon: Inbox },
+    ],
+  },
+  {
+    label: "Sales",
+    items: [
+      { name: "Orders", href: "/orders", icon: ShoppingCart },
+      { name: "Customers", href: "/customers", icon: Users },
+      { name: "Reports", href: "/reports", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Restaurant",
+    items: [
+      { name: "Tables", href: "/tables", icon: UtensilsCrossed },
+      { name: "Stations", href: "/stations", icon: ChefHat },
+    ],
+  },
+  {
+    label: "Inventory",
+    items: [
+      { name: "Stock Counts", href: "/inventory", icon: ClipboardList },
+      { name: "PDF Catalogue", href: "/catalogue", icon: FileText },
+    ],
+  },
+  {
+    label: "Setup",
+    items: [
+      { name: "Stores", href: "/stores", icon: Store },
+      { name: "Terminals", href: "/terminals", icon: Monitor },
+      { name: "Users", href: "/users", icon: UserCog },
+      { name: "Brands", href: "/brands", icon: Building2 },
+      { name: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { name: "Errors", href: "/errors", icon: AlertTriangle },
+      { name: "Sync Inbox", href: "/sync-inbox", icon: RefreshCw },
+    ],
+  },
 ];
+
+// Flat list for portal mapping
+const navigation = sections.flatMap(s => s.items);
 
 export default function Sidebar({
   portal = "root",
@@ -163,13 +204,16 @@ export default function Sidebar({
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
-  const portalNavigation =
+  const portalSections =
     portal === "customer"
-      ? navigation.map((item) => ({
-          ...item,
-          href: item.href === "/" ? "/customer" : `/customer${item.href}`,
+      ? sections.map((section) => ({
+          ...section,
+          items: section.items.map((item) => ({
+            ...item,
+            href: item.href === "/" ? "/customer" : `/customer${item.href}`,
+          })),
         }))
-      : navigation;
+      : sections;
 
   const sidebarContent = (
     <>
@@ -248,27 +292,37 @@ export default function Sidebar({
           </>
         )}
 
-        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalNavigation.map((item) => {
-          const isActive =
-            item.href === "/customer"
-              ? pathname === "/customer"
-              : item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              prefetch={true}
-              className={`sidebar-link ${isActive ? "active" : ""}`}
-            >
-              <Icon size={20} />
-              {item.name}
-            </Link>
-          );
-        })}
+        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalSections.map((section) => (
+          <div key={section.label || "top"}>
+            {section.label && (
+              <div className="px-4 pt-4 pb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                  {section.label}
+                </span>
+              </div>
+            )}
+            {section.items.map((item) => {
+              const isActive =
+                item.href === "/customer"
+                  ? pathname === "/customer"
+                  : item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  prefetch={true}
+                  className={`sidebar-link ${isActive ? "active" : ""}`}
+                >
+                  <Icon size={18} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
 
         {authChecked && superAdmin && !impersonating && portal !== "manager" && (
           <div className="px-4 py-6 text-center">
