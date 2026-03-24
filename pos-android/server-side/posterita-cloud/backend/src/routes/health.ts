@@ -7,14 +7,16 @@ const startTime = Date.now();
 router.get("/health", async (_req, res) => {
   const uptime = Math.round((Date.now() - startTime) / 1000);
 
-  // Quick DB connectivity check
+  // Quick DB connectivity check with 3s timeout so Render health probe never times out
   let dbOk = false;
   try {
-    const { data } = await getDb()
+    const dbCheck = getDb()
       .from("account")
       .select("account_id")
       .limit(1);
-    dbOk = Array.isArray(data);
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
+    const result = await Promise.race([dbCheck, timeout]);
+    dbOk = result !== null && Array.isArray((result as any).data);
   } catch (_) {}
 
   res.json({
