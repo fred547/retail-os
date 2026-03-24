@@ -18,7 +18,7 @@ data class Product(
     val isstock: String? = null,
     val isvariableitem: String? = null,
     val image: String? = null,
-    val created: String? = null,
+    val created_at: String? = null,
     val upc: String? = null,
     val isbom: String? = null,
     val ismodifier: String? = null,
@@ -31,7 +31,7 @@ data class Product(
     val sellingprice: Double = 0.0,
     val name: String? = null,
     val taxamount: Double = 0.0,
-    val updated: String? = null,
+    val updated_at: String? = null,
     val iswholesaleprice: String? = null,
     val wholesaleprice: Double = 0.0,
     val barcodetype: String? = null,
@@ -46,5 +46,9 @@ data class Product(
     /** How this product was created: manual, ai_import, quotation, supplier_catalog */
     val source: String? = "manual",
     /** Override station for kitchen routing (null = use category mapping) */
-    val station_override_id: Int? = null
+    val station_override_id: Int? = null,
+    /** Soft delete flag — synced from server, filtered in queries */
+    val is_deleted: Boolean = false,
+    /** Timestamp when the product was soft-deleted */
+    val deleted_at: String? = null
 ) : Serializable

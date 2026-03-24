@@ -2,6 +2,34 @@
 
 Unified retail management platform: one Android app, one web console, one backend, one Supabase database.
 
+## Project Overview
+
+This is a multi-platform project: TypeScript/Next.js web app deployed to Vercel, and an Android (Kotlin) app. When refactoring shared logic or sync code, check BOTH platforms for consistency. Always check the actual database schema before writing queries or sync logic — never assume column types or names. Use `Bash` to inspect Supabase schema when in doubt.
+
+## Build & Verification
+
+After making multi-file changes, always run a build/compile check before reporting completion. For Android: run gradle build. For Next.js/web: run `npm run build`.
+
+## Database & Sync
+
+When modifying database-related code, always verify field names, types, and casing match the actual database schema (check Supabase/PostgREST types). Never assume INT vs TEXT or camelCase vs snake_case without checking.
+
+## Debugging
+
+When fixing bugs, always verify the fix actually resolves the issue before moving on. If the first approach doesn't work, step back and reconsider the root cause rather than iterating on the same approach.
+
+## Testing
+
+When writing or fixing tests, use unique generated IDs (e.g., UUIDs with test prefixes) instead of hardcoded IDs to prevent parallel test collisions. Always run the full test suite after changes, not just individual tests.
+
+## Code Changes
+
+When refactoring or rewriting a file, diff against the original to ensure no existing function calls or service registrations are accidentally dropped. Verify that all existing service calls and integrations are preserved.
+
+## Deployment
+
+For deployments: Web deploys to Vercel, Android builds via Gradle. Always check for lock file issues before web builds and lint errors before Android builds. Kill stale background build processes before starting new ones.
+
 ## Repository Map
 
 | Directory | Purpose |

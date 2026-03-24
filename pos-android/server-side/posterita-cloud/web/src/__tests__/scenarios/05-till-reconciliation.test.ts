@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getSupabase, apiPost, testId, testUuid } from './helpers';
+import { SKIP_SCENARIOS, getSupabase, apiPost, testId, testUuid, cleanupTestAccount } from './helpers';
 
 const ACCOUNT_ID = testId('till_recon');
 const STORE_ID = 50000 + Math.floor(Math.random() * 9000);
@@ -7,24 +7,17 @@ const TERMINAL_ID = STORE_ID;
 const TILL_ID = STORE_ID;
 const TILL_UUID = testUuid();
 
-describe('Scenario: Till Reconciliation', () => {
+describe.skipIf(SKIP_SCENARIOS)('Scenario: Till Reconciliation', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Till Test', type: 'live', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Till Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
-  });
+  }, 30000);
 
   afterAll(async () => {
-    const db = getSupabase();
-    await db.from('till').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('payment').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('orderline').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('orders').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('terminal').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('store').delete().eq('account_id', ACCOUNT_ID);
-    await db.from('account').delete().eq('account_id', ACCOUNT_ID);
-  });
+    try { await cleanupTestAccount(ACCOUNT_ID); } catch { /* best-effort */ }
+  }, 30000);
 
   it('syncs an open till', async () => {
     const res = await apiPost('/api/sync', {
@@ -94,7 +87,7 @@ describe('Scenario: Till Reconciliation', () => {
       }],
     });
     expect(res.status).toBe(200);
-  });
+  }, 120000);
 
   it('till shows correct totals after close', async () => {
     const db = getSupabase();

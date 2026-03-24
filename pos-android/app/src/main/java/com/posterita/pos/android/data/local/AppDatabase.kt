@@ -30,7 +30,7 @@ import com.posterita.pos.android.util.Constants
         PreparationStation::class,
         CategoryStationMapping::class
     ],
-    version = 25,
+    version = 26,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -92,7 +92,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_21_22,
                         MIGRATION_22_23,
                         MIGRATION_23_24,
-                        MIGRATION_24_25
+                        MIGRATION_24_25,
+                        MIGRATION_25_26
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -362,6 +363,17 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE terminal ADD COLUMN terminal_type TEXT NOT NULL DEFAULT 'pos_retail'")
                 db.execSQL("ALTER TABLE terminal ADD COLUMN zone TEXT DEFAULT NULL")
+            }
+        }
+
+        private val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Rename timestamp columns to match Supabase schema
+                db.execSQL("ALTER TABLE product RENAME COLUMN created TO created_at")
+                db.execSQL("ALTER TABLE product RENAME COLUMN updated TO updated_at")
+                // Add soft delete columns
+                db.execSQL("ALTER TABLE product ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE product ADD COLUMN deleted_at TEXT DEFAULT NULL")
             }
         }
     }

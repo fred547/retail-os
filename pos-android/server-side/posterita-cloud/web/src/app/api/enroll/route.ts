@@ -101,7 +101,8 @@ export async function POST(req: NextRequest) {
       .from("product")
       .select("*")
       .eq("account_id", body.account_id)
-      .eq("product_status", "live");
+      .eq("product_status", "live")
+      .eq("is_deleted", false);
 
     const { data: categories } = await db
       .from("productcategory")

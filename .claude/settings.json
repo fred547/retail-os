@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/fredericktsang/retailOs/pos-android/server-side/posterita-cloud/web && npx tsc --noEmit 2>&1 | head -20 || true",
+            "timeout": 60,
+            "statusMessage": "Type-checking..."
+          }
+        ]
+      }
+    ]
+  }
+}
