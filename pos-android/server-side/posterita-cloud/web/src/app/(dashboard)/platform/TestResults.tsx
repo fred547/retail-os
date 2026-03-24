@@ -41,12 +41,18 @@ export default function TestResults({ ciReports }: { ciReports: CiReport[] }) {
   // Find the most recent report with scenario data
   const latestScenarioReport = ciReports.find(r => r.scenario_passed != null && r.scenario_passed > 0);
 
+  // Find the most recent report with each test type
+  const latestWithAndroid = ciReports.find(r => r.android_passed > 0);
+  const latestWithWeb = ciReports.find(r => r.web_passed > 0);
+
   // Use CI data if available, otherwise static
-  const androidPassed = latest?.android_passed ?? android.totalTests;
-  const androidFailed = latest?.android_failed ?? 0;
-  const webPassed = latest?.web_passed ?? web.totalTests;
-  const webFailed = latest?.web_failed ?? 0;
-  const tsErrors = latest?.ts_errors ?? 0;
+  const androidPassed = latestWithAndroid?.android_passed ?? android.totalTests;
+  const androidFailed = latestWithAndroid?.android_failed ?? 0;
+  const androidSource = latestWithAndroid ? "DB" : "static";
+  const webPassed = latestWithWeb?.web_passed ?? web.totalTests;
+  const webFailed = latestWithWeb?.web_failed ?? 0;
+  const webSource = latestWithWeb ? "DB" : "static";
+  const tsErrors = latestWithWeb?.ts_errors ?? latest?.ts_errors ?? 0;
   const firebasePassed = latest?.firebase_passed ?? 0;
   const firebaseFailed = latest?.firebase_failed ?? 0;
   const firebaseStatus = latest?.firebase_status ?? "skipped";
