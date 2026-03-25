@@ -3,6 +3,7 @@ import { getSessionAccountId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
 import React from "react";
 import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
+import QRCode from "qrcode";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -43,6 +44,8 @@ interface CatalogueOptions {
   showBarcode: boolean;
   showDescription: boolean;
   showImages: boolean;
+  showQrCode: boolean;
+  qrDataUrls: Map<number, string>;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -67,6 +70,7 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
     price: { fontSize: 13, fontWeight: "bold", color: colors.primary },
     cost: { fontSize: 8, color: colors.muted, marginTop: 2 },
     barcode: { fontSize: 7, color: colors.muted, marginTop: 2, fontFamily: "Courier" },
+    qrImage: { width: 48, height: 48, marginTop: 4 },
     category: { fontSize: 7, color: colors.primary, marginBottom: 4, textTransform: "uppercase" },
     footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
     footerText: { fontSize: 7, color: colors.muted },
@@ -101,6 +105,9 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
             options.showBarcode && p.upc
               ? React.createElement(Text, { style: s.barcode }, p.upc)
               : null,
+            options.showQrCode && options.qrDataUrls.get(p.product_id)
+              ? React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any)
+              : null,
           )
         )
       ),
@@ -132,6 +139,7 @@ function ListTemplate({ products, options }: { products: Product[]; options: Cat
     price: { fontSize: 13, fontWeight: "bold", color: colors.primary },
     cost: { fontSize: 8, color: colors.muted, marginTop: 2 },
     barcode: { fontSize: 7, color: colors.muted, marginTop: 1, fontFamily: "Courier" },
+    qrImage: { width: 40, height: 40 },
     footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
     footerText: { fontSize: 7, color: colors.muted },
   });
@@ -166,6 +174,9 @@ function ListTemplate({ products, options }: { products: Product[]; options: Cat
             options.showCost
               ? React.createElement(Text, { style: s.cost }, `Cost: ${formatPrice(p.costprice, options.currency)}`)
               : null,
+            options.showQrCode && options.qrDataUrls.get(p.product_id)
+              ? React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any)
+              : null,
           ),
         )
       ),
@@ -197,6 +208,8 @@ function PriceListTemplate({ products, options }: { products: Product[]; options
     colBarcode: { flex: 2 },
     colPrice: { flex: 1, textAlign: "right" as any },
     colCost: { flex: 1, textAlign: "right" as any },
+    colQr: { width: 36, alignItems: "center" as any, justifyContent: "center" as any },
+    qrImage: { width: 28, height: 28 },
     footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
     footerText: { fontSize: 7, color: colors.muted },
   });
@@ -213,6 +226,7 @@ function PriceListTemplate({ products, options }: { products: Product[]; options
         options.showBarcode ? React.createElement(Text, { style: { ...s.th, ...s.colBarcode } }, "Barcode") : null,
         React.createElement(Text, { style: { ...s.th, ...s.colPrice } }, "Price"),
         options.showCost ? React.createElement(Text, { style: { ...s.th, ...s.colCost } }, "Cost") : null,
+        options.showQrCode ? React.createElement(Text, { style: { ...s.th, ...s.colQr } }, "QR") : null,
       ),
       ...products.map((p, i) =>
         React.createElement(View, { key: p.product_id, style: i % 2 === 0 ? s.row : s.rowAlt, wrap: false },
@@ -221,6 +235,9 @@ function PriceListTemplate({ products, options }: { products: Product[]; options
           options.showBarcode ? React.createElement(Text, { style: { ...s.cellMuted, ...s.colBarcode } }, p.upc ?? "—") : null,
           React.createElement(Text, { style: { ...s.cellBold, ...s.colPrice } }, formatPrice(p.sellingprice, options.currency)),
           options.showCost ? React.createElement(Text, { style: { ...s.cellMuted, ...s.colCost } }, formatPrice(p.costprice, options.currency)) : null,
+          options.showQrCode && options.qrDataUrls.get(p.product_id)
+            ? React.createElement(View, { style: s.colQr }, React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any))
+            : options.showQrCode ? React.createElement(View, { style: s.colQr }) : null,
         )
       ),
       React.createElement(View, { style: s.footer, fixed: true },
@@ -252,6 +269,7 @@ export async function POST(req: NextRequest) {
       showBarcode = true,
       showDescription = true,
       showImages = true,
+      showQrCode = false,
     } = body;
 
     const db = getDb();
@@ -300,6 +318,27 @@ export async function POST(req: NextRequest) {
       productcategory: p.productcategory_id ? { name: catMap.get(p.productcategory_id) ?? "" } : null,
     }));
 
+    // Generate QR codes as data URLs if requested
+    const qrDataUrls = new Map<number, string>();
+    if (showQrCode) {
+      await Promise.all(
+        products.map(async (p) => {
+          // QR encodes the UPC/barcode if available, otherwise the product name
+          const qrContent = p.upc || p.name;
+          try {
+            const dataUrl = await QRCode.toDataURL(qrContent, {
+              width: 100,
+              margin: 1,
+              color: { dark: "#000000", light: "#FFFFFF" },
+            });
+            qrDataUrls.set(p.product_id, dataUrl);
+          } catch (_) {
+            // Skip QR for this product if generation fails
+          }
+        })
+      );
+    }
+
     const options: CatalogueOptions = {
       template,
       title: catalogueTitle,
@@ -308,6 +347,8 @@ export async function POST(req: NextRequest) {
       showBarcode,
       showDescription,
       showImages: template !== "price-list" && showImages,
+      showQrCode,
+      qrDataUrls,
     };
 
     // Select template

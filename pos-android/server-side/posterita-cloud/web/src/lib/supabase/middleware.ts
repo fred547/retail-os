@@ -18,11 +18,15 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/errors",
   "/brands",
   "/tables",
+  "/stations",
+  "/tills",
+  "/inventory",
+  "/catalogue",
   "/sync-inbox",
 ]);
 
-/** Also redirect sub-paths like /intake/new, /intake/123 */
-const LEGACY_CUSTOMER_PREFIXES = ["/intake/"];
+/** Also redirect sub-paths like /intake/new, /intake/123, /inventory/new, /inventory/123 */
+const LEGACY_CUSTOMER_PREFIXES = ["/intake/", "/inventory/"];
 
 const OTT_COOKIE = "posterita_ott_session";
 
@@ -40,6 +44,11 @@ export async function updateSession(request: NextRequest) {
       headers: requestHeaders,
     },
   });
+
+  // Skip auth check for API routes — they handle auth themselves
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    return supabaseResponse;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -66,9 +75,10 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Use getSession() — reads JWT from cookie, no network call (fast for Edge)
+  // Server components/API routes do full getUser() validation separately
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   // ── OTT handling: validate token in middleware, set cookie, redirect ──
   const ott = request.nextUrl.searchParams.get("ott");

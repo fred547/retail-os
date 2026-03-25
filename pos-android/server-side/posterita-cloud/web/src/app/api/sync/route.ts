@@ -358,7 +358,6 @@ export async function POST(req: NextRequest) {
             forex_amt: till.forexamt ?? till.forex_amt ?? 0,
           };
 
-          // Insert-first pattern: avoids TOCTOU race on uuid (no unique constraint).
           const { error } = await insertOrUpdate("till", dbTill, till.uuid);
 
           if (error) {
@@ -370,6 +369,15 @@ export async function POST(req: NextRequest) {
           errors.push(`Till: ${e.message}`);
         }
       }
+
+      // Reconcile: back-fill till_id on any previously orphaned orders
+      // whose tills have now arrived (matched by till_uuid)
+      try {
+        await getDb().rpc("reconcile_till_orders", { p_account_id: body.account_id }).throwOnError();
+      } catch (e: any) {
+        // Non-fatal: orders will be reconciled on next sync
+        errors.push(`Till reconciliation: ${e.message}`);
+      }
     }
 
     // Sync orders (after tills, since orders.till_id references till)
@@ -377,8 +385,7 @@ export async function POST(req: NextRequest) {
       for (const order of body.orders) {
         try {
           // Map Android field names to Supabase column names
-          // Handle till_id: if till doesn't exist in cloud yet, set to null
-          let tillId = order.tillId ?? order.till_id ?? 0;
+          const tillUuid = order.tillUuid ?? order.till_uuid ?? null;
 
           const dbOrder: any = {
             order_id: order.orderId ?? order.order_id,
@@ -405,20 +412,38 @@ export async function POST(req: NextRequest) {
             couponids: order.couponids,
           };
 
-          // Only set till_id if the till actually exists in the cloud
-          // Otherwise omit to avoid FK violation
-          if (tillId > 0) {
-            const { data: tillExists } = await getDb()
+          // Always store till_uuid if available (survives till sync failures)
+          if (tillUuid) {
+            dbOrder.till_uuid = tillUuid;
+          }
+
+          // Resolve till_id from till_uuid (preferred) or legacy till_id
+          if (tillUuid) {
+            const { data: tillRow } = await getDb()
               .from("till")
               .select("till_id")
-              .eq("till_id", tillId)
+              .eq("uuid", tillUuid)
+              .eq("account_id", body.account_id)
               .single();
-            if (tillExists) {
-              dbOrder.till_id = tillId;
+            if (tillRow) {
+              dbOrder.till_id = tillRow.till_id;
+            }
+            // If till not found, till_uuid is preserved — till_id back-filled on next sync
+          } else {
+            // Legacy path: old clients that don't send till_uuid
+            const tillId = order.tillId ?? order.till_id ?? 0;
+            if (tillId > 0) {
+              const { data: tillExists } = await getDb()
+                .from("till")
+                .select("till_id")
+                .eq("till_id", tillId)
+                .single();
+              if (tillExists) {
+                dbOrder.till_id = tillId;
+              }
             }
           }
 
-          // Insert-first pattern: avoids TOCTOU race on uuid (no unique constraint).
           const { error } = await insertOrUpdate("orders", dbOrder, order.uuid);
 
           if (error) {

@@ -8,11 +8,19 @@ This is a multi-platform project: TypeScript/Next.js web app deployed to Vercel,
 
 ## Build & Verification
 
-After making multi-file changes, always run a build/compile check before reporting completion. For Android: run gradle build. For Next.js/web: run `npm run build`.
+After making multi-file changes, always run a build/compile check before reporting completion. After every file edit, run `tsc --noEmit` (web) or gradle compile (Android) to catch type errors immediately — do NOT batch all changes and test at the end. Fix errors before moving to the next file.
+
+- **Web/TypeScript:** `cd pos-android/server-side/posterita-cloud/web && npx tsc --noEmit` after each edit. Run `npm run build` before deploying. Watch for type mismatches, missing fields, and lock file issues.
+- **Android/Kotlin:** `cd pos-android && ./gradlew compileDebugKotlin` after edits. Watch for Room schema mismatches and missing imports.
 
 ## Database & Sync
 
-When modifying database-related code, always verify field names, types, and casing match the actual database schema (check Supabase/PostgREST types). Never assume INT vs TEXT or camelCase vs snake_case without checking.
+**Before writing ANY database-related code, first query/read the actual schema.** Check Supabase migration files or PostgREST types to confirm column names, types, and constraints. Never assume from code alone.
+
+- Be especially careful with `account_id` types (INT vs TEXT), FK constraints, and PostgREST join syntax.
+- Never assume camelCase vs snake_case — verify against the actual DB.
+- Cross-check Android Room entities, TypeScript types, and Supabase schema for consistency before making changes.
+- When touching sync logic, verify the field mapping matches on BOTH Android and web sides.
 
 ## Debugging
 
@@ -20,11 +28,16 @@ When fixing bugs, always verify the fix actually resolves the issue before movin
 
 ## Testing
 
-When writing or fixing tests, use unique generated IDs (e.g., UUIDs with test prefixes) instead of hardcoded IDs to prevent parallel test collisions. Always run the full test suite after changes, not just individual tests.
+- After generating or modifying tests, run the full test suite immediately and fix failures before moving on.
+- Use unique generated IDs (e.g., UUIDs with test prefixes) — never hardcode IDs (causes parallel test collisions).
+- Verify field names and enum cases match the actual schema/API response BEFORE writing test assertions.
+- After any fix, keep running and fixing until ALL tests pass with zero failures. Do not stop at partial success.
+
+**Android tests MUST run on Firebase Test Lab** — never run instrumented tests locally on the developer's machine. Use `gcloud firebase test android run` with the `posterita-retail-os` project. Local machine is not efficient for Android testing. Unit tests (`testDebugUnitTest`) can still run locally as they don't need a device.
 
 ## Code Changes
 
-When refactoring or rewriting a file, diff against the original to ensure no existing function calls or service registrations are accidentally dropped. Verify that all existing service calls and integrations are preserved.
+When refactoring or rewriting a file, diff against the original to ensure no existing function calls or service registrations are accidentally dropped. Verify that all existing service calls and integrations are preserved. Avoid excessive changes — keep modifications scoped to what was requested. Do not batch 10+ file changes without verifying each one compiles.
 
 ## Deployment
 
@@ -38,7 +51,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00025) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00028) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
 
@@ -48,7 +61,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 - **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
 - **DB:** Supabase Postgres — `account_id` is TEXT. **RLS is enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
-- **AI:** Claude Haiku 4.5 via Anthropic API (`CLAUDE_API_KEY` on Vercel) — web search for product discovery
+- **AI:** Claude Haiku 4.5 + Sonnet 4.6 via Anthropic API (`CLAUDE_API_KEY` on Vercel) — Haiku for AI import/discovery, Sonnet for intake processing
 - **WhatsApp:** Meta Cloud API (direct, no BSP) — single Posterita number for B2C + B2B. AI-first, human escalation via SalesIQ/Slack.
 - **Firebase:** Test Lab for Android UI tests on cloud devices. Project: `posterita-retail-os`. Console: https://console.firebase.google.com/project/posterita-retail-os/testlab
 - **Production Web:** `https://web.posterita.com` (Vercel — web console, dashboard, serverless API)
@@ -93,7 +106,32 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 
 **Android:** `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
 
-**Firebase Test Lab:** Runs UI Automator tests on cloud devices on every push to main.
+**Firebase Test Lab (MANDATORY for all Android instrumented tests):**
+All Android instrumented tests must run on Firebase Test Lab, not locally. Use `gcloud firebase test android run`.
+```bash
+# Build APKs
+cd pos-android && ./gradlew assembleDebug assembleDebugAndroidTest
+
+# Run DAO tests on Firebase Test Lab
+gcloud firebase test android run \
+  --type instrumentation \
+  --app app/build/outputs/apk/debug/app-debug.apk \
+  --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+  --device model=MediumPhone.arm,version=34,locale=en,orientation=portrait \
+  --test-targets "class com.posterita.pos.android.database.HoldOrderDaoTest,class com.posterita.pos.android.database.RestaurantTableDaoTest" \
+  --timeout 5m --no-record-video
+
+# Run UI tests on Firebase Test Lab
+gcloud firebase test android run \
+  --type instrumentation \
+  --app app/build/outputs/apk/debug/app-debug.apk \
+  --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+  --device model=MediumPhone.arm,version=34,locale=en,orientation=portrait \
+  --timeout 10m
+
+# Unit tests (no device needed) can still run locally
+./gradlew testDebugUnitTest
+```
 - Project: `posterita-retail-os` | Console: https://console.firebase.google.com/project/posterita-retail-os/testlab
 - Plan: Spark (free) — 10 virtual + 5 physical device tests/day
 - Device: MediumPhone.arm (Pixel-like), Android 14
@@ -172,10 +210,10 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/errors` | ✅ | `/users` | ✅ |
 | `/intake` + `/new` + `/[id]` | ✅ | `/settings` (currency) | ✅ |
 | `/ai-import` | ✅ | `/price-review` | ✅ |
-| `/platform` (5 tabs: brands/owners/errors/sync/tests) | ✅ | `/brands` | ✅ |
+| `/platform` (8 tabs: brands/owners/errors/sync/tests/benchmark/infra/changelog) | ✅ | `/brands` | ✅ |
 | `/platform/error-logs` | ✅ | `/catalogue` (PDF export) | ✅ |
 | `/tables` (sections) | ✅ | `/inventory` + `/new` + `/[id]` | ✅ |
-| `/stations` (prep stations) | ✅ | | |
+| `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
 
 ## API Routes
 
@@ -223,6 +261,10 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/intake/[batchId]/process` | POST | Process intake batch (AI matching) |
 | `/api/intake/[batchId]/review` | POST | Review + approve/reject intake items |
 | `/api/monitor` | GET | System health — checks Supabase, Render backend, sync API, error monitor |
+| `/api/changelog` | GET | Git changelog / version info for platform |
+| `/api/infrastructure` | GET | Infrastructure status + DB row counts (uses Claude Haiku for summaries) |
+| `/api/sync/replay` | POST | Replay sync operations for debugging |
+| `/api/platform/delete-test-brands` | POST | Bulk delete test brands (account manager only) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -382,9 +424,9 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 
 ## AI Import
 
-- **Model:** Claude Haiku 4.5 (`claude-haiku-4-5`) — ~$0.025/import
+- **Models:** Claude Haiku 4.5 (`claude-haiku-4-5`) for AI import discovery (~$0.025/import), Claude Sonnet 4.6 (`claude-sonnet-4-6`) for intake batch processing
 - **Server endpoints:** `POST /api/ai-import` (discover) + `POST /api/ai-import/save` (persist to Supabase)
-- **Web search:** `web_search_20260209` tool (GA, no beta header)
+- **Web search:** `web_search_20260209` (ai-import), `web_search_20250305` (intake processing)
 - **NOT used during signup** — available post-signup via Brands screen or web console `/ai-import`
 - **Server-first:** AI results saved to Supabase via `/api/ai-import/save`, Android pulls via sync. Never saves to local Room DB.
 - **Error handling:** Specific messages for credit exhaustion, rate limits, timeouts.
@@ -407,13 +449,16 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 
 ## Web Platform Portal (`/platform`)
 
-Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|errors|sync|tests`):
+Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|errors|sync|tests|benchmark|infra|changelog`):
 
 - **Brands tab** (default) — owner-grouped brand list, type/status badges, store/product/user counts, account manager assignment, create account form, archive + delete, pagination (25/page)
 - **Owners tab** — all owners with name, email, phone, brand count, join date, active status. Edit panel: change name/email/phone, send password reset. Summary cards.
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
-- **Test Results tab** — 641 total tests: 419 Android unit (21 files) + 156 web unit (13 files) + 42 production smoke (API, DB, pages, SQL injection) + 16 Render backend (health, monitors, WhatsApp webhook, CORS) + 8 ADB device (launch, crash, ANR, memory). CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~995 total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 200 web API (15 files) + 266 scenario (45 files) + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Benchmark tab** — performance benchmarks.
+- **Infra tab** — live service status + DB row counts.
+- **Changelog tab** — recent git history / release notes.
 
 ## DB Column Reference (common mistakes)
 

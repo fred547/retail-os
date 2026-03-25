@@ -608,6 +608,7 @@ class CloudSyncService @Inject constructor(
             customerId = customerId,
             salesRepId = salesRepId,
             tillId = tillId,
+            tillUuid = tillUuid,
             terminalId = terminalId,
             storeId = storeId,
             orderType = orderType,

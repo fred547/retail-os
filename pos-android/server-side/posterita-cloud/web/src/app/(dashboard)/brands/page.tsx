@@ -100,7 +100,7 @@ export default async function BrandsPage() {
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3">
         <p className="text-sm text-blue-700">
           You are currently viewing data for <strong>{(brands ?? []).find(b => b.account_id === accountId)?.businessname ?? "this brand"}</strong>.
-          Switch brands on the <Link href="/customer" className="underline font-medium">platform page</Link>.
+          Switch brands on the <Link href="/platform" className="underline font-medium">platform page</Link>.
         </p>
       </div>
 

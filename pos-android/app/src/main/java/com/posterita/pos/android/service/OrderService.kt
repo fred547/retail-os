@@ -62,6 +62,7 @@ class OrderService @Inject constructor(
             storeId = store.storeId,
             terminalId = terminal.terminalId,
             tillId = till.tillId,
+            tillUuid = till.uuid,
             documentNo = documentNo,
             dateOrdered = now,
             isPaid = true,

@@ -12,6 +12,7 @@ data class Order(
     val customerId: Int = 0,
     val salesRepId: Int = 0,
     val tillId: Int = 0,
+    val tillUuid: String? = null,
     val terminalId: Int = 0,
     val storeId: Int = 0,
     val accountId: String? = null,

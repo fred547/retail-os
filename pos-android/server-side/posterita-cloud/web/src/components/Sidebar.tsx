@@ -30,6 +30,7 @@ import {
   ChevronRight,
   ChefHat,
   RefreshCw,
+  Wallet,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -51,12 +52,14 @@ const sections: NavSection[] = [
       { name: "Price Review", href: "/price-review", icon: DollarSign },
       { name: "AI Import", href: "/ai-import", icon: Sparkles },
       { name: "Product Intake", href: "/intake", icon: Inbox },
+      { name: "PDF Catalogue", href: "/catalogue", icon: FileText },
     ],
   },
   {
     label: "Sales",
     items: [
       { name: "Orders", href: "/orders", icon: ShoppingCart },
+      { name: "Tills", href: "/tills", icon: Wallet },
       { name: "Customers", href: "/customers", icon: Users },
       { name: "Reports", href: "/reports", icon: BarChart3 },
     ],
@@ -72,7 +75,6 @@ const sections: NavSection[] = [
     label: "Inventory",
     items: [
       { name: "Stock Counts", href: "/inventory", icon: ClipboardList },
-      { name: "PDF Catalogue", href: "/catalogue", icon: FileText },
     ],
   },
   {

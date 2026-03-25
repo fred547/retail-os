@@ -50,6 +50,7 @@ data class SyncOrder(
     @SerializedName("customer_id") val customerId: Int = 0,
     @SerializedName("sales_rep_id") val salesRepId: Int = 0,
     @SerializedName("till_id") val tillId: Int = 0,
+    @SerializedName("till_uuid") val tillUuid: String? = null,
     @SerializedName("terminal_id") val terminalId: Int = 0,
     @SerializedName("store_id") val storeId: Int = 0,
     @SerializedName("order_type") val orderType: String? = null,

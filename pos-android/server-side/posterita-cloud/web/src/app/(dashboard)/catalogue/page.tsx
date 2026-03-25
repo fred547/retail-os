@@ -11,6 +11,7 @@ import {
   Table2,
   Eye,
   EyeOff,
+  QrCode,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -36,6 +37,7 @@ export default function CataloguePage() {
   const [showBarcode, setShowBarcode] = useState(true);
   const [showDescription, setShowDescription] = useState(true);
   const [showImages, setShowImages] = useState(true);
+  const [showQrCode, setShowQrCode] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [productCount, setProductCount] = useState<number | null>(null);
@@ -87,6 +89,7 @@ export default function CataloguePage() {
           showBarcode,
           showDescription,
           showImages,
+          showQrCode,
         }),
       });
 
@@ -190,6 +193,7 @@ export default function CataloguePage() {
             { key: "showImages", label: "Images", value: showImages, set: setShowImages, disabled: template === "price-list" },
             { key: "showDescription", label: "Descriptions", value: showDescription, set: setShowDescription },
             { key: "showBarcode", label: "Barcodes", value: showBarcode, set: setShowBarcode },
+            { key: "showQrCode", label: "QR Codes", value: showQrCode, set: setShowQrCode },
             { key: "showCost", label: "Cost Price", value: showCost, set: setShowCost },
           ].map((opt) => (
             <button
