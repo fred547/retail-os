@@ -58,18 +58,56 @@ interface SyncRequest {
  * (Postgres 23505), fall back to UPDATE. This is more robust than the
  * previous select-then-insert pattern which had a TOCTOU race window.
  */
+interface UpsertResult {
+  error: any;
+  conflict?: "stale_overwrite" | "duplicate_push";
+}
+
 async function insertOrUpdate(
   table: string,
   record: Record<string, any>,
   uuidValue: string
-): Promise<{ error: any }> {
-  // Try INSERT first
+): Promise<UpsertResult> {
+  // Check if record already exists — needed for conflict detection
+  const { data: existing } = await getDb()
+    .from(table)
+    .select("uuid, updated_at, is_sync")
+    .eq("uuid", uuidValue)
+    .maybeSingle();
+
+  if (existing) {
+    // Record exists — check for conflicts before updating
+    const existingUpdatedAt = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
+    const incomingUpdatedAt = record.updated_at ? new Date(record.updated_at).getTime() : Date.now();
+
+    // Stale overwrite detection: if server has a NEWER version, skip the update
+    // (another device already synced fresher data)
+    if (existingUpdatedAt > 0 && incomingUpdatedAt > 0 && existingUpdatedAt > incomingUpdatedAt) {
+      return { error: null, conflict: "stale_overwrite" };
+    }
+
+    // Duplicate push detection: exact same timestamp = idempotent, just skip
+    if (existingUpdatedAt > 0 && existingUpdatedAt === incomingUpdatedAt && existing.is_sync) {
+      return { error: null, conflict: "duplicate_push" };
+    }
+
+    // Safe to update — incoming is newer or same
+    record.updated_at = new Date().toISOString();
+    const updateResult = await getDb()
+      .from(table)
+      .update(record)
+      .eq("uuid", uuidValue);
+    return { error: updateResult.error };
+  }
+
+  // Doesn't exist → insert
+  record.updated_at = new Date().toISOString();
   const insertResult = await getDb().from(table).insert(record);
 
   if (insertResult.error) {
     const code = (insertResult.error as any).code;
     const msg = insertResult.error.message || "";
-    // Postgres unique-violation or duplicate key → fall back to UPDATE
+    // Race condition: another sync inserted between check and insert
     if (code === "23505" || msg.includes("duplicate")) {
       const updateResult = await getDb()
         .from(table)
@@ -281,6 +319,7 @@ export async function POST(req: NextRequest) {
     let orderLinesSynced = 0;
     let paymentsSynced = 0;
     let tillsSynced = 0;
+    let conflictsDetected = 0; // stale overwrites + duplicate pushes skipped
     let storesSynced = 0;
     let terminalsSynced = 0;
     let usersSynced = 0;
@@ -359,10 +398,13 @@ export async function POST(req: NextRequest) {
             status: till.status || (till.dateClosed || till.date_closed ? "closed" : "open"),
           };
 
-          const { error } = await insertOrUpdate("till", dbTill, till.uuid);
+          const result = await insertOrUpdate("till", dbTill, till.uuid);
 
-          if (error) {
-            errors.push(`Till ${till.uuid}: ${error.message}`);
+          if (result.error) {
+            errors.push(`Till ${till.uuid}: ${result.error.message}`);
+          } else if (result.conflict) {
+            conflictsDetected++;
+            tillsSynced++; // still counts as handled (just skipped update)
           } else {
             tillsSynced++;
           }
@@ -445,10 +487,13 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          const { error } = await insertOrUpdate("orders", dbOrder, order.uuid);
+          const result = await insertOrUpdate("orders", dbOrder, order.uuid);
 
-          if (error) {
-            errors.push(`Order ${order.uuid}: ${error.message}`);
+          if (result.error) {
+            errors.push(`Order ${order.uuid}: ${result.error.message}`);
+          } else if (result.conflict) {
+            conflictsDetected++;
+            ordersSynced++; // handled (skipped stale/duplicate)
           } else {
             ordersSynced++;
           }
@@ -940,7 +985,7 @@ export async function POST(req: NextRequest) {
         request_at: new Date(requestStart).toISOString(),
         response_at: serverTime,
         duration_ms: Date.now() - requestStart,
-        status: errors.length > 0 ? "partial" : "success",
+        status: errors.length > 0 ? "partial" : conflictsDetected > 0 ? "success_with_conflicts" : "success",
         error_message: errors.length > 0 ? errors.slice(0, 5).join("; ") : null,
         orders_pushed: ordersSynced,
         tills_pushed: tillsSynced,
@@ -1009,6 +1054,7 @@ export async function POST(req: NextRequest) {
       taxes_synced: taxesSynced,
       tables_synced: tablesSynced,
       inventory_entries_synced: inventoryEntriesSynced,
+      conflicts_detected: conflictsDetected,
       errors,
     });
   } catch (error: any) {
