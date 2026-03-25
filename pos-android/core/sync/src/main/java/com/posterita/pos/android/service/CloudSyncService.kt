@@ -94,7 +94,9 @@ class CloudSyncService @Inject constructor(
             // Collect local data to push
             val unsyncedOrders = db.orderDao().getUnSyncedOrders()
             // Sync both open and closed tills (open = header only, closed = full amounts)
-            val unsyncedTills = db.tillDao().getUnsyncedTills(terminalId)
+            // Use getAllUnsyncedTills() — not filtered by terminal_id, since the till may have
+            // been opened before terminal was synced or with a different terminal context
+            val unsyncedTills = db.tillDao().getAllUnsyncedTills()
 
             // Collect order lines and payments for unsynced orders
             val orderLines = mutableListOf<OrderLine>()
