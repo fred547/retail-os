@@ -356,7 +356,7 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 | **Retry with backoff** | Android | 5 retries, exponential (30s→60s→120s→240s). Per-item: failed items stay unsynced via `syncErrorMessage` |
 | **Sync receipt** | Android | Synchronizer screen shows ↑SENT / ↓RECEIVED / ⏳PENDING / ✗ERRORS breakdown |
 | **Conflict detection** | Server | `insertOrUpdate()` checks `updated_at` — skips stale overwrites + duplicate pushes |
-| **Payload checksum** | Both | Android computes SHA-256 of order/till UUIDs+totals, server verifies. Soft enforcement (log, don't reject) |
+| **Payload checksum** | Both | Android computes SHA-256 of order/till UUIDs+totals, server verifies. **Warning-only** (`console.warn`, not sync error) — Kotlin/JS floating point serialization differs (0.0 vs 0), causing false positives |
 
 **Android's sole sync responsibility:** build correct JSON, send it, confirm HTTP 200. All conflict resolution, FK validation, and data integrity logic is **server-side**. Android does not need to understand server-side errors — it just retries on failure.
 
