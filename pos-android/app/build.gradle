@@ -107,6 +107,7 @@ dependencies {
     implementation project(':core:database')
     implementation project(':core:common')
     implementation project(':core:network')
+    implementation project(':core:sync')
 
     // Room (still needed in app for Hilt-provided DAOs and migrations testing)
     implementation 'androidx.room:room-runtime:2.6.1'

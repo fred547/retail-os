@@ -150,88 +150,92 @@ class CloudSyncWorker(
             val cloudSyncUrl = prefsManager.cloudSyncUrl
             var anyFailed = false
 
-            for ((index, accountId) in brandIds.withIndex()) {
-                try {
-                    val isActive = accountId == activeAccountId
-                    if (isActive) {
-                        SyncStatusManager.update(
-                            SyncStatusManager.SyncState.CONNECTING,
-                            "Syncing active brand..."
-                        )
-                    }
-
-                    // Temporarily set accountId in prefs so CloudSyncService reads it
-                    prefsManager.setAccountIdSync(accountId)
-                    AppDatabase.resetInstance()
-                    val db = AppDatabase.getInstance(applicationContext, accountId)
-
-                    // Register if needed
-                    val regKey = "${REGISTERED_KEY}_$accountId"
-                    val isRegistered = prefsManager.getString(regKey) == "true"
-                    if (!isRegistered) {
+            try {
+                for ((index, accountId) in brandIds.withIndex()) {
+                    var db: AppDatabase? = null
+                    try {
+                        val isActive = accountId == activeAccountId
                         if (isActive) {
                             SyncStatusManager.update(
-                                SyncStatusManager.SyncState.REGISTERING,
-                                "Registering account with cloud..."
+                                SyncStatusManager.SyncState.CONNECTING,
+                                "Syncing active brand..."
                             )
                         }
-                        val registered = registerAccount(db, prefsManager, cloudSyncUrl)
-                        if (registered) {
-                            prefsManager.setString(regKey, "true")
-                        } else {
-                            Log.w(TAG, "Registration failed for $accountId, skipping")
-                            continue
-                        }
-                    }
 
-                    val cloudSyncApi = createCloudSyncApi(cloudSyncUrl)
-                    val syncService = CloudSyncService(db, prefsManager)
-                    val result = syncService.performSync(cloudSyncApi)
+                        // Temporarily set accountId in prefs so CloudSyncService reads it
+                        prefsManager.setAccountIdSync(accountId)
+                        // Use a dedicated DB instance — never touch the UI singleton
+                        db = AppDatabase.buildDedicated(applicationContext, accountId)
 
-                    result.fold(
-                        onSuccess = { stats ->
-                            Log.d(TAG, "Sync [$accountId]: $stats")
-                        },
-                        onFailure = { error ->
-                            Log.e(TAG, "Sync [$accountId] failed: ${error.message}")
-                            if (isActive) anyFailed = true
-                        }
-                    )
-
-                    // Register sibling brands from sync response
-                    syncService.lastSiblingBrands?.let { brands ->
-                        for (brand in brands) {
-                            val brandId = brand["account_id"]?.toString() ?: continue
-                            val brandName = brand["businessname"]?.toString() ?: "Brand"
-                            val brandType = brand["type"]?.toString() ?: "live"
-                            val brandStatus = brand["status"]?.toString() ?: "active"
-                            if (!accountRegistry.getAllAccounts().any { it.id == brandId }) {
-                                accountRegistry.addAccount(
-                                    id = brandId, name = brandName, storeName = brandName,
-                                    ownerEmail = prefsManager.email, ownerPhone = "",
-                                    type = brandType, status = brandStatus
+                        // Register if needed
+                        val regKey = "${REGISTERED_KEY}_$accountId"
+                        val isRegistered = prefsManager.getString(regKey) == "true"
+                        if (!isRegistered) {
+                            if (isActive) {
+                                SyncStatusManager.update(
+                                    SyncStatusManager.SyncState.REGISTERING,
+                                    "Registering account with cloud..."
                                 )
-                                Log.d(TAG, "Registered sibling brand: $brandName ($brandId)")
-                                // Add to sync list if not already there
-                                if (!brandIds.contains(brandId)) {
-                                    brandIds.add(brandId)
+                            }
+                            val registered = registerAccount(db, prefsManager, cloudSyncUrl)
+                            if (registered) {
+                                prefsManager.setString(regKey, "true")
+                            } else {
+                                Log.w(TAG, "Registration failed for $accountId, skipping")
+                                continue
+                            }
+                        }
+
+                        val cloudSyncApi = createCloudSyncApi(cloudSyncUrl)
+                        val syncService = CloudSyncService(db, prefsManager)
+                        val result = syncService.performSync(cloudSyncApi)
+
+                        result.fold(
+                            onSuccess = { stats ->
+                                Log.d(TAG, "Sync [$accountId]: $stats")
+                            },
+                            onFailure = { error ->
+                                Log.e(TAG, "Sync [$accountId] failed: ${error.message}")
+                                if (isActive) anyFailed = true
+                            }
+                        )
+
+                        // Register sibling brands from sync response
+                        syncService.lastSiblingBrands?.let { brands ->
+                            for (brand in brands) {
+                                val brandId = brand["account_id"]?.toString() ?: continue
+                                val brandName = brand["businessname"]?.toString() ?: "Brand"
+                                val brandType = brand["type"]?.toString() ?: "live"
+                                val brandStatus = brand["status"]?.toString() ?: "active"
+                                if (!accountRegistry.getAllAccounts().any { it.id == brandId }) {
+                                    accountRegistry.addAccount(
+                                        id = brandId, name = brandName, storeName = brandName,
+                                        ownerEmail = prefsManager.email, ownerPhone = "",
+                                        type = brandType, status = brandStatus
+                                    )
+                                    Log.d(TAG, "Registered sibling brand: $brandName ($brandId)")
+                                    if (!brandIds.contains(brandId)) {
+                                        brandIds.add(brandId)
+                                    }
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Sync [$accountId] exception: ${e.message}")
+                        if (accountId == activeAccountId) anyFailed = true
+                    } finally {
+                        // Always close dedicated DB to prevent connection leaks
+                        db?.close()
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Sync [$accountId] exception: ${e.message}")
-                    if (accountId == activeAccountId) anyFailed = true
                 }
+            } finally {
+                // ALWAYS restore active account in prefs — even if worker crashes mid-loop
+                prefsManager.setAccountIdSync(activeAccountId)
+                prefsManager.setStoreIdSync(savedStoreId)
+                prefsManager.setStoreNameSync(savedStoreName)
+                prefsManager.setTerminalIdSync(savedTerminalId)
+                prefsManager.setTerminalNameSync(savedTerminalName)
             }
-
-            // Restore active account in prefs and DB singleton
-            prefsManager.setAccountIdSync(activeAccountId)
-            prefsManager.setStoreIdSync(savedStoreId)
-            prefsManager.setStoreNameSync(savedStoreName)
-            prefsManager.setTerminalIdSync(savedTerminalId)
-            prefsManager.setTerminalNameSync(savedTerminalName)
-            AppDatabase.resetInstance()
             AppDatabase.getInstance(applicationContext, activeAccountId)
 
             if (anyFailed) {
