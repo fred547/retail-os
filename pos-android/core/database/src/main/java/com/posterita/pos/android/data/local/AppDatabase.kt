@@ -27,9 +27,10 @@ import com.posterita.pos.android.data.local.entity.*
         InventoryCountEntry::class,
         TableSection::class,
         PreparationStation::class,
-        CategoryStationMapping::class
+        CategoryStationMapping::class,
+        SerialItem::class
     ],
-    version = 27,
+    version = 28,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -66,6 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tableSectionDao(): TableSectionDao
     abstract fun preparationStationDao(): PreparationStationDao
     abstract fun categoryStationMappingDao(): CategoryStationMappingDao
+    abstract fun serialItemDao(): SerialItemDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -105,7 +107,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_23_24,
                         MIGRATION_24_25,
                         MIGRATION_25_26,
-                        MIGRATION_26_27
+                        MIGRATION_26_27,
+                        MIGRATION_27_28
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -428,6 +431,44 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_26_27 = object : Migration(26, 27) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE orders ADD COLUMN tillUuid TEXT")
+            }
+        }
+
+        private val MIGRATION_27_28 = object : Migration(27, 28) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Serial item table for VIN/IMEI/serial number tracking
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS serial_item (
+                        serial_item_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        product_id INTEGER NOT NULL DEFAULT 0,
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        serial_number TEXT NOT NULL DEFAULT '',
+                        serial_type TEXT NOT NULL DEFAULT 'serial',
+                        status TEXT NOT NULL DEFAULT 'in_stock',
+                        supplier_name TEXT,
+                        purchase_date TEXT,
+                        cost_price REAL NOT NULL DEFAULT 0,
+                        order_id INTEGER,
+                        orderline_id INTEGER,
+                        customer_id INTEGER,
+                        sold_date TEXT,
+                        selling_price REAL,
+                        delivered_date TEXT,
+                        warranty_months INTEGER NOT NULL DEFAULT 0,
+                        warranty_expiry TEXT,
+                        color TEXT,
+                        year INTEGER,
+                        engine_number TEXT,
+                        notes TEXT,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        is_sync INTEGER NOT NULL DEFAULT 1
+                    )
+                """.trimIndent())
+                // Product: serialized flag
+                db.execSQL("ALTER TABLE product ADD COLUMN is_serialized TEXT DEFAULT 'N'")
+                // OrderLine: link to serial item
+                db.execSQL("ALTER TABLE orderline ADD COLUMN serial_item_id INTEGER")
             }
         }
     }

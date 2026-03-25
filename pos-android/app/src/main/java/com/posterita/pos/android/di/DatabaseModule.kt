@@ -58,4 +58,5 @@ object DatabaseModule {
     @Provides fun providePaymentDao(db: AppDatabase): PaymentDao = db.paymentDao()
     @Provides fun provideErrorLogDao(db: AppDatabase): ErrorLogDao = db.errorLogDao()
     @Provides fun providePreparationStationDao(db: AppDatabase): PreparationStationDao = db.preparationStationDao()
+    @Provides fun provideSerialItemDao(db: AppDatabase): SerialItemDao = db.serialItemDao()
 }

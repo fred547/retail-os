@@ -16,5 +16,6 @@ data class OrderLine(
     val priceentered: Double = 0.0,
     val costamt: Double = 0.0,
     val productname: String? = null,
-    val productdescription: String? = null
+    val productdescription: String? = null,
+    val serial_item_id: Int? = null
 )

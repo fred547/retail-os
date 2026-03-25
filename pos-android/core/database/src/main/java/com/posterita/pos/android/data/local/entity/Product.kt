@@ -50,5 +50,9 @@ data class Product(
     /** Soft delete flag — synced from server, filtered in queries */
     val is_deleted: Boolean = false,
     /** Timestamp when the product was soft-deleted */
-    val deleted_at: String? = null
-) : Serializable
+    val deleted_at: String? = null,
+    /** "Y" if this product requires serial number tracking (VIN/IMEI/etc.) */
+    val is_serialized: String? = "N"
+) : Serializable {
+    val isSerialized: Boolean get() = is_serialized == "Y"
+}
