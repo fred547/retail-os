@@ -2,7 +2,7 @@ package com.posterita.pos.android.util
 
 object Constants {
     const val PREFS_NAME = "SharedPref"
-    const val DATABASE_NAME = "POSTERITA_LITE_DB"
+    // DATABASE_NAME is in AppDatabase.companion (core:database module)
 
     // SharedPreferences keys
     const val KEY_BASE_URL = "baseUrl"

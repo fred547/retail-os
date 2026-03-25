@@ -65,7 +65,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, 27 migrations
+:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, schema v27 (23 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
