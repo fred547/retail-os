@@ -168,10 +168,11 @@ class HomeActivity : BaseActivity() {
         binding.textContextStore.text = storeName
         binding.textContextTerminal.text = terminalName
 
-        // Show owner email for context
+        // Show owner email + role for context
         val ownerEmail = prefsManager.email
+        val userRole = sessionManager.user?.displayRole
         if (ownerEmail.isNotBlank()) {
-            binding.textOwnerEmail.text = ownerEmail
+            binding.textOwnerEmail.text = if (userRole != null) "$ownerEmail · $userRole" else ownerEmail
             binding.textOwnerEmail.visibility = android.view.View.VISIBLE
         }
 
