@@ -366,6 +366,25 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 
 **Kitchen receipts:** Station name in bold H1 header (e.g., "GRILL STATION"). Item modifiers and notes printed. Both thermal (ReceiptPrinter) and Bluetooth (BluetoothPrinter) supported. Station name encoded as `[StationName]` prefix in order note.
 
+## Printer Types
+
+Printers are **output-only devices**. KDS is NOT a printer (it's an interactive terminal type).
+
+| Type | Hardware | Behavior | Station-aware |
+|------|----------|----------|---------------|
+| `receipt` | Thermal 80mm/58mm | Customer receipts after payment | No |
+| `kitchen` | Thermal (wall-mounted) | Kitchen order tickets, routed by station | Yes — prints items for assigned stations only |
+| `label` | Zebra ZPL / Epson ESC/POS | Barcode shelf labels, price tags | No |
+| `queue` | Thermal / ticket dispenser | Queue/order number tickets | No |
+
+**Printer entity fields:** `role` (receipt/kitchen/bar/label) determines behavior. `printReceipt` and `printKitchen` booleans control what the printer outputs. `station_id` on `preparation_station` links stations to printers (one printer can serve many stations).
+
+**Station routing:** Only applies to `kitchen`/`bar` role printers. A kitchen printer with no station assignment prints ALL kitchen items. A kitchen printer linked to specific stations only prints items routed to those stations via `category_station_mapping`.
+
+**Retail vs Restaurant:** Receipt printers work identically in both modes — they print the full order receipt. Station routing only activates when `printKitchen = true` and stations are configured. Retail terminals ignore stations entirely.
+
+**Printer configuration:** Create via `CreatePrinterActivity` (station checkboxes visible when kitchen toggle is on). Edit via `PrinterConfigurationActivity` (station assignment, role, name). Web console: `/stations` page manages station-to-printer links.
+
 ## Unified Error Logging
 
 All errors from Android, Web Console, and API routes go to the **same `error_logs` table** in Supabase.
@@ -408,12 +427,14 @@ All errors from Android, Web Console, and API routes go to the **same `error_log
 
 ## Android Navigation
 
-- **Home:** greeting + `Brand › Store › Terminal ▾` context switcher (brand in blue semibold, store in ink, terminal in muted) + summary card + app grid + bottom nav
-- **POS drawer:** Home, Orders, Terminal Info, Printers, Till History, MORE menu
-- **Settings:** web console links (products, stores, terminals, users, categories, taxes) + Sync + Printers + Brands (owner only) + Reset Account (owner only, danger zone)
+- **Home dashboard:** greeting + `Brand › Store › Terminal ▾` context switcher + summary card + **4 app launchers** (POS, Warehouse, Admin, Synchronizer) + bottom nav. Each app is self-contained.
+- **POS app** (tap POS tile): Opens TillActivity. Side drawer: Home, Orders, Customers, Till History, Open Cash Drawer, Terminal Info, Printers, Kitchen Orders (restaurant mode).
+- **Warehouse app** (tap Warehouse tile): Opens InventoryCountActivity.
+- **Admin app** (tap Admin tile): Opens SettingsActivity. Web console links (products, stores, terminals, users, categories, taxes) + Sync + Printers + Brands (owner only) + Reset Account (owner only, danger zone).
+- **Synchronizer** (tap Sync tile): Opens DatabaseSynchonizerActivity.
 - **Brands:** lists all brands from `LocalAccountRegistry` with stats (products, categories, stores, DB size). Create: Demo (server-first) or AI Import. Delete: non-active demo/test brands.
 - **Kitchen:** KitchenOrdersActivity — status cycle, split bill, recall, print, delete, complete. Long-press for table transfer / order merge.
-- **KDS:** KdsSetupActivity (mDNS discovery + manual IP) → KdsDisplayActivity (full-screen grid, landscape, timers, bump/recall). Exit requires confirmation.
+- **KDS:** KdsSetupActivity (mDNS discovery + manual IP) → KdsDisplayActivity (full-screen grid, landscape, timers, bump/recall). Exit requires confirmation. KDS is a **terminal type** (`terminal_type = "kds"`), NOT a printer — it's an interactive display + input device.
 
 ## Data Hierarchy
 

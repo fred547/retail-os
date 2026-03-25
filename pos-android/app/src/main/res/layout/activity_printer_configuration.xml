@@ -145,12 +145,45 @@ tools:context=".Activities.PrinterConfigurationActivity">
         android:text="Print Receipts and Bills"
         android:layout_marginTop="8dp" />
 
+    <Switch
+        android:id="@+id/print_kitchen_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kitchen Printer"
+        android:layout_marginTop="8dp" />
+
+    <!-- Station assignment (visible when kitchen is on) -->
+    <TextView
+        android:id="@+id/label_stations"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stations this printer handles:"
+        android:textSize="13sp"
+        android:textColor="#6C6F76"
+        android:layout_marginTop="12dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/stations_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="4dp"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:layout_marginTop="16dp" />
+
     <Button
         android:id="@+id/print_test_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PRINT TEST"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp" />
 
 </LinearLayout>
 

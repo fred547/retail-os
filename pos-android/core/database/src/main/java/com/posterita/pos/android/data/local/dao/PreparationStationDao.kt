@@ -17,6 +17,9 @@ interface PreparationStationDao {
     @Query("SELECT * FROM preparation_station WHERE station_type = :type AND store_id = :storeId AND is_active = 1 ORDER BY display_order")
     suspend fun getStationsByType(type: String, storeId: Int): List<PreparationStation>
 
+    @Query("SELECT * FROM preparation_station WHERE printer_id = :printerId AND is_active = 1 ORDER BY display_order")
+    suspend fun getStationsByPrinter(printerId: Int): List<PreparationStation>
+
     @Query("DELETE FROM preparation_station WHERE account_id = :accountId")
     suspend fun deleteByAccount(accountId: String)
 }
