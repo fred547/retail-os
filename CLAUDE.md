@@ -437,6 +437,20 @@ All errors from Android, Web Console, and API routes go to the **same `error_log
 - **Web sidebar:** Brand › Store › Terminal context shown below header (stacked, not cropped).
 - See `.claude/skills/posterita-ui/SKILL.md` for design tokens.
 
+## Product Images
+
+**Upload spec:** 800x800px square, JPEG or WebP, under 200KB. Cloudinary auto-transforms (`w_400,h_400,c_fill`).
+
+| Surface | Size | Fit | Notes |
+|---------|------|-----|-------|
+| Android POS grid | 400x400 | Glide auto-resizes | Square tile in product grid |
+| Web console table | 40x40 | `object-cover` | Square thumbnail, rounded-lg |
+| PDF catalogue (grid) | 120x120 | `objectFit: "cover"` in square frame | Centered, crops non-square to fill |
+| PDF catalogue (list) | 48x48 | `objectFit: "cover"` | Square thumbnail per row |
+| Thermal receipt | N/A | Not printed | Too low resolution |
+
+**All image frames are square.** Non-square images are cropped to fill (`object-cover`), never stretched or letterboxed. Upload square images to avoid cropping.
+
 ## Android Navigation
 
 - **Home dashboard:** greeting + `Brand › Store › Terminal ▾` context switcher + summary card + **4 app launchers** (POS, Warehouse, Admin, Synchronizer) + bottom nav. Each app is self-contained.

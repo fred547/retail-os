@@ -88,8 +88,9 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
     subtitle: { fontSize: isSmall ? 7 : 9, color: colors.muted, marginTop: 2 },
     grid: { flexDirection: "row", flexWrap: "wrap", gap: isSmall ? 6 : 10 },
     card: { width: isSmall ? "100%" : "48%", border: `1px solid ${colors.line}`, borderRadius: 4, padding: isSmall ? 6 : 8, marginBottom: 2 },
-    image: { width: "100%", height: isSmall ? 60 : 90, objectFit: "contain", marginBottom: 6, borderRadius: 3, backgroundColor: "#f9f9f9" },
-    noImage: { width: "100%", height: isSmall ? 60 : 90, backgroundColor: "#f5f5f5", borderRadius: 3, marginBottom: 6, justifyContent: "center", alignItems: "center" },
+    imageWrap: { width: isSmall ? 80 : 120, height: isSmall ? 80 : 120, marginBottom: 6, marginLeft: "auto", marginRight: "auto", borderRadius: 3, backgroundColor: "#f9f9f9", overflow: "hidden" },
+    image: { width: "100%", height: "100%", objectFit: "cover" },
+    noImage: { width: isSmall ? 80 : 120, height: isSmall ? 80 : 120, backgroundColor: "#f5f5f5", borderRadius: 3, marginBottom: 6, marginLeft: "auto", marginRight: "auto", justifyContent: "center", alignItems: "center" },
     noImageText: { fontSize: 8, color: colors.muted },
     name: { fontSize: isSmall ? 9 : 11, fontWeight: "bold", color: colors.ink, marginBottom: 2 },
     desc: { fontSize: 7, color: colors.muted, marginBottom: 3 },
@@ -112,7 +113,9 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
         ...products.map((p) =>
           React.createElement(View, { key: p.product_id, style: s.card, wrap: false },
             options.showImages && p.image && p.image.startsWith("http")
-              ? React.createElement(Image, { src: p.image, style: s.image } as any)
+              ? React.createElement(View, { style: s.imageWrap },
+                  React.createElement(Image, { src: p.image, style: s.image } as any)
+                )
               : options.showImages
                 ? React.createElement(View, { style: s.noImage }, React.createElement(Text, { style: s.noImageText }, "No image"))
                 : null,
@@ -151,7 +154,7 @@ function ListTemplate({ products, options }: { products: Product[]; options: Cat
     title: { fontSize: isSmall ? 14 : 20, fontWeight: "bold", color: colors.primary },
     subtitle: { fontSize: isSmall ? 7 : 9, color: colors.muted, marginTop: 2 },
     row: { flexDirection: "row", borderBottom: `1px solid ${colors.line}`, paddingVertical: isSmall ? 5 : 7, alignItems: "center", gap: 8 },
-    image: { width: isSmall ? 36 : 48, height: isSmall ? 36 : 48, objectFit: "contain", borderRadius: 3, backgroundColor: "#f9f9f9" },
+    image: { width: isSmall ? 36 : 48, height: isSmall ? 36 : 48, objectFit: "cover", borderRadius: 3, backgroundColor: "#f9f9f9" },
     noImage: { width: isSmall ? 36 : 48, height: isSmall ? 36 : 48, backgroundColor: "#f5f5f5", borderRadius: 3, justifyContent: "center", alignItems: "center" },
     noImageText: { fontSize: 5, color: colors.muted },
     info: { flex: 1 },
