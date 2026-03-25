@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Building2, Pencil, X, Save, KeyRound } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Users, Building2, Pencil, X, Save, KeyRound, Search } from "lucide-react";
 import { dataUpdate } from "@/lib/supabase/data-client";
 
 interface Owner {
@@ -15,8 +15,28 @@ interface Owner {
 }
 
 export default function OwnerList({ owners }: { owners: Owner[] }) {
-  const active = owners.filter((o) => o.is_active).length;
-  const withPhone = owners.filter((o) => o.phone).length;
+  const [search, setSearch] = useState("");
+  const [hideTestAccounts, setHideTestAccounts] = useState(true);
+
+  const filtered = useMemo(() => {
+    let list = owners;
+    if (hideTestAccounts) {
+      list = list.filter((o) => !o.email.includes("@test.posterita.com"));
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (o) =>
+          (o.name || "").toLowerCase().includes(q) ||
+          o.email.toLowerCase().includes(q) ||
+          (o.phone || "").includes(q)
+      );
+    }
+    return list;
+  }, [owners, search, hideTestAccounts]);
+
+  const active = filtered.filter((o) => o.is_active).length;
+  const withPhone = filtered.filter((o) => o.phone).length;
 
   const [editOwner, setEditOwner] = useState<Owner | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
@@ -148,6 +168,29 @@ export default function OwnerList({ owners }: { owners: Owner[] }) {
         </div>
       )}
 
+      {/* Search + filter */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email, or phone..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+          />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer whitespace-nowrap">
+          <input
+            type="checkbox"
+            checked={hideTestAccounts}
+            onChange={(e) => setHideTestAccounts(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-posterita-blue focus:ring-posterita-blue"
+          />
+          Hide test accounts
+        </label>
+      </div>
+
       {/* Owner list */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <table className="data-table">
@@ -163,7 +206,7 @@ export default function OwnerList({ owners }: { owners: Owner[] }) {
             </tr>
           </thead>
           <tbody>
-            {owners.map((o) => (
+            {filtered.map((o) => (
               <tr key={o.id} className={editOwner?.id === o.id ? "bg-blue-50" : ""}>
                 <td className="font-medium">{o.name || "—"}</td>
                 <td className="text-sm text-gray-500">{o.email}</td>

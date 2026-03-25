@@ -96,6 +96,18 @@
                     android:textColor="@color/posterita_muted" />
             </LinearLayout>
 
+            <!-- Owner email context -->
+            <TextView
+                android:id="@+id/textOwnerEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="@color/posterita_muted"
+                android:fontFamily="@font/lexend_medium"
+                android:layout_marginTop="1dp"
+                android:visibility="gone"
+                tools:text="fred@tamakgroup.com" />
+
             <!-- Hidden views for binding compat -->
             <TextView
                 android:id="@+id/textBranding"

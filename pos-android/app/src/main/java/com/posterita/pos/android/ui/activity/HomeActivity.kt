@@ -168,6 +168,13 @@ class HomeActivity : BaseActivity() {
         binding.textContextStore.text = storeName
         binding.textContextTerminal.text = terminalName
 
+        // Show owner email for context
+        val ownerEmail = prefsManager.email
+        if (ownerEmail.isNotBlank()) {
+            binding.textOwnerEmail.text = ownerEmail
+            binding.textOwnerEmail.visibility = android.view.View.VISIBLE
+        }
+
         binding.layoutContextSwitcher.setOnClickListener { showContextPicker() }
     }
 
