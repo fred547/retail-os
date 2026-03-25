@@ -65,7 +65,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, schema v27 (23 migrations)
+:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, schema v27 (24 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -112,7 +112,7 @@ Dashboard: `/platform?tab=infra` shows live service status + DB row counts.
 
 **Web console (Vercel):**
 ```bash
-cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --prod --yes
+cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --prod --yes --archive=tgz
 ```
 - Vercel project: `posterita-cloud` (team: `tamakgroup`). If wrong, re-link: `npx vercel link --project posterita-cloud --yes`
 - **Always `rm -rf .next` before build** — stale cache causes phantom TypeScript errors from deleted code
