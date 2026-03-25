@@ -87,7 +87,25 @@ async function BrandsTab({ admin, params }: { admin: any; params: any }) {
 
   if (typeFilter !== "all") query = query.eq("type", typeFilter);
   if (statusFilter !== "all") query = query.eq("status", statusFilter);
-  if (search) query = query.or(`businessname.ilike.%${search}%,account_id.ilike.%${search}%`);
+  if (search) {
+    // Search brands by name, ID, or owner email
+    // PostgREST can't filter on FK joins directly, so we do two-pass for email search
+    if (search.includes("@")) {
+      // Email search — find matching owner IDs first, then filter accounts
+      const { data: matchingOwners } = await admin
+        .from("owner")
+        .select("id")
+        .ilike("email", `%${search}%`);
+      const ownerIds = (matchingOwners ?? []).map((o: any) => o.id);
+      if (ownerIds.length > 0) {
+        query = query.or(`businessname.ilike.%${search}%,account_id.ilike.%${search}%,owner_id.in.(${ownerIds.join(",")})`);
+      } else {
+        query = query.or(`businessname.ilike.%${search}%,account_id.ilike.%${search}%`);
+      }
+    } else {
+      query = query.or(`businessname.ilike.%${search}%,account_id.ilike.%${search}%`);
+    }
+  }
 
   const from = (page - 1) * PAGE_SIZE;
   query = query.range(from, from + PAGE_SIZE - 1);
