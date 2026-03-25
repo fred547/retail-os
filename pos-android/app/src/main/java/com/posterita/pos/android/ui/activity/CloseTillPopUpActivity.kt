@@ -51,8 +51,29 @@ class CloseTillPopUpActivity : BaseActivity() {
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        val user = sessionManager.user ?: return@launch
-                        val till = sessionManager.till ?: return@launch
+                        // Load user from DB if session is empty (can happen after idle timeout)
+                        var user = sessionManager.user
+                        if (user == null) {
+                            val userId = prefsManager.userId
+                            if (userId > 0) {
+                                user = db.userDao().getUserById(userId)
+                                if (user != null) sessionManager.user = user
+                            }
+                        }
+                        if (user == null) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@CloseTillPopUpActivity, "User not found — please log in again", Toast.LENGTH_SHORT).show()
+                            }
+                            return@launch
+                        }
+
+                        val till = sessionManager.till
+                        if (till == null) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@CloseTillPopUpActivity, "No open till found", Toast.LENGTH_SHORT).show()
+                            }
+                            return@launch
+                        }
 
                         val closedTillDetails = tillService.closeTill(user, till, cash, card, forexCurr, forexAmt)
 

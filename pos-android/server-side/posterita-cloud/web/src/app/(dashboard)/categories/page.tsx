@@ -16,6 +16,7 @@ interface Category {
   tax_id: number | null;
   product_count?: number;
   tax_name?: string;
+  station_name?: string;
 }
 
 interface Tax {
@@ -76,11 +77,26 @@ export default function CategoriesPage() {
       counts[p.productcategory_id] = (counts[p.productcategory_id] || 0) + 1;
     });
 
+    // Fetch station mappings to show which station each category routes to
+    const { data: mappings } = await dataQuery("category_station_mapping", {
+      select: "category_id, station_id",
+    });
+    const { data: stations } = await dataQuery("preparation_station", {
+      select: "station_id, name",
+    });
+    const stationNameMap: Record<number, string> = {};
+    (stations ?? []).forEach((s: any) => { stationNameMap[s.station_id] = s.name; });
+    const categoryStationMap: Record<number, string> = {};
+    (mappings ?? []).forEach((m: any) => {
+      categoryStationMap[m.category_id] = stationNameMap[m.station_id] ?? `Station ${m.station_id}`;
+    });
+
     setCategories(
       (data ?? []).map((c) => ({
         ...c,
         product_count: counts[c.productcategory_id] || 0,
         tax_name: c.tax_id ? taxMap[c.tax_id] ?? "—" : "—",
+        station_name: categoryStationMap[c.productcategory_id],
       }))
     );
     setLoading(false);
@@ -245,6 +261,7 @@ export default function CategoriesPage() {
               <tr>
                 <SortableHeader label="Name" sortKey="name" currentSort={sort} onSort={handleSort} />
                 <th>Tax</th>
+                <th>Station</th>
                 <SortableHeader label="Products" sortKey="product_count" currentSort={sort} onSort={handleSort} />
                 <SortableHeader label="Status" sortKey="status" currentSort={sort} onSort={handleSort} />
                 <th className="text-right">Actions</th>
@@ -267,6 +284,15 @@ export default function CategoriesPage() {
                   </td>
                   <td className="text-gray-500 text-sm">
                     {c.tax_name ?? "—"}
+                  </td>
+                  <td>
+                    {c.station_name ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                        {c.station_name}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300 text-xs">—</span>
+                    )}
                   </td>
                   <td className="text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
