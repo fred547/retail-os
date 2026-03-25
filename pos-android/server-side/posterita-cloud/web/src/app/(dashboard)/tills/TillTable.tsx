@@ -33,6 +33,7 @@ interface Till {
   adjustment_total: number;
   date_opened: string;
   date_closed: string | null;
+  status: string;
   is_deleted: boolean;
   is_sync: boolean;
   store_name: string;
@@ -198,8 +199,8 @@ export default function TillTable({
                       <td className="text-center">
                         {t.is_deleted ? (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">Deleted</span>
-                        ) : !t.date_closed ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Open</span>
+                        ) : t.status === "open" ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 animate-pulse">Open</span>
                         ) : hasDiscrepancy ? (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 flex items-center gap-1">
                             <AlertTriangle size={11} />

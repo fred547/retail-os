@@ -2,27 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionAccountId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
 import React from "react";
-import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
+import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import QRCode from "qrcode";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // ════════════════════════════════════════════════════════
-// Shared styles
+// Page sizes (in points: 1pt = 1/72 inch)
 // ════════════════════════════════════════════════════════
+
+const PAGE_SIZES: Record<string, { width: number; height: number; label: string }> = {
+  "a4":            { width: 595, height: 842, label: "A4" },
+  "a5":            { width: 420, height: 595, label: "A5" },
+  "a6":            { width: 298, height: 420, label: "A6 (Postcard)" },
+  "dl":            { width: 283, height: 595, label: "DL (Flyer)" },
+  "business-card": { width: 252, height: 144, label: "Business Card" },
+  "square":        { width: 360, height: 360, label: "Square (5in)" },
+};
 
 const colors = {
   primary: "#1976D2",
   ink: "#141414",
   muted: "#6C6F76",
   line: "#E6E2DA",
-  bg: "#F5F2EA",
   white: "#FFFFFF",
 };
 
 // ════════════════════════════════════════════════════════
-// Templates
+// Types
 // ════════════════════════════════════════════════════════
 
 interface Product {
@@ -37,52 +45,69 @@ interface Product {
 }
 
 interface CatalogueOptions {
-  template: "grid" | "list" | "compact" | "price-list";
+  template: string;
   title: string;
   currency: string;
+  brandName: string;
+  pageSize: string;
   showCost: boolean;
   showBarcode: boolean;
   showDescription: boolean;
   showImages: boolean;
   showQrCode: boolean;
+  showTitle: boolean;
+  loyaltyMessage: string;
   qrDataUrls: Map<number, string>;
+  loyaltyQrUrl: string | null;
 }
 
 function formatPrice(amount: number, currency: string): string {
   return `${currency} ${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-// ── Grid Template (2 columns, image + details) ──
+function getPageDimensions(sizeKey: string): [number, number] {
+  const sz = PAGE_SIZES[sizeKey] ?? PAGE_SIZES["a4"];
+  return [sz.width, sz.height];
+}
+
+// ════════════════════════════════════════════════════════
+// Templates
+// ════════════════════════════════════════════════════════
+
+// ── Grid Template (2-column cards with images) ──
 
 function GridTemplate({ products, options }: { products: Product[]; options: CatalogueOptions }) {
+  const [pw, ph] = getPageDimensions(options.pageSize);
+  const pad = Math.min(30, pw * 0.07);
+  const isSmall = pw < 400;
+
   const s = StyleSheet.create({
-    page: { padding: 40, fontFamily: "Helvetica", backgroundColor: colors.white },
-    header: { marginBottom: 20, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 12 },
-    title: { fontSize: 22, fontWeight: "bold", color: colors.primary },
-    subtitle: { fontSize: 10, color: colors.muted, marginTop: 4 },
-    grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-    card: { width: "48%", border: `1px solid ${colors.line}`, borderRadius: 6, padding: 10, marginBottom: 4 },
-    image: { width: "100%", height: 100, objectFit: "contain", marginBottom: 8, borderRadius: 4, backgroundColor: "#f9f9f9" },
-    noImage: { width: "100%", height: 100, backgroundColor: "#f5f5f5", borderRadius: 4, marginBottom: 8, justifyContent: "center", alignItems: "center" },
-    noImageText: { fontSize: 10, color: colors.muted },
-    name: { fontSize: 11, fontWeight: "bold", color: colors.ink, marginBottom: 3 },
-    desc: { fontSize: 8, color: colors.muted, marginBottom: 4, lineClamp: 2 },
-    price: { fontSize: 13, fontWeight: "bold", color: colors.primary },
-    cost: { fontSize: 8, color: colors.muted, marginTop: 2 },
-    barcode: { fontSize: 7, color: colors.muted, marginTop: 2, fontFamily: "Courier" },
-    qrImage: { width: 48, height: 48, marginTop: 4 },
-    category: { fontSize: 7, color: colors.primary, marginBottom: 4, textTransform: "uppercase" },
-    footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
-    footerText: { fontSize: 7, color: colors.muted },
-    pageNum: { fontSize: 7, color: colors.muted },
+    page: { padding: pad, fontFamily: "Helvetica", backgroundColor: colors.white },
+    header: { marginBottom: 12, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 8 },
+    title: { fontSize: isSmall ? 14 : 20, fontWeight: "bold", color: colors.primary },
+    subtitle: { fontSize: isSmall ? 7 : 9, color: colors.muted, marginTop: 2 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: isSmall ? 6 : 10 },
+    card: { width: isSmall ? "100%" : "48%", border: `1px solid ${colors.line}`, borderRadius: 4, padding: isSmall ? 6 : 8, marginBottom: 2 },
+    image: { width: "100%", height: isSmall ? 60 : 90, objectFit: "contain", marginBottom: 6, borderRadius: 3, backgroundColor: "#f9f9f9" },
+    noImage: { width: "100%", height: isSmall ? 60 : 90, backgroundColor: "#f5f5f5", borderRadius: 3, marginBottom: 6, justifyContent: "center", alignItems: "center" },
+    noImageText: { fontSize: 8, color: colors.muted },
+    name: { fontSize: isSmall ? 9 : 11, fontWeight: "bold", color: colors.ink, marginBottom: 2 },
+    desc: { fontSize: 7, color: colors.muted, marginBottom: 3 },
+    price: { fontSize: isSmall ? 10 : 13, fontWeight: "bold", color: colors.primary },
+    cost: { fontSize: 7, color: colors.muted, marginTop: 1 },
+    barcode: { fontSize: 6, color: colors.muted, marginTop: 1, fontFamily: "Courier" },
+    qrImage: { width: isSmall ? 32 : 44, height: isSmall ? 32 : 44, marginTop: 3 },
+    category: { fontSize: 6, color: colors.primary, marginBottom: 3, textTransform: "uppercase" },
+    footer: { position: "absolute", bottom: 12, left: pad, right: pad, flexDirection: "row", justifyContent: "space-between" },
+    footerText: { fontSize: 6, color: colors.muted },
   });
 
   return React.createElement(Document, null,
-    React.createElement(Page, { size: "A4", style: s.page },
-      React.createElement(View, { style: s.header },
+    React.createElement(Page, { size: [pw, ph] as any, style: s.page },
+      options.showTitle ? React.createElement(View, { style: s.header },
         React.createElement(Text, { style: s.title }, options.title),
-        React.createElement(Text, { style: s.subtitle }, `${products.length} products • Generated ${new Date().toLocaleDateString()}`),
-      ),
+        React.createElement(Text, { style: s.subtitle }, `${products.length} products`),
+      ) : null,
       React.createElement(View, { style: s.grid },
         ...products.map((p) =>
           React.createElement(View, { key: p.product_id, style: s.card, wrap: false },
@@ -91,20 +116,14 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
               : options.showImages
                 ? React.createElement(View, { style: s.noImage }, React.createElement(Text, { style: s.noImageText }, "No image"))
                 : null,
-            p.productcategory?.name
-              ? React.createElement(Text, { style: s.category }, p.productcategory.name)
-              : null,
+            p.productcategory?.name ? React.createElement(Text, { style: s.category }, p.productcategory.name) : null,
             React.createElement(Text, { style: s.name }, p.name),
             options.showDescription && p.description
-              ? React.createElement(Text, { style: s.desc }, p.description.substring(0, 120))
+              ? React.createElement(Text, { style: s.desc }, p.description.substring(0, isSmall ? 60 : 120))
               : null,
             React.createElement(Text, { style: s.price }, formatPrice(p.sellingprice, options.currency)),
-            options.showCost
-              ? React.createElement(Text, { style: s.cost }, `Cost: ${formatPrice(p.costprice, options.currency)}`)
-              : null,
-            options.showBarcode && p.upc
-              ? React.createElement(Text, { style: s.barcode }, p.upc)
-              : null,
+            options.showCost ? React.createElement(Text, { style: s.cost }, `Cost: ${formatPrice(p.costprice, options.currency)}`) : null,
+            options.showBarcode && p.upc ? React.createElement(Text, { style: s.barcode }, p.upc) : null,
             options.showQrCode && options.qrDataUrls.get(p.product_id)
               ? React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any)
               : null,
@@ -112,8 +131,8 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
         )
       ),
       React.createElement(View, { style: s.footer, fixed: true },
-        React.createElement(Text, { style: s.footerText }, options.title),
-        React.createElement(Text, { style: s.pageNum, render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` } as any),
+        React.createElement(Text, { style: s.footerText }, options.brandName),
+        React.createElement(Text, { style: s.footerText, render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` } as any),
       ),
     )
   );
@@ -122,34 +141,38 @@ function GridTemplate({ products, options }: { products: Product[]; options: Cat
 // ── List Template (full-width rows) ──
 
 function ListTemplate({ products, options }: { products: Product[]; options: CatalogueOptions }) {
+  const [pw, ph] = getPageDimensions(options.pageSize);
+  const pad = Math.min(30, pw * 0.07);
+  const isSmall = pw < 400;
+
   const s = StyleSheet.create({
-    page: { padding: 40, fontFamily: "Helvetica", backgroundColor: colors.white },
-    header: { marginBottom: 20, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 12 },
-    title: { fontSize: 22, fontWeight: "bold", color: colors.primary },
-    subtitle: { fontSize: 10, color: colors.muted, marginTop: 4 },
-    row: { flexDirection: "row", borderBottom: `1px solid ${colors.line}`, paddingVertical: 8, alignItems: "center", gap: 12 },
-    image: { width: 50, height: 50, objectFit: "contain", borderRadius: 4, backgroundColor: "#f9f9f9" },
-    noImage: { width: 50, height: 50, backgroundColor: "#f5f5f5", borderRadius: 4, justifyContent: "center", alignItems: "center" },
-    noImageText: { fontSize: 6, color: colors.muted },
+    page: { padding: pad, fontFamily: "Helvetica", backgroundColor: colors.white },
+    header: { marginBottom: 12, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 8 },
+    title: { fontSize: isSmall ? 14 : 20, fontWeight: "bold", color: colors.primary },
+    subtitle: { fontSize: isSmall ? 7 : 9, color: colors.muted, marginTop: 2 },
+    row: { flexDirection: "row", borderBottom: `1px solid ${colors.line}`, paddingVertical: isSmall ? 5 : 7, alignItems: "center", gap: 8 },
+    image: { width: isSmall ? 36 : 48, height: isSmall ? 36 : 48, objectFit: "contain", borderRadius: 3, backgroundColor: "#f9f9f9" },
+    noImage: { width: isSmall ? 36 : 48, height: isSmall ? 36 : 48, backgroundColor: "#f5f5f5", borderRadius: 3, justifyContent: "center", alignItems: "center" },
+    noImageText: { fontSize: 5, color: colors.muted },
     info: { flex: 1 },
-    name: { fontSize: 11, fontWeight: "bold", color: colors.ink },
-    desc: { fontSize: 8, color: colors.muted, marginTop: 2 },
-    category: { fontSize: 7, color: colors.primary, textTransform: "uppercase", marginTop: 1 },
-    priceCol: { width: 90, alignItems: "flex-end" },
-    price: { fontSize: 13, fontWeight: "bold", color: colors.primary },
-    cost: { fontSize: 8, color: colors.muted, marginTop: 2 },
-    barcode: { fontSize: 7, color: colors.muted, marginTop: 1, fontFamily: "Courier" },
-    qrImage: { width: 40, height: 40 },
-    footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
-    footerText: { fontSize: 7, color: colors.muted },
+    name: { fontSize: isSmall ? 9 : 10, fontWeight: "bold", color: colors.ink },
+    desc: { fontSize: 7, color: colors.muted, marginTop: 1 },
+    category: { fontSize: 6, color: colors.primary, textTransform: "uppercase", marginTop: 1 },
+    priceCol: { width: isSmall ? 60 : 80, alignItems: "flex-end" },
+    price: { fontSize: isSmall ? 9 : 11, fontWeight: "bold", color: colors.primary },
+    cost: { fontSize: 7, color: colors.muted, marginTop: 1 },
+    barcode: { fontSize: 6, color: colors.muted, marginTop: 1, fontFamily: "Courier" },
+    qrImage: { width: 32, height: 32 },
+    footer: { position: "absolute", bottom: 12, left: pad, right: pad, flexDirection: "row", justifyContent: "space-between" },
+    footerText: { fontSize: 6, color: colors.muted },
   });
 
   return React.createElement(Document, null,
-    React.createElement(Page, { size: "A4", style: s.page },
-      React.createElement(View, { style: s.header },
+    React.createElement(Page, { size: [pw, ph] as any, style: s.page },
+      options.showTitle ? React.createElement(View, { style: s.header },
         React.createElement(Text, { style: s.title }, options.title),
-        React.createElement(Text, { style: s.subtitle }, `${products.length} products • Generated ${new Date().toLocaleDateString()}`),
-      ),
+        React.createElement(Text, { style: s.subtitle }, `${products.length} products`),
+      ) : null,
       ...products.map((p) =>
         React.createElement(View, { key: p.product_id, style: s.row, wrap: false },
           options.showImages && p.image && p.image.startsWith("http")
@@ -159,67 +182,61 @@ function ListTemplate({ products, options }: { products: Product[]; options: Cat
               : null,
           React.createElement(View, { style: s.info },
             React.createElement(Text, { style: s.name }, p.name),
-            options.showDescription && p.description
-              ? React.createElement(Text, { style: s.desc }, p.description.substring(0, 200))
-              : null,
-            p.productcategory?.name
-              ? React.createElement(Text, { style: s.category }, p.productcategory.name)
-              : null,
-            options.showBarcode && p.upc
-              ? React.createElement(Text, { style: s.barcode }, p.upc)
-              : null,
+            options.showDescription && p.description ? React.createElement(Text, { style: s.desc }, p.description.substring(0, isSmall ? 80 : 200)) : null,
+            p.productcategory?.name ? React.createElement(Text, { style: s.category }, p.productcategory.name) : null,
+            options.showBarcode && p.upc ? React.createElement(Text, { style: s.barcode }, p.upc) : null,
           ),
           React.createElement(View, { style: s.priceCol },
             React.createElement(Text, { style: s.price }, formatPrice(p.sellingprice, options.currency)),
-            options.showCost
-              ? React.createElement(Text, { style: s.cost }, `Cost: ${formatPrice(p.costprice, options.currency)}`)
-              : null,
+            options.showCost ? React.createElement(Text, { style: s.cost }, `Cost: ${formatPrice(p.costprice, options.currency)}`) : null,
             options.showQrCode && options.qrDataUrls.get(p.product_id)
-              ? React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any)
-              : null,
+              ? React.createElement(Image, { src: options.qrDataUrls.get(p.product_id)!, style: s.qrImage } as any) : null,
           ),
         )
       ),
       React.createElement(View, { style: s.footer, fixed: true },
-        React.createElement(Text, { style: s.footerText }, options.title),
+        React.createElement(Text, { style: s.footerText }, options.brandName),
         React.createElement(Text, { style: s.footerText, render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` } as any),
       ),
     )
   );
 }
 
-// ── Price List Template (compact table, no images) ──
+// ── Price List Template (compact table) ──
 
 function PriceListTemplate({ products, options }: { products: Product[]; options: CatalogueOptions }) {
+  const [pw, ph] = getPageDimensions(options.pageSize);
+  const pad = Math.min(30, pw * 0.07);
+
   const s = StyleSheet.create({
-    page: { padding: 40, fontFamily: "Helvetica", backgroundColor: colors.white },
-    header: { marginBottom: 16, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 10 },
-    title: { fontSize: 20, fontWeight: "bold", color: colors.primary },
-    subtitle: { fontSize: 9, color: colors.muted, marginTop: 4 },
-    tableHeader: { flexDirection: "row", backgroundColor: colors.primary, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 3 },
-    th: { fontSize: 8, fontWeight: "bold", color: colors.white, textTransform: "uppercase" },
-    row: { flexDirection: "row", paddingVertical: 5, paddingHorizontal: 8, borderBottom: `1px solid ${colors.line}` },
-    rowAlt: { flexDirection: "row", paddingVertical: 5, paddingHorizontal: 8, borderBottom: `1px solid ${colors.line}`, backgroundColor: "#fafafa" },
-    cell: { fontSize: 9, color: colors.ink },
-    cellMuted: { fontSize: 8, color: colors.muted },
-    cellBold: { fontSize: 10, fontWeight: "bold", color: colors.ink },
+    page: { padding: pad, fontFamily: "Helvetica", backgroundColor: colors.white },
+    header: { marginBottom: 10, borderBottom: `2px solid ${colors.primary}`, paddingBottom: 8 },
+    title: { fontSize: 18, fontWeight: "bold", color: colors.primary },
+    subtitle: { fontSize: 8, color: colors.muted, marginTop: 2 },
+    tableHeader: { flexDirection: "row", backgroundColor: colors.primary, paddingVertical: 5, paddingHorizontal: 6, borderRadius: 2 },
+    th: { fontSize: 7, fontWeight: "bold", color: colors.white, textTransform: "uppercase" },
+    row: { flexDirection: "row", paddingVertical: 4, paddingHorizontal: 6, borderBottom: `1px solid ${colors.line}` },
+    rowAlt: { flexDirection: "row", paddingVertical: 4, paddingHorizontal: 6, borderBottom: `1px solid ${colors.line}`, backgroundColor: "#fafafa" },
+    cell: { fontSize: 8, color: colors.ink },
+    cellMuted: { fontSize: 7, color: colors.muted },
+    cellBold: { fontSize: 9, fontWeight: "bold", color: colors.ink },
     colName: { flex: 3 },
     colCat: { flex: 2 },
     colBarcode: { flex: 2 },
     colPrice: { flex: 1, textAlign: "right" as any },
     colCost: { flex: 1, textAlign: "right" as any },
-    colQr: { width: 36, alignItems: "center" as any, justifyContent: "center" as any },
-    qrImage: { width: 28, height: 28 },
-    footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
-    footerText: { fontSize: 7, color: colors.muted },
+    colQr: { width: 32, alignItems: "center" as any, justifyContent: "center" as any },
+    qrImage: { width: 24, height: 24 },
+    footer: { position: "absolute", bottom: 12, left: pad, right: pad, flexDirection: "row", justifyContent: "space-between" },
+    footerText: { fontSize: 6, color: colors.muted },
   });
 
   return React.createElement(Document, null,
-    React.createElement(Page, { size: "A4", style: s.page },
-      React.createElement(View, { style: s.header },
+    React.createElement(Page, { size: [pw, ph] as any, style: s.page },
+      options.showTitle ? React.createElement(View, { style: s.header },
         React.createElement(Text, { style: s.title }, options.title),
-        React.createElement(Text, { style: s.subtitle }, `${products.length} products • Generated ${new Date().toLocaleDateString()}`),
-      ),
+        React.createElement(Text, { style: s.subtitle }, `${products.length} products`),
+      ) : null,
       React.createElement(View, { style: s.tableHeader },
         React.createElement(Text, { style: { ...s.th, ...s.colName } }, "Product"),
         React.createElement(Text, { style: { ...s.th, ...s.colCat } }, "Category"),
@@ -241,9 +258,83 @@ function PriceListTemplate({ products, options }: { products: Product[]; options
         )
       ),
       React.createElement(View, { style: s.footer, fixed: true },
-        React.createElement(Text, { style: s.footerText }, options.title),
+        React.createElement(Text, { style: s.footerText }, options.brandName),
         React.createElement(Text, { style: s.footerText, render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}` } as any),
       ),
+    )
+  );
+}
+
+// ── Loyalty Card Template (multiple cards per A4 sheet) ──
+
+function LoyaltyCardTemplate({ products, options }: { products: Product[]; options: CatalogueOptions }) {
+  // Business card: 3.5 x 2 inches = 252 x 144pt
+  // Fit 10 per A4 sheet (2 columns x 5 rows)
+  const cardW = 252;
+  const cardH = 144;
+  const cardsPerRow = 2;
+  const cardsPerCol = 5;
+  const cardsPerPage = cardsPerRow * cardsPerCol;
+
+  // Use first few products as featured, or cycle through
+  const featured = products.slice(0, Math.min(3, products.length));
+
+  // Build pages of cards
+  const totalCards = Math.max(cardsPerPage, products.length); // at least 1 full sheet
+  const pages: number[] = [];
+  for (let i = 0; i < totalCards; i += cardsPerPage) pages.push(i);
+
+  const s = StyleSheet.create({
+    page: { padding: 20, fontFamily: "Helvetica", backgroundColor: colors.white },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 0 },
+    card: {
+      width: cardW, height: cardH,
+      border: `0.5px dashed ${colors.line}`,
+      padding: 10,
+      justifyContent: "space-between",
+    },
+    topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+    brandName: { fontSize: 11, fontWeight: "bold", color: colors.primary },
+    tagline: { fontSize: 7, color: colors.muted, marginTop: 1 },
+    loyaltyMsg: { fontSize: 8, color: colors.ink, marginTop: 4, textAlign: "center" },
+    bottomRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+    featuredItems: { flex: 1 },
+    featuredItem: { fontSize: 6, color: colors.muted },
+    qrImage: { width: 48, height: 48 },
+    cutLine: { fontSize: 5, color: colors.line, textAlign: "center", marginTop: 2 },
+  });
+
+  return React.createElement(Document, null,
+    ...pages.map((pageStart, pi) =>
+      React.createElement(Page, { key: pi, size: "A4", style: s.page },
+        React.createElement(View, { style: s.grid },
+          ...Array.from({ length: cardsPerPage }, (_, ci) =>
+            React.createElement(View, { key: ci, style: s.card },
+              React.createElement(View, { style: s.topRow },
+                React.createElement(View, null,
+                  React.createElement(Text, { style: s.brandName }, options.brandName),
+                  React.createElement(Text, { style: s.tagline }, "Loyalty Program"),
+                ),
+                options.loyaltyQrUrl
+                  ? React.createElement(Image, { src: options.loyaltyQrUrl, style: { width: 36, height: 36 } } as any)
+                  : null,
+              ),
+              React.createElement(Text, { style: s.loyaltyMsg },
+                options.loyaltyMessage || "Scan to earn points on every purchase!"
+              ),
+              React.createElement(View, { style: s.bottomRow },
+                React.createElement(View, { style: s.featuredItems },
+                  ...featured.map((p) =>
+                    React.createElement(Text, { key: p.product_id, style: s.featuredItem },
+                      `${p.name} — ${formatPrice(p.sellingprice, options.currency)}`
+                    )
+                  )
+                ),
+              ),
+            )
+          )
+        ),
+      )
     )
   );
 }
@@ -262,19 +353,22 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       template = "grid",
+      pageSize = "a4",
       category_id,
       search,
       title,
+      showTitle = false,
       showCost = false,
       showBarcode = true,
       showDescription = true,
       showImages = true,
       showQrCode = false,
+      loyaltyMessage = "",
     } = body;
 
     const db = getDb();
 
-    // Get account currency
+    // Get account info
     const { data: account } = await db
       .from("account")
       .select("businessname, currency")
@@ -282,9 +376,10 @@ export async function POST(req: NextRequest) {
       .single();
 
     const currency = account?.currency ?? "MUR";
-    const catalogueTitle = title || `${account?.businessname ?? "Product"} Catalogue`;
+    const brandName = account?.businessname ?? "My Store";
+    const catalogueTitle = title || `${brandName} Catalogue`;
 
-    // Query products and categories separately (PostgREST FK detection unreliable)
+    // Query products
     let query = db
       .from("product")
       .select("product_id, name, description, sellingprice, costprice, image, upc, productcategory_id")
@@ -292,12 +387,8 @@ export async function POST(req: NextRequest) {
       .eq("isactive", "Y")
       .order("name");
 
-    if (category_id) {
-      query = query.eq("productcategory_id", category_id);
-    }
-    if (search) {
-      query = query.ilike("name", `%${search}%`);
-    }
+    if (category_id) query = query.eq("productcategory_id", category_id);
+    if (search) query = query.ilike("name", `%${search}%`);
 
     const { data: rawProducts, error: queryError } = await query;
 
@@ -305,50 +396,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No products found matching your criteria" }, { status: 404 });
     }
 
-    // Load categories for mapping
+    // Load categories
     const { data: cats } = await db
       .from("productcategory")
       .select("productcategory_id, name")
       .eq("account_id", accountId);
 
     const catMap = new Map((cats ?? []).map((c: any) => [c.productcategory_id, c.name]));
-
     const products: Product[] = rawProducts.map((p: any) => ({
       ...p,
       productcategory: p.productcategory_id ? { name: catMap.get(p.productcategory_id) ?? "" } : null,
     }));
 
-    // Generate QR codes as data URLs if requested
+    // Generate QR codes
     const qrDataUrls = new Map<number, string>();
     if (showQrCode) {
       await Promise.all(
         products.map(async (p) => {
-          // QR encodes the UPC/barcode if available, otherwise the product name
-          const qrContent = p.upc || p.name;
           try {
-            const dataUrl = await QRCode.toDataURL(qrContent, {
-              width: 100,
-              margin: 1,
-              color: { dark: "#000000", light: "#FFFFFF" },
-            });
+            const dataUrl = await QRCode.toDataURL(p.upc || p.name, { width: 100, margin: 1, color: { dark: "#000000", light: "#FFFFFF" } });
             qrDataUrls.set(p.product_id, dataUrl);
-          } catch (_) {
-            // Skip QR for this product if generation fails
-          }
+          } catch (_) {}
         })
       );
+    }
+
+    // Loyalty QR (links to the brand's loyalty signup or WhatsApp)
+    let loyaltyQrUrl: string | null = null;
+    if (template === "loyalty-card") {
+      try {
+        loyaltyQrUrl = await QRCode.toDataURL(`https://web.posterita.com/customer/login`, { width: 120, margin: 1 });
+      } catch (_) {}
     }
 
     const options: CatalogueOptions = {
       template,
       title: catalogueTitle,
       currency,
+      brandName,
+      pageSize,
       showCost,
       showBarcode,
       showDescription,
-      showImages: template !== "price-list" && showImages,
+      showImages: template === "price-list" ? false : showImages,
       showQrCode,
+      showTitle,
+      loyaltyMessage,
       qrDataUrls,
+      loyaltyQrUrl,
     };
 
     // Select template
@@ -360,20 +455,23 @@ export async function POST(req: NextRequest) {
       case "price-list":
         doc = React.createElement(PriceListTemplate, { products, options });
         break;
+      case "loyalty-card":
+        doc = React.createElement(LoyaltyCardTemplate, { products, options });
+        break;
       case "grid":
       default:
         doc = React.createElement(GridTemplate, { products, options });
         break;
     }
 
-    // Render PDF
     const buffer = await renderToBuffer(doc as any);
     const uint8 = new Uint8Array(buffer);
+    const filename = `${brandName.replace(/[^a-zA-Z0-9 ]/g, "")} - ${template}.pdf`;
 
     return new Response(uint8, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${catalogueTitle.replace(/[^a-zA-Z0-9 ]/g, "")}.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
         "Content-Length": uint8.length.toString(),
       },
     });

@@ -39,4 +39,8 @@ interface TillDao {
 
     @Query("SELECT COUNT(*) FROM till WHERE isSync = 0 AND terminal_id = :terminalId AND dateClosed IS NOT NULL")
     suspend fun getUnSyncedClosedTillCount(terminalId: Int): Int
+
+    /** Get all unsynced tills (open + closed) for a terminal */
+    @Query("SELECT * FROM till WHERE terminal_id = :terminalId AND isSync = 0")
+    suspend fun getUnsyncedTills(terminalId: Int): List<Till>
 }

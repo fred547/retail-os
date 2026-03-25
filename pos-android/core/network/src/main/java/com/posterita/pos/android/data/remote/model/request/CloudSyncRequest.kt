@@ -121,6 +121,7 @@ data class SyncTill(
     @SerializedName("grandtotal") val grandTotal: Double = 0.0,
     @SerializedName("forexcurrency") val forexCurrency: String? = null,
     @SerializedName("forexamt") val forexAmt: Double = 0.0,
+    @SerializedName("status") val status: String = "closed",
 )
 
 data class SyncCustomer(

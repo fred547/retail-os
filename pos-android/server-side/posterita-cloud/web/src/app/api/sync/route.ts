@@ -356,6 +356,7 @@ export async function POST(req: NextRequest) {
             grand_total: till.grandtotal ?? till.grand_total ?? 0,
             forex_currency: till.forexcurrency || till.forex_currency,
             forex_amt: till.forexamt ?? till.forex_amt ?? 0,
+            status: till.status || (till.dateClosed || till.date_closed ? "closed" : "open"),
           };
 
           const { error } = await insertOrUpdate("till", dbTill, till.uuid);

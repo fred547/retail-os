@@ -93,8 +93,8 @@ class CloudSyncService @Inject constructor(
 
             // Collect local data to push
             val unsyncedOrders = db.orderDao().getUnSyncedOrders()
-            val unsyncedTills = db.tillDao().getClosedTillByTerminalId(terminalId)
-                .filter { !it.isSync }
+            // Sync both open and closed tills (open = header only, closed = full amounts)
+            val unsyncedTills = db.tillDao().getUnsyncedTills(terminalId)
 
             // Collect order lines and payments for unsynced orders
             val orderLines = mutableListOf<OrderLine>()
@@ -349,10 +349,14 @@ class CloudSyncService @Inject constructor(
             }
         }
 
-        // Mark pushed tills as synced
+        // Mark pushed tills as synced — only closed tills get marked.
+        // Open tills stay isSync=false so they re-sync each cycle (with updated status)
+        // until they're closed, at which point they get the final sync + isSync=true.
         if (response.tillsSynced > 0) {
             for (till in pushedTills) {
-                db.tillDao().updateTill(till.copy(isSync = true))
+                if (till.dateClosed != null) {
+                    db.tillDao().updateTill(till.copy(isSync = true))
+                }
             }
         }
 
@@ -678,6 +682,7 @@ class CloudSyncService @Inject constructor(
             grandTotal = grandtotal,
             forexCurrency = forexcurrency,
             forexAmt = forexamt,
+            status = if (dateClosed == null) "open" else "closed",
         )
     }
 
