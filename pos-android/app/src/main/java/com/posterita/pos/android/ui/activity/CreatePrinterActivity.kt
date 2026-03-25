@@ -280,9 +280,11 @@ class CreatePrinterActivity : BaseActivity() {
         val printerName = binding.editTextPrinterName.text.toString().trim()
         val ip = if (selectedInterface == "Network") binding.printerIp.text.toString().trim() else null
         val deviceName = if (selectedInterface == "Bluetooth") selectedBluetoothDevice else null
-        val printReceipt = binding.printReceiptsSwitch.isChecked
         val printKitchen = binding.printKitchenReceiptSwitch.isChecked
         val cashDrawer = if (binding.cashDrawerSwitch.isChecked) "Yes" else "No"
+
+        // Role determines behavior — keep booleans in sync for backward compat
+        val role = if (printKitchen) Printer.ROLE_KITCHEN else printerRole
 
         return Printer(
             name = printerName,
@@ -290,10 +292,10 @@ class CreatePrinterActivity : BaseActivity() {
             width = selectedWidth,
             ip = ip,
             deviceName = deviceName,
-            printReceipt = printReceipt,
+            printReceipt = !printKitchen, // receipt printers don't print kitchen, and vice versa
             printKitchen = printKitchen,
             cashDrawer = cashDrawer,
-            role = printerRole
+            role = role
         )
     }
 

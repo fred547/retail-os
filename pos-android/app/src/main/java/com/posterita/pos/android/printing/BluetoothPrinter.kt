@@ -234,4 +234,27 @@ class BluetoothPrinter {
             disconnect()
         }
     }
+
+    fun printQueueTicket(orderNumber: String, width: Int, deviceName: String) {
+        connect(deviceName)
+        try {
+            val out = java.io.ByteArrayOutputStream()
+            out.write(ReceiptPrinter.INIT)
+            out.write(ReceiptPrinter.CENTER_ALIGN)
+            out.write(ReceiptPrinter.LINE_FEED)
+            out.write(ReceiptPrinter.FONT_H1)
+            out.write("ORDER\n".toByteArray())
+            out.write(byteArrayOf(0x1B, 0x21, 0x38)) // bold + double height + double width
+            out.write("$orderNumber\n".toByteArray())
+            out.write(ReceiptPrinter.FONT_NORMAL)
+            out.write(ReceiptPrinter.LINE_FEED)
+            out.write("Thank you!\n".toByteArray())
+            out.write(ReceiptPrinter.LINE_FEED)
+            out.write(ReceiptPrinter.LINE_FEED)
+            out.write(ReceiptPrinter.PAPER_CUT)
+            print(out.toByteArray())
+        } finally {
+            disconnect()
+        }
+    }
 }

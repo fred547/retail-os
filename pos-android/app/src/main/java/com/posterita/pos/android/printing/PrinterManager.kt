@@ -22,17 +22,50 @@ class PrinterManager @Inject constructor(
         fun onError(message: String)
     }
 
+    // ── Low-level print dispatch (hardware-agnostic) ──
+
+    private fun sendReceipt(orderDetails: OrderDetails, printer: Printer, whatsappNumber: String?) {
+        if (printer.printerType == "Bluetooth") {
+            BluetoothPrinter().printReceipt(orderDetails, printer.width, printer.deviceName ?: "", whatsappNumber)
+        } else {
+            ReceiptPrinter(printer.ip ?: "", printer.width, whatsappNumber).printReceipt(orderDetails)
+        }
+    }
+
+    private fun sendKitchenTicket(orderDetails: OrderDetails, printer: Printer) {
+        if (printer.printerType == "Bluetooth") {
+            BluetoothPrinter().printKitchenReceipt(orderDetails, printer.width, printer.deviceName ?: "")
+        } else {
+            ReceiptPrinter(printer.ip ?: "", printer.width).printKitchenReceipt(orderDetails)
+        }
+    }
+
+    private fun sendQueueTicket(orderNumber: String, printer: Printer) {
+        if (printer.printerType == "Bluetooth") {
+            BluetoothPrinter().printQueueTicket(orderNumber, printer.width, printer.deviceName ?: "")
+        } else {
+            ReceiptPrinter(printer.ip ?: "", printer.width).printQueueTicket(orderNumber)
+        }
+    }
+
+    private fun sendTillReceipt(details: ClosedTillDetails, printer: Printer) {
+        if (printer.printerType == "Bluetooth") {
+            BluetoothPrinter().printCloseTillReceipt(details, printer.width, printer.deviceName ?: "")
+        } else {
+            ReceiptPrinter(printer.ip ?: "", printer.width).printCloseTillReceipt(details)
+        }
+    }
+
+    // ── Public API: role-based routing ──
+
+    /**
+     * Print customer receipt to a specific printer.
+     */
     suspend fun printReceipt(orderDetails: OrderDetails, printer: Printer, callback: PrintResultCallback) {
         withContext(Dispatchers.IO) {
             try {
                 val whatsappNumber = sessionManager.account?.whatsappNumber
-                if (printer.printerType == "Bluetooth") {
-                    val btPrinter = BluetoothPrinter()
-                    btPrinter.printReceipt(orderDetails, printer.width, printer.deviceName ?: "", whatsappNumber)
-                } else {
-                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width, whatsappNumber)
-                    receiptPrinter.printReceipt(orderDetails)
-                }
+                sendReceipt(orderDetails, printer, whatsappNumber)
                 withContext(Dispatchers.Main) { callback.onSuccess() }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { callback.onError(e.message ?: "Print failed") }
@@ -40,16 +73,13 @@ class PrinterManager @Inject constructor(
         }
     }
 
+    /**
+     * Print kitchen ticket to a specific printer.
+     */
     suspend fun printKitchenReceipt(orderDetails: OrderDetails, printer: Printer, callback: PrintResultCallback) {
         withContext(Dispatchers.IO) {
             try {
-                if (printer.printerType == "Bluetooth") {
-                    val btPrinter = BluetoothPrinter()
-                    btPrinter.printKitchenReceipt(orderDetails, printer.width, printer.deviceName ?: "")
-                } else {
-                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width)
-                    receiptPrinter.printKitchenReceipt(orderDetails)
-                }
+                sendKitchenTicket(orderDetails, printer)
                 withContext(Dispatchers.Main) { callback.onSuccess() }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { callback.onError(e.message ?: "Print failed") }
@@ -57,16 +87,13 @@ class PrinterManager @Inject constructor(
         }
     }
 
+    /**
+     * Print close-till receipt to a specific printer.
+     */
     suspend fun printCloseTillReceipt(details: ClosedTillDetails, printer: Printer, callback: PrintResultCallback) {
         withContext(Dispatchers.IO) {
             try {
-                if (printer.printerType == "Bluetooth") {
-                    val btPrinter = BluetoothPrinter()
-                    btPrinter.printCloseTillReceipt(details, printer.width, printer.deviceName ?: "")
-                } else {
-                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width)
-                    receiptPrinter.printCloseTillReceipt(details)
-                }
+                sendTillReceipt(details, printer)
                 withContext(Dispatchers.Main) { callback.onSuccess() }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { callback.onError(e.message ?: "Print failed") }
@@ -74,15 +101,16 @@ class PrinterManager @Inject constructor(
         }
     }
 
+    /**
+     * Print test receipt on a specific printer.
+     */
     suspend fun printTestReceipt(printer: Printer, callback: PrintResultCallback) {
         withContext(Dispatchers.IO) {
             try {
                 if (printer.printerType == "Bluetooth") {
-                    val btPrinter = BluetoothPrinter()
-                    btPrinter.printTestReceipt(printer.width, printer.deviceName ?: "")
+                    BluetoothPrinter().printTestReceipt(printer.width, printer.deviceName ?: "")
                 } else {
-                    val receiptPrinter = ReceiptPrinter(printer.ip ?: "", printer.width)
-                    receiptPrinter.printTestReceipt()
+                    ReceiptPrinter(printer.ip ?: "", printer.width).printTestReceipt()
                 }
                 withContext(Dispatchers.Main) { callback.onSuccess() }
             } catch (e: Exception) {
@@ -91,46 +119,56 @@ class PrinterManager @Inject constructor(
         }
     }
 
+    /**
+     * Open the cash drawer on any printer that supports it.
+     */
     suspend fun openCashDrawer() {
         withContext(Dispatchers.IO) {
             val printers = printerDao.getAllPrinters()
             val drawerPrinter = printers.find { it.cashDrawer == "Yes" }
             if (drawerPrinter != null) {
-                val receiptPrinter = ReceiptPrinter(drawerPrinter.ip ?: "", drawerPrinter.width)
-                receiptPrinter.openCashDrawer()
+                ReceiptPrinter(drawerPrinter.ip ?: "", drawerPrinter.width).openCashDrawer()
             }
         }
     }
 
+    // ── Role-based batch printing ──
+
     /**
-     * Print only to receipt printers (skip kitchen printers).
+     * Print to all receipt-role printers only (skip kitchen/queue/label).
      * Used when completing a kitchen order that was already printed to kitchen.
      */
     suspend fun printReceiptOnly(orderDetails: OrderDetails) {
+        val whatsappNumber = sessionManager.account?.whatsappNumber
         val printers = printerDao.getAllPrinters()
         for (printer in printers) {
-            if (printer.printReceipt) {
-                printReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
+            if (printer.printsReceipts) {
+                try { sendReceipt(orderDetails, printer, whatsappNumber) } catch (_: Exception) {}
             }
         }
     }
 
     /**
-     * Print only to kitchen printers (skip receipt printers).
-     * Used when sending order to kitchen. Legacy: no station routing.
+     * Print to all kitchen/bar-role printers (skip receipt/queue/label).
+     * Legacy: no station routing. Used when no stations are configured.
      */
     suspend fun printKitchenOnly(orderDetails: OrderDetails) {
         val printers = printerDao.getAllPrinters()
         for (printer in printers) {
-            if (printer.printKitchen) {
-                printKitchenReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
+            if (printer.printsKitchen) {
+                try { sendKitchenTicket(orderDetails, printer) } catch (_: Exception) {}
             }
+        }
+    }
+
+    /**
+     * Print queue ticket to all queue-role printers.
+     * Called after order creation with the order/document number.
+     */
+    suspend fun printQueueTicket(orderNumber: String) {
+        val printers = printerDao.getPrintersByRole(Printer.ROLE_QUEUE)
+        for (printer in printers) {
+            try { sendQueueTicket(orderNumber, printer) } catch (_: Exception) {}
         }
     }
 
@@ -146,13 +184,11 @@ class PrinterManager @Inject constructor(
         // Check if any lines have station routing
         val hasStations = orderDetails.lines.any { it.station_id != null }
         if (!hasStations) {
-            // No station routing — fall back to legacy behavior
             printKitchenOnly(orderDetails)
             return
         }
 
-        // Build station → printer lookup from preparation_station.printer_id
-        // (a printer can serve many stations; the link is on the station side)
+        // Build station → printer lookup
         val stationToPrinter = mutableMapOf<Int, Printer?>()
         val stationIds = orderDetails.lines.mapNotNull { it.station_id }.distinct()
         for (sid in stationIds) {
@@ -160,29 +196,24 @@ class PrinterManager @Inject constructor(
             stationToPrinter[sid] = station?.printer_id?.let { printerMap[it] }
         }
 
-        // Group kitchen items by station_id (null = unassigned)
+        // Group kitchen items by station_id
         val grouped = orderDetails.lines
             .filter { it.isKitchenItem == "Y" }
             .groupBy { it.station_id }
 
         for ((stationId, stationLines) in grouped) {
-            // Find the printer for this station via station.printer_id
             val printer = if (stationId != null) {
                 stationToPrinter[stationId]
-                    // Fallback: any kitchen printer
-                    ?: allPrinters.find { it.printKitchen }
+                    ?: allPrinters.find { it.printsKitchen } // fallback
             } else {
-                // Unassigned items → any kitchen printer
-                allPrinters.find { it.printKitchen }
+                allPrinters.find { it.printsKitchen } // unassigned → any kitchen printer
             }
 
             if (printer == null) continue
 
-            // Build a filtered OrderDetails with only this station's items
             val stationName = stationLines.firstOrNull()?.station_name
             val stationOrder = orderDetails.copy(
                 lines = stationLines,
-                // Put station name in the note for the receipt header
                 note = if (stationName != null) {
                     "[$stationName] ${orderDetails.note ?: ""}"
                 } else {
@@ -190,36 +221,30 @@ class PrinterManager @Inject constructor(
                 }
             )
 
-            printKitchenReceipt(stationOrder, printer, object : PrintResultCallback {
-                override fun onSuccess() {}
-                override fun onError(message: String) {}
-            })
+            try { sendKitchenTicket(stationOrder, printer) } catch (_: Exception) {}
         }
     }
 
+    /**
+     * Print to all printers based on their role.
+     * Receipt printers get customer receipt, kitchen printers get kitchen ticket.
+     * Queue printers get queue ticket (if order number available).
+     */
     suspend fun printAllReceipts(orderDetails: OrderDetails) {
+        val whatsappNumber = sessionManager.account?.whatsappNumber
         val printers = printerDao.getAllPrinters()
         for (printer in printers) {
-            if (printer.printKitchen && printer.printReceipt) {
-                printKitchenReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
-                printReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
-            } else if (printer.printKitchen) {
-                printKitchenReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
-            } else if (printer.printReceipt) {
-                printReceipt(orderDetails, printer, object : PrintResultCallback {
-                    override fun onSuccess() {}
-                    override fun onError(message: String) {}
-                })
-            }
+            try {
+                if (printer.printsKitchen) {
+                    sendKitchenTicket(orderDetails, printer)
+                }
+                if (printer.printsReceipts) {
+                    sendReceipt(orderDetails, printer, whatsappNumber)
+                }
+                if (printer.printsQueue && orderDetails.documentno != null) {
+                    sendQueueTicket(orderDetails.documentno!!, printer)
+                }
+            } catch (_: Exception) {}
         }
     }
 }

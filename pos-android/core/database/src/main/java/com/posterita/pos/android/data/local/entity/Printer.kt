@@ -21,10 +21,20 @@ data class Printer(
     @ColumnInfo(name = "store_id") val store_id: Int = 0,
     @ColumnInfo(name = "station_id") val station_id: Int? = null
 ) {
+    /** Does this printer handle customer receipts? Derived from role. */
+    val printsReceipts: Boolean get() = role == ROLE_RECEIPT || printReceipt
+    /** Does this printer handle kitchen/bar tickets? Derived from role. */
+    val printsKitchen: Boolean get() = role == ROLE_KITCHEN || role == ROLE_BAR || printKitchen
+    /** Does this printer handle queue tickets? */
+    val printsQueue: Boolean get() = role == ROLE_QUEUE
+
     companion object {
         const val ROLE_RECEIPT = "receipt"
         const val ROLE_KITCHEN = "kitchen"
         const val ROLE_BAR = "bar"
         const val ROLE_LABEL = "label"
+        const val ROLE_QUEUE = "queue"
+
+        val ALL_ROLES = listOf(ROLE_RECEIPT, ROLE_KITCHEN, ROLE_BAR, ROLE_LABEL, ROLE_QUEUE)
     }
 }

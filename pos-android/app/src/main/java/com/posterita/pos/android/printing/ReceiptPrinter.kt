@@ -63,6 +63,25 @@ class ReceiptPrinter(
         sendToPrinter(out.toByteArray())
     }
 
+    fun printQueueTicket(orderNumber: String) {
+        val out = ByteArrayOutputStream()
+        out.write(INIT)
+        out.write(CENTER_ALIGN)
+        out.write(LINE_FEED)
+        out.write(FONT_H1)
+        out.write("ORDER\n".toByteArray())
+        // Double-height + double-width for the number
+        out.write(byteArrayOf(0x1B, 0x21, 0x38)) // bold + double height + double width
+        out.write("$orderNumber\n".toByteArray())
+        out.write(FONT_NORMAL)
+        out.write(LINE_FEED)
+        out.write("Thank you!\n".toByteArray())
+        out.write(LINE_FEED)
+        out.write(LINE_FEED)
+        out.write(PAPER_CUT)
+        sendToPrinter(out.toByteArray())
+    }
+
     fun openCashDrawer() {
         val out = ByteArrayOutputStream()
         out.write(OPEN_DRAWER)
