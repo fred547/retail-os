@@ -168,6 +168,17 @@ class CloudSyncWorker(
                         // Use a dedicated DB instance — never touch the UI singleton
                         db = AppDatabase.buildDedicated(applicationContext, accountId)
 
+                        // Set per-brand store/terminal in prefs from this brand's DB
+                        // so CloudSyncService resolves the correct context
+                        try {
+                            val brandStore = db!!.storeDao().getAllStores().firstOrNull()
+                            val brandTerminal = brandStore?.let {
+                                db!!.terminalDao().getTerminalsForStore(it.storeId).firstOrNull()
+                            } ?: db!!.terminalDao().getAllTerminals().firstOrNull()
+                            if (brandStore != null) prefsManager.setStoreIdSync(brandStore.storeId)
+                            if (brandTerminal != null) prefsManager.setTerminalIdSync(brandTerminal.terminalId)
+                        } catch (_: Exception) {}
+
                         // Register if needed
                         val regKey = "${REGISTERED_KEY}_$accountId"
                         val isRegistered = prefsManager.getString(regKey) == "true"

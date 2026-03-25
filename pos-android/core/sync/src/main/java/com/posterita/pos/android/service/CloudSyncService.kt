@@ -73,15 +73,36 @@ class CloudSyncService @Inject constructor(
                 return Result.failure(Exception("No account configured"))
             }
 
-            // Read store/terminal from local DB (not prefs — prefs may belong to a different brand)
-            val localStore = try { db.storeDao().getAllStores().firstOrNull() } catch (_: Exception) { null }
-            val localTerminal = try { db.terminalDao().getAllTerminals().firstOrNull() } catch (_: Exception) { null }
-            val terminalId = localTerminal?.terminalId ?: prefsManager.terminalId
-            val storeId = localStore?.storeId ?: prefsManager.storeId
+            // Resolve store/terminal context — validate against this brand's Room DB
+            // Priority: prefs value (set by CloudSyncWorker per-brand) → DB lookup → first active
+            val prefsStoreId = prefsManager.storeId
+            val prefsTerminalId = prefsManager.terminalId
 
-            // Allow sync even without terminal (for pulling data on first sync)
-            if (terminalId == 0 && storeId == 0) {
-                // Use 1 as placeholder — server will still return products scoped by account_id
+            val resolvedStore = when {
+                prefsStoreId > 0 -> db.storeDao().getStoreById(prefsStoreId)
+                else -> null
+            } ?: db.storeDao().getAllStores().firstOrNull() // fallback: first active store
+
+            val resolvedTerminal = when {
+                prefsTerminalId > 0 -> db.terminalDao().getTerminalById(prefsTerminalId)
+                else -> null
+            } ?: resolvedStore?.let {
+                db.terminalDao().getTerminalsForStore(it.storeId).firstOrNull()
+            } ?: db.terminalDao().getAllTerminals().firstOrNull()
+
+            val storeId = resolvedStore?.storeId ?: 0
+            val terminalId = resolvedTerminal?.terminalId ?: 0
+
+            // Log context resolution for debugging
+            if (storeId == 0) {
+                Log.w(TAG, "No store found for account $accountId (prefs=$prefsStoreId)")
+            } else if (prefsStoreId > 0 && prefsStoreId != storeId) {
+                Log.w(TAG, "Store mismatch: prefs=$prefsStoreId, resolved=$storeId (account=$accountId)")
+            }
+            if (terminalId == 0) {
+                Log.w(TAG, "No terminal found for account $accountId (prefs=$prefsTerminalId)")
+            } else if (prefsTerminalId > 0 && prefsTerminalId != terminalId) {
+                Log.w(TAG, "Terminal mismatch: prefs=$prefsTerminalId, resolved=$terminalId (account=$accountId)")
             }
 
             SyncStatusManager.update(
