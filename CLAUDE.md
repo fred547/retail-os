@@ -55,7 +55,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00030) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00031) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
 
@@ -557,6 +557,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `till` | till_id, account_id, store_id, terminal_id, uuid, documentno, open_by, close_by, opening_amt, closing_amt, cash_amt, card_amt, grand_total, date_opened, date_closed, **status** (open/closed), **is_deleted**, **deleted_at**, is_sync | |
 | `till_adjustment` | till_adjustment_id, till_id, user_id, amount, pay_type, reason, date | |
 | `v_price_review` (view) | product_id, account_id, product_name, sellingprice, image, price_set_by, set_by_name, **price_set_at**, category_name | ~~updated_at~~ (use `price_set_at`) |
+| `serial_item` | serial_item_id, account_id, product_id, store_id, **serial_number**, serial_type (vin/imei/serial/certificate), **status** (received/in_stock/reserved/sold/delivered/returned/in_service), supplier_name, purchase_date, cost_price, order_id, customer_id, sold_date, selling_price, **delivered_date**, warranty_months, **warranty_expiry** (auto-computed: delivered_date + warranty_months), color, year, engine_number, is_deleted, is_sync | |
 
 ## Current Phase
 
