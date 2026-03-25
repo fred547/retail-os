@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
@@ -42,7 +41,7 @@ private sealed class PickerItem {
 }
 
 @AndroidEntryPoint
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityHomeBinding
 
@@ -433,37 +432,63 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    data class AppSection(val label: String, val tiles: List<AppTile>)
+
     private fun setupAppGrid() {
-        // Capability-driven tiles — filtered by user role
-        val allTiles = listOf(
+        // Grouped by app — POS, Warehouse, Admin
+        val posTiles = listOf(
             AppTile("pos", "Point of Sale", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java, TileVisibility.ALL),
             AppTile("orders", "Orders", R.drawable.ic_check_circle, 0xFF5E35B1.toInt(), true, OrdersActivity::class.java, TileVisibility.ALL),
             AppTile("tills", "Tills", R.drawable.till, 0xFF00838F.toInt(), true, TillHistoryActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
-            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), true, InventoryCountActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
-            AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
             AppTile("customers", "Customers", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), true, SearchCustomerActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
+        )
+        val warehouseTiles = listOf(
+            AppTile("inventory", "Inventory", R.drawable.ic_search, 0xFFF57F17.toInt(), true, InventoryCountActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
+        )
+        val adminTiles = listOf(
+            AppTile("settings", "Settings", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
+            AppTile("brands", "Brands", R.drawable.ic_splash, 0xFF007AFF.toInt(), true, ManageBrandsActivity::class.java, TileVisibility.OWNER_ONLY),
             AppTile("staff", "Staff", R.drawable.ic_selectuser_blue, 0xFF2E7D32.toInt(), false, null, TileVisibility.ADMIN_OWNER),
             AppTile("reports", "Reports", R.drawable.ic_edit, 0xFFF57F17.toInt(), false, null, TileVisibility.ADMIN_OWNER),
-            AppTile("brands", "Brands", R.drawable.ic_splash, 0xFF007AFF.toInt(), true, ManageBrandsActivity::class.java, TileVisibility.OWNER_ONLY)
         )
 
         val user = sessionManager.user
-        val tiles = if (user == null) {
-            // Demo / no user — show all enabled tiles
-            allTiles.filter { it.enabled }
-        } else {
-            allTiles.filter { tile ->
-                when (tile.visibility) {
-                    TileVisibility.ALL -> true
-                    TileVisibility.SUPERVISOR_PLUS -> user.isSupervisor
-                    TileVisibility.ADMIN_OWNER -> user.isAdminOrOwner
-                    TileVisibility.OWNER_ONLY -> user.isOwner
+        fun filterTiles(tiles: List<AppTile>): List<AppTile> {
+            return if (user == null) {
+                tiles.filter { it.enabled }
+            } else {
+                tiles.filter { tile ->
+                    when (tile.visibility) {
+                        TileVisibility.ALL -> true
+                        TileVisibility.SUPERVISOR_PLUS -> user.isSupervisor
+                        TileVisibility.ADMIN_OWNER -> user.isAdminOrOwner
+                        TileVisibility.OWNER_ONLY -> user.isOwner
+                    }
                 }
             }
         }
 
-        binding.recyclerAppGrid.layoutManager = GridLayoutManager(this, 2)
-        binding.recyclerAppGrid.adapter = AppTileAdapter(tiles) { tile ->
+        val sections = listOf(
+            AppSection("POS", filterTiles(posTiles)),
+            AppSection("Warehouse", filterTiles(warehouseTiles)),
+            AppSection("Admin", filterTiles(adminTiles)),
+        ).filter { it.tiles.isNotEmpty() }
+
+        // Build flat list with section headers for the grid
+        val items = mutableListOf<Any>() // String = header, AppTile = tile
+        for (section in sections) {
+            items.add(section.label)
+            items.addAll(section.tiles)
+        }
+
+        val layoutManager = GridLayoutManager(this, 2)
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (items[position] is String) 2 else 1 // headers span full width
+            }
+        }
+        binding.recyclerAppGrid.layoutManager = layoutManager
+        binding.recyclerAppGrid.adapter = AppGridAdapter(items) { tile ->
             if (tile.enabled && tile.activityClass != null) {
                 startActivity(Intent(this, tile.activityClass))
             } else {
@@ -472,53 +497,79 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private class AppTileAdapter(
-        private val tiles: List<AppTile>,
+    private class AppGridAdapter(
+        private val items: List<Any>, // String = section header, AppTile = tile
         private val onClick: (AppTile) -> Unit
-    ) : RecyclerView.Adapter<AppTileAdapter.ViewHolder>() {
+    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        companion object {
+            const val TYPE_HEADER = 0
+            const val TYPE_TILE = 1
+        }
+
+        class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val text: TextView = view as TextView
+        }
+
+        class TileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val card: MaterialCardView = view as MaterialCardView
             val imgIcon: ImageView = view.findViewById(R.id.imgTileIcon)
             val textLabel: TextView = view.findViewById(R.id.textTileLabel)
             val textComingSoon: TextView = view.findViewById(R.id.textTileComingSoon)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_app_tile, parent, false)
-            return ViewHolder(view)
-        }
+        override fun getItemViewType(position: Int) = if (items[position] is String) TYPE_HEADER else TYPE_TILE
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val tile = tiles[position]
-
-            // Set up the colored rounded-square background (design system: 12dp radius)
-            val density = holder.itemView.context.resources.displayMetrics.density
-            val cornerPx = (12 * density).toInt().toFloat()
-            val iconBg = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = cornerPx
-                setColor(tile.color)
-            }
-            holder.imgIcon.background = iconBg
-            holder.imgIcon.setImageResource(tile.iconRes)
-            holder.imgIcon.setColorFilter(0xFFFFFFFF.toInt())
-            holder.imgIcon.setPadding(12, 12, 12, 12)
-
-            holder.textLabel.text = tile.label
-
-            if (!tile.enabled) {
-                holder.textComingSoon.visibility = View.VISIBLE
-                holder.card.alpha = 0.5f
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return if (viewType == TYPE_HEADER) {
+                val tv = TextView(parent.context).apply {
+                    textSize = 11f
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                    setTextColor(0xFF6C6F76.toInt())
+                    letterSpacing = 0.1f
+                    setPadding(16, 24, 16, 8)
+                }
+                HeaderViewHolder(tv)
             } else {
-                holder.textComingSoon.visibility = View.GONE
-                holder.card.alpha = 1.0f
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_app_tile, parent, false)
+                TileViewHolder(view)
             }
-
-            holder.card.setOnClickListener { onClick(tile) }
         }
 
-        override fun getItemCount() = tiles.size
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            when (holder) {
+                is HeaderViewHolder -> {
+                    holder.text.text = (items[position] as String).uppercase()
+                }
+                is TileViewHolder -> {
+                    val tile = items[position] as AppTile
+                    val density = holder.itemView.context.resources.displayMetrics.density
+                    val cornerPx = (12 * density).toInt().toFloat()
+                    val iconBg = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = cornerPx
+                        setColor(tile.color)
+                    }
+                    holder.imgIcon.background = iconBg
+                    holder.imgIcon.setImageResource(tile.iconRes)
+                    holder.imgIcon.setColorFilter(0xFFFFFFFF.toInt())
+                    holder.imgIcon.setPadding(12, 12, 12, 12)
+                    holder.textLabel.text = tile.label
+
+                    if (!tile.enabled) {
+                        holder.textComingSoon.visibility = View.VISIBLE
+                        holder.card.alpha = 0.5f
+                    } else {
+                        holder.textComingSoon.visibility = View.GONE
+                        holder.card.alpha = 1.0f
+                    }
+
+                    holder.card.setOnClickListener { onClick(tile) }
+                }
+            }
+        }
+
+        override fun getItemCount() = items.size
     }
 }
