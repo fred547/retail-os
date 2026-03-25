@@ -107,18 +107,15 @@ class DatabaseSynchonizerActivity : BaseActivity() {
                         val summary = status.summary
                         if (summary != null) {
                             val sb = StringBuilder()
-                            sb.append("✓ Sync complete\n\n")
+                            val hasErrors = summary.errors.isNotEmpty()
+                            sb.append(if (hasErrors) "⚠ Sync completed with errors\n\n" else "✓ Sync complete\n\n")
 
                             // Sent (↑)
                             val sentParts = mutableListOf<String>()
                             if (summary.ordersPushed > 0) sentParts.add("${summary.ordersPushed} orders")
-                            if (summary.orderLinesPushed > 0) sentParts.add("${summary.orderLinesPushed} order lines")
+                            if (summary.orderLinesPushed > 0) sentParts.add("${summary.orderLinesPushed} lines")
                             if (summary.tillsPushed > 0) sentParts.add("${summary.tillsPushed} tills")
-                            if (sentParts.isNotEmpty()) {
-                                sb.append("↑ SENT: ${sentParts.joinToString(", ")}\n")
-                            } else {
-                                sb.append("↑ SENT: Nothing to send\n")
-                            }
+                            sb.append("↑ SENT: ${if (sentParts.isNotEmpty()) sentParts.joinToString(", ") else "Nothing to send"}\n")
 
                             // Received (↓)
                             val recvParts = mutableListOf<String>()
@@ -130,22 +127,36 @@ class DatabaseSynchonizerActivity : BaseActivity() {
                             if (summary.terminalsPulled > 0) recvParts.add("${summary.terminalsPulled} terminals")
                             if (summary.customersPulled > 0) recvParts.add("${summary.customersPulled} customers")
                             if (summary.modifiersPulled > 0) recvParts.add("${summary.modifiersPulled} modifiers")
-                            if (summary.discountCodesPulled > 0) recvParts.add("${summary.discountCodesPulled} discount codes")
-                            if (summary.preferencesPulled > 0) recvParts.add("${summary.preferencesPulled} preferences")
+                            if (summary.discountCodesPulled > 0) recvParts.add("${summary.discountCodesPulled} discounts")
+                            if (summary.preferencesPulled > 0) recvParts.add("${summary.preferencesPulled} prefs")
                             if (summary.tablesPulled > 0) recvParts.add("${summary.tablesPulled} tables")
-                            if (recvParts.isNotEmpty()) {
-                                sb.append("↓ RECEIVED: ${recvParts.joinToString(", ")}\n")
-                            } else {
-                                sb.append("↓ RECEIVED: Everything up to date\n")
+                            if (summary.sectionsPulled > 0) recvParts.add("${summary.sectionsPulled} sections")
+                            if (summary.stationsPulled > 0) recvParts.add("${summary.stationsPulled} stations")
+                            sb.append("↓ RECEIVED: ${if (recvParts.isNotEmpty()) recvParts.joinToString(", ") else "Up to date"}\n")
+
+                            // Pending after sync
+                            val pending = status.pendingOrders + status.pendingTills
+                            if (pending > 0) {
+                                sb.append("\n⏳ STILL PENDING: ")
+                                val pendParts = mutableListOf<String>()
+                                if (status.pendingOrders > 0) pendParts.add("${status.pendingOrders} orders")
+                                if (status.pendingTills > 0) pendParts.add("${status.pendingTills} tills")
+                                sb.append(pendParts.joinToString(", "))
+                                sb.append("\n")
                             }
 
-                            if (summary.errors.isNotEmpty()) {
-                                sb.append("\n⚠ ${summary.errors.size} error(s)")
+                            // Errors
+                            if (hasErrors) {
+                                sb.append("\n✗ ERRORS (${summary.errors.size}):\n")
+                                for (err in summary.errors.take(5)) {
+                                    sb.append("  • $err\n")
+                                }
+                                if (summary.errors.size > 5) {
+                                    sb.append("  ... and ${summary.errors.size - 5} more\n")
+                                }
                             }
 
-                            if (summary.durationMs > 0) {
-                                sb.append("\nDuration: ${summary.durationMs / 1000.0}s")
-                            }
+                            sb.append("\nDuration: ${summary.durationMs / 1000.0}s")
 
                             binding.syncText?.text = sb.toString()
                         } else {
@@ -182,18 +193,62 @@ class DatabaseSynchonizerActivity : BaseActivity() {
     private fun loadPendingCounts() {
         lifecycleScope.launch(Dispatchers.IO) {
             val pendingOrders = try { db.orderDao().getUnSyncedOrderCount() } catch (_: Exception) { 0 }
-            val pendingTills = try {
-                db.tillDao().getClosedTillByTerminalId(prefsManager.terminalId)
-                    .count { !it.isSync }
-            } catch (_: Exception) { 0 }
+            val unsyncedTills = try { db.tillDao().getAllUnsyncedTills() } catch (_: Exception) { emptyList() }
+            val pendingTills = unsyncedTills.size
+            val failedTills = unsyncedTills.count { it.syncErrorMessage != null }
             val pendingAudit = try { db.auditEventDao().getUnsyncedEvents().size } catch (_: Exception) { 0 }
+
+            // Update SyncStatusManager so drawer also shows pending
+            SyncStatusManager.updatePendingCounts(pendingOrders, pendingTills)
 
             withContext(Dispatchers.Main) {
                 binding.textPendingOrders?.text = pendingOrders.toString()
-                binding.textPendingTills?.text = pendingTills.toString()
+                binding.textPendingTills?.text = if (failedTills > 0) "$pendingTills ($failedTills failed)" else pendingTills.toString()
                 binding.textPendingAudit?.text = pendingAudit.toString()
+
+                // Show failed item details
+                val failedItems = unsyncedTills.filter { it.syncErrorMessage != null }
+                if (failedItems.isNotEmpty()) {
+                    showFailedItems(failedItems)
+                }
             }
         }
+    }
+
+    private fun showFailedItems(failedTills: List<com.posterita.pos.android.data.local.entity.Till>) {
+        val container = binding.layoutDbCounts ?: return
+
+        // Add a "Failed Items" header before the DB counts
+        val header = TextView(this).apply {
+            text = "⚠ FAILED SYNC ITEMS"
+            textSize = 12f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTextColor(0xFFE53935.toInt())
+            setPadding(0, 16, 0, 8)
+        }
+
+        // Insert at top of container
+        container.addView(header, 0)
+        var insertIndex = 1
+
+        for (till in failedTills) {
+            val row = TextView(this).apply {
+                text = "Till ${till.documentno ?: till.uuid?.take(8)}: ${till.syncErrorMessage}"
+                textSize = 11f
+                setTextColor(0xFFE53935.toInt())
+                setPadding(0, 2, 0, 2)
+            }
+            container.addView(row, insertIndex++)
+        }
+
+        // Divider
+        val divider = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1
+            ).apply { topMargin = 8; bottomMargin = 8 }
+            setBackgroundColor(0xFFE0E0E0.toInt())
+        }
+        container.addView(divider, insertIndex)
     }
 
     private fun loadDbCounts() {
