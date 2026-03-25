@@ -49,6 +49,11 @@ class ShoppingCartViewModel @Inject constructor(
         onCartUpdated()
     }
 
+    fun addSerializedProduct(product: Product, serialItemId: Int, serialNumber: String) {
+        shoppingCart.addSerializedProduct(product, serialItemId, serialNumber, sessionManager.taxCache)
+        onCartUpdated()
+    }
+
     fun addProductWithQty(product: Product, qty: Double) {
         shoppingCart.addProductWithQty(product, qty, sessionManager.taxCache)
         onCartUpdated()

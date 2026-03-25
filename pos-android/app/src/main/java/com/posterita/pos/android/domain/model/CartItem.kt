@@ -23,7 +23,11 @@ data class CartItem(
     var note: String? = null,
     var discountCodeId: Int = 0,
     var isWholeSalePriceApplied: Boolean = false,
-    var modifiers: String? = null
+    var modifiers: String? = null,
+    /** Serial item ID for serialized products (VIN/IMEI) — null for regular products */
+    var serialItemId: Int? = null,
+    /** Serial number display (e.g., VIN) — null for regular products */
+    var serialNumber: String? = null
 ) : Serializable, Cloneable {
 
     fun updateTotals() {

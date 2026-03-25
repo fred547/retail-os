@@ -105,6 +105,20 @@ class OrderService @Inject constructor(
             }
 
             sequenceDao.insertSequence(sequence)
+
+            // Mark serialized items as sold
+            for (item in cart.cartItems.values) {
+                val serialId = item.serialItemId ?: continue
+                val serialItem = db.serialItemDao().getById(serialId) ?: continue
+                db.serialItemDao().update(serialItem.copy(
+                    status = com.posterita.pos.android.data.local.entity.SerialItem.STATUS_SOLD,
+                    orderId = order.orderId,
+                    customerId = customer.customer_id,
+                    soldDate = DateUtils.formatIso(now.time),
+                    sellingPrice = item.priceEntered,
+                    isSync = false
+                ))
+            }
         }
 
         return order

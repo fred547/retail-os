@@ -51,6 +51,33 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
         recalculateTotals()
     }
 
+    /**
+     * Add a serialized product (VIN/IMEI tracked). Always qty=1, never merges with existing lines.
+     * Each serial item is a unique line even if the same product model.
+     */
+    fun addSerializedProduct(
+        product: Product,
+        serialItemId: Int,
+        serialNumber: String,
+        taxCache: Map<Int, Tax>
+    ) {
+        lineNo++
+        val tax = taxCache[product.tax_id]
+        val item = CartItem(
+            product = product,
+            lineNo = lineNo.toString(),
+            qty = 1.0,
+            priceEntered = product.sellingprice,
+            tax = tax,
+            serialItemId = serialItemId,
+            serialNumber = serialNumber,
+            description = "${product.name} [${serialNumber}]"
+        )
+        item.updateTotals()
+        cartItems[item.lineNo] = item
+        recalculateTotals()
+    }
+
     fun addProductWithQty(product: Product, qty: Double, taxCache: Map<Int, Tax>) {
         lineNo++
         val tax = taxCache[product.tax_id]

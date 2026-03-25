@@ -228,6 +228,11 @@ class ProductActivity : BaseDrawerActivity() {
                 updateLastProductDisplay()
             },
             onModifierCheck = { product, callback ->
+                // Serialized products always need serial number input first
+                if (product.isSerialized) {
+                    showSerialNumberInputDialog(product)
+                    callback(listOf(com.posterita.pos.android.data.local.entity.Modifier())) // prevent adapter from adding
+                } else {
                 // Check for modifiers asynchronously
                 lifecycleScope.launch(Dispatchers.IO) {
                     var mods = db.modifierDao().getModifiersByProductId(product.product_id)
@@ -243,6 +248,7 @@ class ProductActivity : BaseDrawerActivity() {
                         }
                     }
                 }
+                } // end else (non-serialized)
             },
             onProductImageClick = { product ->
                 showProductDetailDialog(product)
@@ -1307,15 +1313,105 @@ class ProductActivity : BaseDrawerActivity() {
     private fun lookupFullBarcode(barcode: String) {
         productViewModel.searchProductByUpc(barcode,
             onFound = { product ->
-                shoppingCartViewModel.addProduct(product)
-                productAdapter.notifyDataSetChanged()
-                Toast.makeText(this, "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+                if (product.isSerialized) {
+                    // Serialized product scanned by UPC — still need serial number
+                    showSerialNumberInputDialog(product)
+                } else {
+                    shoppingCartViewModel.addProduct(product)
+                    productAdapter.notifyDataSetChanged()
+                    Toast.makeText(this, "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+                }
             },
             onNotFound = {
-                Toast.makeText(this, "Product not found for barcode: $barcode", Toast.LENGTH_SHORT)
-                    .show()
+                // Fall back to serial number lookup (VIN/IMEI scan)
+                lookupSerialNumber(barcode)
             }
         )
+    }
+
+    private fun lookupSerialNumber(serialNumber: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val accountId = prefsManager.accountId
+            val serialItem = db.serialItemDao().getBySerialNumber(serialNumber, accountId)
+
+            withContext(Dispatchers.Main) {
+                if (serialItem == null) {
+                    Toast.makeText(this@ProductActivity, "Not found: $serialNumber", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+
+                if (!serialItem.isAvailable) {
+                    Toast.makeText(this@ProductActivity, "${serialItem.displayType} ${serialItem.serialNumber} is ${serialItem.status}", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+
+                // Resolve the product for this serial item
+                val product = db.productDao().getProductByIdSync(serialItem.productId)
+                if (product == null) {
+                    Toast.makeText(this@ProductActivity, "Product not found for ${serialItem.serialNumber}", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+
+                shoppingCartViewModel.addSerializedProduct(product, serialItem.serialItemId, serialItem.serialNumber)
+                productAdapter.notifyDataSetChanged()
+                Toast.makeText(this@ProductActivity, "${product.name} [${serialItem.serialNumber}] added", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showSerialNumberInputDialog(product: Product) {
+        val input = android.widget.EditText(this).apply {
+            hint = "Scan or enter serial number"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            setPadding(48, 32, 48, 32)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("${product.name}")
+            .setMessage("Enter the serial number (VIN/IMEI) for this item")
+            .setView(input)
+            .setPositiveButton("Add") { _, _ ->
+                val serial = input.text.toString().trim()
+                if (serial.isEmpty()) {
+                    Toast.makeText(this, "Serial number required", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                // Look up the serial item in local DB
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val accountId = prefsManager.accountId
+                    val serialItem = db.serialItemDao().getBySerialNumber(serial, accountId)
+
+                    withContext(Dispatchers.Main) {
+                        if (serialItem == null) {
+                            Toast.makeText(this@ProductActivity, "Serial number not found: $serial", Toast.LENGTH_SHORT).show()
+                            return@withContext
+                        }
+                        if (!serialItem.isAvailable) {
+                            Toast.makeText(this@ProductActivity, "${serialItem.displayType} $serial is ${serialItem.status}", Toast.LENGTH_SHORT).show()
+                            return@withContext
+                        }
+                        if (serialItem.productId != product.product_id) {
+                            Toast.makeText(this@ProductActivity, "$serial belongs to a different product", Toast.LENGTH_SHORT).show()
+                            return@withContext
+                        }
+
+                        shoppingCartViewModel.addSerializedProduct(product, serialItem.serialItemId, serialItem.serialNumber)
+                        productAdapter.notifyDataSetChanged()
+                        lastAddedProduct = product
+                        updateLastProductDisplay()
+                        Toast.makeText(this@ProductActivity, "${product.name} [$serial] added", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+
+        // Auto-focus the input
+        input.requestFocus()
+        input.postDelayed({
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.showSoftInput(input, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        }, 200)
     }
 
     private fun showCloseTillConfirmation() {
