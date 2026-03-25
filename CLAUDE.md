@@ -355,6 +355,7 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 | **Error surfacing** | Android | Sync errors logged to `error_logs` table, nav drawer shows pending count + failure count |
 | **Retry with backoff** | Android | 5 retries, exponential (30s→60s→120s→240s). Per-item: failed items stay unsynced via `syncErrorMessage` |
 | **Sync receipt** | Android | Synchronizer screen shows ↑SENT / ↓RECEIVED / ⏳PENDING / ✗ERRORS breakdown |
+| **Context hardening** | Android | Store/terminal resolved per-brand from Room DB, not shared prefs. CloudSyncWorker sets per-brand context before each sync |
 | **Conflict detection** | Server | `insertOrUpdate()` checks `updated_at` — skips stale overwrites + duplicate pushes |
 | **Payload checksum** | Both | Android computes SHA-256 of order/till UUIDs+totals, server verifies. **Warning-only** (`console.warn`, not sync error) — Kotlin/JS floating point serialization differs (0.0 vs 0), causing false positives |
 
@@ -528,7 +529,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Owners tab** — all owners with name, email, phone, brand count, join date, active status. Edit panel: change name/email/phone, send password reset. Summary cards.
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
-- **Test Results tab** — ~995 total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 200 web API (15 files) + 266 scenario (45 files) + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 179 web unit (16 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
