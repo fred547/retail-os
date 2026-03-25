@@ -340,13 +340,25 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 
 **Per-account sync timestamps:** Each brand has its own `cloud_last_sync_at_<accountId>` key. Signup and demo creation reset timestamps to epoch before first sync.
 
-**Store/terminal from local DB:** `CloudSyncService.performSync()` reads `store_id` and `terminal_id` from the brand's own Room DB, not from SharedPreferences.
+**Store/terminal context resolution:** CloudSyncService validates store/terminal by looking up prefs values in the brand's Room DB. Priority: prefs ID → DB lookup → first active store → first terminal for store. CloudSyncWorker sets per-brand store/terminal prefs from each brand's DB before sync. Logs warnings on mismatches.
 
 **Sibling brand discovery:** Sync response includes `sibling_brands` — all accounts owned by the same owner. CloudSyncWorker registers new brands in `LocalAccountRegistry` automatically.
 
 **Brands stats:** ManageBrandsActivity opens each brand's DB via dedicated `Room.databaseBuilder` (not the singleton) to read product/category/store counts and DB file size. Prevents cross-contamination.
 
 **Till sync (push-only, open + closed):** Tills sync at **open** (header: who, when, terminal, opening amount, status=open) and again at **close** (full amounts, status=closed). Open tills re-sync each cycle until closed (not marked `isSync=true`). The `till.status` column tracks `open`/`closed`. This gives cloud visibility into active terminals — web console shows pulsing "Open" badge. Orders carry `till_uuid` at creation time. Server matches by UUID (not integer `till_id`). If till hasn't synced yet, `till_uuid` preserved and `till_id` back-filled via `reconcile_till_orders()`.
+
+**Sync hardening:**
+
+| Feature | Where | How |
+|---------|-------|-----|
+| **Error surfacing** | Android | Sync errors logged to `error_logs` table, nav drawer shows pending count + failure count |
+| **Retry with backoff** | Android | 5 retries, exponential (30s→60s→120s→240s). Per-item: failed items stay unsynced via `syncErrorMessage` |
+| **Sync receipt** | Android | Synchronizer screen shows ↑SENT / ↓RECEIVED / ⏳PENDING / ✗ERRORS breakdown |
+| **Conflict detection** | Server | `insertOrUpdate()` checks `updated_at` — skips stale overwrites + duplicate pushes |
+| **Payload checksum** | Both | Android computes SHA-256 of order/till UUIDs+totals, server verifies. Soft enforcement (log, don't reject) |
+
+**Android's sole sync responsibility:** build correct JSON, send it, confirm HTTP 200. All conflict resolution, FK validation, and data integrity logic is **server-side**. Android does not need to understand server-side errors — it just retries on failure.
 
 **Connectivity indicator:** Green/red dot on every screen via `setupConnectivityDot()` from `ConnectivityDotHelper.kt`. Tap opens sync screen. Reactive via `ConnectivityMonitor`. Uses `NET_CAPABILITY_INTERNET` check. `onLost` re-checks active network (prevents false offline on multi-network devices). Do NOT use `NET_CAPABILITY_VALIDATED` — not set on all devices/emulators.
 
