@@ -112,7 +112,8 @@ object AppErrorLogger {
                 val prefs = prefsManager
                 val session = sessionManager
                 val accountId = prefs?.accountId ?: ""
-                val db = AppDatabase.getInstance(context, accountId.ifEmpty { "default" })
+                if (accountId.isEmpty() || accountId == "null") return@launch
+                val db = AppDatabase.getInstance(context, accountId)
 
                 val deviceId = try {
                     Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
@@ -172,7 +173,8 @@ object AppErrorLogger {
      */
     suspend fun cleanup(context: Context, accountId: String) {
         try {
-            val db = AppDatabase.getInstance(context, accountId.ifEmpty { "default" })
+            if (accountId.isEmpty() || accountId == "null") return
+            val db = AppDatabase.getInstance(context, accountId)
             // Delete synced logs older than 7 days
             val cutoff = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
             db.errorLogDao().deleteOldSyncedLogs(cutoff)

@@ -2,13 +2,22 @@
 
 import { useEffect, useState } from "react";
 import {
-  Globe, Server, Database, Brain, Image, GitBranch,
+  Globe, Server, Database, Brain, Image, GitBranch, Flame,
   DollarSign, RefreshCw, CheckCircle, XCircle, AlertTriangle,
-  ExternalLink,
+  ExternalLink, TrendingUp, ArrowUpCircle, Info,
 } from "lucide-react";
+
+interface Recommendation {
+  service: string;
+  level: "info" | "warning" | "critical";
+  message: string;
+  action: string;
+}
 
 interface InfraData {
   services: Record<string, any>;
+  usage?: Record<string, any>;
+  recommendations?: Recommendation[];
   totalCost: Record<string, any>;
   timestamp: string;
 }
@@ -18,6 +27,7 @@ const SERVICE_META: Record<string, { icon: any; color: string; url: string }> = 
   render: { icon: Server, color: "bg-purple-600 text-white", url: "https://dashboard.render.com" },
   supabase: { icon: Database, color: "bg-green-600 text-white", url: "https://supabase.com/dashboard/project/ldyoiexyqvklujvwcaqq" },
   anthropic: { icon: Brain, color: "bg-orange-600 text-white", url: "https://console.anthropic.com" },
+  firebase: { icon: Flame, color: "bg-yellow-500 text-white", url: "https://console.firebase.google.com/project/posterita-retail-os/testlab" },
   cloudinary: { icon: Image, color: "bg-blue-500 text-white", url: "https://console.cloudinary.com" },
   github: { icon: GitBranch, color: "bg-gray-800 text-white", url: "https://github.com/fred547/retail-os" },
 };
@@ -26,6 +36,33 @@ function statusIcon(status: string) {
   if (status === "active") return <CheckCircle size={16} className="text-green-500" />;
   if (status === "degraded") return <AlertTriangle size={16} className="text-yellow-500" />;
   return <XCircle size={16} className="text-red-500" />;
+}
+
+function levelIcon(level: string) {
+  if (level === "critical") return <XCircle size={16} className="text-red-500" />;
+  if (level === "warning") return <AlertTriangle size={16} className="text-yellow-500" />;
+  return <Info size={16} className="text-blue-400" />;
+}
+
+function levelBorder(level: string) {
+  if (level === "critical") return "border-red-200 bg-red-50/50";
+  if (level === "warning") return "border-orange-200 bg-orange-50/50";
+  return "border-gray-100";
+}
+
+function UsageBar({ pct, label }: { pct: number; label: string }) {
+  const color = pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-green-500";
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-gray-500">{label}</span>
+        <span className="font-medium text-gray-700">{pct}%</span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+      </div>
+    </div>
+  );
 }
 
 export default function Infrastructure() {
@@ -54,7 +91,9 @@ export default function Infrastructure() {
 
   if (!data) return <div className="text-center py-16 text-red-500">Failed to load</div>;
 
-  const { services, totalCost } = data;
+  const { services, usage, recommendations, totalCost } = data;
+  const criticalCount = recommendations?.filter(r => r.level === "critical").length ?? 0;
+  const warningCount = recommendations?.filter(r => r.level === "warning").length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -73,6 +112,81 @@ export default function Infrastructure() {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Recommendations */}
+      {recommendations && recommendations.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <ArrowUpCircle size={20} className="text-posterita-blue" />
+            <h2 className="text-lg font-semibold text-gray-900">Upgrade Recommendations</h2>
+            {criticalCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{criticalCount} critical</span>
+            )}
+            {warningCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">{warningCount} warning</span>
+            )}
+          </div>
+          <div className="space-y-2">
+            {recommendations
+              .sort((a, b) => {
+                const order = { critical: 0, warning: 1, info: 2 };
+                return (order[a.level] ?? 2) - (order[b.level] ?? 2);
+              })
+              .map((rec, i) => {
+                const meta = SERVICE_META[rec.service];
+                const Icon = meta?.icon || Globe;
+                return (
+                  <div key={i} className={`border rounded-xl p-4 ${levelBorder(rec.level)}`}>
+                    <div className="flex items-start gap-3">
+                      {levelIcon(rec.level)}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium text-gray-400 uppercase">{rec.service}</span>
+                        </div>
+                        <p className="text-sm text-gray-700">{rec.message}</p>
+                        <p className="text-sm text-gray-500 mt-1">{rec.action}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* Usage overview */}
+      {usage && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {usage.supabase && (
+            <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Database size={16} className="text-green-600" />
+                <span className="text-sm font-medium text-gray-700">Supabase Storage</span>
+              </div>
+              <UsageBar pct={usage.supabase.pct} label={`~${usage.supabase.estimatedMB}MB of ${usage.supabase.limitMB}MB`} />
+            </div>
+          )}
+          {usage.activity && (
+            <>
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <p className="text-xs text-gray-400">Syncs (7d)</p>
+                <p className="text-2xl font-bold text-gray-900">{usage.activity.syncsLast7d.toLocaleString()}</p>
+                <p className="text-xs text-gray-400 mt-1">~{Math.round(usage.activity.syncsLast7d / 7)}/day</p>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <p className="text-xs text-gray-400">Errors (7d)</p>
+                <p className="text-2xl font-bold text-gray-900">{usage.activity.errorsLast7d.toLocaleString()}</p>
+                <p className="text-xs text-gray-400 mt-1">~{Math.round(usage.activity.errorsLast7d / 7)}/day</p>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <p className="text-xs text-gray-400">Accounts / Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{usage.activity.totalAccounts}</p>
+                <p className="text-xs text-gray-400 mt-1">{usage.activity.totalOrders.toLocaleString()} orders total</p>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Service cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

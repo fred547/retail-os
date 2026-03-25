@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
@@ -21,7 +20,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CustomerDetailsActivity : AppCompatActivity() {
+class CustomerDetailsActivity : BaseActivity() {
 
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var sessionManager: SessionManager

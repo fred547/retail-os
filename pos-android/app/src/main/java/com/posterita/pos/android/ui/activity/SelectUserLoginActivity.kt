@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -45,7 +44,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SelectUserLoginActivity : AppCompatActivity() {
+class SelectUserLoginActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_SHOW_ACCOUNT_PICKER = "extra_show_account_picker"

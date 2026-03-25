@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import com.google.android.material.card.MaterialCardView
 import com.posterita.pos.android.R
@@ -24,7 +23,7 @@ import com.posterita.pos.android.databinding.ActivityDetailViewBinding
  *   "~chipLabel|Yes"    → rendered as a colored chip in the hero area
  *   Any field with value "Yes"/"No" → rendered as a pill chip instead of text
  */
-class DetailViewActivity : AppCompatActivity() {
+class DetailViewActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDetailViewBinding
 
@@ -137,7 +136,7 @@ class DetailViewActivity : AppCompatActivity() {
                     setTextColor(getColor(R.color.posterita_muted))
                     textSize = 11f
                     letterSpacing = 0.08f
-                    typeface = ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_semibold)
+                    typeface = try { ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_semibold) } catch (_: Exception) { android.graphics.Typeface.DEFAULT_BOLD }
                 }
                 currentLayout.addView(header)
                 container.addView(currentCard)
@@ -216,7 +215,7 @@ class DetailViewActivity : AppCompatActivity() {
             text = displayValue
             setTextColor(getColor(R.color.posterita_ink))
             textSize = 14f
-            typeface = ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_medium)
+            typeface = try { ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_medium) } catch (_: Exception) { android.graphics.Typeface.DEFAULT }
             gravity = Gravity.END
         }
         row.addView(valueView)
@@ -283,7 +282,7 @@ class DetailViewActivity : AppCompatActivity() {
             this.text = text
             setTextColor(textColor)
             textSize = 11f
-            typeface = ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_semibold)
+            typeface = try { ResourcesCompat.getFont(this@DetailViewActivity, R.font.lexend_semibold) } catch (_: Exception) { android.graphics.Typeface.DEFAULT_BOLD }
             setPadding((10 * dp).toInt(), (4 * dp).toInt(), (10 * dp).toInt(), (4 * dp).toInt())
             background = GradientDrawable().apply {
                 cornerRadius = 999 * dp

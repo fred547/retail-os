@@ -87,6 +87,7 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
+    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
   }),
 }));
 
@@ -145,12 +146,12 @@ describe('/api/sync POST – validation', () => {
     expect(json.error).toContain('terminal_id');
   });
 
-  it('auto-creates account when account does not exist', async () => {
+  it('rejects unknown account with 404', async () => {
     tableResults['account'] = { data: null, error: null };
     const { POST } = await importSyncRoute();
     const res = await POST(mockRequest({ account_id: 'no-such', terminal_id: 1 }));
-    expect(res.status).toBe(200);
-    // The account is auto-created so sync proceeds normally
+    expect(res.status).toBe(404);
+    // Accounts must be created via signup — sync rejects unknown IDs
   });
 });
 

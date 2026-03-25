@@ -3,7 +3,6 @@ package com.posterita.pos.android.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivityReceiptRefundBinding
 import com.posterita.pos.android.domain.model.OrderDetails
@@ -19,7 +18,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ReceiptRefundActivity : AppCompatActivity() {
+class ReceiptRefundActivity : BaseActivity() {
 
     private lateinit var binding: ActivityReceiptRefundBinding
     @Inject lateinit var db: AppDatabase

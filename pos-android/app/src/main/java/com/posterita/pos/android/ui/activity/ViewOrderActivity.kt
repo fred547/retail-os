@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.posterita.pos.android.databinding.ActivityViewOrderBinding
 import com.posterita.pos.android.domain.model.OrderDetails
@@ -24,7 +23,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ViewOrderActivity : AppCompatActivity() {
+class ViewOrderActivity : BaseActivity() {
 
     private lateinit var binding: ActivityViewOrderBinding
 

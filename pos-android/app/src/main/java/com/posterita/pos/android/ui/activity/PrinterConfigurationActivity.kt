@@ -2,7 +2,6 @@ package com.posterita.pos.android.ui.activity
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Printer
 import com.posterita.pos.android.databinding.ActivityPrinterConfigurationBinding
@@ -15,7 +14,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PrinterConfigurationActivity : AppCompatActivity() {
+class PrinterConfigurationActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPrinterConfigurationBinding
     @Inject lateinit var db: AppDatabase

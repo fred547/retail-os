@@ -69,6 +69,7 @@ export default function ManagerPortfolio({
   const [searchInput, setSearchInput] = useState(search);
   const [expandedOwners, setExpandedOwners] = useState<Set<number>>(new Set());
   const [actionLoading, setActionLoading] = useState("");
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   // Modal state
   const [modal, setModal] = useState<{ type: string; account?: PortfolioAccount; owner?: any } | null>(null);
   // Owner edit state
@@ -173,6 +174,23 @@ export default function ManagerPortfolio({
     } else {
       setModal({ type: "confirm_delete", account });
     }
+  };
+
+  const handleDeleteAllTestBrands = async () => {
+    setBulkDeleting(true);
+    try {
+      const res = await fetch("/api/platform/delete-test-brands", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Failed: ${data.error}`);
+      } else {
+        setModal(null);
+        router.refresh();
+      }
+    } catch {
+      alert("Failed to delete test brands");
+    }
+    setBulkDeleting(false);
   };
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); navigate({ q: searchInput, page: "1" }); };
@@ -290,6 +308,40 @@ export default function ManagerPortfolio({
                 </div>
               </>
             )}
+
+            {modal.type === "confirm_delete_all_test" && (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <Trash2 size={20} className="text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">Delete All Test Brands</h3>
+                    <p className="text-sm text-slate-500">This action cannot be undone</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-2">
+                  Permanently delete <strong>all {summaryCounts.testing} brand{summaryCounts.testing !== 1 ? "s" : ""}</strong> with status <strong>"testing"</strong>?
+                </p>
+                <div className="bg-red-50 rounded-lg p-3 mb-4 text-xs text-red-700">
+                  <p className="font-medium mb-1">This will delete all data for every test brand:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>All products, categories, and taxes</li>
+                    <li>All stores, terminals, and users</li>
+                    <li>All orders, tills, and transaction history</li>
+                    <li>All error logs and sync logs</li>
+                  </ul>
+                  <p className="mt-2 font-medium">Owner accounts will be preserved.</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setModal(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                  <button onClick={handleDeleteAllTestBrands} disabled={bulkDeleting}
+                    className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-1">
+                    <Trash2 size={14} /> {bulkDeleting ? "Deleting..." : `Delete All ${summaryCounts.testing} Test Brands`}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -339,7 +391,15 @@ export default function ManagerPortfolio({
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <h2 className="font-semibold text-slate-900">Owners & Brands</h2>
-          <span className="text-sm text-slate-500">{totalCount} brand{totalCount !== 1 ? "s" : ""}{totalPages > 1 && ` · Page ${page}/${totalPages}`}</span>
+          <div className="flex items-center gap-3">
+            {summaryCounts.testing > 0 && (
+              <button onClick={() => setModal({ type: "confirm_delete_all_test" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                <Trash2 size={12} /> Delete All Test Brands ({summaryCounts.testing})
+              </button>
+            )}
+            <span className="text-sm text-slate-500">{totalCount} brand{totalCount !== 1 ? "s" : ""}{totalPages > 1 && ` · Page ${page}/${totalPages}`}</span>
+          </div>
         </div>
 
         {ownerGroups.length === 0 ? (

@@ -4,13 +4,12 @@ import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.databinding.ActivityNfcBinding
 import com.posterita.pos.android.util.NfcUtils
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class NfcActivity : AppCompatActivity() {
+class NfcActivity : BaseActivity() {
 
     private lateinit var binding: ActivityNfcBinding
     private var nfcUtils: NfcUtils? = null

@@ -64,6 +64,7 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
+    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
   }),
 }));
 
@@ -481,8 +482,8 @@ describe('/api/sync/register POST – new account businessname', () => {
   });
 });
 
-describe('/api/sync POST – auto-created account uses account_id as placeholder businessname', () => {
-  it('sets businessname to account_id when auto-creating during sync', async () => {
+describe('/api/sync POST – unknown account rejected', () => {
+  it('returns 404 when account does not exist (no auto-creation)', async () => {
     // Account not found
     tableResults['account'] = { data: null, error: null };
     seedEmptyPullTables();
@@ -496,15 +497,8 @@ describe('/api/sync POST – auto-created account uses account_id as placeholder
     }));
     const json = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(json.success).toBe(true);
-
-    // Find the account insert operation
-    const accountInsert = supabaseOps.find(op => op.table === 'account' && op.op === 'insert');
-    expect(accountInsert).toBeDefined();
-    // The sync route uses account_id as placeholder businessname
-    expect(accountInsert!.data.businessname).toBe('auto-created-123');
-    expect(accountInsert!.data.currency).toBe('MUR');
-    expect(accountInsert!.data.isactive).toBe('Y');
+    // Accounts must be created via /api/auth/signup — sync rejects unknown IDs
+    expect(res.status).toBe(404);
+    expect(json.error).toContain('not found');
   });
 });

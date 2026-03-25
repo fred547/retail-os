@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Printer
@@ -20,7 +19,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PrintersActivity : AppCompatActivity() {
+class PrintersActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPrintersBinding
     @Inject lateinit var db: AppDatabase

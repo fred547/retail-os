@@ -16,7 +16,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -48,7 +47,7 @@ import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class BulkProductImportActivity : AppCompatActivity() {
+class BulkProductImportActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBulkImportBinding
     @Inject lateinit var db: AppDatabase

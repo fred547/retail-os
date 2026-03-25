@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.databinding.ActivityCheckServerEndPointBinding
 import com.posterita.pos.android.ui.viewmodel.AuthViewModel
 import com.posterita.pos.android.util.SharedPreferencesManager
@@ -13,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CheckServerEndPointActivity : AppCompatActivity() {
+class CheckServerEndPointActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCheckServerEndPointBinding
 

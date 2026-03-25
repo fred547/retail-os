@@ -13,17 +13,27 @@ interface Category {
   name: string;
   isactive: string;
   position: number;
+  tax_id: number | null;
   product_count?: number;
+  tax_name?: string;
+}
+
+interface Tax {
+  tax_id: number;
+  name: string;
+  rate: number;
 }
 
 interface CategoryFormData {
   name: string;
+  tax_id: number | null;
 }
 
-const emptyForm: CategoryFormData = { name: "" };
+const emptyForm: CategoryFormData = { name: "", tax_id: null };
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [taxes, setTaxes] = useState<Tax[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -40,8 +50,18 @@ export default function CategoriesPage() {
 
   const fetchCategories = async () => {
     setLoading(true);
+
+    // Fetch taxes
+    const { data: taxData } = await dataQuery<Tax>("tax", {
+      select: "tax_id, name, rate",
+      order: { column: "name" },
+    });
+    setTaxes(taxData ?? []);
+    const taxMap: Record<number, string> = {};
+    (taxData ?? []).forEach((t) => { taxMap[t.tax_id] = `${t.name} (${t.rate}%)`; });
+
     const { data } = await dataQuery<Category>("productcategory", {
-      select: "productcategory_id, name, isactive, position",
+      select: "productcategory_id, name, isactive, position, tax_id",
       order: { column: "name" },
     });
 
@@ -60,6 +80,7 @@ export default function CategoriesPage() {
       (data ?? []).map((c) => ({
         ...c,
         product_count: counts[c.productcategory_id] || 0,
+        tax_name: c.tax_id ? taxMap[c.tax_id] ?? "—" : "—",
       }))
     );
     setLoading(false);
@@ -79,7 +100,7 @@ export default function CategoriesPage() {
   };
 
   const openEditModal = (cat: Category) => {
-    setForm({ name: cat.name });
+    setForm({ name: cat.name, tax_id: cat.tax_id });
     setEditingCategory(cat);
     setModalMode("edit");
     setModalOpen(true);
@@ -99,6 +120,7 @@ export default function CategoriesPage() {
       await dataInsert("productcategory", {
         name: form.name.trim(),
         isactive: "Y",
+        tax_id: form.tax_id,
       });
     } else if (editingCategory) {
       await dataUpdate(
@@ -106,6 +128,7 @@ export default function CategoriesPage() {
         { column: "productcategory_id", value: editingCategory.productcategory_id },
         {
           name: form.name.trim(),
+          tax_id: form.tax_id,
         }
       );
     }
@@ -221,6 +244,7 @@ export default function CategoriesPage() {
             <thead>
               <tr>
                 <SortableHeader label="Name" sortKey="name" currentSort={sort} onSort={handleSort} />
+                <th>Tax</th>
                 <SortableHeader label="Products" sortKey="product_count" currentSort={sort} onSort={handleSort} />
                 <SortableHeader label="Status" sortKey="status" currentSort={sort} onSort={handleSort} />
                 <th className="text-right">Actions</th>
@@ -240,6 +264,9 @@ export default function CategoriesPage() {
                       </div>
                       <span className="font-medium">{c.name}</span>
                     </div>
+                  </td>
+                  <td className="text-gray-500 text-sm">
+                    {c.tax_name ?? "—"}
                   </td>
                   <td className="text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
@@ -342,6 +369,27 @@ export default function CategoriesPage() {
                     if (e.key === "Enter" && form.name.trim()) handleSubmit();
                   }}
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="cat-tax"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Tax
+                </label>
+                <select
+                  id="cat-tax"
+                  value={form.tax_id ?? ""}
+                  onChange={(e) => setForm({ ...form, tax_id: e.target.value ? Number(e.target.value) : null })}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                >
+                  <option value="">No tax</option>
+                  {taxes.map((t) => (
+                    <option key={t.tax_id} value={t.tax_id}>
+                      {t.name} ({t.rate}%)
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

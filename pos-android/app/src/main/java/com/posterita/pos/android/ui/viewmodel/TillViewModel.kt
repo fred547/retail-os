@@ -54,8 +54,8 @@ class TillViewModel @Inject constructor(
             if (accountId.isNotEmpty() && accountId != "null") {
                 var account = accountDao.getAccountById(accountId)
                 if (account == null) {
-                    // Room is empty (hasn't synced yet) — create a minimal fallback
-                    Log.w("TillViewModel", "Account not in Room, creating fallback for $accountId")
+                    // Room hasn't synced yet — create a minimal fallback so till can operate offline
+                    Log.d("TillViewModel", "Account not yet in Room ($accountId), creating offline fallback")
                     account = Account(
                         account_id = accountId,
                         businessname = prefsManager.getString("store_name", "My Store"),
@@ -71,10 +71,11 @@ class TillViewModel @Inject constructor(
             if (storeId > 0) {
                 var store = storeDao.getStoreById(storeId)
                 if (store == null) {
-                    Log.w("TillViewModel", "Store not in Room, creating fallback for $storeId")
+                    Log.d("TillViewModel", "Store not yet in Room ($storeId), creating offline fallback")
                     store = Store(
                         storeId = storeId,
                         name = prefsManager.getString("store_name", "Store"),
+                        account_id = prefsManager.accountId,
                     )
                     storeDao.insertStore(store)
                 }
@@ -86,10 +87,11 @@ class TillViewModel @Inject constructor(
             if (terminalId > 0) {
                 var terminal = terminalDao.getTerminalById(terminalId)
                 if (terminal == null) {
-                    Log.w("TillViewModel", "Terminal not in Room, creating fallback for $terminalId")
+                    Log.d("TillViewModel", "Terminal not yet in Room ($terminalId), creating offline fallback")
                     terminal = Terminal(
                         terminalId = terminalId,
                         store_id = prefsManager.storeId,
+                        account_id = prefsManager.accountId,
                         name = prefsManager.getString("terminal_name", "POS 1"),
                         prefix = prefsManager.accountId.take(3).uppercase(),
                     )

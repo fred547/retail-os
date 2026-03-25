@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
@@ -35,7 +34,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class RefundActivity : AppCompatActivity(), RefundCartAdapter.OnRefundSelectionListener {
+class RefundActivity : BaseActivity(), RefundCartAdapter.OnRefundSelectionListener {
 
     private lateinit var binding: ActivityRefundBinding
     @Inject lateinit var sessionManager: SessionManager

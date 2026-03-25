@@ -5,7 +5,6 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
@@ -22,7 +21,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LockScreenActivity : AppCompatActivity() {
+class LockScreenActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLockScreenBinding
 

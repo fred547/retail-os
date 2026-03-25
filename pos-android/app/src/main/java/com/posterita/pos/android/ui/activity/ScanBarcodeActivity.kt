@@ -10,7 +10,6 @@ import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.posterita.pos.android.R
@@ -29,7 +28,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ScanBarcodeActivity : AppCompatActivity() {
+class ScanBarcodeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityScanBarcodeBinding
 

@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Printer
 import com.posterita.pos.android.data.local.entity.PreparationStation
@@ -24,7 +23,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CreatePrinterActivity : AppCompatActivity() {
+class CreatePrinterActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_PRINTER_ROLE = "printer_role"

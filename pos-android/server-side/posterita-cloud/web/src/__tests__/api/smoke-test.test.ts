@@ -118,8 +118,8 @@ describe.skipIf(!canRun)("Production Smoke Tests", () => {
         last_sync_at: "1970-01-01T00:00:00Z",
       }),
     });
-    // Should return 200 (auto-creates account) or structured error
-    expect([200, 400, 500]).toContain(res.status);
+    // Should return 404 (unknown account rejected) or structured error
+    expect([404, 400, 500]).toContain(res.status);
     const json = await res.json();
     // Response should have expected structure
     if (res.status === 200) {

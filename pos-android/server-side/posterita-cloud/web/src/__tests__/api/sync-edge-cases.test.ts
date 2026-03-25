@@ -64,6 +64,7 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
+    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
   }),
 }));
 
@@ -529,35 +530,31 @@ describe('/api/sync POST – till adjustments', () => {
   });
 });
 
-describe('/api/sync POST – concurrent account auto-creation (23505)', () => {
-  it('ignores duplicate key error (23505) when auto-creating account', async () => {
+describe('/api/sync POST – unknown account rejection', () => {
+  it('returns 404 when account does not exist (no auto-creation)', async () => {
     // Account lookup returns null (not found)
-    tableResults['account'] = { data: null, error: { message: 'duplicate key value violates unique constraint', code: '23505' } };
+    tableResults['account'] = { data: null, error: null };
     seedEmptyPullTables();
 
     const { POST } = await importSyncRoute();
     const res = await POST(mockRequest(baseRequest()));
     const json = await res.json();
 
-    // Should succeed because 23505 is ignored (another request created it concurrently)
-    expect(res.status).toBe(200);
-    expect(json.success).toBe(true);
+    // Accounts must be created via signup — sync rejects unknown IDs
+    expect(res.status).toBe(404);
+    expect(json.error).toContain('not found');
   });
 
-  it('returns 500 when account auto-creation fails with non-duplicate error', async () => {
-    // Account lookup returns null, insert fails with non-23505 error
-    // We need to differentiate select from insert: select returns null, insert returns error
-    // The mock always returns the same result for a table, so simulate by setting error on account
-    // The select().single() will see { data: null, error: ... } — data is null so !account is true,
-    // then insert() also sees the error. The error code is checked.
+  it('returns 404 even when account lookup has error and data is null', async () => {
+    // Account lookup error — data is null, so treated as not found
     tableResults['account'] = { data: null, error: { message: 'Connection refused', code: '08001' } };
 
     const { POST } = await importSyncRoute();
     const res = await POST(mockRequest(baseRequest()));
     const json = await res.json();
 
-    expect(res.status).toBe(500);
-    expect(json.error).toContain('auto-create');
+    expect(res.status).toBe(404);
+    expect(json.error).toContain('not found');
   });
 });
 

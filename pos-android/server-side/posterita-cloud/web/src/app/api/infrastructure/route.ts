@@ -27,11 +27,13 @@ export async function GET() {
       status: "active",
       project: "ldyoiexyqvklujvwcaqq",
       url: "https://ldyoiexyqvklujvwcaqq.supabase.co",
-      plan: "Free (up to 500MB, 2 projects)",
+      plan: "Pro ($25/month)",
+      compute: "Small (2 vCPUs, 2GB RAM)",
+      region: "AWS ap-south-1 (Mumbai)",
       tables: counts,
       totalRows,
-      cost: "$0/month (free tier)",
-      limits: "500MB DB, 1GB file storage, 2GB bandwidth, 50k monthly active users",
+      cost: "$25/month",
+      limits: "8GB DB, 100GB file storage, 250GB bandwidth, unlimited MAU",
     };
   } catch (e: any) {
     services.supabase = { status: "error", error: e.message };
@@ -118,20 +120,129 @@ export async function GET() {
     ci: "GitHub Actions — Android tests + Web tests + Smoke tests on every push",
   };
 
+  // 7. Usage metrics for upgrade recommendations
+  const usage: Record<string, any> = {};
+  try {
+    const db = getDb();
+
+    // Supabase: estimate DB size from row counts
+    const totalRows = services.supabase?.totalRows ?? 0;
+    const estimatedMB = Math.round(totalRows * 0.5 / 1000); // ~0.5KB per row average
+    usage.supabase = {
+      estimatedStorageMB: estimatedMB,
+      limitMB: 500,
+      pct: Math.round((estimatedMB / 500) * 100),
+    };
+
+    // Sync activity (last 7 days)
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    const { count: syncCount7d } = await db.from("sync_request_log").select("*", { count: "exact", head: true }).gte("request_at", weekAgo);
+    const { count: errorCount7d } = await db.from("error_logs").select("*", { count: "exact", head: true }).gte("created_at", weekAgo);
+    const { count: accountCount } = await db.from("account").select("*", { count: "exact", head: true });
+    const { count: orderCount } = await db.from("orders").select("*", { count: "exact", head: true });
+
+    usage.activity = {
+      syncsLast7d: syncCount7d ?? 0,
+      errorsLast7d: errorCount7d ?? 0,
+      totalAccounts: accountCount ?? 0,
+      totalOrders: orderCount ?? 0,
+    };
+  } catch (_) {}
+
+  // 8. Generate upgrade recommendations
+  const recommendations: { service: string; level: "info" | "warning" | "critical"; message: string; action: string }[] = [];
+
+  // Supabase (Pro plan, 8GB limit)
+  const supabaseLimitMB = 8192; // 8GB on Pro
+  const supabaseEstMB = usage.supabase?.estimatedMB ?? 0;
+  const supabasePct = Math.round((supabaseEstMB / supabaseLimitMB) * 100);
+  usage.supabase = { ...usage.supabase, limitMB: supabaseLimitMB, pct: supabasePct };
+  if (supabasePct > 70) {
+    recommendations.push({
+      service: "supabase", level: "warning",
+      message: `Database at ~${supabasePct}% of 8GB Pro limit (est. ${supabaseEstMB}MB).`,
+      action: "Consider upgrading compute or enabling read replicas. Team plan ($599/month) adds PITR + SSO.",
+    });
+  } else {
+    recommendations.push({
+      service: "supabase", level: "info",
+      message: `Database at ~${supabasePct}% of 8GB — Pro plan with Small compute (2 vCPUs, 2GB RAM).`,
+      action: "Healthy capacity. Scale compute up if sync latency increases under load.",
+    });
+  }
+
+  // Render
+  const renderStatus = services.render?.status;
+  if (renderStatus === "down" || renderStatus === "degraded") {
+    recommendations.push({
+      service: "render", level: "critical",
+      message: "Backend is down or degraded. Starter plan has 512MB RAM.",
+      action: "Upgrade to Render Standard ($25/month) for 2GB RAM, auto-scaling, and zero-downtime deploys.",
+    });
+  } else {
+    recommendations.push({
+      service: "render", level: "info",
+      message: "Backend healthy on Starter plan (512MB RAM, always-on).",
+      action: "Upgrade to Standard when concurrent users exceed ~50 or memory pressure increases.",
+    });
+  }
+
+  // Vercel
+  recommendations.push({
+    service: "vercel", level: "info",
+    message: "Pro plan ($20/month) with 300s timeout and 3 regions.",
+    action: "Sufficient for current scale. Consider Enterprise only if you need >300s functions or custom SLAs.",
+  });
+
+  // Activity-based
+  const syncsPerDay = Math.round((usage.activity?.syncsLast7d ?? 0) / 7);
+  if (syncsPerDay > 500) {
+    recommendations.push({
+      service: "supabase", level: "warning",
+      message: `${syncsPerDay} syncs/day — high API volume for free tier (50k MAU limit).`,
+      action: "Monitor Supabase MAU dashboard. Upgrade to Pro if approaching 50k monthly active users.",
+    });
+  }
+
+  const errorsPerDay = Math.round((usage.activity?.errorsLast7d ?? 0) / 7);
+  if (errorsPerDay > 50) {
+    recommendations.push({
+      service: "supabase", level: "warning",
+      message: `${errorsPerDay} errors/day logged — high error volume.`,
+      action: "Investigate error trends before they consume storage. Consider error log rotation.",
+    });
+  }
+
+  // Firebase
+  recommendations.push({
+    service: "firebase", level: "info",
+    message: "Spark plan: 10 virtual + 5 physical tests/day.",
+    action: "Upgrade to Blaze (pay-as-you-go) when daily test quota is exceeded regularly.",
+  });
+
+  // Cloudinary
+  recommendations.push({
+    service: "cloudinary", level: "info",
+    message: "Free tier: 25 credits/month, 25GB storage.",
+    action: "Upgrade to Plus ($89/month) when product image count exceeds 10k or transformations spike.",
+  });
+
   // Total monthly cost estimate
   const totalCost = {
     vercel: 20,
     render: 19,
-    supabase: 0,
+    supabase: 25,
     anthropic: "5–25 (variable)",
     firebase: 0,
     cloudinary: 0,
     github: 0,
-    estimated_total: "$44–64/month",
+    estimated_total: "$69–89/month",
   };
 
   return NextResponse.json({
     services,
+    usage,
+    recommendations,
     totalCost,
     timestamp: new Date().toISOString(),
   });

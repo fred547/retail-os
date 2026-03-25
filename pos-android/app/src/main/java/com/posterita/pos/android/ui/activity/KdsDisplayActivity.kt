@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
@@ -30,7 +29,7 @@ import java.net.URL
  * Connects to a POS terminal's KdsServer via HTTP + SSE.
  * Shows active orders in a grid, with bump/recall gestures.
  */
-class KdsDisplayActivity : AppCompatActivity() {
+class KdsDisplayActivity : BaseActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var headerText: TextView

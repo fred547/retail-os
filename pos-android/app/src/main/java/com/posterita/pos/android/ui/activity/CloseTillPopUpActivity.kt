@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.printing.PrinterManager
@@ -22,7 +21,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CloseTillPopUpActivity : AppCompatActivity() {
+class CloseTillPopUpActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCloseTillPopUpBinding
     @Inject lateinit var prefsManager: SharedPreferencesManager

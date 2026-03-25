@@ -18,7 +18,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.entity.Customer
@@ -30,7 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SearchCustomerActivity : AppCompatActivity(), CustomerAdapter.OnCustomerClickListener {
+class SearchCustomerActivity : BaseActivity(), CustomerAdapter.OnCustomerClickListener {
 
     private lateinit var binding: ActivitySearchCustomerBinding
     private val customerViewModel: CustomerViewModel by viewModels()

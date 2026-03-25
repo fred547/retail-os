@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
 import com.posterita.pos.android.kds.KdsDiscovery
 import com.posterita.pos.android.R
@@ -19,7 +18,7 @@ import java.net.URL
  * Discovers POS terminals on LAN via mDNS or manual IP entry,
  * then launches KdsDisplayActivity.
  */
-class KdsSetupActivity : AppCompatActivity() {
+class KdsSetupActivity : BaseActivity() {
 
     private lateinit var discovery: KdsDiscovery
     private val discoveredServers = mutableListOf<KdsDiscovery.DiscoveredServer>()

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.databinding.ActivitySelectTerminalBinding
 import com.posterita.pos.android.data.local.entity.Store
 import com.posterita.pos.android.data.local.entity.Terminal
@@ -15,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SelectTerminalActivity : AppCompatActivity() {
+class SelectTerminalActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySelectTerminalBinding
 

@@ -37,11 +37,11 @@ describe('API Security Tests', () => {
     expect(res.status).toBe(400);
   });
 
-  it('sync auto-creates account when account_id is unknown', async () => {
+  it('sync rejects unknown account_id with 404', async () => {
     const { POST } = await import('../../app/api/sync/route');
     const res = await POST(mockRequest({ account_id: 'nonexistent', terminal_id: 1 }));
-    // Unknown accounts are now auto-created defensively instead of rejected
-    expect(res.status).toBe(200);
+    // Accounts must be created via /api/auth/signup — sync rejects unknown IDs
+    expect(res.status).toBe(404);
   });
 
   it('sync handles malformed JSON gracefully', async () => {

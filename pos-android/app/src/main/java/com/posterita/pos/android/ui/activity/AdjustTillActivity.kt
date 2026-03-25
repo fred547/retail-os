@@ -3,7 +3,6 @@ package com.posterita.pos.android.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.TillAdjustment
@@ -17,7 +16,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AdjustTillActivity : AppCompatActivity() {
+class AdjustTillActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAdjustTillBinding
     @Inject lateinit var prefsManager: SharedPreferencesManager

@@ -11,7 +11,6 @@ import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.posterita.pos.android.R
@@ -39,7 +38,7 @@ import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CloseTillActivity : AppCompatActivity() {
+class CloseTillActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCloseTillBinding
 

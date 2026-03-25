@@ -10,7 +10,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityWebConsoleBinding
@@ -25,6 +24,8 @@ import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 /**
@@ -33,7 +34,7 @@ import javax.inject.Inject
  * Pass EXTRA_TITLE to set the top bar title.
  */
 @AndroidEntryPoint
-class WebConsoleActivity : AppCompatActivity() {
+class WebConsoleActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWebConsoleBinding
 
@@ -70,12 +71,12 @@ class WebConsoleActivity : AppCompatActivity() {
             binding.layoutOfflineBanner.visibility = if (connected) View.GONE else View.VISIBLE
         }
 
-        // Configure WebView
+        // Configure WebView — render at mobile width, not desktop overview
         binding.webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            loadWithOverviewMode = true
-            useWideViewPort = true
+            loadWithOverviewMode = false
+            useWideViewPort = false
             setSupportZoom(false)
             builtInZoomControls = false
         }
@@ -98,35 +99,84 @@ class WebConsoleActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 binding.progressLoading.visibility = View.GONE
 
-                // Inject CSS to hide sidebar, fit the native app shell, optimize for mobile
+                // Inject viewport meta + CSS to render as mobile, hide sidebar, optimize layout
                 view?.evaluateJavascript("""
                     (function() {
+                        // Force mobile viewport
+                        var vp = document.querySelector('meta[name="viewport"]');
+                        if (!vp) {
+                            vp = document.createElement('meta');
+                            vp.name = 'viewport';
+                            document.head.appendChild(vp);
+                        }
+                        vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+
                         var style = document.createElement('style');
                         style.textContent = `
+                            /* Force mobile layout */
+                            html, body { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
+                            * { box-sizing: border-box !important; }
+
                             /* Hide sidebar completely */
                             .sidebar-desktop, .sidebar-mobile, aside { display: none !important; }
                             .sidebar-hamburger, .sidebar-backdrop { display: none !important; }
                             button[aria-label="Open menu"], button[aria-label="Close sidebar"] { display: none !important; }
-                            /* Full-width content */
-                            main, .flex-1 { margin-left: 0 !important; padding: 8px !important; }
+
+                            /* Full-width content — no left margin for sidebar */
+                            main, .flex-1 { margin-left: 0 !important; padding: 12px !important; max-width: 100% !important; }
                             .lg\\:ml-64 { margin-left: 0 !important; }
-                            /* Minimal top padding */
+
+                            /* Minimal top padding (Android top bar provides context) */
                             .pt-16, .lg\\:pt-8 { padding-top: 4px !important; }
-                            /* Hide breadcrumb and page heading (Android top bar has it) */
+
+                            /* Hide breadcrumb (Android top bar has title) */
                             nav[aria-label="Breadcrumb"] { display: none !important; }
-                            /* Mobile-optimize data tables: compact but keep all columns visible */
-                            .data-table { font-size: 13px !important; }
-                            .data-table th, .data-table td { padding: 8px 6px !important; font-size: 13px !important; }
-                            .data-table { overflow-x: auto !important; display: block !important; }
-                            /* Make rows tappable with better touch targets */
-                            .data-table tbody tr { min-height: 48px; }
+
+                            /* Cards: full width, compact */
+                            .grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+                            .md\\:grid-cols-2, .lg\\:grid-cols-3, .xl\\:grid-cols-4 { grid-template-columns: 1fr !important; }
+
+                            /* Tables: fit phone width by hiding non-essential columns */
+                            table { width: 100% !important; font-size: 13px !important; table-layout: fixed !important; }
+                            th, td { padding: 8px 6px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+                            .overflow-x-auto { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+
+                            /* Hide less important columns on phone: UPC, Cost, Source, Status columns */
+                            th:nth-child(4), td:nth-child(4),
+                            th:nth-child(5), td:nth-child(5) { display: none !important; }
+
+                            /* Image column: smaller */
+                            th:nth-child(1), td:nth-child(1) { width: 40px !important; }
+                            td img, td .w-10 { width: 32px !important; height: 32px !important; }
+
+                            /* Name column: allow wrapping */
+                            td:nth-child(2) { white-space: normal !important; word-break: break-word !important; max-width: 150px !important; }
+                            td:nth-child(2) .text-xs { display: none !important; }
+
+                            /* Touch-friendly rows */
+                            tbody tr { min-height: 48px !important; }
+
+                            /* Ensure edit/action buttons stay visible */
+                            td:last-child { width: 40px !important; text-align: center !important; position: sticky !important; right: 0 !important; background: white !important; }
+
                             /* Compact spacing */
-                            .space-y-6 > * + * { margin-top: 8px !important; }
-                            .space-y-4 > * + * { margin-top: 6px !important; }
-                            /* Bottom sheet: ensure it fits mobile */
-                            [role="dialog"] { max-height: 85vh !important; }
-                            .sm\\:max-w-md { max-width: 100% !important; }
+                            .space-y-6 > * + * { margin-top: 10px !important; }
+                            .space-y-4 > * + * { margin-top: 8px !important; }
+
+                            /* Dialogs & bottom sheets: full width on mobile */
+                            [role="dialog"] { max-height: 85vh !important; max-width: 100% !important; width: 100% !important; }
+                            .sm\\:max-w-md, .sm\\:max-w-lg { max-width: 100% !important; }
                             .sm\\:rounded-2xl { border-radius: 16px 16px 0 0 !important; }
+
+                            /* Edit forms: full width inputs */
+                            input, select, textarea { width: 100% !important; font-size: 16px !important; }
+
+                            /* Page headings: compact */
+                            h1 { font-size: 20px !important; }
+                            h2 { font-size: 17px !important; }
+
+                            /* Hide desktop-only elements */
+                            .hidden.lg\\:block, .hidden.md\\:block { display: none !important; }
                         `;
                         document.head.appendChild(style);
                     })();
@@ -218,6 +268,16 @@ class WebConsoleActivity : AppCompatActivity() {
                 if (terminalId > 0) put("terminal_id", terminalId)
             }
 
+            // Add HMAC auth headers (required by OTT endpoint)
+            val syncSecret = prefsManager.syncSecret
+            if (syncSecret.isNotEmpty()) {
+                val timestamp = (System.currentTimeMillis() / 1000).toString()
+                val hmacMessage = "$timestamp.${payload.toString()}"
+                val signature = computeHmacSha256(syncSecret, hmacMessage)
+                conn.setRequestProperty("X-Sync-Timestamp", timestamp)
+                conn.setRequestProperty("X-Sync-Signature", signature)
+            }
+
             OutputStreamWriter(conn.outputStream).use { writer ->
                 writer.write(payload.toString())
                 writer.flush()
@@ -239,6 +299,13 @@ class WebConsoleActivity : AppCompatActivity() {
             AppErrorLogger.warn(this@WebConsoleActivity, "WebConsoleActivity", "OTT fetch failed (will load without auth)", e)
             null
         }
+    }
+
+    private fun computeHmacSha256(secret: String, message: String): String {
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(SecretKeySpec(secret.toByteArray(Charsets.UTF_8), "HmacSHA256"))
+        return mac.doFinal(message.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
     }
 
     @Deprecated("Deprecated in Java")

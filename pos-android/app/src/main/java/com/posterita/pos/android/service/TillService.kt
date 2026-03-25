@@ -8,6 +8,7 @@ import com.posterita.pos.android.domain.model.ClosedTillDetails
 import com.posterita.pos.android.domain.model.OrderDetails
 import com.posterita.pos.android.util.DateUtils
 import com.posterita.pos.android.util.NumberUtils
+import com.posterita.pos.android.util.SharedPreferencesManager
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.json.JSONObject
 import java.sql.Timestamp
@@ -22,7 +23,8 @@ class TillService @Inject constructor(
     private val tillAdjustmentDao: TillAdjustmentDao,
     private val orderDao: OrderDao,
     private val sequenceDao: SequenceDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val prefsManager: SharedPreferencesManager
 ) {
 
     suspend fun openTill(
@@ -200,8 +202,14 @@ class TillService @Inject constructor(
         return closedTillDetails
     }
 
-    suspend fun getOpenTill(terminalId: Int): Till? =
-        tillDao.getOpenTillByTerminalId(terminalId)
+    suspend fun getOpenTill(terminalId: Int): Till? {
+        val accountId = prefsManager.accountId
+        return if (accountId.isNotEmpty() && accountId != "null") {
+            tillDao.getOpenTillByTerminalIdAndAccount(terminalId, accountId)
+        } else {
+            tillDao.getOpenTillByTerminalId(terminalId)
+        }
+    }
 
     private fun generateDocumentNo(sequence: Sequence): String {
         val newSeqNo = sequence.sequenceNo + 1

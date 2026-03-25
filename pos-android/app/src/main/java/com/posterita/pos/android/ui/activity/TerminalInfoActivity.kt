@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
@@ -21,7 +20,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TerminalInfoActivity : AppCompatActivity() {
+class TerminalInfoActivity : BaseActivity() {
 
     private lateinit var binding: ActivityTerminalInfoBinding
 
@@ -117,7 +116,7 @@ class TerminalInfoActivity : AppCompatActivity() {
                             text = "${printer.name ?: "—"} · ${printer.printerType ?: ""}"
                             setTextColor(getColor(R.color.posterita_ink))
                             textSize = 14f
-                            typeface = ResourcesCompat.getFont(this@TerminalInfoActivity, R.font.lexend_medium)
+                            typeface = try { ResourcesCompat.getFont(this@TerminalInfoActivity, R.font.lexend_medium) } catch (_: Exception) { android.graphics.Typeface.DEFAULT }
                         }
                         row.addView(nameText)
 

@@ -10,7 +10,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
@@ -34,7 +33,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class EditTerminalActivity : AppCompatActivity() {
+class EditTerminalActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_TERMINAL_ID = "terminal_id"

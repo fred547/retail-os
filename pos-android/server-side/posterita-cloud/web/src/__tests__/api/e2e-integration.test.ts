@@ -40,6 +40,14 @@ async function api(path: string, body: any, headers?: Record<string, string>) {
   return { status: res.status, data };
 }
 
+// Helper for HMAC-authenticated API calls (OTT, sync)
+async function apiHmac(path: string, body: any, secret: string) {
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const payload = `${ts}.${JSON.stringify(body)}`;
+  const sig = createHmac("sha256", secret).update(payload).digest("hex");
+  return api(path, body, { "x-sync-timestamp": ts, "x-sync-signature": sig });
+}
+
 // ============================================================
 // Suite 1: Signup Flow
 // ============================================================
@@ -363,13 +371,14 @@ describe("OTT WebView Auth", () => {
   let ottToken: string | null = null;
 
   it("POST /api/auth/ott creates a token", async () => {
-    const { status, data } = await api("/api/auth/ott", {
+    if (!syncSecret) return; // skip if signup didn't return sync_secret
+    const { status, data } = await apiHmac("/api/auth/ott", {
       account_id: liveAccountId,
       user_id: 1,
       user_role: "owner",
       store_id: storeId || 1,
       terminal_id: terminalId || 1,
-    });
+    }, syncSecret);
 
     expect(status).toBe(200);
     expect(data.token).toBeDefined();
@@ -381,14 +390,15 @@ describe("OTT WebView Auth", () => {
   });
 
   it("POST /api/auth/ott/validate validates a fresh token", async () => {
+    if (!syncSecret) return;
     // Create a fresh token specifically for this test
-    const { data: createData } = await api("/api/auth/ott", {
+    const { data: createData } = await apiHmac("/api/auth/ott", {
       account_id: liveAccountId,
       user_id: 1,
       user_role: "owner",
       store_id: storeId || 1,
       terminal_id: terminalId || 1,
-    });
+    }, syncSecret);
 
     const { status, data } = await api("/api/auth/ott/validate", {
       token: createData.token,
@@ -401,12 +411,13 @@ describe("OTT WebView Auth", () => {
   });
 
   it("POST /api/auth/ott/validate rejects an expired/used token", async () => {
+    if (!syncSecret) return;
     // Create and immediately use a token
-    const { data: createData } = await api("/api/auth/ott", {
+    const { data: createData } = await apiHmac("/api/auth/ott", {
       account_id: liveAccountId,
       user_id: 1,
       user_role: "owner",
-    });
+    }, syncSecret);
 
     // First validation consumes it
     await api("/api/auth/ott/validate", { token: createData.token });

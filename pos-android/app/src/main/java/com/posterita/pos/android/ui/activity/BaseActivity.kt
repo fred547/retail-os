@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.widget.ImageButton
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.posterita.pos.android.util.SessionTimeoutManager
 
 open class BaseActivity : AppCompatActivity() {
@@ -22,6 +24,30 @@ open class BaseActivity : AppCompatActivity() {
         super.onResume()
         // Check idle timeout — redirect to lock screen if timed out
         SessionTimeoutManager.checkAndLock(this)
+    }
+
+    override fun setContentView(layoutResID: Int) {
+        super.setContentView(layoutResID)
+        applySystemBarInsets()
+    }
+
+    override fun setContentView(view: View?) {
+        super.setContentView(view)
+        applySystemBarInsets()
+    }
+
+    /**
+     * Ensures content is not obscured by transparent system bars (status bar, navigation bar).
+     * Applies top + bottom padding to the content frame so ALL layouts are properly inset,
+     * regardless of root view type (ConstraintLayout, DrawerLayout, etc).
+     */
+    private fun applySystemBarInsets() {
+        val contentFrame = findViewById<View>(android.R.id.content) ?: return
+        ViewCompat.setOnApplyWindowInsetsListener(contentFrame) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     override fun onDestroy() {

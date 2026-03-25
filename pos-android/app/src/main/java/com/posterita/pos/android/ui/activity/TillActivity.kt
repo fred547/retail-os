@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityTillScreenBinding
 import com.posterita.pos.android.ui.viewmodel.TillViewModel
@@ -20,7 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TillActivity : AppCompatActivity() {
+class TillActivity : BaseActivity() {
 
     private lateinit var binding: ActivityTillScreenBinding
 

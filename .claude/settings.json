@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /Users/fredericktsang/retailOs/pos-android/server-side/posterita-cloud/web && npx tsc --noEmit 2>&1 | head -20 || true",
-            "timeout": 60,
+            "command": "FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE '\\.(ts|tsx)$'; then cd /Users/fredericktsang/retailOs/pos-android/server-side/posterita-cloud/web && npx tsc --noEmit 2>&1 | head -20 || true; elif echo \"$FILE\" | grep -qE '\\.(kt|java)$'; then cd /Users/fredericktsang/retailOs/pos-android && ./gradlew compileDebugKotlin 2>&1 | tail -15 || true; fi",
+            "timeout": 120,
             "statusMessage": "Type-checking..."
           }
         ]

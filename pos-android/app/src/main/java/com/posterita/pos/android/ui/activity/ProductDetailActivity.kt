@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
@@ -29,7 +28,7 @@ import javax.inject.Inject
  * Pass EXTRA_PRODUCT_ID to view/edit an existing product.
  */
 @AndroidEntryPoint
-class ProductDetailActivity : AppCompatActivity() {
+class ProductDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDetailViewBinding
 

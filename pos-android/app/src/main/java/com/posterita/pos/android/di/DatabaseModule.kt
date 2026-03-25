@@ -17,12 +17,15 @@ import javax.inject.Singleton
 object DatabaseModule {
 
     @Provides
-    @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
         prefsManager: SharedPreferencesManager
     ): AppDatabase {
-        val accountId = prefsManager.accountId.ifEmpty { "default" }
+        val accountId = prefsManager.accountId
+        // Never create a "default" DB — use the actual account or fail gracefully
+        require(accountId.isNotEmpty() && accountId != "null") {
+            "Cannot provide database: no active account_id in prefs"
+        }
         return AppDatabase.getInstance(context, accountId)
     }
 

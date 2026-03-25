@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAccountManager } from "@/lib/super-admin";
 import { getDb } from "@/lib/supabase/admin";
+import { cascadeDeleteAccount } from "@/lib/cascade-delete-account";
 
 /**
  * DELETE /api/account/[accountId]
@@ -42,45 +43,7 @@ export async function DELETE(
     );
   }
 
-  // Delete all data for this account (FK order)
-  const { data: orders } = await db.from("orders").select("order_id").eq("account_id", accountId);
-  const orderIds = (orders ?? []).map((o: any) => o.order_id);
-  if (orderIds.length > 0) {
-    await db.from("payment").delete().in("order_id", orderIds);
-    await db.from("orderline").delete().in("order_id", orderIds);
-  }
-  await db.from("orders").delete().eq("account_id", accountId);
-
-  const { data: batches } = await db.from("intake_batch").select("batch_id").eq("account_id", accountId);
-  const batchIds = (batches ?? []).map((b: any) => b.batch_id);
-  if (batchIds.length > 0) {
-    await db.from("intake_item").delete().in("batch_id", batchIds);
-  }
-  await db.from("intake_batch").delete().eq("account_id", accountId);
-
-  const { data: sessions } = await db.from("inventory_count_session").select("session_id").eq("account_id", accountId);
-  const sessionIds = (sessions ?? []).map((s: any) => s.session_id);
-  if (sessionIds.length > 0) {
-    await db.from("inventory_count_entry").delete().in("session_id", sessionIds);
-  }
-  await db.from("inventory_count_session").delete().eq("account_id", accountId);
-
-  await db.from("till").delete().eq("account_id", accountId);
-  await db.from("product").delete().eq("account_id", accountId);
-  await db.from("modifier").delete().eq("account_id", accountId);
-  await db.from("productcategory").delete().eq("account_id", accountId);
-  await db.from("tax").delete().eq("account_id", accountId);
-  await db.from("pos_user").delete().eq("account_id", accountId);
-  await db.from("registered_device").delete().eq("account_id", accountId);
-  await db.from("terminal").delete().eq("account_id", accountId);
-  await db.from("store").delete().eq("account_id", accountId);
-  await db.from("error_logs").delete().eq("account_id", accountId);
-  await db.from("customer").delete().eq("account_id", accountId);
-  await db.from("restaurant_table").delete().eq("account_id", accountId);
-  await db.from("preference").delete().eq("account_id", accountId);
-  await db.from("discountcode").delete().eq("account_id", accountId);
-  await db.from("owner_account_session").delete().eq("account_id", accountId);
-  await db.from("account").delete().eq("account_id", accountId);
+  await cascadeDeleteAccount(db, accountId);
 
   return NextResponse.json({
     success: true,

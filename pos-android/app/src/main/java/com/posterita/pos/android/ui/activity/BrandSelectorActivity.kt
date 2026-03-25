@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +29,7 @@ import javax.inject.Inject
  * and hasn't selected one yet (or wants to switch).
  */
 @AndroidEntryPoint
-class BrandSelectorActivity : AppCompatActivity() {
+class BrandSelectorActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBrandSelectorBinding
 

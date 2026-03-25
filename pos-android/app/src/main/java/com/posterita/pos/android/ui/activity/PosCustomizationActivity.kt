@@ -2,7 +2,6 @@ package com.posterita.pos.android.ui.activity
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import com.posterita.pos.android.R
 import com.posterita.pos.android.util.SharedPreferencesManager
@@ -10,7 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PosCustomizationActivity : AppCompatActivity() {
+class PosCustomizationActivity : BaseActivity() {
 
     @Inject lateinit var prefsManager: SharedPreferencesManager
 
