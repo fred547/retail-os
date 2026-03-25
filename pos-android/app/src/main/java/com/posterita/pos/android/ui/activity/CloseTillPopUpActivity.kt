@@ -35,6 +35,8 @@ class CloseTillPopUpActivity : BaseActivity() {
         binding = ActivityCloseTillPopUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupPlusMinusButtons()
+
         binding.buttonCloseTill.setOnClickListener {
             val cashInput = binding.edtPsdInput.text?.toString() ?: ""
             val cardInput = binding.edtcrdInput.text?.toString() ?: ""
@@ -101,6 +103,21 @@ class CloseTillPopUpActivity : BaseActivity() {
                 finish()
             }
         }
+    }
+
+    private fun setupPlusMinusButtons() {
+        val step = 1.0
+
+        fun adjustField(field: com.google.android.material.textfield.TextInputEditText, delta: Double) {
+            val current = field.text?.toString()?.toDoubleOrNull() ?: 0.0
+            val newVal = (current + delta).coerceAtLeast(0.0)
+            field.setText(if (newVal == newVal.toLong().toDouble()) newVal.toLong().toString() else String.format("%.2f", newVal))
+        }
+
+        binding.btnCashMinus.setOnClickListener { adjustField(binding.edtPsdInput, -step) }
+        binding.btnCashPlus.setOnClickListener { adjustField(binding.edtPsdInput, step) }
+        binding.btnCardMinus.setOnClickListener { adjustField(binding.edtcrdInput, -step) }
+        binding.btnCardPlus.setOnClickListener { adjustField(binding.edtcrdInput, step) }
     }
 
     private fun printCloseReceipt(closedTillDetails: ClosedTillDetails) {
