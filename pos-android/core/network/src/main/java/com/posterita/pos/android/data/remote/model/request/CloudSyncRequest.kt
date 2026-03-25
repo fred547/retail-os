@@ -43,6 +43,8 @@ data class CloudSyncRequest(
     @SerializedName("inventory_count_entries") val inventoryCountEntries: List<SyncInventoryCountEntry>? = null,
     // Push: error logs for remote debugging
     @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
+    // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
+    @SerializedName("payload_checksum") val payloadChecksum: String? = null,
 )
 
 data class SyncOrder(

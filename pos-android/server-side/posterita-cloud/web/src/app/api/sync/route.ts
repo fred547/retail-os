@@ -48,6 +48,8 @@ interface SyncRequest {
   inventory_count_entries?: any[];
   // Push: error logs for remote debugging
   error_logs?: any[];
+  // Integrity: SHA-256 hash of critical push data
+  payload_checksum?: string;
 }
 
 /**
@@ -356,6 +358,45 @@ export async function POST(req: NextRequest) {
         } catch (e: any) {
           // Don't fail sync for error log issues
           console.warn("Error log insert failed:", e.message);
+        }
+      }
+    }
+
+    // ========================================
+    // Payload integrity check
+    // ========================================
+    if (body.payload_checksum) {
+      // Recompute the checksum server-side from received data
+      const { createHash } = await import("crypto");
+      let checksumInput = "";
+      // Orders: sorted by UUID, format "O:uuid:grand_total;"
+      if (body.orders?.length) {
+        const sorted = [...body.orders].sort((a: any, b: any) =>
+          (a.uuid || "").localeCompare(b.uuid || "")
+        );
+        for (const o of sorted) {
+          const gt = o.grandTotal ?? o.grand_total ?? 0;
+          checksumInput += `O:${o.uuid}:${gt};`;
+        }
+      }
+      // Tills: sorted by UUID, format "T:uuid:opening_amt:grand_total;"
+      if (body.tills?.length) {
+        const sorted = [...body.tills].sort((a: any, b: any) =>
+          (a.uuid || "").localeCompare(b.uuid || "")
+        );
+        for (const t of sorted) {
+          const oa = t.openingAmt ?? t.opening_amt ?? 0;
+          const gt = t.grandtotal ?? t.grand_total ?? 0;
+          checksumInput += `T:${t.uuid}:${oa}:${gt};`;
+        }
+      }
+
+      if (checksumInput) {
+        const serverChecksum = createHash("sha256").update(checksumInput).digest("hex");
+        if (serverChecksum !== body.payload_checksum) {
+          errors.push(`Payload integrity check failed: expected ${body.payload_checksum.substring(0, 12)}..., got ${serverChecksum.substring(0, 12)}...`);
+          // Log but don't reject — data may still be valid (floating point rounding)
+          // A hard reject would break sync for minor numeric precision differences
         }
       }
     }

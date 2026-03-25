@@ -173,6 +173,21 @@ class CloudSyncService @Inject constructor(
                 id
             }
 
+            // Compute payload checksum for integrity verification
+            val checksumInput = buildString {
+                unsyncedOrders.sortedBy { it.uuid }.forEach { o ->
+                    append("O:${o.uuid}:${o.grandTotal};")
+                }
+                unsyncedTills.sortedBy { it.uuid }.forEach { t ->
+                    append("T:${t.uuid}:${t.openingAmt}:${t.grandtotal};")
+                }
+            }
+            val payloadChecksum = if (checksumInput.isNotEmpty()) {
+                java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(checksumInput.toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+            } else null
+
             val request = CloudSyncRequest(
                 accountId = accountId,
                 terminalId = terminalId,
@@ -182,16 +197,14 @@ class CloudSyncService @Inject constructor(
                 deviceModel = android.os.Build.MODEL,
                 deviceName = android.os.Build.DEVICE,
                 osVersion = "Android ${android.os.Build.VERSION.RELEASE}",
-                // PUSH: transactional data only (device → cloud)
                 orders = if (unsyncedOrders.isNotEmpty()) unsyncedOrders.map { it.toSyncOrder() } else null,
                 orderLines = if (orderLines.isNotEmpty()) orderLines.map { it.toSyncOrderLine() } else null,
                 payments = if (payments.isNotEmpty()) payments.map { it.toSyncPayment() } else null,
                 tills = if (unsyncedTills.isNotEmpty()) unsyncedTills.map { it.toSyncTill() } else null,
                 customers = if (allCustomers.isNotEmpty()) allCustomers.map { it.toSyncCustomer() } else null,
-                // NO master data push — server is authoritative for:
-                // stores, terminals, users, categories, products, taxes, restaurant_tables
                 inventoryCountEntries = if (unsyncedInventoryEntries.isNotEmpty()) unsyncedInventoryEntries.map { it.toSyncInventoryCountEntry() } else null,
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
+                payloadChecksum = payloadChecksum,
             )
 
             Log.d(TAG, "Syncing: ${unsyncedOrders.size} orders, ${orderLines.size} lines, ${unsyncedTills.size} tills")
