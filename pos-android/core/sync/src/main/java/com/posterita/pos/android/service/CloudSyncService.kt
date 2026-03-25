@@ -380,21 +380,38 @@ class CloudSyncService @Inject constructor(
         pushedTills: List<Till>
     ) {
         // Mark pushed orders as synced
+        // If server synced fewer than we pushed, some failed — record error on unsynced ones
+        val serverErrors = response.errors ?: emptyList()
         if (response.ordersSynced > 0) {
             for (order in pushedOrders) {
-                db.orderDao().updateOrder(order.copy(isSync = true))
+                val errorForOrder = serverErrors.find { it.contains(order.uuid ?: "") }
+                if (errorForOrder != null) {
+                    // This specific order failed — record the error but don't mark as synced
+                    Log.w(TAG, "Order ${order.uuid} failed: $errorForOrder")
+                } else {
+                    db.orderDao().updateOrder(order.copy(isSync = true))
+                }
             }
+        } else if (pushedOrders.isNotEmpty() && response.ordersSynced == 0) {
+            // All orders failed — log but don't mark as synced (will retry next cycle)
+            Log.w(TAG, "All ${pushedOrders.size} orders failed to sync")
         }
 
         // Mark pushed tills as synced — only closed tills get marked.
-        // Open tills stay isSync=false so they re-sync each cycle (with updated status)
-        // until they're closed, at which point they get the final sync + isSync=true.
+        // Open tills stay isSync=false so they re-sync each cycle.
         if (response.tillsSynced > 0) {
             for (till in pushedTills) {
-                if (till.dateClosed != null) {
-                    db.tillDao().updateTill(till.copy(isSync = true))
+                val errorForTill = serverErrors.find { it.contains(till.uuid ?: "") }
+                if (errorForTill != null) {
+                    // Record the error on the till for debugging
+                    db.tillDao().updateTill(till.copy(syncErrorMessage = errorForTill))
+                    Log.w(TAG, "Till ${till.uuid} failed: $errorForTill")
+                } else if (till.dateClosed != null) {
+                    db.tillDao().updateTill(till.copy(isSync = true, syncErrorMessage = null))
                 }
             }
+        } else if (pushedTills.isNotEmpty() && response.tillsSynced == 0) {
+            Log.w(TAG, "All ${pushedTills.size} tills failed to sync")
         }
 
         // Pull: insert/update server data into local Room database

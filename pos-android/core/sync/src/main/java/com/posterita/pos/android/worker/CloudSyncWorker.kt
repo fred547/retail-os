@@ -90,6 +90,7 @@ class CloudSyncWorker(
 
             val workRequest = OneTimeWorkRequestBuilder<CloudSyncWorker>()
                 .setConstraints(constraints)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                 .build()
 
             WorkManager.getInstance(context).enqueueUniqueWork(
@@ -239,13 +240,18 @@ class CloudSyncWorker(
             AppDatabase.getInstance(applicationContext, activeAccountId)
 
             if (anyFailed) {
-                if (runAttemptCount < 3) Result.retry() else Result.failure()
+                Log.w(TAG, "Sync had failures (attempt $runAttemptCount/5)")
+                // Backoff: attempt 1=30s, 2=60s, 3=120s, 4=240s, 5=give up
+                if (runAttemptCount < 5) Result.retry() else {
+                    Log.e(TAG, "Sync giving up after $runAttemptCount attempts")
+                    Result.failure()
+                }
             } else {
                 Result.success()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Cloud sync worker failed", e)
-            if (runAttemptCount < 3) Result.retry() else Result.failure()
+            Log.e(TAG, "Cloud sync worker failed (attempt $runAttemptCount/5)", e)
+            if (runAttemptCount < 5) Result.retry() else Result.failure()
         }
     }
 
