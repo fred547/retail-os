@@ -508,6 +508,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `modifier` | modifier_id, account_id, product_id, productcategory_id, name, sellingprice, isactive, ismodifier | |
 | `till` | till_id, account_id, store_id, terminal_id, uuid, documentno, open_by, close_by, opening_amt, closing_amt, cash_amt, card_amt, grand_total, date_opened, date_closed, **is_deleted**, **deleted_at**, is_sync | |
 | `till_adjustment` | till_adjustment_id, till_id, user_id, amount, pay_type, reason, date | |
+| `v_price_review` (view) | product_id, account_id, product_name, sellingprice, image, price_set_by, set_by_name, **price_set_at**, category_name | ~~updated_at~~ (use `price_set_at`) |
 
 ## Current Phase
 

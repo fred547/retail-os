@@ -13,7 +13,7 @@ interface ReviewProduct {
   sellingprice: number;
   image: string | null;
   price_set_by: number;
-  updated_at: string;
+  price_set_at: string;
   set_by_name: string;
   category_name: string;
 }
@@ -26,7 +26,7 @@ export default function PriceReviewPage() {
   const fetchProducts = async () => {
     setLoading(true);
     const { data } = await dataQuery<ReviewProduct>("v_price_review", {
-      order: { column: "updated_at", ascending: false },
+      order: { column: "price_set_at", ascending: false },
     });
     setProducts(data ?? []);
     setLoading(false);
@@ -173,7 +173,7 @@ export default function PriceReviewPage() {
                   </td>
                   <td className="text-gray-500">{p.set_by_name ?? "Staff"}</td>
                   <td className="text-gray-500 text-sm">
-                    {new Date(p.updated_at).toLocaleDateString()}
+                    {new Date(p.price_set_at).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
