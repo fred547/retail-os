@@ -48,16 +48,40 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | Directory | Purpose |
 |-----------|---------|
 | `pos-android/` | Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
+| `pos-android/core/database/` | **`:core:database`** — Room DB: 31 entities, 31 DAOs, AppDatabase, converters, 27 migrations |
+| `pos-android/core/common/` | **`:core:common`** — SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants |
+| `pos-android/core/network/` | **`:core:network`** — Retrofit APIs, request/response models, NetworkInterceptor |
+| `pos-android/core/sync/` | **`:core:sync`** — CloudSyncService, CloudSyncWorker, SyncStatusManager |
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00028) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00029) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
 
+## Android Module Architecture
+
+Multi-module Gradle monolith — single APK, modular codebase. No feature module depends on another feature module.
+
+```
+:app                → Application shell, UI, Activities, Hilt DI, remaining services
+:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, 27 migrations
+:core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
+:core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
+:core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
+```
+
+**Dependency graph:** `:app → :core:sync → :core:network, :core:database, :core:common` (all core modules are leaves except `:core:sync`).
+
+**Key rules:**
+- `DATABASE_NAME` lives in `AppDatabase.companion` (not Constants.kt)
+- `DatabaseModule` (Hilt DI for DAOs) stays in `:app` (depends on `SharedPreferencesManager`)
+- Package names unchanged from monolith — all existing imports resolve without modification
+- Cross-module smart casts require local val (e.g., `val dateHold = holdOrder.dateHold`)
+
 ## Stack & URLs
 
-- **Android:** Kotlin, Room (v25), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
+- **Android:** Kotlin, Room (v27, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
 - **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
 - **DB:** Supabase Postgres — `account_id` is TEXT. **RLS is enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
@@ -166,7 +190,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 9. **Legacy workers disabled** — only `CloudSyncWorker` handles sync
 10. **Capability-driven UI** — role-based visibility, not hardcoded screen lists
 11. **Cloud-authoritative IDs** — server assigns all PKs (store_id, terminal_id, user_id). Android uses server-assigned IDs, never hardcodes 1.
-12. **Soft delete** — key tables (product, store, terminal, pos_user, customer, productcategory, orders) use `is_deleted` + `deleted_at` instead of hard DELETE. Queries filter `is_deleted = false`.
+12. **Soft delete** — key tables (product, store, terminal, pos_user, customer, productcategory, orders, till) use `is_deleted` + `deleted_at` instead of hard DELETE. Queries filter `is_deleted = false`.
 13. **No standalone accounts** — all accounts created via `/api/auth/signup` or `/api/account/create-demo`. `AiImportService` throws if no `targetAccountId`.
 14. **Demo brands are server-first** — create on Supabase via API, Android creates only an account shell in Room, then pulls via CloudSync. **Never create demo products locally.**
 15. **Passwords never stored locally** — only Supabase Auth holds passwords. Local Room DB stores PINs only.
@@ -322,6 +346,8 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 
 **Brands stats:** ManageBrandsActivity opens each brand's DB via dedicated `Room.databaseBuilder` (not the singleton) to read product/category/store counts and DB file size. Prevents cross-contamination.
 
+**Till sync (push-only, closed only):** Tills sync to cloud only when closed — no two-way sync. Orders carry `till_uuid` (the till's UUID) at creation time. Server matches orders to tills by UUID (not integer `till_id`). If till hasn't synced yet, `till_uuid` is preserved and `till_id` back-filled automatically via `reconcile_till_orders()` when the till eventually arrives. This prevents orders from losing their till link on sync failures.
+
 **Connectivity indicator:** Green/red dot on every screen via `setupConnectivityDot()` from `ConnectivityDotHelper.kt`. Tap opens sync screen. Reactive via `ConnectivityMonitor`. Uses `NET_CAPABILITY_INTERNET` check. `onLost` re-checks active network (prevents false offline on multi-network devices). Do NOT use `NET_CAPABILITY_VALIDATED` — not set on all devices/emulators.
 
 ## Kitchen & Restaurant
@@ -468,7 +494,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `productcategory` | name, position, isactive, display | ~~description~~ |
 | `pos_user` | user_id, username, firstname, pin, role, email | ~~store_id~~ |
 | `owner` | **id**, auth_uid, email, phone, name | ~~owner_id~~ (PK is `id`) |
-| `orders` | order_id, **document_no**, grand_total, uuid, account_id, store_id, terminal_id, date_ordered | ~~ordernumber, documentno~~ (use `document_no`, `grand_total`) |
+| `orders` | order_id, **document_no**, grand_total, uuid, **till_uuid**, account_id, store_id, terminal_id, date_ordered | ~~ordernumber, documentno~~ (use `document_no`, `grand_total`) |
 | `orderline` | orderline_id, order_id, product_id, productname, **qtyentered**, **priceentered**, lineamt, **linenetamt**, costamt | ~~qty, priceactual, tax_amount, discount~~ |
 | `error_logs` | message, **stack_trace**, **device_info**, **created_at**, status | ~~stacktrace, device_id, timestamp, screen, user_name~~ |
 | `restaurant_table` | table_id, store_id, terminal_id, table_name, seats, is_occupied, current_order_id, account_id, section_id | |
@@ -480,6 +506,8 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `sync_request_log` | id, account_id, terminal_id, store_id, device_id, device_model, app_version, request_at, duration_ms, status, orders_pushed, products_pulled, sync_errors (JSONB) | |
 | `ci_report` | id, git_sha, branch, commit_message, android_passed/failed, web_passed/failed, ts_errors, status, created_at | |
 | `modifier` | modifier_id, account_id, product_id, productcategory_id, name, sellingprice, isactive, ismodifier | |
+| `till` | till_id, account_id, store_id, terminal_id, uuid, documentno, open_by, close_by, opening_amt, closing_amt, cash_amt, card_amt, grand_total, date_opened, date_closed, **is_deleted**, **deleted_at**, is_sync | |
+| `till_adjustment` | till_adjustment_id, till_id, user_id, amount, pay_type, reason, date | |
 
 ## Current Phase
 
