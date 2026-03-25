@@ -218,6 +218,33 @@
                 style="@style/TextAppearance.Posterita.Body" />
         </LinearLayout>
 
+        <!-- Customers -->
+        <LinearLayout
+            android:id="@+id/nav_customers"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/chip_unselected_bg"
+            android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_selectuser_blue"
+                android:scaleType="fitCenter"
+                android:contentDescription="Customers"
+                app:tint="@color/posterita_ink" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Customers"
+                style="@style/TextAppearance.Posterita.Body" />
+        </LinearLayout>
+
         <!-- Hidden IDs for binding compat -->
         <View android:id="@+id/nav_pos" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/nav_logout" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />

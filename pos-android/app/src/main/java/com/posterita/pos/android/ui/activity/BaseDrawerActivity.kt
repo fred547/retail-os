@@ -312,6 +312,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 startActivity(Intent(this, TillHistoryActivity::class.java))
             }
         }
+        navClick(R.id.nav_customers) {
+            startActivity(Intent(this, SearchCustomerActivity::class.java))
+        }
         navClick(R.id.nav_admin_settings) {
             if (this !is AdminSettingsActivity) {
                 startActivity(Intent(this, AdminSettingsActivity::class.java))
