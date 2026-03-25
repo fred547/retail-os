@@ -11,7 +11,6 @@ import com.posterita.pos.android.data.local.converter.JSONConverter
 import com.posterita.pos.android.data.local.converter.TimestampConverter
 import com.posterita.pos.android.data.local.dao.*
 import com.posterita.pos.android.data.local.entity.*
-import com.posterita.pos.android.util.Constants
 
 @Database(
     entities = [
@@ -69,6 +68,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryStationMappingDao(): CategoryStationMappingDao
 
     companion object {
+        const val DATABASE_NAME = "POSTERITA_LITE_DB"
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
         @Volatile
@@ -84,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val check = INSTANCE
                 if (check != null && INSTANCE_ACCOUNT_ID == accountId) return check
 
-                val dbName = "${Constants.DATABASE_NAME}_$accountId"
+                val dbName = "${DATABASE_NAME}_$accountId"
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
@@ -127,7 +128,7 @@ abstract class AppDatabase : RoomDatabase() {
          * Used by CloudSyncWorker for multi-brand sync without disturbing the UI singleton.
          */
         fun buildDedicated(context: Context, accountId: String): AppDatabase {
-            val dbName = "${Constants.DATABASE_NAME}_$accountId"
+            val dbName = "${DATABASE_NAME}_$accountId"
             return Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,

@@ -13,7 +13,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +27,6 @@ import com.posterita.pos.android.util.LocalAccountRegistry
 import com.posterita.pos.android.worker.CloudSyncWorker
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
-import com.posterita.pos.android.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +34,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ManageBrandsActivity : AppCompatActivity() {
+class ManageBrandsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityManageListBinding
     @Inject lateinit var db: AppDatabase
@@ -98,7 +96,7 @@ class ManageBrandsActivity : AppCompatActivity() {
             withContext(Dispatchers.IO) {
                 for (entry in registryAccounts) {
                     try {
-                        val dbName = "${Constants.DATABASE_NAME}_${entry.id}"
+                        val dbName = "${AppDatabase.DATABASE_NAME}_${entry.id}"
                         val dbFile = this@ManageBrandsActivity.getDatabasePath(dbName)
 
                         if (!dbFile.exists()) {
@@ -467,7 +465,7 @@ class ManageBrandsActivity : AppCompatActivity() {
 
                         // 2. Delete local Room database
                         try {
-                            val dbName = "${Constants.DATABASE_NAME}_${account.account_id}"
+                            val dbName = "${AppDatabase.DATABASE_NAME}_${account.account_id}"
                             this@ManageBrandsActivity.deleteDatabase(dbName)
                             val dbPath = this@ManageBrandsActivity.getDatabasePath(dbName).absolutePath
                             java.io.File("${dbPath}-wal").delete()

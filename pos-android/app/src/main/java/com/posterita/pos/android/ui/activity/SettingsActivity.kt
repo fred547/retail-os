@@ -41,7 +41,9 @@ class SettingsActivity : BaseDrawerActivity() {
         binding.productsOption.setOnClickListener { openWebConsole("/products", "Products") }
         binding.categoriesOption.setOnClickListener { openWebConsole("/categories", "Categories") }
         binding.usersOption.setOnClickListener { openWebConsole("/users", "Users") }
-        binding.taxesOption.setOnClickListener { openWebConsole("/settings", "Taxes") }
+        binding.taxesOption.setOnClickListener {
+            startActivity(Intent(this, ManageTaxActivity::class.java))
+        }
 
         // Restaurant tables — only visible in restaurant mode
         if (prefsManager.isRestaurant) {
@@ -178,7 +180,7 @@ class SettingsActivity : BaseDrawerActivity() {
         val allAccounts = accountRegistry.getAllAccounts()
         for (account in allAccounts) {
             try {
-                val dbName = "${com.posterita.pos.android.util.Constants.DATABASE_NAME}_${account.id}"
+                val dbName = "${AppDatabase.DATABASE_NAME}_${account.id}"
                 deleteDatabase(dbName)
                 // Also delete WAL/SHM files
                 val dbPath = getDatabasePath(dbName).absolutePath
@@ -189,7 +191,7 @@ class SettingsActivity : BaseDrawerActivity() {
 
         // Also delete the current account's DB
         try {
-            val currentDbName = "${com.posterita.pos.android.util.Constants.DATABASE_NAME}_${prefsManager.accountId}"
+            val currentDbName = "${AppDatabase.DATABASE_NAME}_${prefsManager.accountId}"
             deleteDatabase(currentDbName)
             val dbPath = getDatabasePath(currentDbName).absolutePath
             java.io.File("${dbPath}-wal").delete()

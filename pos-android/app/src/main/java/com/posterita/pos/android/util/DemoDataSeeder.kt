@@ -292,5 +292,5 @@ class DemoDataSeeder @Inject constructor(
         accountRegistry.removeAccount(DEMO_ACCOUNT_ID)
     }
 
-    private fun demoDbName(): String = "${Constants.DATABASE_NAME}_$DEMO_ACCOUNT_ID"
+    private fun demoDbName(): String = "${AppDatabase.DATABASE_NAME}_$DEMO_ACCOUNT_ID"
 }

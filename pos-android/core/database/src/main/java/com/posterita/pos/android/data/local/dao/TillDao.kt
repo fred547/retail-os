@@ -23,9 +23,17 @@ interface TillDao {
     @Query("SELECT * FROM till")
     suspend fun getAllTills(): List<Till>
 
+    @Query("SELECT * FROM till WHERE terminal_id = :terminalId AND account_id = :accountId AND dateClosed IS NULL")
+    suspend fun getOpenTillByTerminalIdAndAccount(terminalId: Int, accountId: String): Till?
+
+    // Legacy fallback — prefer getOpenTillByTerminalIdAndAccount
     @Query("SELECT * FROM till WHERE terminal_id = :terminalId AND dateClosed IS NULL")
     suspend fun getOpenTillByTerminalId(terminalId: Int): Till?
 
+    @Query("SELECT * FROM till WHERE terminal_id = :terminalId AND account_id = :accountId AND dateClosed IS NOT NULL ORDER BY dateClosed DESC")
+    suspend fun getClosedTillByTerminalIdAndAccount(terminalId: Int, accountId: String): List<Till>
+
+    // Legacy fallback
     @Query("SELECT * FROM till WHERE terminal_id = :terminalId AND dateClosed IS NOT NULL")
     suspend fun getClosedTillByTerminalId(terminalId: Int): List<Till>
 

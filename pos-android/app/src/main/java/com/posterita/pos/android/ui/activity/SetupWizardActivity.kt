@@ -10,7 +10,6 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -49,7 +48,7 @@ import javax.inject.Inject
  * Requires internet. No standalone/offline fallback.
  */
 @AndroidEntryPoint
-class SetupWizardActivity : AppCompatActivity() {
+class SetupWizardActivity : BaseActivity() {
 
     companion object {
         private const val REQUEST_CODE_ENROLL = 9001
@@ -260,7 +259,7 @@ class SetupWizardActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val restoredEntry = withContext(Dispatchers.IO) {
                     for (entry in accountRegistry.getAllAccounts()) {
-                        val dbName = "${com.posterita.pos.android.util.Constants.DATABASE_NAME}_${entry.id}"
+                        val dbName = "${AppDatabase.DATABASE_NAME}_${entry.id}"
                         val dbFile = this@SetupWizardActivity.getDatabasePath(dbName)
                         if (!dbFile.exists()) continue
                         try {

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.databinding.ActivitySplashBinding
@@ -24,7 +23,7 @@ import javax.inject.Inject
 
 @SuppressLint("CustomSplashScreen")
 @AndroidEntryPoint
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySplashBinding
 
@@ -126,7 +125,7 @@ class SplashActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val restored = withContext(Dispatchers.IO) {
                         for (entry in accountRegistry.getAllAccounts()) {
-                            val dbName = "${com.posterita.pos.android.util.Constants.DATABASE_NAME}_${entry.id}"
+                            val dbName = "${AppDatabase.DATABASE_NAME}_${entry.id}"
                             val dbFile = getDatabasePath(dbName)
                             if (!dbFile.exists()) continue
                             try {

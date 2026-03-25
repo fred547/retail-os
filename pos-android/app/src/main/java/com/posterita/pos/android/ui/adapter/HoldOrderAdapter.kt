@@ -48,8 +48,9 @@ class HoldOrderAdapter(
             binding.textCustomerName.text = "Walk-in"
 
             // Hold ID + time ago
-            val timeAgo = if (holdOrder.dateHold != null) {
-                formatTimeAgo(holdOrder.dateHold.time)
+            val dateHold = holdOrder.dateHold
+            val timeAgo = if (dateHold != null) {
+                formatTimeAgo(dateHold.time)
             } else {
                 ""
             }

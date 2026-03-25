@@ -4,6 +4,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'com.google.dagger.hilt.android'
     id "io.sentry.android.gradle" version "4.14.1"
+    id 'jacoco'
 }
 
 sentry {
@@ -70,6 +71,12 @@ android {
     }
     testOptions {
         unitTests.returnDefaultValues = true
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
+        }
     }
 }
 
@@ -96,7 +103,10 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
 
-    // Room
+    // Core modules
+    implementation project(':core:database')
+
+    // Room (still needed in app for Hilt-provided DAOs and migrations testing)
     implementation 'androidx.room:room-runtime:2.6.1'
     implementation 'androidx.room:room-ktx:2.6.1'
     ksp 'androidx.room:room-compiler:2.6.1'
@@ -169,4 +179,39 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
     androidTestImplementation 'androidx.test:core:1.6.1'
+}
+
+// JaCoCo coverage report for unit tests
+tasks.register('testDebugUnitTestCoverage', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    group = 'verification'
+    description = 'Generate JaCoCo coverage report for debug unit tests'
+
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/html')
+    }
+
+    def fileFilter = [
+        '**/R.class', '**/R$*.class', '**/BuildConfig.*',
+        '**/Manifest*.*', '**/*Test*.*', '**/android/**/*.*',
+        '**/*_Hilt*.*', '**/Hilt_*.*', '**/*_Factory.*',
+        '**/*_MembersInjector.*', '**/*Module_*.*',
+        '**/dagger/**', '**/hilt/**',
+        '**/*Binding.*', '**/*Binding$*.*',
+        '**/*Dao_Impl*.*', '**/*Database_Impl*.*',
+    ]
+
+    def debugTree = fileTree(
+        dir: layout.buildDirectory.dir('tmp/kotlin-classes/debug'),
+        excludes: fileFilter
+    )
+
+    classDirectories.from(debugTree)
+    sourceDirectories.from(files('src/main/java', 'src/main/kotlin'))
+    executionData.from(fileTree(
+        dir: layout.buildDirectory,
+        includes: ['jacoco/testDebugUnitTest.exec']
+    ))
 }
