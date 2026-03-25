@@ -43,6 +43,8 @@ data class CloudSyncRequest(
     @SerializedName("inventory_count_entries") val inventoryCountEntries: List<SyncInventoryCountEntry>? = null,
     // Push: error logs for remote debugging
     @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
+    // Push: serial item status updates (sold/delivered/returned)
+    @SerializedName("serial_items") val serialItems: List<SyncSerialItem>? = null,
     // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
     @SerializedName("payload_checksum") val payloadChecksum: String? = null,
 )
@@ -263,4 +265,19 @@ data class SyncErrorLog(
     @SerializedName("device_id") val deviceId: String? = null,
     @SerializedName("app_version") val appVersion: String? = null,
     @SerializedName("os_version") val osVersion: String? = null,
+)
+
+data class SyncSerialItem(
+    @SerializedName("serial_item_id") val serialItemId: Int,
+    @SerializedName("serial_number") val serialNumber: String,
+    @SerializedName("product_id") val productId: Int = 0,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("serial_type") val serialType: String = "serial",
+    @SerializedName("status") val status: String = "in_stock",
+    @SerializedName("order_id") val orderId: Int? = null,
+    @SerializedName("orderline_id") val orderlineId: Int? = null,
+    @SerializedName("customer_id") val customerId: Int? = null,
+    @SerializedName("sold_date") val soldDate: String? = null,
+    @SerializedName("selling_price") val sellingPrice: Double? = null,
+    @SerializedName("delivered_date") val deliveredDate: String? = null,
 )

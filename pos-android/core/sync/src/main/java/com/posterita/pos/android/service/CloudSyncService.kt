@@ -163,6 +163,9 @@ class CloudSyncService @Inject constructor(
             // Collect unsynced inventory count entries
             val unsyncedInventoryEntries = db.inventoryCountEntryDao().getUnsyncedEntries()
 
+            // Collect unsynced serial items (sold/delivered/returned status changes)
+            val unsyncedSerialItems = db.serialItemDao().getUnsyncedItems()
+
             // Collect unsynced error logs
             val unsyncedErrorLogs = db.errorLogDao().getUnsyncedLogs()
 
@@ -204,6 +207,7 @@ class CloudSyncService @Inject constructor(
                 customers = if (allCustomers.isNotEmpty()) allCustomers.map { it.toSyncCustomer() } else null,
                 inventoryCountEntries = if (unsyncedInventoryEntries.isNotEmpty()) unsyncedInventoryEntries.map { it.toSyncInventoryCountEntry() } else null,
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
+                serialItems = if (unsyncedSerialItems.isNotEmpty()) unsyncedSerialItems.map { it.toSyncSerialItem() } else null,
                 payloadChecksum = payloadChecksum,
             )
 
@@ -636,6 +640,18 @@ class CloudSyncService @Inject constructor(
                     if (mappings.isNotEmpty()) {
                         db.categoryStationMappingDao().insertAll(mappings)
                         Log.d(TAG, "Pulled ${mappings.size} category station mappings")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Serial items (VIN/IMEI/serial tracked inventory)
+            response.serialItems?.let { list ->
+                if (list.isNotEmpty()) {
+                    val items = list.mapNotNull { mapToSerialItem(it) }
+                    if (items.isNotEmpty()) {
+                        db.serialItemDao().insertAll(items)
+                        Log.d(TAG, "Pulled ${items.size} serial items")
                     }
                     processedItems += list.size
                 }
@@ -1184,6 +1200,40 @@ class CloudSyncService @Inject constructor(
         }
     }
 
+    private fun mapToSerialItem(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.SerialItem? {
+        return try {
+            com.posterita.pos.android.data.local.entity.SerialItem(
+                serialItemId = (map["serial_item_id"] as? Number)?.toInt() ?: return null,
+                accountId = map["account_id"] as? String ?: return null,
+                productId = (map["product_id"] as? Number)?.toInt() ?: 0,
+                storeId = (map["store_id"] as? Number)?.toInt() ?: 0,
+                serialNumber = map["serial_number"] as? String ?: return null,
+                serialType = map["serial_type"] as? String ?: "serial",
+                status = map["status"] as? String ?: "in_stock",
+                supplierName = map["supplier_name"] as? String,
+                purchaseDate = map["purchase_date"] as? String,
+                costPrice = (map["cost_price"] as? Number)?.toDouble() ?: 0.0,
+                orderId = (map["order_id"] as? Number)?.toInt(),
+                orderlineId = (map["orderline_id"] as? Number)?.toInt(),
+                customerId = (map["customer_id"] as? Number)?.toInt(),
+                soldDate = map["sold_date"] as? String,
+                sellingPrice = (map["selling_price"] as? Number)?.toDouble(),
+                deliveredDate = map["delivered_date"] as? String,
+                warrantyMonths = (map["warranty_months"] as? Number)?.toInt() ?: 0,
+                warrantyExpiry = map["warranty_expiry"] as? String,
+                color = map["color"] as? String,
+                year = (map["year"] as? Number)?.toInt(),
+                engineNumber = map["engine_number"] as? String,
+                notes = map["notes"] as? String,
+                isDeleted = map["is_deleted"] == true,
+                isSync = true, // pulled from server = already synced
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map serial item: ${e.message}")
+            null
+        }
+    }
+
     private fun mapToStore(map: Map<String, Any?>): Store? {
         return try {
             Store(
@@ -1282,5 +1332,20 @@ class CloudSyncService @Inject constructor(
         deviceId = deviceId,
         appVersion = appVersion,
         osVersion = osVersion
+    )
+
+    private fun com.posterita.pos.android.data.local.entity.SerialItem.toSyncSerialItem(): SyncSerialItem = SyncSerialItem(
+        serialItemId = serialItemId,
+        serialNumber = serialNumber,
+        productId = productId,
+        storeId = storeId,
+        serialType = serialType,
+        status = status,
+        orderId = orderId,
+        orderlineId = orderlineId,
+        customerId = customerId,
+        soldDate = soldDate,
+        sellingPrice = sellingPrice,
+        deliveredDate = deliveredDate,
     )
 }

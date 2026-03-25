@@ -29,6 +29,7 @@ data class CloudSyncResponse(
     @SerializedName("table_sections") val tableSections: List<Map<String, Any?>>? = null,
     @SerializedName("preparation_stations") val preparationStations: List<Map<String, Any?>>? = null,
     @SerializedName("category_station_mappings") val categoryStationMappings: List<Map<String, Any?>>? = null,
+    @SerializedName("serial_items") val serialItems: List<Map<String, Any?>>? = null,
     @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
 
     // Stats

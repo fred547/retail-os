@@ -48,6 +48,8 @@ interface SyncRequest {
   inventory_count_entries?: any[];
   // Push: error logs for remote debugging
   error_logs?: any[];
+  // Push: serial item status updates (sold/delivered/returned)
+  serial_items?: any[];
   // Integrity: SHA-256 hash of critical push data
   payload_checksum?: string;
 }
@@ -946,6 +948,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sync serial item status updates (sold/delivered/returned from device)
+    let serialItemsSynced = 0;
+    if (body.serial_items?.length) {
+      for (const item of body.serial_items) {
+        try {
+          const updates: Record<string, any> = {
+            status: item.status,
+            updated_at: new Date().toISOString(),
+          };
+          if (item.order_id) updates.order_id = item.order_id;
+          if (item.orderline_id) updates.orderline_id = item.orderline_id;
+          if (item.customer_id) updates.customer_id = item.customer_id;
+          if (item.sold_date) updates.sold_date = item.sold_date;
+          if (item.selling_price != null) updates.selling_price = item.selling_price;
+          if (item.delivered_date) updates.delivered_date = item.delivered_date;
+
+          const { error } = await getDb()
+            .from("serial_item")
+            .update(updates)
+            .eq("serial_item_id", item.serial_item_id ?? item.serialItemId)
+            .eq("account_id", body.account_id);
+
+          if (error) {
+            errors.push(`SerialItem ${item.serial_number}: ${error.message}`);
+          } else {
+            serialItemsSynced++;
+          }
+        } catch (e: any) {
+          errors.push(`SerialItem: ${e.message}`);
+        }
+      }
+    }
+
     // ========================================
     // PULL: Cloud → Terminal
     // ========================================
@@ -985,6 +1020,7 @@ export async function POST(req: NextRequest) {
       { data: terminals },
       { data: thisAccount },
       { data: inventorySessions },
+      { data: serialItems },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1000,6 +1036,7 @@ export async function POST(req: NextRequest) {
       db.from("terminal").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
       db.from("account").select("owner_id").eq("account_id", body.account_id).single(),
       db.from("inventory_count_session").select("*").eq("account_id", body.account_id).in("status", ["created", "active"]).gte("updated_at", lastSync),
+      db.from("serial_item").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync),
     ]);
 
     // Sibling brands (depends on owner_id from above)
@@ -1081,6 +1118,7 @@ export async function POST(req: NextRequest) {
       stores: stores ?? [],
       terminals: terminals ?? [],
       inventory_sessions: inventorySessions ?? [],
+      serial_items: serialItems ?? [],
       sibling_brands: siblingBrands,
       // Stats
       error_logs_synced: errorLogsSynced,
@@ -1096,6 +1134,7 @@ export async function POST(req: NextRequest) {
       taxes_synced: taxesSynced,
       tables_synced: tablesSynced,
       inventory_entries_synced: inventoryEntriesSynced,
+      serial_items_synced: serialItemsSynced,
       conflicts_detected: conflictsDetected,
       errors,
     });
