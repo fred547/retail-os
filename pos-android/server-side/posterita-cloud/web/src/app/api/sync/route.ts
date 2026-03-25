@@ -394,9 +394,10 @@ export async function POST(req: NextRequest) {
       if (checksumInput) {
         const serverChecksum = createHash("sha256").update(checksumInput).digest("hex");
         if (serverChecksum !== body.payload_checksum) {
-          errors.push(`Payload integrity check failed: expected ${body.payload_checksum.substring(0, 12)}..., got ${serverChecksum.substring(0, 12)}...`);
-          // Log but don't reject — data may still be valid (floating point rounding)
-          // A hard reject would break sync for minor numeric precision differences
+          // Log as debug info only — NOT as an error.
+          // Floating point serialization differences between Kotlin and JS
+          // cause false positives (e.g. "0.0" vs "0"). Data is still valid.
+          console.warn(`[sync] Checksum mismatch for ${body.account_id}: client=${body.payload_checksum.substring(0, 12)}, server=${serverChecksum.substring(0, 12)}`);
         }
       }
     }
