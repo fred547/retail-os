@@ -423,7 +423,7 @@ describe('Sync Hardening #6: Payload Checksum', () => {
     expect(checksumErrors.length).toBe(0);
   });
 
-  it('reports error when checksum mismatches (soft enforcement)', async () => {
+  it('succeeds even when checksum mismatches (warning-only)', async () => {
     seedEmptyPullTables();
 
     const { POST } = await importSyncRoute();
@@ -437,11 +437,11 @@ describe('Sync Hardening #6: Payload Checksum', () => {
     }));
     const json = await res.json();
 
-    // Sync should still succeed (soft enforcement)
+    // Sync succeeds — checksum mismatch is warning-only (console.warn, not error)
     expect(res.status).toBe(200);
-    // But errors should contain integrity warning
+    // No checksum errors in response (downgraded from error to console.warn)
     const checksumErrors = (json.errors || []).filter((e: string) => e.includes('integrity'));
-    expect(checksumErrors.length).toBe(1);
+    expect(checksumErrors.length).toBe(0);
   });
 
   it('skips checksum validation when no checksum provided', async () => {

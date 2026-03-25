@@ -133,7 +133,7 @@ object SyncStatusManager {
     }
 
     fun idle(lastSyncTime: Long = _status.value.lastSyncTime) {
-        _status.value = _status.value.copy(
+        _status.value = SyncStatus(
             state = SyncState.IDLE,
             lastSyncTime = lastSyncTime,
         )
