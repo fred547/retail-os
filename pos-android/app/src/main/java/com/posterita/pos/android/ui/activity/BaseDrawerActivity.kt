@@ -444,9 +444,23 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 when (status.state) {
                     SyncStatusManager.SyncState.IDLE -> {
                         syncSpinner?.visibility = View.GONE
-                        syncProgressContainer?.visibility = View.GONE
                         syncLabel?.text = "Cloud Sync"
                         syncLabel?.setTextColor(resources.getColor(R.color.black, theme))
+
+                        // Show pending items if any
+                        val hasPending = status.pendingOrders > 0 || status.pendingTills > 0
+                        if (hasPending) {
+                            syncProgressContainer?.visibility = View.VISIBLE
+                            val parts = mutableListOf<String>()
+                            if (status.pendingOrders > 0) parts.add("${status.pendingOrders} orders")
+                            if (status.pendingTills > 0) parts.add("${status.pendingTills} tills")
+                            syncProgressText?.text = "Pending: ${parts.joinToString(", ")}"
+                            syncProgressText?.setTextColor(0xFFF57F17.toInt()) // amber
+                            syncProgressBar?.visibility = View.GONE
+                        } else {
+                            syncProgressContainer?.visibility = View.GONE
+                        }
+
                         if (status.lastSyncTime > 0) {
                             syncStatus.text = formatLastSyncTime(status.lastSyncTime)
                             syncStatus.setTextColor(0xFF999999.toInt())
@@ -460,7 +474,11 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         syncSpinner?.visibility = View.GONE
                         syncProgressContainer?.visibility = View.VISIBLE
                         syncLabel?.text = "Cloud Sync"
-                        syncStatus.text = "Sync failed \u2014 tap to retry"
+                        val failMsg = if (status.failureCount > 1)
+                            "Sync failed (${status.failureCount}x) \u2014 tap to retry"
+                        else
+                            "Sync failed \u2014 tap to retry"
+                        syncStatus.text = failMsg
                         syncStatus.setTextColor(0xFFE53935.toInt())
                         syncProgressText?.text = status.errorMessage ?: "Unknown error"
                         syncProgressText?.setTextColor(0xFFE53935.toInt())
@@ -473,7 +491,13 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         syncLabel?.setTextColor(resources.getColor(R.color.black, theme))
 
                         val summary = status.summary
-                        if (summary != null && (summary.totalPushed > 0 || summary.totalPulled > 0)) {
+                        if (summary != null && summary.errors.isNotEmpty()) {
+                            // Show errors prominently
+                            syncProgressContainer?.visibility = View.VISIBLE
+                            syncProgressText?.text = "${summary.errors.size} error(s): ${summary.errors.first()}"
+                            syncProgressText?.setTextColor(0xFFE65100.toInt()) // orange
+                            syncProgressBar?.visibility = View.GONE
+                        } else if (summary != null && (summary.totalPushed > 0 || summary.totalPulled > 0)) {
                             syncProgressContainer?.visibility = View.VISIBLE
                             syncProgressText?.text = summary.toDisplayString()
                             syncProgressText?.setTextColor(0xFF2E7D32.toInt())

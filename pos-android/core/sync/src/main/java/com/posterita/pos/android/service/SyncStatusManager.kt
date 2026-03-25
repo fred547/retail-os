@@ -42,6 +42,11 @@ object SyncStatusManager {
         val errorMessage: String? = null,
         /** Timestamp of last successful sync (millis) */
         val lastSyncTime: Long = 0L,
+        /** Count of consecutive failures (resets on success) */
+        val failureCount: Int = 0,
+        /** Pending items that haven't synced yet */
+        val pendingOrders: Int = 0,
+        val pendingTills: Int = 0,
     )
 
     data class SyncSummary(
@@ -110,24 +115,34 @@ object SyncStatusManager {
     fun complete(summary: SyncSummary, lastSyncTime: Long) {
         _status.value = SyncStatus(
             state = SyncState.COMPLETE,
-            message = "Sync complete",
+            message = if (summary.errors.isNotEmpty()) "Sync completed with ${summary.errors.size} error(s)" else "Sync complete",
             summary = summary,
             lastSyncTime = lastSyncTime,
+            failureCount = 0, // reset on success
         )
     }
 
     fun error(message: String) {
-        _status.value = _status.value.copy(
+        val current = _status.value
+        _status.value = current.copy(
             state = SyncState.ERROR,
             message = "Sync failed",
             errorMessage = message,
+            failureCount = current.failureCount + 1,
         )
     }
 
     fun idle(lastSyncTime: Long = _status.value.lastSyncTime) {
-        _status.value = SyncStatus(
+        _status.value = _status.value.copy(
             state = SyncState.IDLE,
             lastSyncTime = lastSyncTime,
+        )
+    }
+
+    fun updatePendingCounts(orders: Int, tills: Int) {
+        _status.value = _status.value.copy(
+            pendingOrders = orders,
+            pendingTills = tills,
         )
     }
 

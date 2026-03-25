@@ -98,6 +98,9 @@ class CloudSyncService @Inject constructor(
             // been opened before terminal was synced or with a different terminal context
             val unsyncedTills = db.tillDao().getAllUnsyncedTills()
 
+            // Report pending counts to UI
+            SyncStatusManager.updatePendingCounts(unsyncedOrders.size, unsyncedTills.size)
+
             // Collect order lines and payments for unsynced orders
             val orderLines = mutableListOf<OrderLine>()
             val payments = mutableListOf<Payment>()
@@ -266,11 +269,43 @@ class CloudSyncService @Inject constructor(
             Log.d(TAG, "Sync complete: $stats")
             if (stats.errors.isNotEmpty()) {
                 Log.w(TAG, "Sync errors: ${stats.errors.joinToString("; ")}")
+                // Persist sync errors to error_logs table for visibility
+                try {
+                    val errorLog = com.posterita.pos.android.data.local.entity.ErrorLog(
+                        accountId = accountId,
+                        severity = "WARNING",
+                        tag = "CloudSync",
+                        message = "Sync completed with ${stats.errors.size} error(s): ${stats.errors.take(3).joinToString("; ")}",
+                        stacktrace = stats.errors.joinToString("\n"),
+                        screen = "CloudSyncService",
+                        terminalId = terminalId,
+                        storeId = storeId
+                    )
+                    db.errorLogDao().insert(errorLog)
+                } catch (_: Exception) {}
             }
+
+            // Update pending counts after sync
+            val remainingOrders = db.orderDao().getUnSyncedOrders().size
+            val remainingTills = db.tillDao().getAllUnsyncedTills().size
+            SyncStatusManager.updatePendingCounts(remainingOrders, remainingTills)
+
             Result.success(stats)
         } catch (e: Exception) {
             Log.e(TAG, "Cloud sync failed", e)
             SyncStatusManager.error(e.message ?: "Unknown error")
+            // Log fatal sync errors to DB
+            try {
+                val errorLog = com.posterita.pos.android.data.local.entity.ErrorLog(
+                    accountId = prefsManager.accountId,
+                    severity = "ERROR",
+                    tag = "CloudSync",
+                    message = "Sync failed: ${e.message}",
+                    stacktrace = e.stackTraceToString().take(2000),
+                    screen = "CloudSyncService"
+                )
+                db.errorLogDao().insert(errorLog)
+            } catch (_: Exception) {}
             Result.failure(e)
         }
     }
