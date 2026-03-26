@@ -9,7 +9,7 @@ const ALLOWED_TABLES = new Set([
   "terminal", "tax", "preference", "pos_user",
   "intake_batch", "intake_item", "restaurant_table",
   "table_section", "preparation_station", "category_station_mapping",
-  "modifier",
+  "modifier", "account_tax_config",
 ]);
 
 export async function POST(req: NextRequest) {

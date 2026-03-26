@@ -217,8 +217,10 @@ describe('MRA Invoice Building', () => {
   });
 
   it('maps payment type correctly', () => {
-    expect('CASH' === 'CARD' ? 'CARD' : 'CASH').toBe('CASH');
-    expect('CARD' === 'CARD' ? 'CARD' : 'CASH').toBe('CARD');
+    const p1: string = 'CASH';
+    const p2: string = 'CARD';
+    expect(p1 === 'CARD' ? 'CARD' : 'CASH').toBe('CASH');
+    expect(p2 === 'CARD' ? 'CARD' : 'CASH').toBe('CARD');
   });
 
   it('determines transaction type from buyer BRN', () => {

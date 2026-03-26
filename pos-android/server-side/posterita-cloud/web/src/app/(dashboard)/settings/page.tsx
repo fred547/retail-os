@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { dataQuery, dataUpdate } from "@/lib/supabase/data-client";
-import { Settings, Store, CreditCard, Receipt, Save, Check, Bot, Eye, EyeOff } from "lucide-react";
+import { Settings, Store, CreditCard, Receipt, Save, Check, Bot, Eye, EyeOff, Shield } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
 
@@ -33,14 +33,36 @@ export default function SettingsPage() {
   const [aiKeySaving, setAiKeySaving] = useState(false);
   const [aiKeySaved, setAiKeySaved] = useState(false);
 
+  // Tax compliance (MRA)
+  interface TaxConfig {
+    account_id: string;
+    country: string;
+    tax_system: string;
+    brn: string;
+    tan: string;
+    vat_reg_no: string;
+    api_username: string;
+    api_password: string;
+    ebs_machine_id: string;
+    area_code: string;
+    is_enabled: boolean;
+  }
+  const [taxConfig, setTaxConfig] = useState<Partial<TaxConfig>>({});
+  const [taxSaving, setTaxSaving] = useState(false);
+  const [taxSaved, setTaxSaved] = useState(false);
+  const [taxPasswordVisible, setTaxPasswordVisible] = useState(false);
+
   const fetchSettings = async () => {
     setLoading(true);
-    const [storeRes, prefRes] = await Promise.all([
+    const [storeRes, prefRes, taxRes] = await Promise.all([
       dataQuery<StoreInfo>("store", {
         select: "store_id, name, address, city, country, currency",
       }),
       dataQuery<PreferenceInfo>("preference", {
         select: "preference_id, ai_api_key",
+      }),
+      dataQuery<TaxConfig>("account_tax_config", {
+        select: "account_id, country, tax_system, brn, tan, vat_reg_no, api_username, api_password, ebs_machine_id, area_code, is_enabled",
       }),
     ]);
     const s = storeRes.data?.[0] ?? null;
@@ -49,6 +71,8 @@ export default function SettingsPage() {
     const p = prefRes.data?.[0] ?? null;
     setPreference(p);
     if (p) setAiKey(p.ai_api_key ?? "");
+    const t = taxRes.data?.[0] ?? null;
+    if (t) setTaxConfig(t);
     setLoading(false);
   };
 
@@ -215,6 +239,167 @@ export default function SettingsPage() {
             />
           </div>
         </div>
+      </div>
+
+      {/* Tax Compliance (MRA) */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-red-50 rounded-lg">
+            <Shield size={20} className="text-red-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Tax Compliance</h2>
+            <p className="text-sm text-gray-500">
+              MRA e-invoicing for Mauritius — connect to submit invoices automatically
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={taxConfig.is_enabled ?? false}
+              onChange={(e) => setTaxConfig({ ...taxConfig, is_enabled: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-300 text-posterita-blue focus:ring-posterita-blue"
+            />
+            <span className="text-sm font-medium text-gray-700">Enable MRA e-invoicing</span>
+          </label>
+          {taxConfig.is_enabled && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>
+          )}
+        </div>
+
+        {taxConfig.is_enabled && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">BRN</label>
+                <input
+                  type="text"
+                  value={taxConfig.brn ?? ""}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, brn: e.target.value })}
+                  placeholder="C07062336"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none font-mono"
+                />
+                <p className="text-xs text-gray-400 mt-1">Business Registration Number</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">TAN</label>
+                <input
+                  type="text"
+                  value={taxConfig.tan ?? ""}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, tan: e.target.value })}
+                  placeholder="20351590"
+                  maxLength={8}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none font-mono"
+                />
+                <p className="text-xs text-gray-400 mt-1">Tax Account Number (8 digits)</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">MRA Username</label>
+                <input
+                  type="text"
+                  value={taxConfig.api_username ?? ""}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, api_username: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">MRA Password</label>
+                <div className="relative">
+                  <input
+                    type={taxPasswordVisible ? "text" : "password"}
+                    value={taxConfig.api_password ?? ""}
+                    onChange={(e) => setTaxConfig({ ...taxConfig, api_password: e.target.value })}
+                    className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTaxPasswordVisible(!taxPasswordVisible)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {taxPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">EBS Machine ID</label>
+                <input
+                  type="text"
+                  value={taxConfig.ebs_machine_id ?? ""}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, ebs_machine_id: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none font-mono text-sm"
+                />
+                <p className="text-xs text-gray-400 mt-1">Registered with MRA for this outlet</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Area Code</label>
+                <input
+                  type="text"
+                  value={taxConfig.area_code ?? ""}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, area_code: e.target.value })}
+                  placeholder="100"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={async () => {
+                  setTaxSaving(true);
+                  // Upsert via fetch to handle both create and update
+                  const res = await fetch("/api/data/insert", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      table: "account_tax_config",
+                      data: {
+                        country: taxConfig.country || "MU",
+                        tax_system: taxConfig.tax_system || "mra_ebs",
+                        brn: taxConfig.brn || null,
+                        tan: taxConfig.tan || null,
+                        api_username: taxConfig.api_username || null,
+                        api_password: taxConfig.api_password || null,
+                        ebs_machine_id: taxConfig.ebs_machine_id || null,
+                        area_code: taxConfig.area_code || null,
+                        is_enabled: taxConfig.is_enabled ?? false,
+                        updated_at: new Date().toISOString(),
+                      },
+                    }),
+                  });
+                  if (!res.ok) {
+                    // Insert failed (already exists) — try update
+                    await dataUpdate("account_tax_config", { column: "account_id", value: taxConfig.account_id || "" }, {
+                      brn: taxConfig.brn || null,
+                      tan: taxConfig.tan || null,
+                      api_username: taxConfig.api_username || null,
+                      api_password: taxConfig.api_password || null,
+                      ebs_machine_id: taxConfig.ebs_machine_id || null,
+                      area_code: taxConfig.area_code || null,
+                      is_enabled: taxConfig.is_enabled ?? false,
+                      updated_at: new Date().toISOString(),
+                    });
+                  }
+                  setTaxSaving(false);
+                  setTaxSaved(true);
+                  setTimeout(() => setTaxSaved(false), 2000);
+                }}
+                disabled={taxSaving}
+                className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50 text-sm"
+              >
+                {taxSaved ? <><Check size={16} /> Saved</> : <><Save size={16} /> {taxSaving ? "Saving..." : "Save Tax Config"}</>}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* AI Configuration */}

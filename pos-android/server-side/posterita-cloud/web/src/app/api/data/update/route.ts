@@ -9,7 +9,7 @@ const ALLOWED_TABLES = new Set([
   "terminal", "tax", "preference", "pos_user",
   "intake_batch", "intake_item", "restaurant_table",
   "error_logs",
-  "table_section", "preparation_station", "category_station_mapping",
+  "table_section", "preparation_station", "category_station_mapping", "account_tax_config",
   "modifier",
   // SECURITY: "owner" removed — must go through /api/owner/[id]
 ]);
