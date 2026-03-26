@@ -2348,6 +2348,7 @@ class CartActivity : BaseDrawerActivity() {
 
         dialogView.findViewById<View>(R.id.button_remove).setOnClickListener {
             shoppingCartViewModel.setDiscountOnTotal(0.0, 0.0)
+            appliedPromotion = null
             Toast.makeText(this, "Discount removed", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
@@ -2360,7 +2361,62 @@ class CartActivity : BaseDrawerActivity() {
             dialog.dismiss()
         }
 
+        // Promo code button (if layout has it, otherwise add programmatically)
+        val promoCodeBtn = dialogView.findViewById<View>(R.id.btn_promo_code)
+        if (promoCodeBtn != null) {
+            promoCodeBtn.setOnClickListener {
+                dialog.dismiss()
+                showPromoCodeDialog()
+            }
+        }
+
         dialog.show()
+    }
+
+    /**
+     * Show a dialog for entering a promo code.
+     * Validates against local promotions cache (offline-first).
+     */
+    private fun showPromoCodeDialog() {
+        val input = EditText(this).apply {
+            hint = "Enter promo code"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            setPadding(48, 24, 48, 24)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Promo Code")
+            .setView(input)
+            .setPositiveButton("Apply") { _, _ ->
+                val code = input.text.toString().trim()
+                if (code.isBlank()) return@setPositiveButton
+
+                val cartItems = shoppingCartViewModel.cartItems.value ?: emptyList()
+                val subtotal = shoppingCartViewModel.subTotalAmount.value ?: 0.0
+
+                lifecycleScope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        promotionService.validatePromoCode(code, cartItems, subtotal)
+                    }
+                    if (result != null) {
+                        appliedPromotion = result
+                        shoppingCartViewModel.setDiscountOnTotal(result.discountAmount, 0.0)
+                        Toast.makeText(
+                            this@CartActivity,
+                            "${result.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this@CartActivity,
+                            "Invalid or expired promo code",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     // ==================== HOLD ORDER ====================
