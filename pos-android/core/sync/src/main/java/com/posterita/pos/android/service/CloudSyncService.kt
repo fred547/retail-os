@@ -446,16 +446,16 @@ class CloudSyncService @Inject constructor(
             Log.w(TAG, "All ${pushedOrders.size} orders failed to sync")
         }
 
-        // Mark pushed tills as synced — only closed tills get marked.
-        // Open tills stay isSync=false so they re-sync each cycle.
+        // Mark pushed tills as synced (both open and closed).
+        // Open till: syncs once at open → isSync=true. When closed, TillService
+        // sets isSync=false → triggers second sync pass with final amounts.
         if (response.tillsSynced > 0) {
             for (till in pushedTills) {
                 val errorForTill = serverErrors.find { it.contains(till.uuid ?: "") }
                 if (errorForTill != null) {
-                    // Record the error on the till for debugging
                     db.tillDao().updateTill(till.copy(syncErrorMessage = errorForTill))
                     Log.w(TAG, "Till ${till.uuid} failed: $errorForTill")
-                } else if (till.dateClosed != null) {
+                } else {
                     db.tillDao().updateTill(till.copy(isSync = true, syncErrorMessage = null))
                 }
             }

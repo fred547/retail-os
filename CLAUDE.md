@@ -350,7 +350,9 @@ Always lock screen with 4-digit PIN. 30-min idle → lock. Back button → backg
 
 **Brands stats:** ManageBrandsActivity opens each brand's DB via dedicated `Room.databaseBuilder` (not the singleton) to read product/category/store counts and DB file size. Prevents cross-contamination.
 
-**Till sync (push-only, open + closed):** Tills sync at **open** (header: who, when, terminal, opening amount, status=open) and again at **close** (full amounts, status=closed). Open tills re-sync each cycle until closed (not marked `isSync=true`). The `till.status` column tracks `open`/`closed`. This gives cloud visibility into active terminals — web console shows pulsing "Open" badge. Orders carry `till_uuid` at creation time. Server matches by UUID (not integer `till_id`). If till hasn't synced yet, `till_uuid` preserved and `till_id` back-filled via `reconcile_till_orders()`.
+**Till sync (push-only, two-pass):** Tills sync exactly **twice**: once at **open** (header: who, when, terminal, opening amount, status=open) and once at **close** (full amounts, status=closed). Both passes mark `isSync=true` when successful — no perpetual pending. Closing a till sets `isSync=false` (via `TillService.closeTill()`), triggering the second sync pass. The `till.status` column (Supabase only) tracks `open`/`closed`. Web console shows pulsing "Open" badge. Orders carry `till_uuid` at creation time. Server matches by UUID (not integer `till_id`). If till hasn't synced yet, `till_uuid` preserved and `till_id` back-filled via `reconcile_till_orders()`.
+
+**Sync integrity check:** Before each sync, if local product count is 0 but `last_sync_at` is not epoch, resets to epoch for full data pull. Catches prefs wipe, new device login, or DB clear. Server allows `terminal_id=0` for initial pull (first sync on empty device).
 
 **Sync hardening:**
 
