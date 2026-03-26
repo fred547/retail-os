@@ -104,7 +104,13 @@ class CartActivity : BaseDrawerActivity() {
     @Inject
     lateinit var promotionDao: com.posterita.pos.android.data.local.dao.PromotionDao
 
+    @Inject
+    lateinit var promotionService: com.posterita.pos.android.service.PromotionService
+
     private lateinit var cartAdapter: CartProductAdapter
+
+    /** Currently applied auto-promotion (best one) */
+    private var appliedPromotion: com.posterita.pos.android.service.PromotionService.AppliedPromotion? = null
 
     private var blinkPollingJob: Job? = null
     private var isFromKitchen: Boolean = false
@@ -2923,6 +2929,8 @@ class CartActivity : BaseDrawerActivity() {
             binding.textViewGrandTotal?.text = "$currency ${NumberUtils.formatPrice(amount ?: 0.0)}"
             // Refresh loyalty estimated earn when total changes
             showPosteritaLoyalty()
+            // Check for applicable promotions
+            checkPromotions()
 
             // Disable Pay button when cart is empty
             val isEmpty = (amount ?: 0.0) == 0.0
@@ -3034,6 +3042,50 @@ class CartActivity : BaseDrawerActivity() {
             binding.textViewLoyaltyPoints?.visibility = View.VISIBLE
         }
     }
+
+    // ==================== PROMOTIONS ====================
+
+    /**
+     * Check for applicable promotions and show the best auto-apply discount.
+     * Runs on every cart change. Shows a promotion banner if applicable.
+     */
+    private fun checkPromotions() {
+        val cartItems = shoppingCartViewModel.cartItems.value ?: return
+        if (cartItems.isEmpty()) {
+            appliedPromotion = null
+            binding.textViewOrderNote?.let { /* promotion display handled below */ }
+            return
+        }
+
+        val subtotal = shoppingCartViewModel.subTotalAmount.value ?: 0.0
+        val storeId = sessionManager.store?.storeId ?: 0
+
+        lifecycleScope.launch {
+            val applicable = withContext(Dispatchers.IO) {
+                promotionService.findApplicablePromotions(cartItems, subtotal, storeId)
+            }
+
+            if (applicable.isNotEmpty()) {
+                val best = applicable.first()
+                appliedPromotion = best
+                // Apply promotion as discount on total (auto-apply, no user action needed)
+                val currentDiscount = shoppingCartViewModel.shoppingCart.discountOnTotalAmount
+                val currentPct = shoppingCartViewModel.shoppingCart.discountOnTotalPercentage
+                // Only auto-apply if no manual discount already set
+                if (currentDiscount == 0.0 && currentPct == 0.0) {
+                    shoppingCartViewModel.setDiscountOnTotal(best.discountAmount, 0.0)
+                }
+            } else {
+                appliedPromotion = null
+            }
+        }
+    }
+
+    /** Get the current applied promotion discount amount (for order creation). */
+    fun getPromotionDiscount(): Double = appliedPromotion?.discountAmount ?: 0.0
+
+    /** Get the current applied promotion name (for order JSON). */
+    fun getPromotionName(): String? = appliedPromotion?.promotion?.name
 
     private fun awardLoyaltyPoints(uuid: String, grandTotal: Double) {
         if (!loyaltyRepository.isEnabled) return
