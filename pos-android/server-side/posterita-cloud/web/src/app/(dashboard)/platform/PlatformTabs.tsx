@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical, Gauge, Server, GitCommit } from "lucide-react";
+import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical, Gauge, Server, GitCommit, Map } from "lucide-react";
 
 const TABS = [
   { key: "brands", label: "Brands", icon: Building2 },
@@ -13,6 +13,7 @@ const TABS = [
   { key: "benchmark", label: "Benchmark", icon: Gauge },
   { key: "infra", label: "Infrastructure", icon: Server },
   { key: "changelog", label: "Changelog", icon: GitCommit },
+  { key: "roadmap", label: "Roadmap", icon: Map },
 ];
 
 export default function PlatformTabs() {

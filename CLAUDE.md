@@ -235,7 +235,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/errors` | ✅ | `/users` | ✅ |
 | `/intake` + `/new` + `/[id]` | ✅ | `/settings` (currency) | ✅ |
 | `/ai-import` | ✅ | `/price-review` | ✅ |
-| `/platform` (8 tabs: brands/owners/errors/sync/tests/benchmark/infra/changelog) | ✅ | `/brands` | ✅ |
+| `/platform` (9 tabs: brands/owners/errors/sync/tests/benchmark/infra/changelog/roadmap) | ✅ | `/brands` | ✅ |
 | `/platform/error-logs` | ✅ | `/catalogue` (PDF export) | ✅ |
 | `/tables` (sections) | ✅ | `/inventory` + `/new` + `/[id]` | ✅ |
 | `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
@@ -573,19 +573,33 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Phase 1.5** ✅ Product Intake Pipeline + Product Lifecycle (draft/review/live)
 - **Phase 2** ← CURRENT: Inventory, loyalty, catalogue, logistics
 - **Phase 2.5** ✅ Kitchen & restaurant — table sections, prep stations, KDS, station routing (Phase E courses deferred)
-- **Phase 3** Staff ops, supervisor, warehouse, AI assistant
+- **Phase 2.5** ✅ Kitchen & restaurant — table sections, prep stations, KDS, station routing
+- **Phase 2.6** ✅ Serialized inventory — VIN/IMEI tracking, serial items, warranty
+- **Phase 2.7** ✅ Multi-module architecture — :core:database, :core:common, :core:network, :core:sync
+- **Phase 2.8** ✅ Sync hardening — 6 features (errors, retry, receipt, context, conflicts, checksum)
+- **Phase 3** ← CURRENT: Compliance, loyalty, suppliers, analytics
 
-### Phase 2 Priorities (next to implement)
+### Phase 3 Priorities (next to implement)
 
-1. **Inventory count** ✅ — spot check MVP (sessions, entries, barcode scan, web console)
-2. **Kitchen & restaurant** ✅ — table sections/zones, preparation stations, KDS, station routing, table transfer/merge, delivery orders, terminal types. See `specs/modules/19-kitchen-restaurant.md`, `specs/modules/20-terminal-types.md`.
-3. **WhatsApp support** — single Posterita number, Meta Cloud API direct (no BSP), AI-first (Claude agent scoped to merchant context), human escalation to SalesIQ/Slack. Receipt QR → WhatsApp → AI resolves order/loyalty/support. See `specs/modules/22-whatsapp-support.md`. **Blocked:** need phone number + Meta Business verification.
-4. **Customer loyalty** — wallet, points, award on purchase, redeem at POS, balance display
-5. **Catalogue PDF** — generate printable product catalogue from web console
-6. **AI chat assistant** — Claude tool-use against backend endpoints, scoped to user permissions. WhatsApp is the primary channel (not in-app).
-7. **Shelf labels** — Zebra ZPL + Epson ESC/POS label printing from web/Android
-8. **Operational supplies** — `product_class` field, supply categories, reorder alerts
-9. **Google Sign-In** — Supabase OAuth (needs Google Cloud Console credentials configured)
+1. **MRA e-invoicing** — Mauritius compliance: BRN, VAT ID, datetime, unique transaction ID on every receipt. Required by law.
+2. **Stock deduction on sale** — auto-decrement product qty when order completes. Currently stock is static.
+3. **Customer loyalty** — wallet, points, award on purchase, redeem at POS, balance display
+4. **Z-report / daily summary** — end-of-day report: totals by payment type, tax summary, discount summary, void count
+5. **WhatsApp receipt sharing** — send receipt PDF/text via WhatsApp after payment. **Blocked:** need phone number + Meta Business verification.
+6. **Supplier & Purchase Orders** — supplier management, PO creation, goods received note (GRN), cost tracking
+7. **Promotions engine** — auto-apply, time-based, buy-X-get-Y, promo codes with rules
+8. **Catalogue PDF** ✅ — grid/list/price-list/loyalty-card templates, QR codes, page sizes
+9. **Peach Payments SDK** — card terminal integration for Mauritius market
+10. **Menu scheduling** — breakfast/lunch/dinner menus by time of day (restaurant)
+11. **Delivery tracking** — driver assignment, delivery status, address capture
+12. **Shift clock in/out** — staff time tracking, timesheet reports
+
+### Future (Phase 4+)
+- Shelf labels (Zebra ZPL + Epson ESC/POS)
+- Self-checkout kiosks
+- Franchise operations / multi-store analytics
+- Segment extensions: pharmacy, salon, freelancers, field sales
+- Google Sign-In (Supabase OAuth)
 
 ## Specs
 

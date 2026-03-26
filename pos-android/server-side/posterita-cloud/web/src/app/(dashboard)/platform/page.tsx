@@ -13,6 +13,7 @@ import TestResults from "./TestResults";
 import Benchmark from "./Benchmark";
 import Infrastructure from "./Infrastructure";
 import Changelog from "./Changelog";
+import Roadmap from "./Roadmap";
 
 const PAGE_SIZE = 25;
 
@@ -67,6 +68,9 @@ export default async function PlatformPage({
       )}
       {tab === "changelog" && (
         <Changelog />
+      )}
+      {tab === "roadmap" && (
+        <Roadmap />
       )}
     </div>
   );
