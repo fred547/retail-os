@@ -30,6 +30,7 @@ interface Customer {
   zip: string | null;
   country: string | null;
   isactive: string;
+  loyaltypoints: number;
   created_at: string | null;
 }
 
@@ -76,7 +77,7 @@ export default function CustomersPage() {
     setLoading(true);
     const { data } = await dataQuery<Customer>("customer", {
       select:
-        "customer_id, name, email, phone1, phone2, address1, address2, city, state, zip, country, isactive, created_at",
+        "customer_id, name, email, phone1, phone2, address1, address2, city, state, zip, country, isactive, loyaltypoints, created_at",
       order: { column: "name" },
     });
     setCustomers(data ?? []);
@@ -129,6 +130,10 @@ export default function CustomersPage() {
         case "phone":
           aVal = a.phone1 ?? "";
           bVal = b.phone1 ?? "";
+          break;
+        case "points":
+          aVal = a.loyaltypoints ?? 0;
+          bVal = b.loyaltypoints ?? 0;
           break;
         case "status":
           aVal = a.isactive ?? "";
@@ -282,6 +287,7 @@ export default function CustomersPage() {
                   <SortableHeader label="Email" sortKey="email" currentSort={sort} onSort={handleSort} />
                   <SortableHeader label="Phone" sortKey="phone" currentSort={sort} onSort={handleSort} />
                   <th>Address</th>
+                  <SortableHeader label="Points" sortKey="points" currentSort={sort} onSort={handleSort} />
                   <SortableHeader label="Status" sortKey="status" currentSort={sort} onSort={handleSort} />
                 </tr>
               </thead>
@@ -333,6 +339,15 @@ export default function CustomersPage() {
                     </td>
                     <td className="text-gray-500 text-sm max-w-xs truncate">
                       {formatAddress(c) || <span className="text-gray-400">&mdash;</span>}
+                    </td>
+                    <td>
+                      {c.loyaltypoints > 0 ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                          {c.loyaltypoints.toLocaleString()} pts
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-sm">0</span>
+                      )}
                     </td>
                     <td>
                       <span
