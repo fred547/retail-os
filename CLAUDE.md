@@ -56,6 +56,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
 | `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00031) |
+
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
 
@@ -65,7 +66,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 31 entities, 31 DAOs, AppDatabase, converters, schema v27 (24 migrations)
+:core:database      → Room DB: 32 entities, 32 DAOs, AppDatabase, converters, schema v28 (25 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -238,6 +239,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/platform/error-logs` | ✅ | `/catalogue` (PDF export) | ✅ |
 | `/tables` (sections) | ✅ | `/inventory` + `/new` + `/[id]` | ✅ |
 | `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
+| `/serial-items` + `/new` | ✅ | | |
 
 ## API Routes
 
@@ -289,6 +291,8 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/infrastructure` | GET | Infrastructure status + DB row counts (uses Claude Haiku for summaries) |
 | `/api/sync/replay` | POST | Replay sync operations for debugging |
 | `/api/platform/delete-test-brands` | POST | Bulk delete test brands (account manager only) |
+| `/api/serial-items` | GET/POST | List serial items (with filters) / batch receive new stock |
+| `/api/serial-items/[id]` | GET/PATCH | Serial item detail / update (status, delivery, warranty) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -459,7 +463,7 @@ All errors from Android, Web Console, and API routes go to the **same `error_log
 - **Warehouse app** (tap Warehouse tile): Opens InventoryCountActivity.
 - **Admin app** (tap Admin tile): Opens SettingsActivity. Web console links (products, stores, terminals, users, categories, taxes) + Sync + Printers + Brands (owner only) + Reset Account (owner only, danger zone).
 - **Synchronizer** (tap Sync tile): Opens DatabaseSynchonizerActivity.
-- **Brands:** lists all brands from `LocalAccountRegistry` with stats (products, categories, stores, DB size). Create: Demo (server-first) or AI Import. Delete: non-active demo/test brands.
+- **Brands:** lists all brands from `LocalAccountRegistry` with stats (products, categories, stores, DB size). Create: Demo (server-first) only. AI Import is web-only. Delete: non-active demo/test brands.
 - **Kitchen:** KitchenOrdersActivity — status cycle, split bill, recall, print, delete, complete. Long-press for table transfer / order merge.
 - **KDS:** KdsSetupActivity (mDNS discovery + manual IP) → KdsDisplayActivity (full-screen grid, landscape, timers, bump/recall). Exit requires confirmation. KDS is a **terminal type** (`terminal_type = "kds"`), NOT a printer — it's an interactive display + input device.
 
@@ -492,7 +496,7 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 
 - **Signup creates 2 brands on server:** live (empty) + demo (15 products with images, 4 categories, 2 taxes, 12 modifiers). Android pulls both via sync.
 - **Create demo brand:** `POST /api/account/create-demo` → requires valid owner (rejects "null" email) → server creates full brand → Android creates Room DB shell → resets sync timestamp → CloudSync pulls.
-- **AI Import:** `POST /api/ai-import` discovers products → `POST /api/ai-import/save` saves to Supabase (server-first) → sync pulls to Android. Never saves locally.
+- **AI Import (web-only):** `POST /api/ai-import` discovers products → `POST /api/ai-import/save` saves to Supabase (server-first) → sync pulls to Android. Never saves locally. **Not available on Android** — removed from ManageBrandsActivity.
 - **Delete brand (Web):** account manager only. Live brands must be archived first. Confirmation modal.
 - **Switch brand:** Home context switcher or Brands screen. Resets session, switches Room DB, reloads HomeActivity.
 
@@ -501,8 +505,9 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 - **Models:** Claude Haiku 4.5 (`claude-haiku-4-5`) for AI import discovery (~$0.025/import), Claude Sonnet 4.6 (`claude-sonnet-4-6`) for intake batch processing
 - **Server endpoints:** `POST /api/ai-import` (discover) + `POST /api/ai-import/save` (persist to Supabase)
 - **Web search:** `web_search_20260209` (ai-import), `web_search_20250305` (intake processing)
-- **NOT used during signup** — available post-signup via Brands screen or web console `/ai-import`
+- **Web-only** — available post-signup via web console `/ai-import`. **Not on Android** — removed from ManageBrandsActivity.
 - **Server-first:** AI results saved to Supabase via `/api/ai-import/save`, Android pulls via sync. Never saves to local Room DB.
+- **Failed import must NOT set account.status to "failed"** — a failed AI import is not a failed account. `setAccountStatus("failed")` is a no-op.
 - **Error handling:** Specific messages for credit exhaustion, rate limits, timeouts.
 
 ## WhatsApp Support
