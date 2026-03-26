@@ -738,6 +738,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Promotion usage: track applied promotions from new orders
+    if (newOrderIds.size > 0) {
+      try {
+        const { data: newOrders } = await getDb()
+          .from("orders")
+          .select("order_id, customer_id, json")
+          .eq("account_id", body.account_id)
+          .in("order_id", [...newOrderIds]);
+
+        if (newOrders?.length) {
+          for (const order of newOrders) {
+            try {
+              const orderJson = typeof order.json === "string" ? JSON.parse(order.json) : order.json;
+              const promoId = orderJson?.promotion_id;
+              const promoDiscount = orderJson?.promotion_discount;
+              if (promoId && promoDiscount > 0) {
+                await getDb().from("promotion_usage").insert({
+                  account_id: body.account_id,
+                  promotion_id: promoId,
+                  order_id: order.order_id,
+                  customer_id: order.customer_id ?? null,
+                  discount_applied: promoDiscount,
+                });
+              }
+            } catch (_) { /* individual order promo tracking failure is non-blocking */ }
+          }
+        }
+      } catch (e: any) {
+        // Non-blocking — don't fail sync for promotion tracking
+        errors.push(`Promotion usage: ${e.message}`);
+      }
+    }
+
     // Sync payments
     if (body.payments?.length) {
       for (const payment of body.payments) {
