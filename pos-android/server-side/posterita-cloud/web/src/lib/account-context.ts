@@ -223,6 +223,34 @@ async function getOwnerSessionContext(): Promise<{
 }
 
 /**
+ * Resolve the current user's pos_user.user_id from the session.
+ * Used to populate createdby/updatedby on product and other records.
+ * Returns 0 if the user can't be resolved (super admin, OTT, etc.).
+ */
+export async function getSessionUserId(): Promise<number> {
+  try {
+    const accountId = await getSessionAccountId();
+    if (!accountId) return 0;
+
+    const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 0;
+
+    const admin = await createServerSupabaseAdmin();
+    const { data: posUser } = await admin
+      .from("pos_user")
+      .select("user_id")
+      .eq("auth_uid", user.id)
+      .eq("account_id", accountId)
+      .single();
+
+    return posUser?.user_id ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Read account_id from the OTT cookie set by middleware during
  * Android WebView authentication.
  */

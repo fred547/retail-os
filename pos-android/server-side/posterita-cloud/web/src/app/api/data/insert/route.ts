@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionAccountId } from "@/lib/account-context";
+import { getSessionAccountId, getSessionUserId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -29,8 +29,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "data is required and must be a non-empty object" }, { status: 400 });
     }
 
-    // Auto-inject account_id into the inserted record
+    // Auto-inject account_id and audit fields
     const insertData = { ...data, account_id: accountId };
+
+    // Track who created the record (for tables that have createdby/updatedby)
+    const AUDITED_TABLES = new Set(["product", "productcategory", "store", "terminal", "tax"]);
+    if (AUDITED_TABLES.has(table)) {
+      const userId = await getSessionUserId();
+      if (userId > 0) {
+        insertData.createdby = userId;
+        insertData.updatedby = userId;
+      }
+      insertData.updated_at = new Date().toISOString();
+    }
 
     const { data: inserted, error } = await (getDb()
       .from(table) as any)
