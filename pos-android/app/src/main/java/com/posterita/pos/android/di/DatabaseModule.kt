@@ -22,11 +22,14 @@ object DatabaseModule {
         prefsManager: SharedPreferencesManager
     ): AppDatabase {
         val accountId = prefsManager.accountId
-        // Never create a "default" DB — use the actual account or fail gracefully
-        require(accountId.isNotEmpty() && accountId != "null") {
-            "Cannot provide database: no active account_id in prefs"
+        // Use a temporary DB for pre-account screens (SetupWizard, Login).
+        // This DB is replaced once the account is created and prefs are set.
+        val dbAccountId = if (accountId.isNotEmpty() && accountId != "null") {
+            accountId
+        } else {
+            "setup_temp"
         }
-        return AppDatabase.getInstance(context, accountId)
+        return AppDatabase.getInstance(context, dbAccountId)
     }
 
     @Provides
