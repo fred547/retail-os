@@ -470,6 +470,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Sync orders (after tills, since orders.till_id references till)
+    const newOrderIds = new Set<number>(); // Track newly-inserted order IDs for stock deduction
     if (body.orders?.length) {
       for (const order of body.orders) {
         try {
@@ -542,6 +543,7 @@ export async function POST(req: NextRequest) {
             ordersSynced++; // handled (skipped stale/duplicate)
           } else {
             ordersSynced++;
+            newOrderIds.add(dbOrder.order_id);
           }
         } catch (e: any) {
           errors.push(`Order ${order.uuid}: ${e.message}`);
@@ -580,6 +582,79 @@ export async function POST(req: NextRequest) {
         } catch (e: any) {
           errors.push(`OrderLine: ${e.message}`);
         }
+      }
+
+      // Stock deduction: decrement quantity_on_hand for each NEW order line
+      // Only deducts for products with track_stock=true
+      // Only deducts for lines from newly-synced orders (not duplicate/conflict re-pushes)
+      try {
+        // Group lines by product_id — only for lines from orders that were new (not conflicts)
+        const qtyByProduct: Record<number, number> = {};
+        for (const line of body.order_lines) {
+          const orderId = line.order_id ?? line.orderId;
+          // Skip lines from orders that were conflicts/duplicates (already existed)
+          if (!newOrderIds.has(orderId)) continue;
+
+          const productId = line.product_id ?? line.productId;
+          const qty = line.qtyentered ?? line.qtyEntered ?? 0;
+          if (productId && qty > 0) {
+            qtyByProduct[productId] = (qtyByProduct[productId] || 0) + qty;
+          }
+        }
+
+        const productIds = Object.keys(qtyByProduct).map(Number);
+        if (productIds.length > 0) {
+          // Fetch current stock for tracked products
+          const { data: stockProducts } = await getDb()
+            .from("product")
+            .select("product_id, quantity_on_hand, track_stock")
+            .eq("account_id", body.account_id)
+            .eq("track_stock", true)
+            .in("product_id", productIds);
+
+          for (const prod of stockProducts ?? []) {
+            const deductQty = qtyByProduct[prod.product_id];
+            if (!deductQty) continue;
+
+            const newQty = (prod.quantity_on_hand ?? 0) - deductQty;
+
+            // Update product quantity
+            await getDb()
+              .from("product")
+              .update({ quantity_on_hand: newQty, updated_at: new Date().toISOString() })
+              .eq("product_id", prod.product_id)
+              .eq("account_id", body.account_id);
+
+            // Journal entry
+            await getDb()
+              .from("stock_journal")
+              .insert({
+                account_id: body.account_id,
+                product_id: prod.product_id,
+                store_id: body.store_id ?? 0,
+                quantity_change: -deductQty,
+                quantity_after: newQty,
+                reason: "sale",
+                reference_type: "order",
+                reference_id: body.orders?.[0]?.uuid ?? null,
+                user_id: null,
+              });
+          }
+        }
+      } catch (e: any) {
+        // Stock deduction failure is non-blocking — log but don't fail sync
+        errors.push(`Stock deduction: ${e.message}`);
+        try {
+          await getDb().from("error_logs").insert({
+            account_id: body.account_id,
+            severity: "ERROR",
+            tag: "STOCK_DEDUCTION",
+            message: `Stock deduction failed during sync: ${e.message}`,
+            stack_trace: e.stack ?? null,
+            device_info: `terminal:${body.terminal_id}`,
+            app_version: body.app_version ?? "unknown",
+          });
+        } catch (_) { /* swallow error-logging errors */ }
       }
     }
 

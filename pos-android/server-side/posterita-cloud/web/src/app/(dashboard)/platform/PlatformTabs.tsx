@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Building2, Users, AlertTriangle, RefreshCw, FlaskConical,
-  Gauge, Server, GitCommit, Map, Shield, Archive, ChevronDown,
+  Gauge, Server, GitCommit, Map, Shield, Archive, Bot, ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -22,6 +22,7 @@ const ALL_TABS: Tab[] = [
   { key: "roadmap", label: "Roadmap", icon: Map },
   { key: "infra", label: "Infra", icon: Server },
   { key: "legacy", label: "Legacy", icon: Archive },
+  { key: "claude", label: "Claude", icon: Bot },
 ];
 
 export default function PlatformTabs() {

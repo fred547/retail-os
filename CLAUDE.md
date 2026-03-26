@@ -48,14 +48,14 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | Directory | Purpose |
 |-----------|---------|
 | `pos-android/` | Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
-| `pos-android/core/database/` | **`:core:database`** — Room DB: 31 entities, 31 DAOs, AppDatabase, converters, 27 migrations |
+| `pos-android/core/database/` | **`:core:database`** — Room DB: 32 entities, 32 DAOs, AppDatabase, converters, 26 migrations |
 | `pos-android/core/common/` | **`:core:common`** — SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants |
 | `pos-android/core/network/` | **`:core:network`** — Retrofit APIs, request/response models, NetworkInterceptor |
 | `pos-android/core/sync/` | **`:core:sync`** — CloudSyncService, CloudSyncWorker, SyncStatusManager |
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00031) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00033) |
 
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
@@ -66,7 +66,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 32 entities, 32 DAOs, AppDatabase, converters, schema v28 (24 migrations)
+:core:database      → Room DB: 32 entities, 32 DAOs, AppDatabase, converters, schema v30 (26 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -82,7 +82,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ## Stack & URLs
 
-- **Android:** Kotlin, Room (v27, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
+- **Android:** Kotlin, Room (v30, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
 - **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
 - **DB:** Supabase Postgres — `account_id` is TEXT. **RLS is enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` set to `https://web.posterita.com`.
@@ -235,7 +235,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/errors` | ✅ | `/users` | ✅ |
 | `/intake` + `/new` + `/[id]` | ✅ | `/settings` (currency) | ✅ |
 | `/ai-import` | ✅ | `/price-review` | ✅ |
-| `/platform` (9 tabs: brands/owners/errors/sync/tests/benchmark/infra/changelog/roadmap) | ✅ | `/brands` | ✅ |
+| `/platform` (12 tabs: brands/owners/errors/sync/mra/tests/benchmark/changelog/roadmap/infra/legacy/claude) | ✅ | `/brands` | ✅ |
 | `/platform/error-logs` | ✅ | `/catalogue` (PDF export) | ✅ |
 | `/tables` (sections) | ✅ | `/inventory` + `/new` + `/[id]` | ✅ |
 | `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
@@ -293,6 +293,8 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/platform/delete-test-brands` | POST | Bulk delete test brands (account manager only) |
 | `/api/serial-items` | GET/POST | List serial items (with filters) / batch receive new stock |
 | `/api/serial-items/[id]` | GET/PATCH | Serial item detail / update (status, delivery, warranty) |
+| `/api/stock` | POST | Manual stock adjustment (set new qty, records journal entry) |
+| `/api/stock/journal` | GET | Stock movement history (filter by product, reason, date range) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -530,16 +532,20 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 
 ## Web Platform Portal (`/platform`)
 
-Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|errors|sync|tests|benchmark|infra|changelog`):
+Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|errors|sync|mra|tests|benchmark|changelog|roadmap|infra|legacy|claude`):
 
 - **Brands tab** (default) — owner-grouped brand list, type/status badges, store/product/user counts, account manager assignment, create account form, archive + delete, pagination (25/page)
 - **Owners tab** — all owners with name, email, phone, brand count, join date, active status. Edit panel: change name/email/phone, send password reset. Summary cards.
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
-- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 196 web unit (17 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **MRA tab** — MRA e-invoicing compliance dashboard (BRN/TAN validation, tax config, counters).
+- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 211 web unit (18 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
+- **Roadmap tab** — feature roadmap with priority phases.
+- **Legacy tab** — legacy system feature review and migration status.
+- **Claude tab** — Claude Code configuration dashboard: 15 skills, development workflow, project rules, hooks, CLAUDE.md overview, file locations.
 
 ## DB Column Reference (common mistakes)
 
@@ -565,14 +571,16 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `till_adjustment` | till_adjustment_id, till_id, user_id, amount, pay_type, reason, date | |
 | `v_price_review` (view) | product_id, account_id, product_name, sellingprice, image, price_set_by, set_by_name, **price_set_at**, category_name | ~~updated_at~~ (use `price_set_at`) |
 | `serial_item` | serial_item_id, account_id, product_id, store_id, **serial_number**, serial_type (vin/imei/serial/certificate), **status** (received/in_stock/reserved/sold/delivered/returned/in_service), supplier_name, purchase_date, cost_price, order_id, customer_id, sold_date, selling_price, **delivered_date**, warranty_months, **warranty_expiry** (auto-computed: delivered_date + warranty_months), color, year, engine_number, is_deleted, is_sync | |
+| `account_tax_config` | id, account_id, brn, tan, vat_registered, tax_office, fiscal_year_start, created_at, updated_at | |
+| `mra_counter` | id, account_id, store_id, terminal_id, counter_date, last_sequence, prefix, created_at, updated_at | |
+| `stock_journal` | id, account_id, product_id, store_id, quantity_change, quantity_after, reason (sale/receive/adjustment/count_reconcile/return/transfer), reference_type, reference_id, user_id, notes, created_at | |
 
 ## Current Phase
 
 - **Phase 0** ✅ Android cleanup, UI consistency, offline POS
 - **Phase 1** ✅ Web console CRUD + API + auth + sync + device enrollment (QR)
 - **Phase 1.5** ✅ Product Intake Pipeline + Product Lifecycle (draft/review/live)
-- **Phase 2** ← CURRENT: Inventory, loyalty, catalogue, logistics
-- **Phase 2.5** ✅ Kitchen & restaurant — table sections, prep stations, KDS, station routing (Phase E courses deferred)
+- **Phase 2** ✅ Inventory, loyalty, catalogue, logistics
 - **Phase 2.5** ✅ Kitchen & restaurant — table sections, prep stations, KDS, station routing
 - **Phase 2.6** ✅ Serialized inventory — VIN/IMEI tracking, serial items, warranty
 - **Phase 2.7** ✅ Multi-module architecture — :core:database, :core:common, :core:network, :core:sync
@@ -581,8 +589,8 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 
 ### Phase 3 Priorities (next to implement)
 
-1. **MRA e-invoicing** — Mauritius compliance: BRN, VAT ID, datetime, unique transaction ID on every receipt. Required by law.
-2. **Stock deduction on sale** — auto-decrement product qty when order completes. Currently stock is static.
+1. **MRA e-invoicing** ✅ — Mauritius compliance: BRN, TAN, VAT ID, datetime, unique transaction ID on every receipt. DB tables: `account_tax_config`, `mra_counter`. Migration: `00032_mra_ebs.sql`.
+2. **Stock deduction on sale** ✅ — auto-decrement product `quantity_on_hand` when orders sync. `stock_journal` audit trail. Manual adjustments via `/api/stock`. Migration: `00033_stock_deduction.sql`.
 3. **Customer loyalty** — wallet, points, award on purchase, redeem at POS, balance display
 4. **Z-report / daily summary** — end-of-day report: totals by payment type, tax summary, discount summary, void count
 5. **WhatsApp receipt sharing** — send receipt PDF/text via WhatsApp after payment. **Blocked:** need phone number + Meta Business verification.

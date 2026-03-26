@@ -16,6 +16,7 @@ import Changelog from "./Changelog";
 import Roadmap from "./Roadmap";
 import MraDashboard from "./MraDashboard";
 import LegacyReview from "./LegacyReview";
+import ClaudeConfig from "./ClaudeConfig";
 
 const PAGE_SIZE = 25;
 
@@ -79,6 +80,9 @@ export default async function PlatformPage({
       )}
       {tab === "legacy" && (
         <LegacyReview />
+      )}
+      {tab === "claude" && (
+        <ClaudeConfig />
       )}
     </div>
   );

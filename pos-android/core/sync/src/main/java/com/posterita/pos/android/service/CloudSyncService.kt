@@ -1008,6 +1008,17 @@ class CloudSyncService @Inject constructor(
                 needs_price_review = map["needs_price_review"] as? String,
                 price_set_by = (map["price_set_by"] as? Number)?.toInt() ?: 0,
                 account_id = map["account_id"]?.toString() ?: "",
+                product_status = map["product_status"] as? String ?: "live",
+                source = map["source"] as? String ?: "manual",
+                station_override_id = (map["station_override_id"] as? Number)?.toInt(),
+                is_deleted = map["is_deleted"] == true,
+                deleted_at = map["deleted_at"] as? String,
+                is_serialized = map["is_serialized"] as? String ?: "N",
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+                quantity_on_hand = (map["quantity_on_hand"] as? Number)?.toDouble() ?: 0.0,
+                reorder_point = (map["reorder_point"] as? Number)?.toDouble() ?: 0.0,
+                track_stock = if (map["track_stock"] == false) 0 else 1,
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map product: ${e.message}")

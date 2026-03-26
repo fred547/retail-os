@@ -30,7 +30,7 @@ import com.posterita.pos.android.data.local.entity.*
         CategoryStationMapping::class,
         SerialItem::class
     ],
-    version = 29,
+    version = 30,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -109,7 +109,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_25_26,
                         MIGRATION_26_27,
                         MIGRATION_27_28,
-                        MIGRATION_28_29
+                        MIGRATION_28_29,
+                        MIGRATION_29_30
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -153,7 +154,9 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_24_25,
                     MIGRATION_25_26,
                     MIGRATION_26_27,
-                    MIGRATION_27_28
+                    MIGRATION_27_28,
+                    MIGRATION_28_29,
+                    MIGRATION_29_30
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -478,6 +481,14 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE account ADD COLUMN brn TEXT")
                 db.execSQL("ALTER TABLE account ADD COLUMN tan TEXT")
+            }
+        }
+
+        private val MIGRATION_29_30 = object : Migration(29, 30) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE product ADD COLUMN quantity_on_hand REAL NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE product ADD COLUMN reorder_point REAL NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE product ADD COLUMN track_stock INTEGER NOT NULL DEFAULT 1")
             }
         }
     }

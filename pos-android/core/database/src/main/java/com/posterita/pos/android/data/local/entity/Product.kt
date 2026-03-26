@@ -52,7 +52,16 @@ data class Product(
     /** Timestamp when the product was soft-deleted */
     val deleted_at: String? = null,
     /** "Y" if this product requires serial number tracking (VIN/IMEI/etc.) */
-    val is_serialized: String? = "N"
+    val is_serialized: String? = "N",
+    /** Current stock quantity on hand */
+    val quantity_on_hand: Double = 0.0,
+    /** Low stock alert threshold */
+    val reorder_point: Double = 0.0,
+    /** Whether this product tracks stock (1=yes, 0=no) */
+    val track_stock: Int = 1
 ) : Serializable {
     val isSerialized: Boolean get() = is_serialized == "Y"
+    val tracksStock: Boolean get() = track_stock == 1
+    val isLowStock: Boolean get() = tracksStock && quantity_on_hand > 0 && quantity_on_hand <= reorder_point
+    val isOutOfStock: Boolean get() = tracksStock && quantity_on_hand <= 0
 }

@@ -23,6 +23,9 @@ interface Product {
   productcategory_id: number | null;
   productcategory: { name: string } | null;
   is_serialized: string | null;
+  quantity_on_hand: number | null;
+  reorder_point: number | null;
+  track_stock: boolean | null;
 }
 
 interface Category {
@@ -159,6 +162,10 @@ export default function ProductTable({
           aVal = a.productcategory?.name?.toLowerCase() ?? "";
           bVal = b.productcategory?.name?.toLowerCase() ?? "";
           break;
+        case "stock":
+          aVal = a.quantity_on_hand ?? 0;
+          bVal = b.quantity_on_hand ?? 0;
+          break;
         default:
           return 0;
       }
@@ -181,6 +188,7 @@ export default function ProductTable({
               <SortableHeader label="UPC" sortKey="upc" currentSort={sort} onSort={handleSort} />
               <th className="text-right">Cost</th>
               <SortableHeader label="Price" sortKey="sellingprice" currentSort={sort} onSort={handleSort} />
+              <SortableHeader label="Stock" sortKey="stock" currentSort={sort} onSort={handleSort} />
               <th>Status</th>
               {showStatusColumn && <th>Source</th>}
               {showStatusColumn && <th className="w-24"></th>}
@@ -239,6 +247,21 @@ export default function ProductTable({
                     <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-orange-100 text-orange-700">
                       Review
                     </span>
+                  )}
+                </td>
+                <td className="text-right">
+                  {p.track_stock !== false ? (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      (p.quantity_on_hand ?? 0) <= 0
+                        ? "bg-red-100 text-red-700"
+                        : (p.quantity_on_hand ?? 0) <= (p.reorder_point ?? 0)
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-green-100 text-green-700"
+                    }`}>
+                      {p.quantity_on_hand ?? 0}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
                   )}
                 </td>
                 <td>
