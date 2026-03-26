@@ -222,14 +222,19 @@ describe('MRA Invoice Building', () => {
   });
 
   it('determines transaction type from buyer BRN', () => {
-    expect('C07062336' ? 'B2B' : 'B2C').toBe('B2B');
-    expect('' ? 'B2B' : 'B2C').toBe('B2C');
-    expect(undefined ? 'B2B' : 'B2C').toBe('B2C');
+    const brn1: string | undefined = 'C07062336';
+    const brn2: string | undefined = '';
+    const brn3: string | undefined = undefined;
+    expect(brn1 ? 'B2B' : 'B2C').toBe('B2B');
+    expect(brn2 ? 'B2B' : 'B2C').toBe('B2C');
+    expect(brn3 ? 'B2B' : 'B2C').toBe('B2C');
   });
 
   it('uses correct VAT person type', () => {
-    expect('20351590' ? 'VATR' : 'NVTR').toBe('VATR');
-    expect('' ? 'VATR' : 'NVTR').toBe('NVTR');
+    const tan1: string | undefined = '20351590';
+    const tan2: string | undefined = '';
+    expect(tan1 ? 'VATR' : 'NVTR').toBe('VATR');
+    expect(tan2 ? 'VATR' : 'NVTR').toBe('NVTR');
   });
 });
 

@@ -984,6 +984,42 @@ export async function POST(req: NextRequest) {
     }
 
     // ========================================
+    // MRA: Trigger async e-invoice submission for newly synced orders
+    // Non-blocking — fire and forget. Cron retries failures every 15 min.
+    // ========================================
+    if (ordersSynced > 0) {
+      try {
+        const { data: taxConfig } = await getDb()
+          .from("account_tax_config")
+          .select("is_enabled")
+          .eq("account_id", body.account_id)
+          .single();
+
+        if (taxConfig?.is_enabled) {
+          // Find orders just synced that need MRA filing
+          const { data: unfiled } = await getDb()
+            .from("orders")
+            .select("order_id")
+            .eq("account_id", body.account_id)
+            .or("mra_status.eq.pending,mra_status.is.null")
+            .limit(20);
+
+          if (unfiled?.length) {
+            const backendUrl = process.env.RENDER_BACKEND_URL || "https://posterita-backend.onrender.com";
+            // Fire async — don't await, don't block sync response
+            for (const o of unfiled) {
+              fetch(`${backendUrl}/webhook/mra/submit-invoice`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ account_id: body.account_id, order_id: o.order_id }),
+              }).catch(() => {}); // swallow — cron will retry
+            }
+          }
+        }
+      } catch (_) {} // never fail sync for MRA
+    }
+
+    // ========================================
     // PULL: Cloud → Terminal
     // ========================================
     const lastSync = body.last_sync_at || "1970-01-01T00:00:00Z";

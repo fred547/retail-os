@@ -253,7 +253,7 @@ class DatabaseSynchonizerActivity : BaseActivity() {
 
     private fun loadDbCounts() {
         lifecycleScope.launch(Dispatchers.IO) {
-            data class DbRow(val label: String, val count: Int)
+            data class DbRow(val label: String, val count: Int, val color: Int = 0xFF141414.toInt())
 
             val rows = mutableListOf<DbRow>()
             try {
@@ -272,7 +272,48 @@ class DatabaseSynchonizerActivity : BaseActivity() {
                 val recentErrors = try { db.errorLogDao().getRecentLogs(999).size } catch (_: Exception) { 0 }
                 rows.add(DbRow("⚠ Errors (unsent)", unsentErrors))
                 rows.add(DbRow("⚠ Errors (total)", recentErrors))
+
             } catch (_: Exception) {}
+
+            // MRA e-invoicing status (fetch from cloud — separate try block)
+            val mraRows = mutableListOf<DbRow>()
+                try {
+                    val baseUrl = prefsManager.cloudSyncUrl.trimEnd('/')
+                    val accountId = prefsManager.accountId
+                    val url = java.net.URL("${baseUrl}/data")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.connectTimeout = 5000
+                    conn.readTimeout = 5000
+                    conn.doOutput = true
+                    // Count orders by MRA status
+                    val body = """{"table":"orders","select":"mra_status","filters":[{"column":"account_id","op":"eq","value":"$accountId"}]}"""
+                    conn.outputStream.write(body.toByteArray())
+                    if (conn.responseCode == 200) {
+                        val response = conn.inputStream.bufferedReader().readText()
+                        val json = org.json.JSONObject(response)
+                        val data = json.optJSONArray("data")
+                        if (data != null) {
+                            var filed = 0; var pending = 0; var failed = 0; var exempt = 0
+                            for (i in 0 until data.length()) {
+                                when (data.getJSONObject(i).optString("mra_status")) {
+                                    "filed" -> filed++
+                                    "pending" -> pending++
+                                    "failed" -> failed++
+                                    "exempt" -> exempt++
+                                }
+                            }
+                            if (filed + pending + failed > 0) { // only show if MRA is active
+                                mraRows.add(DbRow("📋 MRA Filed", filed, 0xFF2E7D32.toInt()))
+                                if (pending > 0) mraRows.add(DbRow("📋 MRA Pending", pending, 0xFFF57F17.toInt()))
+                                if (failed > 0) mraRows.add(DbRow("📋 MRA Failed", failed, 0xFFE53935.toInt()))
+                                if (exempt > 0) mraRows.add(DbRow("📋 MRA Exempt", exempt, 0xFF999999.toInt()))
+                            }
+                        }
+                    }
+                    conn.disconnect()
+                } catch (_: Exception) {} // don't fail if cloud unreachable
 
             withContext(Dispatchers.Main) {
                 val container = binding.layoutDbCounts ?: return@withContext
@@ -293,7 +334,7 @@ class DatabaseSynchonizerActivity : BaseActivity() {
 
                     val countView = TextView(this@DatabaseSynchonizerActivity).apply {
                         text = row.count.toString()
-                        setTextColor(if (row.count > 0) getColor(R.color.posterita_ink) else getColor(R.color.posterita_line))
+                        setTextColor(if (row.count > 0) row.color else getColor(R.color.posterita_line))
                         textSize = 14f
                         typeface = android.graphics.Typeface.DEFAULT_BOLD
                     }
@@ -301,6 +342,42 @@ class DatabaseSynchonizerActivity : BaseActivity() {
                     rowView.addView(labelView)
                     rowView.addView(countView)
                     container.addView(rowView)
+                }
+
+                // MRA section
+                if (mraRows.isNotEmpty()) {
+                    val divider = View(this@DatabaseSynchonizerActivity).apply {
+                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1).apply {
+                            topMargin = 12; bottomMargin = 8
+                        }
+                        setBackgroundColor(0xFFE0E0E0.toInt())
+                    }
+                    container.addView(divider)
+
+                    val header = TextView(this@DatabaseSynchonizerActivity).apply {
+                        text = "MRA E-INVOICING"
+                        textSize = 11f
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(0xFF6C6F76.toInt())
+                        letterSpacing = 0.1f
+                        setPadding(0, 0, 0, 4)
+                    }
+                    container.addView(header)
+
+                    for (row in mraRows) {
+                        val rv = LinearLayout(this@DatabaseSynchonizerActivity).apply {
+                            orientation = LinearLayout.HORIZONTAL; setPadding(0, 4, 0, 4)
+                        }
+                        rv.addView(TextView(this@DatabaseSynchonizerActivity).apply {
+                            text = row.label; setTextColor(row.color); textSize = 14f
+                            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                        })
+                        rv.addView(TextView(this@DatabaseSynchonizerActivity).apply {
+                            text = row.count.toString(); setTextColor(row.color); textSize = 14f
+                            typeface = android.graphics.Typeface.DEFAULT_BOLD
+                        })
+                        container.addView(rv)
+                    }
                 }
             }
         }
