@@ -50,6 +50,8 @@ interface SyncRequest {
   error_logs?: any[];
   // Push: serial item status updates (sold/delivered/returned)
   serial_items?: any[];
+  // Push: deliveries created at POS
+  deliveries?: any[];
   // Integrity: SHA-256 hash of critical push data
   payload_checksum?: string;
 }
@@ -1136,6 +1138,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sync deliveries (POS → cloud)
+    let deliveriesSynced = 0;
+    if (body.deliveries?.length) {
+      for (const d of body.deliveries) {
+        try {
+          const dbDelivery = {
+            account_id: body.account_id,
+            order_id: d.order_id ?? null,
+            store_id: d.store_id ?? body.store_id ?? null,
+            customer_id: d.customer_id ?? null,
+            customer_name: d.customer_name ?? null,
+            customer_phone: d.customer_phone ?? null,
+            delivery_address: d.delivery_address ?? null,
+            delivery_city: d.delivery_city ?? null,
+            delivery_notes: d.delivery_notes ?? null,
+            status: d.status ?? "pending",
+          };
+          const { error } = await getDb().from("delivery").insert(dbDelivery);
+          if (error) {
+            errors.push(`Delivery: ${error.message}`);
+          } else {
+            deliveriesSynced++;
+          }
+        } catch (e: any) {
+          errors.push(`Delivery: ${e.message}`);
+        }
+      }
+    }
+
     // ========================================
     // MRA: Trigger async e-invoice submission for newly synced orders
     // Non-blocking — fire and forget. Cron retries failures every 15 min.
@@ -1360,6 +1391,7 @@ export async function POST(req: NextRequest) {
       tables_synced: tablesSynced,
       inventory_entries_synced: inventoryEntriesSynced,
       serial_items_synced: serialItemsSynced,
+      deliveries_synced: deliveriesSynced,
       conflicts_detected: conflictsDetected,
       errors,
     });

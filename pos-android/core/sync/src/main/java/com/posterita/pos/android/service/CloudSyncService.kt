@@ -180,6 +180,9 @@ class CloudSyncService @Inject constructor(
             // Collect unsynced error logs
             val unsyncedErrorLogs = db.errorLogDao().getUnsyncedLogs()
 
+            // Collect locally-created deliveries (id=0 means not yet on server)
+            val unsyncedDeliveries = db.deliveryDao().getUnsyncedDeliveries(accountId)
+
             // Build sync request with device registration
             val syncDeviceId = prefsManager.getString("device_id", "").ifEmpty {
                 val id = "dev_${System.currentTimeMillis()}_${terminalId}"
@@ -219,6 +222,7 @@ class CloudSyncService @Inject constructor(
                 inventoryCountEntries = if (unsyncedInventoryEntries.isNotEmpty()) unsyncedInventoryEntries.map { it.toSyncInventoryCountEntry() } else null,
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
                 serialItems = if (unsyncedSerialItems.isNotEmpty()) unsyncedSerialItems.map { it.toSyncSerialItem() } else null,
+                deliveries = if (unsyncedDeliveries.isNotEmpty()) unsyncedDeliveries.map { it.toSyncDelivery() } else null,
                 payloadChecksum = payloadChecksum,
             )
 
@@ -267,6 +271,13 @@ class CloudSyncService @Inject constructor(
             // Mark inventory count entries as synced
             if (unsyncedInventoryEntries.isNotEmpty()) {
                 db.inventoryCountEntryDao().markSynced(unsyncedInventoryEntries.map { it.entry_id })
+            }
+
+            // Delete locally-created deliveries (id=0) after successful push
+            // Server creates them with real IDs — they'll be pulled back on next sync
+            if (unsyncedDeliveries.isNotEmpty()) {
+                db.deliveryDao().deleteUnsyncedByAccount(accountId)
+                Log.d(TAG, "Pushed ${unsyncedDeliveries.size} deliveries, cleared local stubs")
             }
 
             // Update local Account with BRN/TAN from tax config (for receipt printing)
@@ -1581,5 +1592,17 @@ class CloudSyncService @Inject constructor(
         soldDate = soldDate,
         sellingPrice = sellingPrice,
         deliveredDate = deliveredDate,
+    )
+
+    private fun com.posterita.pos.android.data.local.entity.Delivery.toSyncDelivery(): SyncDelivery = SyncDelivery(
+        orderId = order_id,
+        storeId = store_id,
+        customerId = customer_id,
+        customerName = customer_name,
+        customerPhone = customer_phone,
+        deliveryAddress = delivery_address,
+        deliveryCity = delivery_city,
+        deliveryNotes = delivery_notes,
+        status = status,
     )
 }

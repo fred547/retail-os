@@ -20,6 +20,12 @@ interface DeliveryDao {
     @Query("SELECT * FROM delivery WHERE order_id = :orderId AND account_id = :accountId LIMIT 1")
     suspend fun getDeliveryByOrderId(orderId: Int, accountId: String): Delivery?
 
+    @Query("SELECT * FROM delivery WHERE account_id = :accountId AND id = 0")
+    suspend fun getUnsyncedDeliveries(accountId: String): List<Delivery>
+
+    @Query("DELETE FROM delivery WHERE id = 0 AND account_id = :accountId")
+    suspend fun deleteUnsyncedByAccount(accountId: String)
+
     @Query("DELETE FROM delivery WHERE account_id = :accountId")
     suspend fun deleteByAccount(accountId: String)
 }

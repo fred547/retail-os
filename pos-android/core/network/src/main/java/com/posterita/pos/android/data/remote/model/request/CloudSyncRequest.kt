@@ -45,6 +45,8 @@ data class CloudSyncRequest(
     @SerializedName("error_logs") val errorLogs: List<SyncErrorLog>? = null,
     // Push: serial item status updates (sold/delivered/returned)
     @SerializedName("serial_items") val serialItems: List<SyncSerialItem>? = null,
+    // Push: deliveries created at POS
+    @SerializedName("deliveries") val deliveries: List<SyncDelivery>? = null,
     // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
     @SerializedName("payload_checksum") val payloadChecksum: String? = null,
 )
@@ -280,4 +282,16 @@ data class SyncSerialItem(
     @SerializedName("sold_date") val soldDate: String? = null,
     @SerializedName("selling_price") val sellingPrice: Double? = null,
     @SerializedName("delivered_date") val deliveredDate: String? = null,
+)
+
+data class SyncDelivery(
+    @SerializedName("order_id") val orderId: Int? = null,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("customer_id") val customerId: Int? = null,
+    @SerializedName("customer_name") val customerName: String? = null,
+    @SerializedName("customer_phone") val customerPhone: String? = null,
+    @SerializedName("delivery_address") val deliveryAddress: String? = null,
+    @SerializedName("delivery_city") val deliveryCity: String? = null,
+    @SerializedName("delivery_notes") val deliveryNotes: String? = null,
+    @SerializedName("status") val status: String = "pending",
 )
