@@ -41,7 +41,7 @@ export async function GET() {
       commits,
       version: {
         web: latestSha,
-        android: "Room v25",
+        android: "Room v30",
         api: "Sync v2",
         backend: "Render v1",
         sha: latestSha,
