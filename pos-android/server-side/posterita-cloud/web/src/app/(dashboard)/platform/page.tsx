@@ -14,6 +14,7 @@ import Benchmark from "./Benchmark";
 import Infrastructure from "./Infrastructure";
 import Changelog from "./Changelog";
 import Roadmap from "./Roadmap";
+import MraDashboard from "./MraDashboard";
 
 const PAGE_SIZE = 25;
 
@@ -71,6 +72,9 @@ export default async function PlatformPage({
       )}
       {tab === "roadmap" && (
         <Roadmap />
+      )}
+      {tab === "mra" && (
+        <MraDashboard />
       )}
     </div>
   );

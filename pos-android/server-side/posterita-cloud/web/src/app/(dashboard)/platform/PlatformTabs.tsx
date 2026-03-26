@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical, Gauge, Server, GitCommit, Map } from "lucide-react";
+import { Building2, Users, AlertTriangle, RefreshCw, FlaskConical, Gauge, Server, GitCommit, Map, Shield } from "lucide-react";
 
 const TABS = [
   { key: "brands", label: "Brands", icon: Building2 },
@@ -10,6 +10,7 @@ const TABS = [
   { key: "errors", label: "Errors", icon: AlertTriangle },
   { key: "sync", label: "Sync", icon: RefreshCw },
   { key: "tests", label: "Tests", icon: FlaskConical },
+  { key: "mra", label: "MRA", icon: Shield },
   { key: "benchmark", label: "Benchmark", icon: Gauge },
   { key: "infra", label: "Infrastructure", icon: Server },
   { key: "changelog", label: "Changelog", icon: GitCommit },
