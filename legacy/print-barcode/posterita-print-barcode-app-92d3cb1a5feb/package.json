@@ -1,0 +1,14 @@
+{
+  "name": "posterita-print-label",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "npx http-server .",
+    "run": "electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  }
+}

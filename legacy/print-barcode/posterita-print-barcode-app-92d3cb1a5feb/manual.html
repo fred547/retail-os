@@ -1,0 +1,40 @@
+<div><a ui-sref="home">Home</a></div>
+<h2>Step 1 of 3. Manual Data Entry</h2>
+
+<table ng-table="tableParams" class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+            <th>Description</th>
+            <th>Barcode</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th width="100px">&nbsp;</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="row in $data">
+            <td>
+                <input class="form-control" type="text" ng-model="row['Name']" placeholder="Name"/>
+            </td>
+			<td>
+                <input class="form-control" type="text" ng-model="row['Description']" placeholder="Description"/>
+            </td>
+            <td>
+                <input class="form-control" type="text" ng-model="row['Barcode']" placeholder="Barcode"/>
+            </td>
+            <td>
+                <input class="form-control" type="text" ng-model="row['Price']" placeholder="Price"/>
+            </td>
+            <td>
+                <input class="form-control" type="text" ng-model="row['Qty']" placeholder="Qty"/>
+            </td>
+            <td style="text-align: center;">
+                <button class="btn btn-danger" ng-click="deleteRow($index)">Delete</button>
+            </td>
+		</tr>
+	</tbody>
+</table>
+
+<button type="button" class="btn btn-secondary" ng-click="addRow()">Add Record</button>
+<button type="button" class="btn btn-primary float-right" ng-click="next()">Continue</button>

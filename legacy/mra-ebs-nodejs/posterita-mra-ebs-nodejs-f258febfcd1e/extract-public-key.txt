@@ -1,0 +1,3 @@
+Run the following command
+
+openssl x509 -pubkey -noout -in PublicKey.crt  > pubkey.pem

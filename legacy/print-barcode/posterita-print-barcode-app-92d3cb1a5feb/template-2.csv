@@ -1,0 +1,6 @@
+Name,Description,Barcode,Price,Qty
+Product A,Description A,000001,100.00,1
+Product B,Description B,6091300132625,100.00,2
+Product C,Description C,123456,100.00,1
+Product D,abcdefghijklmnopqrstuvwxyz,123456,100.00,1
+Product E,abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,000001,100.00,1

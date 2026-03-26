@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+	<title>Label Printing</title>
+	<!-- Add the Bootstrap CSS stylesheet -->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<!-- Add ng-table CSS stylesheet -->
+	<link rel="stylesheet" href="css/ng-table.css">
+	<link href="css/sweetalert2.min.css" rel="stylesheet">
+	<style>
+		.float-right {
+			float: right;
+		}
+
+		.home-page h2 {
+			text-align: center;
+		}
+
+		.home-page a {
+			text-decoration: none;
+			color: black;
+		}
+
+		.home-page .card {
+			margin-top: 48px;
+			text-align: center;
+		}
+
+		.home-page .card img, .home-page .card svg {
+			width: 90px;;
+		}
+
+		.home-page .card-container {
+			display:flex;
+			justify-content:space-evenly;
+			
+		}
+
+		.home-page .card-container .card {
+			width: 300px;
+			padding-top: 16px;
+		}
+
+	</style>
+</head>
+<body>
+	<div class="container mt-5" ui-view></div>
+	<!-- Add AngularJS, ui-router, Bootstrap JS library, Papa Parse, ng-table and DataTables -->
+    <script src="js/jquery-3.6.4.min.js"></script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/angular-ui-router.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/papaparse.min.js"></script>
+	<script src="js/jquery.dataTables.min.js"></script>
+	<script src="js/dataTables.bootstrap5.min.js"></script>
+	<script src="js/ng-table.js"></script>
+	<script src="js/sweetalert2.all.min.js
+"></script>
+	<script src="js/app.js"></script>
+</body>
+</html>

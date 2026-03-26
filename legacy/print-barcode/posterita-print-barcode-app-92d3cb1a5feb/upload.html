@@ -1,0 +1,11 @@
+<div><a ui-sref="home">Home</a></div>
+<h2>Step 1 of 3. Upload CSV File</h2>
+<form ng-submit="submitForm()">
+	<div class="mb-3">
+		<label for="csv-file" class="form-label">Choose a CSV file:</label>
+		<input type="file" class="form-control" id="csv-file" name="csv-file">
+	</div>
+	<button type="button" class="btn btn-secondary" ng-click="downloadTemplate()">Download template</button>
+	<button type="submit" class="btn btn-primary float-right">Upload</button>	
+</form>
+

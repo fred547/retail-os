@@ -1,0 +1,23 @@
+<div><a ui-sref="home">Home</a></div>
+<h2>Step 2 of 3. View Data</h2>
+<table ng-table="tableParams" class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+            <th>Description</th>
+            <th>Barcode</th>
+            <th>Price</th>
+            <th>Qty</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="row in $data">
+			<td ng-repeat="(key, value) in row">{{value}}</td>
+		</tr>
+	</tbody>
+</table>
+
+<button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+<button type="button" class="btn btn-primary float-right" ng-click="next()">Print Labels</button>
+
+

@@ -1,0 +1,53 @@
+-- before encryption --
+{"password":"P05t3r1t@","encryptKey":"n0Gaulmkm66HlQoxs58RojPSqt4reO03MMB/GOREkV4=","username":"Posterita","refreshToken":"false"}
+
+-- payload --
+{"requestId":"1b47fb65-60aa-45be-b584-e9298ebf4f3r","payload":"QRF+csirYShisxYv6bT216j7PMP7C/2luUgsAW11CswjPBPwSIYW4ZUkaa4o4332GWAK1DoyGHuicQfPOXVPJs2qQJjWPONAhDGyGFggGoJTQaloiZb9njEJSnNgT+hMf5L152Ak0gpzzNh7seT3WlhR/aDkQtS+FuMhY+di3d8+x8tFHoPfpfCvzXjoSt1fyBOKtleo0W1OcY1Us4lXCojh/y2vrfzcTAV5zyeipVJzPcHNp/s5+GyODMFU1c1B6qDbP60bLLkha74kLJaG4FtovELiaQy6KvwSuNmsvv0e37dAJM7vmy185IdzAYjYLS10iD0SgcC5O7Kz8hAvqpGu5fduajTK2X+4Qjbtbjn0x4vnsa5RwFfE/uOHowkqcYMeY1erkSuCXXOk/iUalUf/R+7PuPEheFs5HLi/q3re9q7tXE+N++2cvI/BK5YPXh37f9PKS5rUesvziQxrzFWtelMtDD9sDvQn4ful6JHEguhQl+0txnDk8zcJ8AQLSTKCM0c3/QenBBF+mZ30PxzLAuvxeehWPfwmm4at8sbxj14twdD8k/fOZ5kyH++zPBn/FbbMO2bFcy8cYX23gFf43BDyvE50nShFBI7RgPGPX/3AXDmDCBF8GM0HY4gcm6aBMYV1rv4QBWsU+r4TAxfRNBLjpdGU8LQ4Nqu+wvc=
+
+
+curl -X 'POST' \
+  'https://vfiscportal.mra.mu/einvoice-token-service/token-api/generate-token' \
+  -H 'accept: application/json' \
+  -H 'ebsMraId: 169441124153300YB3BMR161' \
+  -H 'username: Posterita' \
+  -H 'Content-Type: application/json' \
+  -d '{"requestId":"1b47fb65-60aa-45be-b584-e9298ebf4f3r","payload":"QRF+csirYShisxYv6bT216j7PMP7C/2luUgsAW11CswjPBPwSIYW4ZUkaa4o4332GWAK1DoyGHuicQfPOXVPJs2qQJjWPONAhDGyGFggGoJTQaloiZb9njEJSnNgT+hMf5L152Ak0gpzzNh7seT3WlhR/aDkQtS+FuMhY+di3d8+x8tFHoPfpfCvzXjoSt1fyBOKtleo0W1OcY1Us4lXCojh/y2vrfzcTAV5zyeipVJzPcHNp/s5+GyODMFU1c1B6qDbP60bLLkha74kLJaG4FtovELiaQy6KvwSuNmsvv0e37dAJM7vmy185IdzAYjYLS10iD0SgcC5O7Kz8hAvqpGu5fduajTK2X+4Qjbtbjn0x4vnsa5RwFfE/uOHowkqcYMeY1erkSuCXXOk/iUalUf/R+7PuPEheFs5HLi/q3re9q7tXE+N++2cvI/BK5YPXh37f9PKS5rUesvziQxrzFWtelMtDD9sDvQn4ful6JHEguhQl+0txnDk8zcJ8AQLSTKCM0c3/QenBBF+mZ30PxzLAuvxeehWPfwmm4at8sbxj14twdD8k/fOZ5kyH++zPBn/FbbMO2bFcy8cYX23gFf43BDyvE50nShFBI7RgPGPX/3AXDmDCBF8GM0HY4gcm6aBMYV1rv4QBWsU+r4TAxfRNBLjpdGU8LQ4Nqu+wvc="}'
+
+
+{
+  "status": "SUCCESS",
+  "responseId": "TK16944221013170659587752",
+  "requestId": "1b47fb65-60aa-45be-b584-e9298ebf4f3r",
+  "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQb3N0ZXJpdGEiLCJlYnNNcmFJZCI6IjE2OTQ0MTEyNDE1MzMwMFlCM0JNUjE2MSIsImV4cCI6MTY5NDUwODUwMSwiaWF0IjoxNjk0NDIyMTAxfQ._LCkAJRIwhbpbMJ-de3BvQsfFTrEl_ckc7kG74tkVWdSCyNi-NEcOlj-hSrvIWRF_2F7Rgka9vSGxw7Y1CisIw",
+  "key": "VKupUwmtaBeNOBkQrOhsLFoeg5Mi2nbaEmHRrQtDT3D4s/0ixJLLXn/yJoSbiNuj",
+  "expiryDate": "20230912 12:48:21"
+}
+
+
+{
+  "status": "SUCCESS",
+  "responseId": "TK16945041535605397705664",
+  "requestId": "69a41fa7-825b-4a59-8668-9efb372c54c6",
+  "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQb3N0ZXJpdGEiLCJlYnNNcmFJZCI6IjE2OTQ0MTEyNDE1MzMwMFlCM0JNUjE2MSIsImV4cCI6MTY5NDUwODUwMSwiaWF0IjoxNjk0NDIyMTAxfQ._LCkAJRIwhbpbMJ-de3BvQsfFTrEl_ckc7kG74tkVWdSCyNi-NEcOlj-hSrvIWRF_2F7Rgka9vSGxw7Y1CisIw",
+  "key": "ei4k5F/JbJGVttjJhxafmkqv0z3v+sku8ZB5+Ux5KPvcVeonUgCm6g+GGmBt5/hk",
+  "expiryDate": "20230912 12:48:21"
+}
+
+//when token is expired
+{
+  "responseId": "LT16950183823143525408649",
+  "responseDateTime": "20230918 10:26:22",
+  "requestId": "029b58de-6a83-4205-9096-5412ce59242c",
+  "status": "ERROR",
+  "environment": "TEST",
+  "infoMessages": null,
+  "errorMessages": [
+    {
+      "code": "ERR0050",
+      "description": "Token is not valid"
+    }
+  ],
+  "fiscalisedInvoices": null
+}
+
+{"responseId":"LT16962338644426768186713","responseDateTime":"20231002 12:04:24","requestId":"7f025dcc-12ec-4cbb-b5c7-4bbe6258f388","status":"SUCCESS","environment":"TEST","infoMessages":null,"errorMessages":null,"fiscalisedInvoices":[{"invoiceIdentifier":"000003","irn":"STD28UD-950544bc-7285-352e-bcda-361ae28bc9f3","qrCode":"iVBORw0KGgoAAAANSUhEUgAAAV4AAAFeAQAAAADlUEq3AAACB0lEQVR4Xu2YMbLCMAxE9YeCkiP4KDlacrQchSNQUjD4a1cGBPnzhwLsZreJIz1XO5JlW31fF3uN/CPBWYKzBGcJzhKcJThLcFaDTxYqHvmpNntkX6+eW1tiFtwf3vOzltPe4cZg11qYEDwEvnj2kVrt0BblFLsEj4MjZdPxcPYAPRU8Gq7nHf6dab1O8ECYH6R2V4ODhgi3Q4JHwBZy4zgVwMFYtITg/vBD0eLqsR1ATznBWV+Hw0H65WVVFy+rx0mEiOABMI4b+BXV5PXlQTCor/ra6wT3gePcAXPBpaZiVIuFYWAgJLgzzAiq6eYXrWyRTVkJ7gFzbEavo3Hwkk0vel1YKbg7zPcxpnipiZRFr3stK8EdYU8ZOxt2sb4gHkCNEdwVZjXNXNz8QotbpjibBI+Am4OFM1td4GJsfy40wR3hGNU8ZZyf59qsXKx4SvAYOAYzswOtXKbodWx6gsfCPhUA5jsA6iu0wxQneADcWlzANtWYqCGmKMFd4btu9VWQileaTVndJTjr43B656/tJKJmzgmCx8ARWQuNw+2mNT2mtjUouAvMInK/OLO5ODZzhULDLsHDYFgZxtFKXGqwQ/BImMfNAgfBoPvBU0KCe8P8rHCwHUC0EpeaP3qd4C5w2EW//Be3G/Q6Hkmbd37BfeD3JDhLcJbgLMFZgrMEZwnO+iL8C/vEgYRIgCkKAAAAAElFTkSuQmCC","status":"SUCCESS","warningMessages":null,"errorMessages":null}]}

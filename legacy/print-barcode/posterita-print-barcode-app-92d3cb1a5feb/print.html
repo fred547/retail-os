@@ -1,0 +1,31 @@
+<div><a ui-sref="home">Home</a></div>
+<h2>Step 3 of 3. Print Label</h2>
+<form>
+	<div class="mb-3">
+		<label class="form-label" for="printerSelect">Select Printer:</label>
+		<select id="printerSelect" class="form-control" ng-model="selectedPrinter" ng-options="printer for printer in printers"></select>
+	</div>
+	<div class="mb-3">
+		<label class="form-label" for="printerLanguageSelect">Select Printer Language:</label>
+		<select id="printerLanguageSelect" class="form-control" ng-model="selectedPrinterLanguage" ng-options="printerLanguage for printerLanguage in printerLanguages"></select>
+	</div>
+	<div class="mb-3 form-check">
+		<input type="checkbox" class="form-check-input" id="priceIncludeVat" ng-model="priceIncludeVat">
+		<label class="form-check-label" for="priceIncludeVat">Price includes VAT</label>
+	</div>
+	<div class="mb-3 form-check">
+		<input type="checkbox" class="form-check-input" id="priceVatFree" ng-model="priceVatFree">
+		<label class="form-check-label" for="priceVatFree">No VAT</label>
+	</div>
+	<div class="mb-3">
+		<label class="form-label" for="currencyInput">Currency:</label>
+		<input type="text" id="currencyInput" class="form-control" ng-model="currency">
+	</div>
+	
+	<button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+
+	<button type="button" class="btn btn-primary float-right" ng-click="printLabel()">Print Labels</button>
+	<button type="button" class="btn btn-success float-right" ng-click="calibratePrinter()" style="margin-right: 16px;">Calibrate Printer</button>
+	
+</form>
+
