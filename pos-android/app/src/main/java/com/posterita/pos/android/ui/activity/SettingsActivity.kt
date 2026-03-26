@@ -23,6 +23,7 @@ class SettingsActivity : BaseDrawerActivity() {
     private lateinit var binding: ActivitySettingsBinding
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var db: AppDatabase
+    @Inject lateinit var shiftService: com.posterita.pos.android.service.ShiftService
 
     override fun getDrawerHighlightId(): Int = R.id.nav_settings
 
@@ -100,6 +101,9 @@ class SettingsActivity : BaseDrawerActivity() {
         binding.kdsOption.setOnClickListener {
             startActivity(Intent(this, KdsSetupActivity::class.java))
         }
+
+        // Shift clock in/out
+        setupShiftCard()
 
         // Brands — owner only
         val isOwner = sessionManager.user?.isOwner == true
@@ -219,6 +223,74 @@ class SettingsActivity : BaseDrawerActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finishAffinity()
+    }
+
+    private var activeShiftId: Int? = null
+
+    private fun setupShiftCard() {
+        val btnToggle = binding.btnShiftToggle
+        val textStatus = binding.textShiftStatus
+        val user = sessionManager.user ?: return
+
+        // Check current shift status
+        lifecycleScope.launch {
+            val activeShift = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                shiftService.getActiveShift(user.user_id)
+            }
+            if (activeShift != null) {
+                activeShiftId = activeShift.id
+                textStatus.text = "Clocked in since ${activeShift.clock_in?.substring(11, 16) ?: "?"}"
+                btnToggle.text = "Clock Out"
+            } else {
+                activeShiftId = null
+                textStatus.text = "Not clocked in"
+                btnToggle.text = "Clock In"
+            }
+        }
+
+        btnToggle.setOnClickListener {
+            val shiftId = activeShiftId
+            if (shiftId != null) {
+                // Clock out
+                btnToggle.isEnabled = false
+                lifecycleScope.launch {
+                    val result = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                        shiftService.clockOut(shiftId)
+                    }
+                    btnToggle.isEnabled = true
+                    result.onSuccess { shift ->
+                        activeShiftId = null
+                        val hours = shift.hours_worked ?: 0.0
+                        textStatus.text = "Clocked out (${String.format("%.1f", hours)}h)"
+                        btnToggle.text = "Clock In"
+                        Toast.makeText(this@SettingsActivity, "Clocked out", Toast.LENGTH_SHORT).show()
+                    }.onFailure { e ->
+                        Toast.makeText(this@SettingsActivity, "Clock out failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                // Clock in
+                btnToggle.isEnabled = false
+                val storeId = sessionManager.store?.storeId ?: 0
+                val terminalId = sessionManager.terminal?.terminalId ?: 0
+                val userName = user.firstname ?: user.username ?: ""
+
+                lifecycleScope.launch {
+                    val result = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                        shiftService.clockIn(user.user_id, userName, storeId, terminalId)
+                    }
+                    btnToggle.isEnabled = true
+                    result.onSuccess { shift ->
+                        activeShiftId = shift.id
+                        textStatus.text = "Clocked in since ${shift.clock_in?.substring(11, 16) ?: "now"}"
+                        btnToggle.text = "Clock Out"
+                        Toast.makeText(this@SettingsActivity, "Clocked in", Toast.LENGTH_SHORT).show()
+                    }.onFailure { e ->
+                        Toast.makeText(this@SettingsActivity, "Clock in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     private fun openWebConsole(path: String, title: String) {
