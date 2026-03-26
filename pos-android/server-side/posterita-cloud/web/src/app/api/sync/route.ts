@@ -198,13 +198,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate required fields
-    if (!body.account_id || body.account_id === "null" || !body.terminal_id) {
+    // Validate required fields — account_id is mandatory, terminal_id can be 0 for first sync
+    if (!body.account_id || body.account_id === "null") {
       return NextResponse.json(
-        { error: "Valid account_id and terminal_id are required" },
+        { error: "Valid account_id is required" },
         { status: 400 }
       );
     }
+    // terminal_id = 0 is allowed for initial data pull (first sync on new device)
+    if (!body.terminal_id) body.terminal_id = 0;
 
     // ========================================
     // HMAC-SHA256 sync authentication
@@ -1028,15 +1030,24 @@ export async function POST(req: NextRequest) {
       db.from("preference").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("pos_user").select("user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
       db.from("discountcode").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
-      db.from("restaurant_table").select("*").eq("store_id", body.store_id).gte("updated_at", lastSync),
-      db.from("table_section").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync),
-      db.from("preparation_station").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync),
+      // Store-scoped queries: if store_id is 0 (first sync), pull all stores' data
+      body.store_id > 0
+        ? db.from("restaurant_table").select("*").eq("store_id", body.store_id).gte("updated_at", lastSync)
+        : db.from("restaurant_table").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      body.store_id > 0
+        ? db.from("table_section").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync)
+        : db.from("table_section").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      body.store_id > 0
+        ? db.from("preparation_station").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("updated_at", lastSync)
+        : db.from("preparation_station").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("category_station_mapping").select("*").eq("account_id", body.account_id),
       db.from("store").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
       db.from("terminal").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
       db.from("account").select("owner_id").eq("account_id", body.account_id).single(),
       db.from("inventory_count_session").select("*").eq("account_id", body.account_id).in("status", ["created", "active"]).gte("updated_at", lastSync),
-      db.from("serial_item").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      body.store_id > 0
+        ? db.from("serial_item").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
+        : db.from("serial_item").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
     ]);
 
     // Sibling brands (depends on owner_id from above)
