@@ -1,0 +1,24 @@
+<!-- load document page  -->
+
+<ons-page ng-controller="CompleteController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Confirm Picking</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-click="ctrl.completeDocument()" tabindex="1">Complete Picking</ons-button>
+	</div>
+	
+</form>
+		
+</div>
+
+</ons-page> 

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Inventory Spot Check</string>
+    <string-array name="navigation_drawer_items_array">
+        <item>Connect</item>
+        <item>Fixtures</item>
+        <item>Table</item>
+        <item>Log Out</item>
+    </string-array>
+</resources>

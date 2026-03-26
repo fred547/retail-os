@@ -15,6 +15,7 @@ import Infrastructure from "./Infrastructure";
 import Changelog from "./Changelog";
 import Roadmap from "./Roadmap";
 import MraDashboard from "./MraDashboard";
+import LegacyReview from "./LegacyReview";
 
 const PAGE_SIZE = 25;
 
@@ -75,6 +76,9 @@ export default async function PlatformPage({
       )}
       {tab === "mra" && (
         <MraDashboard />
+      )}
+      {tab === "legacy" && (
+        <LegacyReview />
       )}
     </div>
   );

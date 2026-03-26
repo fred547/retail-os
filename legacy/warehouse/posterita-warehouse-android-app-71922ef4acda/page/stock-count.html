@@ -1,0 +1,60 @@
+<!-- replenishment page  -->
+
+<ons-page ng-controller="StockCountController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Replenishment</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+	<div style="display: flex;flex-direction: column;position: absolute;top: 0;bottom: 10px;left: 10px;right: 10px;">
+		<div class="input-group">
+			<label>Scan/Enter Barcode</label>
+			<input type="text" id="barcode" value="" name="barcode" ng-model="ctrl.barcode" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.addBarcode() : void(0)">
+		</div>	
+
+        <div class="input-group" ng-show="ctrl.map.size > 0" style="flex: 1;overflow: scroll;" id="scrollpane">
+            <table style="width:100%">
+                <tr>
+                    <th class="left">Barcode</td>
+                    <th class="right">Qty</td>
+                    <th>&nbsp;</th>
+                </tr>
+    
+                <tr ng-repeat="stock in ctrl.stocks | orderBy : '-index'">
+                    <td class="left">{{stock.barcode}}</td>
+                    <td><input class="right" type="number" ng-model="stock.qty" ng-enter="ctrl.selectInput()"></td>
+                    <td><ons-button modifier="large" style="width:50px;" ng-click="ctrl.remove(stock.barcode)">X</ons-button></td>
+                </tr>	
+            </table>
+        </div>       
+        
+        
+        <div class="input-group" ng-show="ctrl.map.size > 0">
+            
+            <ons-row>
+                <ons-col>
+                    <ons-button modifier="outline" class="scanner-button" ng-click="ctrl.reset()" tabindex="3">Reset</ons-button>
+                </ons-col>
+                <ons-col width="10px">
+                    &nbsp;
+                </ons-col>
+                <ons-col>
+                    <ons-button modifier="large" class="scanner-button" ng-click="ctrl.next()" tabindex="2">Next</ons-button>
+                </ons-col>
+            </ons-row>
+
+        </div>	
+	
+	</div>	
+		
+</form>
+
+
+
+</ons-page> 

@@ -1,0 +1,57 @@
+<!-- settings page  -->
+
+<ons-page ng-controller="AboutController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.toggleMenu()">
+        <ons-icon icon="ion-navicon"></ons-icon>
+    </ons-toolbar-button>
+  </div>
+  <div class="center">About</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div>
+		<label>Domain</label>
+		<div class="stand-out">{{ctrl.domain}}</div>
+	</div>
+	<br>
+	
+	<div>
+		<label>Store</label>
+		<div class="stand-out">{{ctrl.store.name}}</div>
+	</div>
+	<br>
+	<div>
+		<label>Warehouse</label>
+		<div class="stand-out">{{ctrl.warehouse.name}}</div>
+	</div>
+	<br>
+	<div>
+		<label>User</label>
+		<div class="stand-out">{{ctrl.user.name}}</div>
+	</div>
+	<br>
+	<div>
+		<label>Role</label>
+		<div class="stand-out">{{ctrl.user.role.name}}</div>
+	</div>
+	<br>
+	<div>
+		<label>Version</label>
+		<div class="stand-out">{{ctrl.version}}</div>
+	</div>
+	<br>
+	<div>
+		<label>Server</label>
+		<div>{{ctrl.server}}</div>
+	</div>
+	<br>
+	<div>
+		<ons-button modifier="large" class="scanner-button" ng-click="ctrl.updateApp()" tabindex="1">Update</ons-button>
+	</div>
+</form>
+
+</ons-page> 

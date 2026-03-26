@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/complete_menu"
+        android:icon="@drawable/ic_complete_white_24dp"
+        android:title="Complete" />
+
+    <item
+        android:id="@+id/save_menu"
+        android:icon="@drawable/ic_save_white_24dp"
+        android:title="Save" />
+
+    <item
+        android:id="@+id/reset_menu"
+        android:icon="@drawable/ic_delete_white_24dp"
+        android:title="Reset" />
+
+    <item
+        android:id="@+id/history_menu"
+        android:icon="@drawable/ic_history_white_24dp"
+        android:title="History" />
+</menu>

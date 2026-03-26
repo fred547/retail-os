@@ -1,0 +1,37 @@
+<!-- move item page  -->
+
+<ons-page ng-controller="MoveItemController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Move Item</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<span class="stand-out">{{ ctrl.getLabelText() }}</span>
+		<input type="text" id="barcode" value="" name="barcode">
+	</div>
+	
+	<div class="input-group">
+		<ons-row>
+			<ons-col>
+				<ons-button modifier="outline" class="scanner-button" ng-click="ctrl.reset()" tabindex="3">Reset</ons-button>
+			</ons-col>
+			<ons-col width="10px">
+				&nbsp;
+			</ons-col>
+			<ons-col>
+				<ons-button modifier="large" class="scanner-button" ng-click="ctrl.next()" tabindex="2">{{ ctrl.getButtonText() }}</ons-button>
+			</ons-col>
+		</ons-row>
+	</div>
+	
+</form>
+
+</ons-page> 

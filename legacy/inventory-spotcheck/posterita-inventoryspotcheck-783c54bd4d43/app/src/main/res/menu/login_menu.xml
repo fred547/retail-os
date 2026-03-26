@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/store_and_warehouse_menu"
+        android:title="Store &amp; Warehouse" />
+
+    <item
+        android:id="@+id/server_endpoint_menu"
+        android:title="Server Endpoint" />
+
+</menu>

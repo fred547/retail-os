@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.posterita.app.inventoryspotcheck">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="org.posterita.app.inventoryspotcheck.AboutActivity"></activity>
+        <activity android:name="org.posterita.app.inventoryspotcheck.DashboardActivity" />
+        <activity android:name="org.posterita.app.inventoryspotcheck.LoginActivity" />
+        <activity android:name="org.posterita.app.inventoryspotcheck.SelectWarehouseActivity" />
+        <activity android:name="org.posterita.app.inventoryspotcheck.ServerEndpointActivity" />
+        <activity android:name="org.posterita.app.inventoryspotcheck.SplashScreenActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+        <activity android:name="org.posterita.app.inventoryspotcheck.MainActivity" android:theme="@style/AppTheme.NoActionBar">
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            -->
+        </activity>
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>

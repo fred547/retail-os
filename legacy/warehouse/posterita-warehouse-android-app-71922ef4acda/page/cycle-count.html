@@ -1,0 +1,78 @@
+<!-- cycle count page  -->
+
+<ons-page ng-controller="CycleCountController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">  
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Cycle Count</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div ng-show="ctrl.results == null">
+		<div class="input-group">Current Location: <b>{{ctrl.currentLocation}}</b> </div>
+		<div class="input-group">Last Barcode: <b>{{ctrl.lastBarcode}}</b> </div>
+	
+		<div class="input-group">
+			<label>Scan Barcode</label>
+			<input type="text" id="barcode" value="" name="barcode">
+		</div>
+		
+			
+		<div class="input-group">
+			<ons-row>
+				<ons-col>
+					<ons-button modifier="outline" class="scanner-button" ng-click="ctrl.reset()" tabindex="3">Reset</ons-button>
+				</ons-col>
+				<ons-col width="10px">
+					&nbsp;
+				</ons-col>
+				<ons-col>
+					<ons-button modifier="large" class="scanner-button" ng-click="ctrl.finishCount()" tabindex="2">Finish Count</ons-button>
+				</ons-col>
+			</ons-row>
+		</div>
+		
+		<div class="input-group csv-container" id="csv-container">
+		<pre>{{ ctrl.csv }}</pre>
+		</div>
+	</div>
+	
+	<div ng-show="ctrl.results != null">
+		<div class="input-group">
+			Created: <span class="stand-out">{{ ctrl.results.created }}</span>
+			
+		</div>
+		<div class="input-group">
+			Updated: <span class="stand-out">{{ ctrl.results.updated }}</span>
+		</div>
+		<div class="input-group">
+			Failed: <span class="stand-out">{{ ctrl.results.failed }}</span>
+		</div>
+		<br>
+		<div class="input-group" ng-show="ctrl.results.failed > 0">
+			<div>The following barcodes were not found!</div>
+			<ul>
+			<li ng-repeat="error in ctrl.results.errors">
+				<span class="stand-out">{{ error }}</span>
+			</li>
+			</ul>
+		</div>
+		
+		<div class="input-group">
+			<ons-row>
+				<ons-col>
+					<ons-button modifier="large" class="scanner-button" ng-click="ctrl.results=null;">Back</ons-button>
+				</ons-col>
+			</ons-row>
+		</div>
+	</div>
+
+
+</form>
+
+</ons-page> 

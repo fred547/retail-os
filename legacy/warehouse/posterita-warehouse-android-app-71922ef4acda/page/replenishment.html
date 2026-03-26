@@ -1,0 +1,68 @@
+<!-- replenishment page  -->
+
+<ons-page ng-controller="ReplenishmentController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Replenishment</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+	<div  ng-show="!ctrl.replenishments">
+		<div class="input-group">
+			<label>Scan/Enter Barcode</label>
+			<input type="text" id="barcode" value="" name="barcode" ng-model="ctrl.barcode" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.getReplenishments() : void(0)">
+		</div>
+		
+		
+		<div class="input-group">
+			<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.getReplenishments()" tabindex="2">Continue</ons-button>
+		</div>
+	</div>
+	
+	<div class="input-group" ng-show="ctrl.product">
+		<table style="width:100%">
+			<tr>
+				<td class="left">Name: {{ctrl.product.name}}</td>
+				<td class="right">Qty: {{ctrl.product.qty}}</td>
+			</tr>	
+			<tr>
+				<td class="left" colspan="2">Desc: {{ctrl.product.description}}</td>
+			</tr>	
+		</table>
+	</div>
+	
+	<div class="input-group" ng-show="ctrl.replenishments">
+	<table style="width:100%" ng-repeat="replenishment in ctrl.replenishments">
+		<tr>
+			<td class="left bold" colspan="2">{{replenishment.warehouse}}</td>
+			<td class="right">{{replenishment.qty}}</td>
+		</tr>
+		<tr>
+			<td>
+				<ons-button modifier="large" ng-click="replenishment.level_max = replenishment.level_max + 1" style="width:50px;">+</ons-button>
+			</td>
+			<td>
+				<input type="number" ng-model="replenishment.level_max">
+			</td>
+			<td>
+				<ons-button modifier="large" ng-disabled="replenishment.level_max == 0" ng-click="replenishment.level_max = replenishment.level_max > 0 ? replenishment.level_max - 1 : 0" style="width:50px;">-</ons-button>
+			</td>
+		</tr>
+	</table>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-click="ctrl.saveReplenishments()" >Save</ons-button>
+	</div>
+	
+	</div>	
+		
+</form>
+
+
+
+</ons-page> 

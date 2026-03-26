@@ -1,0 +1,39 @@
+<ons-page ng-controller="LoginController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/select-warehouse.html', {closeMenu: true})">
+        <ons-icon icon="ion-gear-a" style="font-size:30px;"></ons-icon>&nbsp
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Login</div>
+  <div class="right"><ons-toolbar-button onclick="closeApp()">Close</ons-toolbar-button></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<p>
+		{{ctrl.store.name}}, {{ctrl.warehouse.name}}
+	</p>
+	
+	<div class="input-group">
+		<label>Select User</label>
+		<select ng-model="ctrl.username">
+			<option ng-repeat="user in ctrl.userList" value="{{user.name}}">{{user.name}}</option>
+		</select>
+		<!-- 
+		<input type="text" ng-model="ctrl.username" ng-required="required">	
+		 -->	
+	</div>
+	
+	<div class="input-group">
+		<label>Enter PIN</label>
+		<input type="password" ng-model="ctrl.pin" id="pin" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.login() : void(0)">		
+	</div>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.login()" tabindex="1">Log In</ons-button>
+	</div>
+	
+</form>
+
+</ons-page> 

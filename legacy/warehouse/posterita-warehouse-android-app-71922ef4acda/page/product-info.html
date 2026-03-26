@@ -1,0 +1,102 @@
+<!-- view stock page  -->
+
+<ons-page ng-controller="ViewProductInfoController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Product Info</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<label>Scan/Enter Barcode</label>
+		<input type="text" id="barcode" value="" name="barcode" ng-model="ctrl.barcode" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.getProductInfo() : void(0)">
+	</div>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.getProductInfo()" tabindex="2">Get Product Info</ons-button>
+	</div>
+	
+	<div class="input-group product-info" ng-show="ctrl.productInfo">
+		<div>
+			<label>Name</label>
+			{{ ctrl.productInfo.name }}
+		</div>
+
+		<div>
+			<label>Description</label>
+			{{ ctrl.productInfo.description }}
+		</div>
+
+		<div>
+			<label>Retail Price</label>
+			{{ ctrl.productInfo.priceList | number:2 }}
+		</div>
+
+		<div ng-show="ctrl.productInfo.wholesalePrice">
+			<label>Wholesale Price</label>
+			{{ ctrl.productInfo.wholesalePrice | number:2 }}
+		</div>
+
+		<div>
+			<label>Mappings</label>
+			{{ ctrl.productInfo.mappings }}
+		</div>
+
+		<div>
+			<label>Primary Group</label>
+			{{ ctrl.productInfo.primarygroup }}
+		</div>
+
+		<div>
+			<label>Group 1</label>
+			{{ ctrl.productInfo.group1 }}
+		</div>
+
+		<div>
+			<label>Group 2</label>
+			{{ ctrl.productInfo.group2 }}
+		</div>
+
+		<div>
+			<label>Group 3</label>
+			{{ ctrl.productInfo.group3 }}
+		</div>
+
+		<div>
+			<label>Group 4</label>
+			{{ ctrl.productInfo.group4 }}
+		</div>
+
+		<div>
+			<label>Group 5</label>
+			{{ ctrl.productInfo.group5 }}
+		</div>
+
+		<div>
+			<label>Group 6</label>
+			{{ ctrl.productInfo.group6 }}
+		</div>
+
+		<div>
+			<label>Group 7</label>
+			{{ ctrl.productInfo.group7 }}
+		</div>
+
+		<div>
+			<label>Group 8</label>
+			{{ ctrl.productInfo.group8 }}
+		</div>
+
+	</div>
+		
+</form>
+
+
+
+</ons-page> 

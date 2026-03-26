@@ -1,0 +1,69 @@
+<!-- settings page  -->
+
+<ons-page ng-controller="StartTimeController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Start Time</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off" ng-show="ctrl.info == null">
+
+	<div class="input-group">
+		<label>Scan wristband to start time</label>
+		<input type="text" id="identifier_start_time" value="" name="identifier" ng-model="ctrl.identifier" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.startTime() : void(0)">
+	</div>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.startTime()" tabindex="2">Start</ons-button>
+	</div>
+	
+</form>
+
+<div ng-show="ctrl.info != null" id="info-container">
+
+<div ng-show="!ctrl.showMore">
+	<div class="input-group" id="profile-card">
+		<div id="profile-picture-container"><image src="image/profile.png" width="150px"></div>
+		<div class="customer-name">{{ ctrl.info.bp.name }}</div>
+		<div>{{ ctrl.info.bp.loyaltypoints }} points</div>
+		<div class="spacer">&nbsp;</div>
+		<div>Package Info</div>
+		<div class="package-name">{{ ctrl.info.product_name }}</div>
+		<div class="spacer">&nbsp;</div>
+		<div ng-show="!ctrl.info.expired" class="timer">{{ ctrl.info.time_left }}</div>
+		<div ng-show="ctrl.info.expired" class="timer">EXPIRED</div>
+		<div class="spacer">&nbsp;</div>
+	</div>
+
+	<div class="input-group">
+		<table style="width: 100%">
+			<td style="width: 45%">
+				<ons-button modifier="large" class="" ng-click="ctrl.back()">Back</ons-button>
+			</td>
+			<td>&nbsp;</td>
+			<td style="width: 45%">
+				<ons-button modifier="large" class="" ng-click="ctrl.showMore = true">More Info</ons-button>
+			</td>
+		</table>		
+	</div>
+</div>
+
+<div ng-show="ctrl.showMore">
+	<div class="input-group" id="profile-card">
+		<div>More Info</div>
+		<div>{{ ctrl.info | json }}</div>	
+	</div>
+
+	<div class="input-group">
+		<ons-button modifier="large" class="" ng-click="ctrl.showMore = false">Back</ons-button>		
+	</div>
+</div>
+		
+</div>
+
+</ons-page> 

@@ -1,0 +1,34 @@
+<ons-page ng-controller="WarehouseController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/server-endpoint.html', {closeMenu: true})">
+        <ons-icon icon="ion-gear-a" style="font-size:30px;"></ons-icon>
+    </ons-toolbar-button>    
+  </div>
+  <div class="center">Select Warehouse</div>
+  <div class="right"><ons-toolbar-button onclick="closeApp()">Close</ons-toolbar-button></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<label>Select Store</label>
+		<select ng-model="ctrl.store" ng-required="required" ng-options="store.name for store in ctrl.storeList"></select>
+		
+	</div>
+	
+	<div class="input-group">
+		<label>Select Warehouse</label>
+		<select ng-model="ctrl.warehouse" ng-required="required" ng-options="warehouse.name for warehouse in ctrl.store.warehouses"></select>
+		
+	</div>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.setLocation()" tabindex="2">Continue</ons-button>
+	</div>
+	
+</form>
+		
+</div>
+
+</ons-page> 

@@ -1,0 +1,42 @@
+<!-- view stock page  -->
+
+<ons-page ng-controller="ViewStockController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">View Stock</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<label>Scan/Enter Barcode</label>
+		<input type="text" id="barcode" value="" name="barcode" ng-model="ctrl.barcode" ng-required="required" ng-enter="ctrl.isValid() ? ctrl.getStocks() : void(0)">
+	</div>
+	
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!ctrl.isValid()" ng-click="ctrl.getStocks()" tabindex="2">View Stock</ons-button>
+	</div>
+	
+	<div class="input-group" ng-show="ctrl.stocks">
+		<table style="width:100%">
+			<tr>
+				<th class="bold left">Store</th>
+				<th class="bold right">Inventory Qty</th>
+			</tr>
+			<tr ng-repeat="stock in ctrl.stocks">
+				<td class="left">{{stock.warehouse}}</td>
+				<td class="right">{{stock.qty}}</td>
+			</tr>		
+		</table>
+	</div>
+		
+</form>
+
+
+
+</ons-page> 

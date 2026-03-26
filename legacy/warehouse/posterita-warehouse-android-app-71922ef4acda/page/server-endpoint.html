@@ -1,0 +1,36 @@
+<!-- settings page  -->
+
+<ons-page ng-controller="ServerEndpointController"> 
+<ons-toolbar fixed-style>
+  <div class="center">Server Endpoint</div>
+  <div class="right"><ons-toolbar-button onclick="closeApp()">Close</ons-toolbar-button></div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off">
+
+	<div class="input-group">
+		<label>Server Endpoint URL</label>
+		<input type="url" style="font-size: 19px;" placeholder="Server Endpoint URL" value="" id="endpoint-url" name="endpoint" ng-model="endpoint" required="required" ng-enter="form.$valid ? ok() : void(0)" autofocus>
+	  	<div ng-show="form.$submitted || form.endpoint.$touched" class="error">
+	    	<span ng-show="form.endpoint.$error.required">Enter a URL</span>
+	    	<span ng-show="form.endpoint.$error.url">Please enter a valid URL.</span>
+	  	</div>
+	</div>
+	
+	<div class="input-group">
+		<label>Domain</label>
+		<input type="text" style="font-size: 19px;" placeholder="Domain" value="" id="domain" name="domain" ng-model="domain" required="required" ng-enter="form.$valid ? ok() : void(0)" autofocus>
+	  	<div ng-show="form.$submitted || form.domain.$touched" class="error">
+	    	<span ng-show="form.domain.$error.required">Domain is required</span>
+	  	</div>
+	</div>
+		
+	<div class="input-group">
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!form.$valid" ng-click="test()" tabindex="1">Test</ons-button>		</ons-col>
+		<ons-col width="20px;">&nbsp;</ons-col>
+		<ons-button modifier="large" class="scanner-button" ng-disabled="!form.$valid" ng-click="ok()" tabindex="2">Continue</ons-button>
+	</div>
+	
+</form>
+
+</ons-page> 

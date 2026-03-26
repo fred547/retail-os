@@ -1,0 +1,83 @@
+<!-- picking page  -->
+
+<ons-page ng-controller="PickingController as ctrl"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.setMainPage('page/home.html', {closeMenu: true})">
+        <ons-icon icon="ion-chevron-left" style="font-size:30px;"></ons-icon>&nbsp;Back
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Pick Item
+   	#{{pickingList.header.documentNo}}</div>
+  <div class="right">
+  	<ons-toolbar-button ng-click="save()">
+        <ons-icon icon="ion-save" style="font-size:30px;"></ons-icon>&nbsp;Save
+    </ons-toolbar-button>
+  </div>
+</ons-toolbar>
+
+<form novalidate class="form-default" name="form" autocomplete="off" id="form">
+
+	<div>
+		<div class="mono">Loc     : <span class="stand-out">{{currentLine.location}}</span>
+		
+		<!-- 
+		<button type="button" style="float: right; font-size: 20px;" ng-click="showHistory()"><ons-icon icon="ion-calendar"></ons-icon></button>
+		 -->
+		
+		</div>
+		
+		<div class="mono">Barcode : <span class="stand-out">{{currentLine.barcode}}</span></div>
+		<div class="mono">Name    : <span class="stand-out">{{currentLine.name}}</span></div>
+		<div class="mono">Desc    : <span class="stand-out">{{currentLine.description}}</span></div>
+		<div class="mono">
+			<table width="100%">
+		        <tbody>
+		        <tr>
+		            <td>
+		                Qty     : <span class="stand-out">{{currentLine.qtyToPick | number:0 }}</span>
+		            </td>
+		            <td style="text-align: right;">
+		                CS      : <span class="stand-out">{{currentLine.qtyOnHand | number:0 }}</span>
+		            </td>
+		        </tr>
+		    	</tbody>
+		    </table>	
+		</div>
+	</div>
+	
+
+	<div class="input-group">
+		<label>Scan Barcode</label>
+		<!-- 
+		<input type="text" id="barcode" value="" name="barcode" ng-model="barcode" ng-required="required" ng-enter="validateBarcode()" tabindex="1">
+		 -->
+		 <input type="text" id="barcode" value="" name="barcode" tabindex="1">
+	</div>
+	
+	<div class="input-group">
+		<label>Qty Picked</label>
+		<!-- 
+		<input type="number" id="qtypicked" value="" name="qtypicked" ng-model="qtypicked" ng-required="required" ng-enter="isValid() ? validateLine() : void(0)" tabindex="2">
+		 -->
+		 <input type="number" id="qtypicked" value="" name="qtypicked" tabindex="2">
+	</div>
+	
+	<div class="input-group">
+		<ons-row>
+			<ons-col>
+				<ons-button modifier="outline" class="scanner-button" ng-click="noStock()" tabindex="3">No Stock</ons-button>
+			</ons-col>
+			<ons-col width="10px">
+				&nbsp;
+			</ons-col>
+			<ons-col>
+				<ons-button modifier="large" class="scanner-button" ng-disabled="!isValid()" ng-click="validateLine()" tabindex="4">Next Item</ons-button>
+			</ons-col>
+		</ons-row>
+	</div>
+	
+</form>
+</ons-page> 
+
+

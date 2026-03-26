@@ -1,0 +1,32 @@
+
+  <ons-dialog>
+	  <ons-toolbar inline>
+      <div class="center">
+        <strong>Query Info</strong>
+      </div>
+    </ons-toolbar>
+    
+    
+    <form novalidate="novalidate" autocomplete="off" name="form" class="form-default" style="margin: 20px;">
+    
+    <div class="input-group">
+		<label for="identifier_query" style="font-size:14px;">Scan wristband</label>
+		<input id="identifier_query" type="text" placeholder="" ng-enter="queryInfo(identifier)" style="margin-top: 20px;width: 100%;font-size: 20px; padding: 4px; box-sizing: border-box; border:solid 1px #999;" ng-model="identifier" required>		
+	</div>	
+	
+	<div class="input-group" style="margin-top: 30px;">
+		<ons-row>
+			<ons-col>
+				<ons-button class="button--large button--outline" ng-click="query_info_dialog.hide()">Cancel</ons-button>
+			</ons-col>
+			<ons-col>
+				&nbsp;
+			</ons-col>
+			<ons-col>
+				<ons-button class="button--large" ng-click="queryInfo(identifier)" ng-disabled="identifier == null || identifier.length == 0">Query</ons-button>
+			</ons-col>
+		</ons-row>
+	</div>
+    
+    </form>
+	</ons-dialog>

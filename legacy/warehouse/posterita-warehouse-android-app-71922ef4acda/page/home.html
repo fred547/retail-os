@@ -1,0 +1,53 @@
+<!-- settings page  -->
+
+<ons-page ng-controller="HomeController"> 
+<ons-toolbar fixed-style>
+  <div class="left">
+  	<ons-toolbar-button ng-click="menu.toggleMenu()">
+        <ons-icon icon="ion-navicon"></ons-icon>
+    </ons-toolbar-button>
+  </div>
+  <div class="center">Main Menu</div>
+  <div class="right"></div>
+</ons-toolbar>
+
+
+<div class="home-button-container">
+
+	<div ng-hide="role.allow_pick_item == 'N'">
+		<ons-button ng-click="startPicking()" class="scanner-button">Pick Item</ons-button>
+	</div>
+	 
+	<div ng-hide="role.allow_place_item == 'N'">
+		<ons-button ng-click="menu.setMainPage('page/put-away.html', {closeMenu: true})" class="scanner-button">Place Item</ons-button>
+	</div>
+	
+	
+	<div ng-hide="role.allow_move_item == 'N'">
+		<ons-button ng-click="menu.setMainPage('page/move-item.html', {closeMenu: true})" class="scanner-button">Move Item</ons-button>
+	</div>
+	 
+	
+	<div ng-hide="role.allow_cycle_count == 'N'">
+		<ons-button ng-click="menu.setMainPage('page/cycle-count.html', {closeMenu: true})" class="scanner-button">Cycle Count</ons-button>
+	</div>
+	
+	<div ng-hide="role.allow_view_stock == 'N'">
+		<ons-button ng-click="menu.setMainPage('page/view-stock.html', {closeMenu: true})" class="scanner-button">View Stock</ons-button>
+	</div>
+	 
+	 <div ng-hide="role.allow_reorder_level == 'N'">
+		<ons-button ng-click="menu.setMainPage('page/replenishment.html', {closeMenu: true})" class="scanner-button">Reorder Level</ons-button>
+	</div>
+
+	<div>
+		<ons-button ng-click="menu.setMainPage('page/stock-count.html', {closeMenu: true})" class="scanner-button">Replenishment</ons-button>
+	</div>
+
+	<div>
+		<ons-button ng-click="menu.setMainPage('page/product-info.html', {closeMenu: true})" class="scanner-button">Product Info</ons-button>
+	</div>
+</div>
+
+
+</ons-page> 

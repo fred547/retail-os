@@ -1,0 +1,180 @@
+div.home-button-container {	
+	text-align: center;		
+	padding: 10px 20px;
+}
+
+div.home-button-container ons-button {
+	
+	box-sizing: border-box;
+	display: block;
+	width: 100%;
+	margin: 10px 0px;
+}
+
+
+.form-default {
+	margin: 10px auto 0px;
+	width: 80%;
+}
+
+.form-default label {
+	display: block;
+	font-size: 14px;
+}
+
+.form-default .error {
+	font-size: 12px;
+	color: red;
+}
+
+.form-default .input-group {
+	margin-top: 5px;
+	padding: 5px 0px;
+	
+}
+
+.form-default input[type=email],
+.form-default input[type=password],
+.form-default input[type=url],
+.form-default input[type=number],
+.form-default input[type=text],
+.form-default textarea,
+.form-default select {
+	width: 100%;
+	box-sizing: border-box;
+	font-size: 24px;
+	padding: 8px;
+	margin: 0px;
+	border: solid 1px rgb(169, 169, 169);
+}
+
+
+.form-default select {
+}
+
+.form-default h2 {
+	text-align: center;
+}
+
+#profile-card {
+	text-align: center;
+	margin-top: 10px;
+}
+
+div.spacer {
+		
+}
+
+.toolbar-button ons-icon {
+	font-size: 40px;
+}
+
+/* menu page */
+ons-list.menu-list ons-list-item {
+	font-size: 20px;
+    padding: 10px 0px 10px 8px;
+    color: #444;
+}
+
+ons-list.menu-list ons-list-item ons-icon {
+	margin-right: 10px;
+	font-size: 40px;
+}
+
+.scanner-button {	
+	
+	height: 60px;
+    line-height: 50px;
+    font-weight: bold;
+    
+    width:100%;
+    text-align: center;
+    
+}
+
+#info-container {
+	position: absolute;
+    bottom: 0;
+    top: 0;
+    padding: 0px 10px;
+    left: 0;
+    right: 0;
+}
+
+div.timer {
+	
+	font-size: 40px;
+	font-weight: bold;
+}
+
+div.customer-name {
+	
+	font-size: 30px;
+	font-weight: bold;
+}
+
+div.package-name {
+	
+	font-size: 20px;
+	font-weight: bold;
+}
+
+/*==================================================================*/
+.dialog-error-msg {
+	font-size: 24px;
+    font-weight: bold;
+    color: red;
+}
+
+div.csv-container {
+	font-family: monospace;
+    overflow: scroll;
+    height: 237px;
+    font-size: 12px;
+}
+
+.force-select {  
+  -webkit-user-select: all;  /* Chrome 49+ */
+  -moz-user-select: all;     /* Firefox 43+ */
+  -ms-user-select: all;      /* No support yet */
+  user-select: all;          /* Likely future */   
+}
+
+.stand-out {
+	font-size: 25px;
+	font-weight: bold;
+}
+
+.mono {
+	font-family: monospace;
+}
+
+#logout-menu {	
+    bottom: 0;
+    position: absolute;
+    background: white;
+    border-top: solid 2px #ddd;
+    right: 0;
+    left: 0;
+}
+
+.left {
+	text-align: left;
+}
+
+.right {
+	text-align: right;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.product-info > div {
+	margin: 10px 0px;
+}
+
+.product-info > div > label {
+	font-weight: bold;
+}
+

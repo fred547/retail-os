@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ======================================================== -->
+<!--                  Warehouse Android App                   -->
+<!-- ======================================================== -->
+
+<project name="warehouse-android-app" default="build" basedir=".">
+
+	<property name="build.dir" value="${basedir}/build"/>
+
+	<!-- Cleans up the current build                                         -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<echo message="=========== Cleaning project ===========" />
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="init" depends="clean">
+		<echo message="=========== Building project ===========" />
+		<tstamp />
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="version" depends="init">
+		<echo message="=========== Set version ===========" />
+		<tstamp>
+			<format property="TODAY_BUILT" pattern="yyyyMMdd_hhmmss" locale="en,UK"/>
+		</tstamp>
+
+		<echo message="Built = ${TODAY_BUILT}" />
+
+		<copy file="${basedir}/js/version.js" tofile="${build.dir}/js/version.js"
+                overwrite="true" filtering="yes">
+			<filterset>
+				<filter token="VERSION" value="${TODAY_BUILT}"/>
+			</filterset>
+		</copy>
+
+	</target>
+
+	<target name="build" depends="version">
+		<echo message="=========== Building project ===========" />
+
+		<copy todir="${build.dir}">
+			<fileset dir="${basedir}" includes="icon.png, index.html, main.js, components/**, css/**, images/**, js/**, page/**" />
+		</copy>
+
+	</target>
+
+</project>

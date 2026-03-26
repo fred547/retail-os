@@ -1,0 +1,29 @@
+<ons-page modifier="menu-page" ng-controller="MenuController"> 
+
+	<ons-toolbar modifier="transparent">
+      <div class="right">
+        <ons-toolbar-button ng-click="menu.toggle()">
+          </ons-icon>Close
+        </ons-toolbar-button>
+      </div>
+    </ons-toolbar>
+    
+    <ons-list class="menu-list">
+
+	<ons-list-item modifier="tappable" onclick="menu.setMainPage('page/home.html', {closeMenu: true})">
+	 	<ons-icon icon="ion-home"></ons-icon>Home
+	</ons-list-item>
+		
+	<ons-list-item modifier="tappable" ng-click="menu.setMainPage('page/about.html', {closeMenu: true})">
+	     <ons-icon icon="fa fa-info-circle"></ons-icon>
+	     About
+	</ons-list-item>	
+	
+	<ons-list-item modifier="tappable" ng-click="logout()">
+	     <ons-icon icon="ion-log-out"></ons-icon>
+	     Logout
+	</ons-list-item>	
+   
+</ons-list> 
+    
+</ons-page> 
