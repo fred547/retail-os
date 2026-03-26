@@ -28,9 +28,14 @@ import com.posterita.pos.android.data.local.entity.*
         TableSection::class,
         PreparationStation::class,
         CategoryStationMapping::class,
-        SerialItem::class
+        SerialItem::class,
+        LoyaltyConfig::class,
+        Promotion::class,
+        MenuSchedule::class,
+        Shift::class,
+        Delivery::class
     ],
-    version = 30,
+    version = 31,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -68,6 +73,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun preparationStationDao(): PreparationStationDao
     abstract fun categoryStationMappingDao(): CategoryStationMappingDao
     abstract fun serialItemDao(): SerialItemDao
+    abstract fun loyaltyConfigDao(): LoyaltyConfigDao
+    abstract fun promotionDao(): PromotionDao
+    abstract fun menuScheduleDao(): MenuScheduleDao
+    abstract fun shiftDao(): ShiftDao
+    abstract fun deliveryDao(): DeliveryDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -110,7 +120,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_26_27,
                         MIGRATION_27_28,
                         MIGRATION_28_29,
-                        MIGRATION_29_30
+                        MIGRATION_29_30,
+                        MIGRATION_30_31
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -156,7 +167,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_26_27,
                     MIGRATION_27_28,
                     MIGRATION_28_29,
-                    MIGRATION_29_30
+                    MIGRATION_29_30,
+                    MIGRATION_30_31
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -489,6 +501,119 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE product ADD COLUMN quantity_on_hand REAL NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE product ADD COLUMN reorder_point REAL NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE product ADD COLUMN track_stock INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        private val MIGRATION_30_31 = object : Migration(30, 31) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS loyalty_config (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        points_per_currency REAL NOT NULL DEFAULT 1.0,
+                        redemption_rate REAL NOT NULL DEFAULT 0.01,
+                        min_redeem_points INTEGER NOT NULL DEFAULT 100,
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        welcome_bonus INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS promotion (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        name TEXT NOT NULL DEFAULT '',
+                        description TEXT,
+                        type TEXT NOT NULL DEFAULT 'percentage_off',
+                        discount_value REAL NOT NULL DEFAULT 0,
+                        buy_quantity INTEGER,
+                        get_quantity INTEGER,
+                        applies_to TEXT NOT NULL DEFAULT 'order',
+                        product_ids TEXT,
+                        category_ids TEXT,
+                        min_order_amount REAL,
+                        max_discount_amount REAL,
+                        promo_code TEXT,
+                        max_uses INTEGER,
+                        max_uses_per_customer INTEGER,
+                        start_date TEXT,
+                        end_date TEXT,
+                        days_of_week TEXT,
+                        start_time TEXT,
+                        end_time TEXT,
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        store_id INTEGER,
+                        priority INTEGER NOT NULL DEFAULT 0,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS menu_schedule (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        name TEXT NOT NULL DEFAULT '',
+                        description TEXT,
+                        category_ids TEXT,
+                        start_time TEXT,
+                        end_time TEXT,
+                        days_of_week TEXT,
+                        priority INTEGER NOT NULL DEFAULT 0,
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS shift (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        terminal_id INTEGER NOT NULL DEFAULT 0,
+                        user_id INTEGER NOT NULL DEFAULT 0,
+                        user_name TEXT,
+                        clock_in TEXT,
+                        clock_out TEXT,
+                        break_minutes INTEGER NOT NULL DEFAULT 0,
+                        hours_worked REAL,
+                        notes TEXT,
+                        status TEXT NOT NULL DEFAULT 'active',
+                        created_at TEXT
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS delivery (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        order_id INTEGER,
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        customer_id INTEGER,
+                        customer_name TEXT,
+                        customer_phone TEXT,
+                        delivery_address TEXT,
+                        delivery_city TEXT,
+                        delivery_notes TEXT,
+                        driver_id INTEGER,
+                        driver_name TEXT,
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        estimated_time TEXT,
+                        actual_delivery_at TEXT,
+                        assigned_at TEXT,
+                        picked_up_at TEXT,
+                        distance_km REAL,
+                        delivery_fee REAL,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
             }
         }
     }

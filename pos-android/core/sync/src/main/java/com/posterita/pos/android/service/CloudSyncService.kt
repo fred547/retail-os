@@ -719,6 +719,66 @@ class CloudSyncService @Inject constructor(
                 }
             }
 
+            // Loyalty config (full replace per account)
+            response.loyaltyConfigs?.let { list ->
+                db.loyaltyConfigDao().deleteByAccount(prefsManager.accountId)
+                if (list.isNotEmpty()) {
+                    val configs = list.mapNotNull { mapToLoyaltyConfig(it) }
+                    if (configs.isNotEmpty()) {
+                        db.loyaltyConfigDao().insertAll(configs)
+                        Log.d(TAG, "Pulled ${configs.size} loyalty configs")
+                    }
+                }
+            }
+
+            // Promotions
+            response.promotions?.let { list ->
+                if (list.isNotEmpty()) {
+                    val promotions = list.mapNotNull { mapToPromotion(it) }
+                    if (promotions.isNotEmpty()) {
+                        db.promotionDao().insertAll(promotions)
+                        Log.d(TAG, "Pulled ${promotions.size} promotions")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Menu schedules
+            response.menuSchedules?.let { list ->
+                if (list.isNotEmpty()) {
+                    val schedules = list.mapNotNull { mapToMenuSchedule(it) }
+                    if (schedules.isNotEmpty()) {
+                        db.menuScheduleDao().insertAll(schedules)
+                        Log.d(TAG, "Pulled ${schedules.size} menu schedules")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Shifts
+            response.shifts?.let { list ->
+                if (list.isNotEmpty()) {
+                    val shifts = list.mapNotNull { mapToShift(it) }
+                    if (shifts.isNotEmpty()) {
+                        db.shiftDao().insertAll(shifts)
+                        Log.d(TAG, "Pulled ${shifts.size} shifts")
+                    }
+                    processedItems += list.size
+                }
+            }
+
+            // Deliveries
+            response.deliveries?.let { list ->
+                if (list.isNotEmpty()) {
+                    val deliveries = list.mapNotNull { mapToDelivery(it) }
+                    if (deliveries.isNotEmpty()) {
+                        db.deliveryDao().insertAll(deliveries)
+                        Log.d(TAG, "Pulled ${deliveries.size} deliveries")
+                    }
+                    processedItems += list.size
+                }
+            }
+
         }
     }
 
@@ -1332,6 +1392,140 @@ class CloudSyncService @Inject constructor(
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map inventory count session: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToLoyaltyConfig(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.LoyaltyConfig? {
+        return try {
+            com.posterita.pos.android.data.local.entity.LoyaltyConfig(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                points_per_currency = (map["points_per_currency"] as? Number)?.toDouble() ?: 1.0,
+                redemption_rate = (map["redemption_rate"] as? Number)?.toDouble() ?: 0.01,
+                min_redeem_points = (map["min_redeem_points"] as? Number)?.toInt() ?: 100,
+                is_active = map["is_active"] as? Boolean ?: true,
+                welcome_bonus = (map["welcome_bonus"] as? Number)?.toInt() ?: 0,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map loyalty config: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToPromotion(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.Promotion? {
+        return try {
+            com.posterita.pos.android.data.local.entity.Promotion(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                name = map["name"] as? String ?: "",
+                description = map["description"] as? String,
+                type = map["type"] as? String ?: "percentage_off",
+                discount_value = (map["discount_value"] as? Number)?.toDouble() ?: 0.0,
+                buy_quantity = (map["buy_quantity"] as? Number)?.toInt(),
+                get_quantity = (map["get_quantity"] as? Number)?.toInt(),
+                applies_to = map["applies_to"] as? String ?: "order",
+                product_ids = map["product_ids"]?.toString(),
+                category_ids = map["category_ids"]?.toString(),
+                min_order_amount = (map["min_order_amount"] as? Number)?.toDouble(),
+                max_discount_amount = (map["max_discount_amount"] as? Number)?.toDouble(),
+                promo_code = map["promo_code"] as? String,
+                max_uses = (map["max_uses"] as? Number)?.toInt(),
+                max_uses_per_customer = (map["max_uses_per_customer"] as? Number)?.toInt(),
+                start_date = map["start_date"] as? String,
+                end_date = map["end_date"] as? String,
+                days_of_week = map["days_of_week"]?.toString(),
+                start_time = map["start_time"] as? String,
+                end_time = map["end_time"] as? String,
+                is_active = map["is_active"] as? Boolean ?: true,
+                store_id = (map["store_id"] as? Number)?.toInt(),
+                priority = (map["priority"] as? Number)?.toInt() ?: 0,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map promotion: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToMenuSchedule(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.MenuSchedule? {
+        return try {
+            com.posterita.pos.android.data.local.entity.MenuSchedule(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String ?: "",
+                description = map["description"] as? String,
+                category_ids = map["category_ids"]?.toString(),
+                start_time = map["start_time"] as? String,
+                end_time = map["end_time"] as? String,
+                days_of_week = map["days_of_week"]?.toString(),
+                priority = (map["priority"] as? Number)?.toInt() ?: 0,
+                is_active = map["is_active"] as? Boolean ?: true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map menu schedule: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToShift(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.Shift? {
+        return try {
+            com.posterita.pos.android.data.local.entity.Shift(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                terminal_id = (map["terminal_id"] as? Number)?.toInt() ?: 0,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                user_name = map["user_name"] as? String,
+                clock_in = map["clock_in"] as? String,
+                clock_out = map["clock_out"] as? String,
+                break_minutes = (map["break_minutes"] as? Number)?.toInt() ?: 0,
+                hours_worked = (map["hours_worked"] as? Number)?.toDouble(),
+                notes = map["notes"] as? String,
+                status = map["status"] as? String ?: "active",
+                created_at = map["created_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map shift: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToDelivery(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.Delivery? {
+        return try {
+            com.posterita.pos.android.data.local.entity.Delivery(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                order_id = (map["order_id"] as? Number)?.toInt(),
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                customer_id = (map["customer_id"] as? Number)?.toInt(),
+                customer_name = map["customer_name"] as? String,
+                customer_phone = map["customer_phone"] as? String,
+                delivery_address = map["delivery_address"] as? String,
+                delivery_city = map["delivery_city"] as? String,
+                delivery_notes = map["delivery_notes"] as? String,
+                driver_id = (map["driver_id"] as? Number)?.toInt(),
+                driver_name = map["driver_name"] as? String,
+                status = map["status"] as? String ?: "pending",
+                estimated_time = map["estimated_time"] as? String,
+                actual_delivery_at = map["actual_delivery_at"] as? String,
+                assigned_at = map["assigned_at"] as? String,
+                picked_up_at = map["picked_up_at"] as? String,
+                distance_km = (map["distance_km"] as? Number)?.toDouble(),
+                delivery_fee = (map["delivery_fee"] as? Number)?.toDouble(),
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map delivery: ${e.message}")
             null
         }
     }

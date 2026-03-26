@@ -98,6 +98,12 @@ class CartActivity : BaseDrawerActivity() {
     @Inject
     lateinit var loyaltyRepository: LoyaltyRepository
 
+    @Inject
+    lateinit var loyaltyConfigDao: com.posterita.pos.android.data.local.dao.LoyaltyConfigDao
+
+    @Inject
+    lateinit var promotionDao: com.posterita.pos.android.data.local.dao.PromotionDao
+
     private lateinit var cartAdapter: CartProductAdapter
 
     private var blinkPollingJob: Job? = null
@@ -2915,6 +2921,8 @@ class CartActivity : BaseDrawerActivity() {
         shoppingCartViewModel.grandTotalAmount.observe(this) { amount ->
             val currency = sessionManager.account?.currency ?: ""
             binding.textViewGrandTotal?.text = "$currency ${NumberUtils.formatPrice(amount ?: 0.0)}"
+            // Refresh loyalty estimated earn when total changes
+            showPosteritaLoyalty()
 
             // Disable Pay button when cart is empty
             val isEmpty = (amount ?: 0.0) == 0.0
@@ -2936,7 +2944,8 @@ class CartActivity : BaseDrawerActivity() {
                 if (phone.isNotEmpty() && loyaltyRepository.isEnabled) {
                     fetchLoyaltyBalance(phone)
                 } else {
-                    binding.textViewLoyaltyPoints?.visibility = View.GONE
+                    // Try Posterita-native loyalty (from Room DB)
+                    showPosteritaLoyalty()
                 }
             } else {
                 binding.textViewCustomerName?.text = "Walk-in customer"
@@ -2971,15 +2980,58 @@ class CartActivity : BaseDrawerActivity() {
 
     private fun fetchLoyaltyBalance(phone: String) {
         lifecycleScope.launch {
-            val balance = withContext(Dispatchers.IO) {
-                loyaltyRepository.getBalance(phone)
+            // Try external loyalty API first
+            if (loyaltyRepository.isEnabled) {
+                val balance = withContext(Dispatchers.IO) {
+                    loyaltyRepository.getBalance(phone)
+                }
+                if (balance != null) {
+                    binding.textViewLoyaltyPoints?.text = "${balance.points} pts"
+                    binding.textViewLoyaltyPoints?.visibility = View.VISIBLE
+                    return@launch
+                }
             }
-            if (balance != null) {
-                binding.textViewLoyaltyPoints?.text = "${balance.points} pts"
-                binding.textViewLoyaltyPoints?.visibility = View.VISIBLE
-            } else {
+
+            // Fallback: show Posterita-native loyalty from customer.loyaltypoints
+            showPosteritaLoyalty()
+        }
+    }
+
+    /**
+     * Show Posterita-native loyalty points from Room DB (offline-first).
+     * Displays customer balance + estimated earn for this order.
+     */
+    private fun showPosteritaLoyalty() {
+        lifecycleScope.launch {
+            val customer = shoppingCartViewModel.customer.value
+            if (customer == null || customer.customer_id == 0) {
                 binding.textViewLoyaltyPoints?.visibility = View.GONE
+                return@launch
             }
+
+            val accountId = sessionManager.account?.account_id ?: return@launch
+            val config = withContext(Dispatchers.IO) {
+                loyaltyConfigDao.getActiveConfig(accountId)
+            }
+
+            if (config == null) {
+                // No loyalty config — show raw points if customer has any
+                if (customer.loyaltypoints > 0) {
+                    binding.textViewLoyaltyPoints?.text = "${customer.loyaltypoints} pts"
+                    binding.textViewLoyaltyPoints?.visibility = View.VISIBLE
+                } else {
+                    binding.textViewLoyaltyPoints?.visibility = View.GONE
+                }
+                return@launch
+            }
+
+            // Show balance + estimated earn
+            val grandTotal = shoppingCartViewModel.grandTotalAmount.value ?: 0.0
+            val estimatedEarn = Math.floor(grandTotal * config.points_per_currency).toInt()
+            val balanceText = "${customer.loyaltypoints} pts"
+            val earnText = if (estimatedEarn > 0) " (+$estimatedEarn)" else ""
+            binding.textViewLoyaltyPoints?.text = "$balanceText$earnText"
+            binding.textViewLoyaltyPoints?.visibility = View.VISIBLE
         }
     }
 

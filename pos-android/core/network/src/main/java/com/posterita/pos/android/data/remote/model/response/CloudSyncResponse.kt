@@ -30,6 +30,11 @@ data class CloudSyncResponse(
     @SerializedName("preparation_stations") val preparationStations: List<Map<String, Any?>>? = null,
     @SerializedName("category_station_mappings") val categoryStationMappings: List<Map<String, Any?>>? = null,
     @SerializedName("serial_items") val serialItems: List<Map<String, Any?>>? = null,
+    @SerializedName("loyalty_configs") val loyaltyConfigs: List<Map<String, Any?>>? = null,
+    @SerializedName("promotions") val promotions: List<Map<String, Any?>>? = null,
+    @SerializedName("menu_schedules") val menuSchedules: List<Map<String, Any?>>? = null,
+    @SerializedName("shifts") val shifts: List<Map<String, Any?>>? = null,
+    @SerializedName("deliveries") val deliveries: List<Map<String, Any?>>? = null,
     @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
     @SerializedName("tax_config") val taxConfig: Map<String, Any?>? = null,
 

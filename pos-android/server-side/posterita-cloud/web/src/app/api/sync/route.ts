@@ -1212,6 +1212,11 @@ export async function POST(req: NextRequest) {
       { data: thisAccount },
       { data: inventorySessions },
       { data: serialItems },
+      { data: loyaltyConfigs },
+      { data: promotions },
+      { data: menuSchedules },
+      { data: shifts },
+      { data: deliveries },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1237,6 +1242,18 @@ export async function POST(req: NextRequest) {
       body.store_id > 0
         ? db.from("serial_item").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
         : db.from("serial_item").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      // Phase 3 entities: loyalty, promotions, menus, shifts, deliveries
+      db.from("loyalty_config").select("*").eq("account_id", body.account_id),
+      db.from("promotion").select("*").eq("account_id", body.account_id).eq("is_active", true).eq("is_deleted", false),
+      body.store_id > 0
+        ? db.from("menu_schedule").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_active", true)
+        : db.from("menu_schedule").select("*").eq("account_id", body.account_id).eq("is_active", true),
+      body.store_id > 0
+        ? db.from("shift").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).gte("created_at", lastSync)
+        : db.from("shift").select("*").eq("account_id", body.account_id).gte("created_at", lastSync),
+      body.store_id > 0
+        ? db.from("delivery").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
+        : db.from("delivery").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
     ]);
 
     // Sibling brands (depends on owner_id from above)

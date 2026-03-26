@@ -62,4 +62,9 @@ object DatabaseModule {
     @Provides fun provideErrorLogDao(db: AppDatabase): ErrorLogDao = db.errorLogDao()
     @Provides fun providePreparationStationDao(db: AppDatabase): PreparationStationDao = db.preparationStationDao()
     @Provides fun provideSerialItemDao(db: AppDatabase): SerialItemDao = db.serialItemDao()
+    @Provides fun provideLoyaltyConfigDao(db: AppDatabase): LoyaltyConfigDao = db.loyaltyConfigDao()
+    @Provides fun providePromotionDao(db: AppDatabase): PromotionDao = db.promotionDao()
+    @Provides fun provideMenuScheduleDao(db: AppDatabase): MenuScheduleDao = db.menuScheduleDao()
+    @Provides fun provideShiftDao(db: AppDatabase): ShiftDao = db.shiftDao()
+    @Provides fun provideDeliveryDao(db: AppDatabase): DeliveryDao = db.deliveryDao()
 }
