@@ -242,13 +242,17 @@ class WebConsoleActivity : BaseActivity() {
                 Log.e("WebConsoleActivity", "OTT: accountId is invalid ($accountId)")
                 return@withContext null
             }
-            // Read user/store/terminal from session or DB (not prefs — prefs may belong to another brand)
-            val user = sessionManager.user ?: try { db.userDao().getAllUsers().firstOrNull() } catch (_: Exception) { null }
-            val store = sessionManager.store ?: try { db.storeDao().getAllStores().firstOrNull() } catch (_: Exception) { null }
-            val terminal = sessionManager.terminal ?: try { db.terminalDao().getAllTerminals().firstOrNull() } catch (_: Exception) { null }
+            // Read user/store/terminal from this brand's DB (not sessionManager — it may hold another brand's context)
+            val user = try { db.userDao().getAllUsers().firstOrNull() } catch (_: Exception) { null }
+            val store = try { db.storeDao().getAllStores().lastOrNull() } catch (_: Exception) { null }
+            val terminal = if (store != null) {
+                try { db.terminalDao().getTerminalsForStore(store.storeId).firstOrNull() } catch (_: Exception) { null }
+            } else {
+                try { db.terminalDao().getAllTerminals().lastOrNull() } catch (_: Exception) { null }
+            }
             val userId = user?.user_id ?: 0
-            val storeId = store?.storeId ?: prefsManager.storeId
-            val terminalId = terminal?.terminalId ?: prefsManager.terminalId
+            val storeId = store?.storeId ?: 0
+            val terminalId = terminal?.terminalId ?: 0
             Log.d("WebConsoleActivity", "OTT: requesting token for account=$accountId user=$userId store=$storeId terminal=$terminalId")
 
             val url = URL("$WEB_CONSOLE_BASE/api/auth/ott")
