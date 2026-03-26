@@ -110,7 +110,18 @@ class CloudSyncService @Inject constructor(
                 "Connecting to cloud..."
             )
 
-            val lastSyncAt = prefsManager.getString(syncDateKey(accountId), "1970-01-01T00:00:00.000Z")
+            var lastSyncAt = prefsManager.getString(syncDateKey(accountId), "1970-01-01T00:00:00.000Z")
+
+            // Integrity check: if local DB is empty but we've synced before, reset to epoch
+            // This catches cases where prefs were wiped, DB was cleared, or login on new device
+            if (lastSyncAt != "1970-01-01T00:00:00.000Z") {
+                val localProductCount = try { db.productDao().getAllProductsSync().size } catch (_: Exception) { 0 }
+                if (localProductCount == 0) {
+                    Log.w(TAG, "Integrity check: 0 local products but last_sync_at=$lastSyncAt — resetting to epoch for full pull")
+                    lastSyncAt = "1970-01-01T00:00:00.000Z"
+                    prefsManager.setString(syncDateKey(accountId), lastSyncAt)
+                }
+            }
 
             // Collect local data to push
             val unsyncedOrders = db.orderDao().getUnSyncedOrders()
