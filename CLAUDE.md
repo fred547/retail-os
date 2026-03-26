@@ -53,7 +53,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/core/network/` | **`:core:network`** — Retrofit APIs, request/response models, NetworkInterceptor |
 | `pos-android/core/sync/` | **`:core:sync`** — CloudSyncService, CloudSyncWorker, SyncStatusManager |
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
-| `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
+| `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink, loyalty, stock, suppliers, POs, promotions, deliveries, shifts, menus, reports) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
 | `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00039) |
 
@@ -212,6 +212,11 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | Reports/errors | WebView | Native | Query |
 | Inventory count | Native | Native | CRUD + Sync |
 | Kitchen/restaurant (KDS, stations, sections) | Native | Native (`/stations`) | Sync |
+| Loyalty / promotions | — | Native | CRUD + Sync earn |
+| Suppliers / purchase orders | — | Native | CRUD + GRN |
+| Deliveries | — | Native | CRUD + status |
+| Shifts (clock in/out) | — | Native | CRUD |
+| Menu schedules | — | Native | CRUD |
 | Account management | — | Native (`/platform`) | CRUD |
 
 ## WebView (OTT Flow)
@@ -617,9 +622,10 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Phase 2.6** ✅ Serialized inventory — VIN/IMEI tracking, serial items, warranty
 - **Phase 2.7** ✅ Multi-module architecture — :core:database, :core:common, :core:network, :core:sync
 - **Phase 2.8** ✅ Sync hardening — 6 features (errors, retry, receipt, context, conflicts, checksum)
-- **Phase 3** ← CURRENT: Compliance, loyalty, suppliers, analytics
+- **Phase 3** ✅ Compliance, loyalty, suppliers, promotions, delivery, shifts, analytics (10/12 done, 2 blocked: WhatsApp, Peach Payments)
+- **Phase 4** ← CURRENT: Scale, integrations, advanced features
 
-### Phase 3 Priorities (next to implement)
+### Phase 3 Features (completed)
 
 1. **MRA e-invoicing** ✅ — Mauritius compliance: BRN, TAN, VAT ID, datetime, unique transaction ID on every receipt. DB tables: `account_tax_config`, `mra_counter`. Migration: `00032_mra_ebs.sql`.
 2. **Stock deduction on sale** ✅ — auto-decrement product `quantity_on_hand` when orders sync. `stock_journal` audit trail. Manual adjustments via `/api/stock`. Migration: `00033_stock_deduction.sql`.
