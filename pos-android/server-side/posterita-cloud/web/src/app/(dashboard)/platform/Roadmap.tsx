@@ -288,7 +288,7 @@ const phases: Phase[] = [
           { name: "Modifier walkthrough dialog", status: "done" },
           { name: "Category-based modifiers", status: "done" },
           { name: "Product-level modifiers", status: "done" },
-          { name: "Menu scheduling (breakfast/lunch/dinner)", status: "planned", detail: "Time-based menu activation" },
+          { name: "Menu scheduling (breakfast/lunch/dinner)", status: "done", detail: "CRUD, day-of-week, priority, active endpoint" },
         ],
       },
       {

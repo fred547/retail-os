@@ -34,6 +34,7 @@ import {
   Tag,
   Heart,
   Truck,
+  Clock,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -73,6 +74,7 @@ const sections: NavSection[] = [
     items: [
       { name: "Tables", href: "/tables", icon: UtensilsCrossed },
       { name: "Stations", href: "/stations", icon: ChefHat },
+      { name: "Menu Schedules", href: "/menu-schedules", icon: Clock },
     ],
   },
   {

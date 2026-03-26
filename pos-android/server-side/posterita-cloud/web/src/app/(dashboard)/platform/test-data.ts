@@ -74,8 +74,8 @@ export const TEST_SUITES = {
     ],
   },
   web: {
-    totalTests: 247,
-    totalFiles: 22,
+    totalTests: 255,
+    totalFiles: 23,
     allPassed: true,
     lastVerified: "2026-03-27",
     version: "Vitest 4.1, Next.js 16",
@@ -100,6 +100,7 @@ export const TEST_SUITES = {
       { name: "z-report.test.ts", tests: 5, area: "Z-report generation, CSV export, empty data" },
       { name: "loyalty.test.ts", tests: 14, area: "Loyalty config, earn, redeem, wallets, transactions" },
       { name: "suppliers.test.ts", tests: 8, area: "Supplier CRUD, PO create, PO list, auth" },
+      { name: "menu-schedules.test.ts", tests: 8, area: "Menu schedule CRUD, active filter by time/day" },
     ],
   },
   scenarios: {

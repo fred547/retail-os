@@ -55,7 +55,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00035) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00036) |
 
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
@@ -241,6 +241,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
 | `/serial-items` + `/new` | ✅ | `/loyalty` (loyalty program) | ✅ |
 | `/suppliers` (supplier mgmt) | ✅ | `/purchase-orders` (PO + GRN) | ✅ |
+| `/menu-schedules` (time menus) | ✅ | | |
 
 ## API Routes
 
@@ -306,6 +307,9 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/purchase-orders` | GET/POST | List POs (status, supplier filter) / create PO with lines |
 | `/api/purchase-orders/[id]` | GET/PATCH | PO detail with lines + supplier / update status |
 | `/api/purchase-orders/[id]/receive` | POST | GRN: receive goods, update stock + journal |
+| `/api/menu-schedules` | GET/POST | List menu schedules / create new schedule |
+| `/api/menu-schedules/[id]` | PATCH/DELETE | Update / delete menu schedule |
+| `/api/menu-schedules/active` | GET | Get currently active menus by time+day (for POS filtering) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -550,7 +554,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
 - **MRA tab** — MRA e-invoicing compliance dashboard (BRN/TAN validation, tax config, counters).
-- **Test Results tab** — ~1140+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 247 web unit (22 files) + 319 scenario (47 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1150+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 255 web unit (23 files) + 319 scenario (47 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
@@ -590,6 +594,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `supplier` | supplier_id, account_id, name, contact_name, phone, email, address, city, country, tax_id, payment_terms, notes, is_active, is_deleted, deleted_at, created_at, updated_at | |
 | `purchase_order` | po_id, account_id, supplier_id, store_id, po_number, status (draft/sent/partial/received/cancelled), subtotal, tax_total, grand_total, notes, order_date, expected_date, received_date, created_by, is_deleted, deleted_at, created_at, updated_at | |
 | `purchase_order_line` | id, po_id, account_id, product_id, product_name, quantity_ordered, quantity_received, unit_cost, line_total, notes, created_at | |
+| `menu_schedule` | id, account_id, store_id, name, description, category_ids (JSONB), start_time (TIME), end_time (TIME), days_of_week (JSONB), priority, is_active, created_at, updated_at | |
 
 ## Current Phase
 
@@ -614,7 +619,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 7. **Promotions engine** — auto-apply, time-based, buy-X-get-Y, promo codes with rules
 8. **Catalogue PDF** ✅ — grid/list/price-list/loyalty-card templates, QR codes, page sizes
 9. **Peach Payments SDK** — card terminal integration for Mauritius market
-10. **Menu scheduling** — breakfast/lunch/dinner menus by time of day (restaurant)
+10. **Menu scheduling** ✅ — time-based menus (breakfast/lunch/dinner), day-of-week, priority, active endpoint for POS. DB: `menu_schedule`. Migration: `00036_menu_scheduling.sql`.
 11. **Delivery tracking** — driver assignment, delivery status, address capture
 12. **Shift clock in/out** — staff time tracking, timesheet reports
 
