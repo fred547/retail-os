@@ -74,8 +74,8 @@ export const TEST_SUITES = {
     ],
   },
   web: {
-    totalTests: 262,
-    totalFiles: 24,
+    totalTests: 269,
+    totalFiles: 25,
     allPassed: true,
     lastVerified: "2026-03-27",
     version: "Vitest 4.1, Next.js 16",
@@ -102,6 +102,7 @@ export const TEST_SUITES = {
       { name: "suppliers.test.ts", tests: 8, area: "Supplier CRUD, PO create, PO list, auth" },
       { name: "menu-schedules.test.ts", tests: 8, area: "Menu schedule CRUD, active filter by time/day" },
       { name: "shifts.test.ts", tests: 7, area: "Shift clock in/out, hours computation, validation" },
+      { name: "deliveries.test.ts", tests: 7, area: "Delivery CRUD, status workflow, driver assignment" },
     ],
   },
   scenarios: {

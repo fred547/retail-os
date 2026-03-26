@@ -304,7 +304,7 @@ const phases: Phase[] = [
         features: [
           { name: "Dine-in / takeaway / delivery selection", status: "done" },
           { name: "Delivery address + phone capture", status: "done" },
-          { name: "Driver assignment & status tracking", status: "planned" },
+          { name: "Driver assignment & status tracking", status: "done", detail: "Full delivery dashboard with 7-step status workflow" },
           { name: "Delivery zone management", status: "future" },
         ],
       },
