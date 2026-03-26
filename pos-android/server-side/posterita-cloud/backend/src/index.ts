@@ -2,6 +2,7 @@ import express from "express";
 import healthRoutes from "./routes/health";
 import whatsappRoutes from "./routes/whatsapp";
 import monitorRoutes from "./routes/monitor";
+import mraRoutes from "./routes/mra";
 import { startCronJobs } from "./cron";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use((_req, res, next) => {
 app.use(healthRoutes);
 app.use(whatsappRoutes);
 app.use(monitorRoutes);
+app.use(mraRoutes);
 
 // Root
 app.get("/", (_req, res) => {
