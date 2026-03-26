@@ -31,6 +31,7 @@ import {
   ChefHat,
   RefreshCw,
   Wallet,
+  Tag,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -75,6 +76,7 @@ const sections: NavSection[] = [
     label: "Inventory",
     items: [
       { name: "Stock Counts", href: "/inventory", icon: ClipboardList },
+      { name: "Serial Items", href: "/serial-items", icon: Tag },
     ],
   },
   {

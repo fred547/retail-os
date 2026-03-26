@@ -22,6 +22,7 @@ interface Product {
   source: string | null;
   productcategory_id: number | null;
   productcategory: { name: string } | null;
+  is_serialized: string | null;
 }
 
 interface Category {
@@ -209,7 +210,14 @@ export default function ProductTable({
                   )}
                 </td>
                 <td>
-                  <div className="font-medium">{p.name}</div>
+                  <div className="font-medium">
+                    {p.name}
+                    {p.is_serialized === "Y" && (
+                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-100 text-indigo-700">
+                        Serial
+                      </span>
+                    )}
+                  </div>
                   {p.description && (
                     <div className="text-xs text-gray-500 truncate max-w-xs">
                       {p.description}

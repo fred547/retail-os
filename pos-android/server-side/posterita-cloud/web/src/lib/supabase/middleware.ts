@@ -23,10 +23,11 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/inventory",
   "/catalogue",
   "/sync-inbox",
+  "/serial-items",
 ]);
 
 /** Also redirect sub-paths like /intake/new, /intake/123, /inventory/new, /inventory/123 */
-const LEGACY_CUSTOMER_PREFIXES = ["/intake/", "/inventory/"];
+const LEGACY_CUSTOMER_PREFIXES = ["/intake/", "/inventory/", "/serial-items/"];
 
 const OTT_COOKIE = "posterita_ott_session";
 
