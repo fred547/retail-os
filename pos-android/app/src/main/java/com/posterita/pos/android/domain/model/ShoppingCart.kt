@@ -223,6 +223,15 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
         tipsPercentage = 0.0
         discountOnTotalPercentage = 0.0
         discountOnTotalAmount = 0.0
+        // Reset promotion fields
+        promotionName = null
+        promotionId = null
+        promotionDiscount = 0.0
+        // Reset delivery fields
+        deliveryCustomerName = null
+        deliveryCustomerPhone = null
+        deliveryAddress = null
+        deliveryNotes = null
         lineNo = 0
         recalculateTotals()
     }
