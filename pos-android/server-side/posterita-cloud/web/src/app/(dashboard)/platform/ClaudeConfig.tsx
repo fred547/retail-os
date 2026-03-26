@@ -67,11 +67,8 @@ const skills = [
     details: "Design tokens (colors, typography, spacing), screen patterns (top bars, cards, lists), prototype link, 10 design rules. Ensures visual consistency across all screens.",
     when: "When designing new screens or reviewing UI consistency",
   },
-];
-
-const commands = [
   {
-    name: "/project:feature",
+    name: "/feature",
     icon: Zap,
     color: "bg-indigo-100 text-indigo-700",
     description: "Plan + scaffold a full feature (three-layer rule)",
@@ -79,7 +76,7 @@ const commands = [
     when: "Start here for every new feature — stock deduction, loyalty, Z-report, etc.",
   },
   {
-    name: "/project:migration",
+    name: "/migration",
     icon: Layers,
     color: "bg-violet-100 text-violet-700",
     description: "Cross-platform migration (Supabase + Room + TypeScript)",
@@ -87,7 +84,7 @@ const commands = [
     when: "Any schema change — new table, new column, constraints",
   },
   {
-    name: "/project:review",
+    name: "/review",
     icon: CheckCircle,
     color: "bg-emerald-100 text-emerald-700",
     description: "Quality gate — security, schema, sync, error handling",
@@ -95,7 +92,7 @@ const commands = [
     when: "Before every commit — the 'measure twice, cut once' check",
   },
   {
-    name: "/project:sync-check",
+    name: "/sync-check",
     icon: RefreshCw,
     color: "bg-teal-100 text-teal-700",
     description: "Verify Android ↔ Web sync field mappings",
@@ -103,7 +100,7 @@ const commands = [
     when: "After touching any synced entity or adding new fields",
   },
   {
-    name: "/project:debug",
+    name: "/debug",
     icon: Bug,
     color: "bg-red-100 text-red-700",
     description: "Production issue diagnosis",
@@ -111,7 +108,7 @@ const commands = [
     when: "When something breaks in production",
   },
   {
-    name: "/project:report",
+    name: "/report",
     icon: BarChart3,
     color: "bg-amber-100 text-amber-700",
     description: "Build a reporting feature (SQL → API → dashboard)",
@@ -119,7 +116,7 @@ const commands = [
     when: "Building Z-report, daily item sales, kitchen audit, price change audit, etc.",
   },
   {
-    name: "/project:security-audit",
+    name: "/security-audit",
     icon: Shield,
     color: "bg-rose-100 text-rose-700",
     description: "OWASP vulnerability scan",
@@ -127,31 +124,39 @@ const commands = [
     when: "Periodically, or before deploying sensitive changes (auth, payments, sync)",
   },
   {
-    name: "/project:cleanup",
+    name: "/cleanup",
     icon: Trash2,
     color: "bg-gray-100 text-gray-700",
     description: "Post-feature consistency check",
     details: "Verifies CLAUDE.md accuracy (entity counts, migration ranges, route tables, test counts, phase status). Checks build cleanliness, test passage, dead code, schema drift, git hygiene.",
     when: "After every feature — ensures nothing is left inconsistent",
   },
+  {
+    name: "/marathon",
+    icon: Bot,
+    color: "bg-purple-100 text-purple-700",
+    description: "Autonomous overnight feature marathon",
+    details: "Implements Phase 3 features one by one with full quality workflow: plan → implement (3-layer) → test → self-review → update docs → commit → next. Zero user interruption. Commits each feature individually. Skips blocked items. Runs 3-5 features per session.",
+    when: "When you're going to sleep and want features implemented overnight",
+  },
 ];
 
 const workflowSteps = [
-  { step: 1, command: "/project:feature", label: "Plan + scaffold", desc: "Three-layer implementation plan → get approval → scaffold" },
+  { step: 1, command: "/feature", label: "Plan + scaffold", desc: "Three-layer implementation plan → get approval → scaffold" },
   { step: 2, command: "implement", label: "Build", desc: "Write code following the plan, type-check after every file" },
-  { step: 3, command: "/project:review", label: "Quality gate", desc: "Security, schema, sync, error handling review" },
-  { step: 4, command: "/project:sync-check", label: "Sync verify", desc: "If synced entity touched — verify field mappings" },
+  { step: 3, command: "/review", label: "Quality gate", desc: "Security, schema, sync, error handling review" },
+  { step: 4, command: "/sync-check", label: "Sync verify", desc: "If synced entity touched — verify field mappings" },
   { step: 5, command: "/test-agent", label: "Test everything", desc: "Autonomous: run all tests, fix failures, repeat until 0" },
-  { step: 6, command: "/project:security-audit", label: "Security scan", desc: "OWASP top 10, multi-tenant isolation, auth checks" },
-  { step: 7, command: "/project:cleanup", label: "Consistency", desc: "CLAUDE.md, test counts, dead code, build clean" },
+  { step: 6, command: "/security-audit", label: "Security scan", desc: "OWASP top 10, multi-tenant isolation, auth checks" },
+  { step: 7, command: "/cleanup", label: "Consistency", desc: "CLAUDE.md, test counts, dead code, build clean" },
   { step: 8, command: "/deploy", label: "Ship it", desc: "Vercel + Android, health verification" },
 ];
 
 const reportWorkflow = [
-  { step: 1, command: "/project:report", label: "Build report", desc: "SQL aggregation → API route → web dashboard" },
-  { step: 2, command: "/project:review", label: "Quality gate", desc: "Check query correctness, column names, filters" },
+  { step: 1, command: "/report", label: "Build report", desc: "SQL aggregation → API route → web dashboard" },
+  { step: 2, command: "/review", label: "Quality gate", desc: "Check query correctness, column names, filters" },
   { step: 3, command: "/test-agent", label: "Test", desc: "Unit + scenario tests" },
-  { step: 4, command: "/project:cleanup", label: "Consistency", desc: "Update docs, verify counts" },
+  { step: 4, command: "/cleanup", label: "Consistency", desc: "Update docs, verify counts" },
   { step: 5, command: "/deploy", label: "Ship it", desc: "Deploy to production" },
 ];
 
@@ -290,12 +295,8 @@ export default function ClaudeConfig() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="text-2xl font-bold text-gray-900">7</div>
+          <div className="text-2xl font-bold text-gray-900">16</div>
           <div className="text-xs text-gray-500 mt-1">Skills</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="text-2xl font-bold text-gray-900">8</div>
-          <div className="text-xs text-gray-500 mt-1">Commands</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <div className="text-2xl font-bold text-gray-900">17</div>
@@ -304,6 +305,10 @@ export default function ClaudeConfig() {
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <div className="text-2xl font-bold text-gray-900">1</div>
           <div className="text-xs text-gray-500 mt-1">Auto Hook</div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="text-2xl font-bold text-gray-900">~600</div>
+          <div className="text-xs text-gray-500 mt-1">CLAUDE.md Lines</div>
         </div>
       </div>
 
@@ -330,24 +335,13 @@ export default function ClaudeConfig() {
       </Section>
 
       {/* Skills */}
-      <Section title="Skills (Slash Commands)" icon={Zap} defaultOpen={true}>
+      <Section title="Skills (16 Slash Commands)" icon={Zap} defaultOpen={true}>
         <p className="text-xs text-gray-500 mb-4">
-          Skills are complex, multi-step workflows defined in <code className="bg-gray-100 px-1 rounded">.claude/skills/</code>.
-          Each has its own SKILL.md with detailed instructions. Click to expand.
+          Each skill is defined in <code className="bg-gray-100 px-1 rounded">.claude/skills/*/SKILL.md</code>.
+          Invoke with <code className="bg-gray-100 px-1 rounded">/name</code>. Click to expand.
         </p>
         <div className="grid md:grid-cols-2 gap-3">
           {skills.map((s) => <ToolCard key={s.name} {...s} />)}
-        </div>
-      </Section>
-
-      {/* Commands */}
-      <Section title="Project Commands" icon={Terminal} defaultOpen={true}>
-        <p className="text-xs text-gray-500 mb-4">
-          Commands are prompt templates in <code className="bg-gray-100 px-1 rounded">.claude/commands/</code>.
-          Invoked as <code className="bg-gray-100 px-1 rounded">/project:name</code>. Click to expand.
-        </p>
-        <div className="grid md:grid-cols-2 gap-3">
-          {commands.map((c) => <ToolCard key={c.name} {...c} />)}
         </div>
       </Section>
 

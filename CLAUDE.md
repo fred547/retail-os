@@ -540,7 +540,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
 - **MRA tab** — MRA e-invoicing compliance dashboard (BRN/TAN validation, tax config, counters).
-- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 211 web unit (18 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1100+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 225 web unit (20 files) + 308 scenario (45 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.

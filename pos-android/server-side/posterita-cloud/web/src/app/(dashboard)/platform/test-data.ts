@@ -74,10 +74,10 @@ export const TEST_SUITES = {
     ],
   },
   web: {
-    totalTests: 211,
-    totalFiles: 18,
+    totalTests: 225,
+    totalFiles: 20,
     allPassed: true,
-    lastVerified: "2026-03-26",
+    lastVerified: "2026-03-27",
     version: "Vitest 4.1, Next.js 16",
     files: [
       { name: "ai-import.test.ts", tests: 2, area: "AI product discovery" },
@@ -96,11 +96,13 @@ export const TEST_SUITES = {
       { name: "sync-edge-cases.test.ts", tests: 21, area: "Batch, null fields, insertOrUpdate" },
       { name: "sync-hardening.test.ts", tests: 23, area: "Conflict detection, checksum, retry, context" },
       { name: "sync-register.test.ts", tests: 10, area: "Registration, demo accounts" },
+      { name: "stock.test.ts", tests: 9, area: "Stock adjustment, journal, auth, validation" },
+      { name: "z-report.test.ts", tests: 5, area: "Z-report generation, CSV export, empty data" },
     ],
   },
   scenarios: {
-    totalTests: 301,
-    totalFiles: 44,
+    totalTests: 308,
+    totalFiles: 45,
     allPassed: true,
     lastVerified: "2026-03-26",
     version: "Vitest 4.1, hits production API + Supabase",
@@ -148,6 +150,7 @@ export const TEST_SUITES = {
       { name: "41-intake-pipeline", tests: 7, area: "Intake batch, items, review approve/reject" },
       { name: "42-ai-import-save", tests: 7, area: "/api/ai-import/save categories + products + taxes" },
       { name: "43-admin-auth-guards", tests: 10, area: "Auth guards: platform, super-admin, blink, reset" },
+      { name: "45-stock-deduction", tests: 7, area: "Stock columns, adjustment, journal CRUD, filter by reason" },
     ],
   },
 };
