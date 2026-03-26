@@ -2,43 +2,63 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const GITHUB_HEADERS = {
+  Accept: "application/vnd.github+json",
+  "User-Agent": "posterita-cloud",
+  ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
+};
+
 /**
- * GET /api/changelog — fetch recent commits from GitHub API.
- * Returns commits grouped by date with category classification.
+ * GET /api/changelog — fetch ALL commits from GitHub API (paginated).
+ * Returns commits grouped by date with category classification + accurate stats.
  */
 export async function GET() {
   try {
-    const res = await fetch(
-      "https://api.github.com/repos/fred547/retail-os/commits?per_page=50",
-      {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "User-Agent": "posterita-cloud",
-          ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
-        },
-        next: { revalidate: 300 },
-      }
-    );
+    // Paginate to get all commits (100 per page, up to 5 pages = 500 commits max)
+    const allCommits: any[] = [];
+    for (let page = 1; page <= 5; page++) {
+      const res = await fetch(
+        `https://api.github.com/repos/fred547/retail-os/commits?per_page=100&page=${page}`,
+        { headers: GITHUB_HEADERS, next: { revalidate: 300 } }
+      );
 
-    if (!res.ok) {
-      return NextResponse.json({ commits: [], error: `GitHub API: ${res.status}` });
+      if (!res.ok) break;
+      const data = await res.json();
+      if (!data.length) break;
+      allCommits.push(...data);
+      if (data.length < 100) break; // Last page
     }
 
-    const data = await res.json();
-
-    const commits = data.map((c: any) => ({
+    const commits = allCommits.map((c: any) => ({
       sha: c.sha?.substring(0, 7) || "",
       date: c.commit?.author?.date?.substring(0, 10) || "",
       message: c.commit?.message?.split("\n")[0] || "", // First line only
       author: c.commit?.author?.name || "",
-      filesChanged: c.stats?.total || 0,
     }));
 
-    // Get latest version info
+    // Compute accurate stats
+    const uniqueDates = new Set(commits.map((c: any) => c.date));
+    const bugFixes = commits.filter((c: any) => {
+      const m = c.message.toLowerCase();
+      return m.includes("fix") || m.includes("bug") || m.includes("revert") || m.includes("hotfix") || m.includes("patch");
+    }).length;
+    const features = commits.filter((c: any) => {
+      const m = c.message.toLowerCase();
+      return !m.includes("fix") && !m.includes("bug") && !m.includes("revert") &&
+        (m.includes("add") || m.includes("implement") || m.includes("create") || m.includes("new") ||
+         m.includes("feature") || m.includes("support") || m.includes("build") || m.includes("phase"));
+    }).length;
+
     const latestSha = commits[0]?.sha || "unknown";
 
     return NextResponse.json({
       commits,
+      stats: {
+        total_commits: commits.length,
+        days_active: uniqueDates.size,
+        bug_fixes: bugFixes,
+        features,
+      },
       version: {
         web: latestSha,
         android: "Room v30",

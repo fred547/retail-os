@@ -90,7 +90,7 @@ export default function Changelog() {
             <div>
               <p className="text-slate-400 text-xs">Android</p>
               <p className="text-2xl font-bold mt-0.5">{version.android}</p>
-              <p className="text-xs text-slate-500">Room DB v25</p>
+              <p className="text-xs text-slate-500">Room DB v30</p>
             </div>
             <div>
               <p className="text-slate-400 text-xs">Sync API</p>
