@@ -31,6 +31,7 @@ data class CloudSyncResponse(
     @SerializedName("category_station_mappings") val categoryStationMappings: List<Map<String, Any?>>? = null,
     @SerializedName("serial_items") val serialItems: List<Map<String, Any?>>? = null,
     @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
+    @SerializedName("tax_config") val taxConfig: Map<String, Any?>? = null,
 
     // Stats
     @SerializedName("orders_synced") val ordersSynced: Int = 0,

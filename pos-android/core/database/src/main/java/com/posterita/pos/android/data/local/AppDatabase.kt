@@ -30,7 +30,7 @@ import com.posterita.pos.android.data.local.entity.*
         CategoryStationMapping::class,
         SerialItem::class
     ],
-    version = 28,
+    version = 29,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -108,7 +108,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_24_25,
                         MIGRATION_25_26,
                         MIGRATION_26_27,
-                        MIGRATION_27_28
+                        MIGRATION_27_28,
+                        MIGRATION_28_29
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -470,6 +471,13 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE product ADD COLUMN is_serialized TEXT DEFAULT 'N'")
                 // OrderLine: link to serial item
                 db.execSQL("ALTER TABLE orderline ADD COLUMN serial_item_id INTEGER")
+            }
+        }
+
+        private val MIGRATION_28_29 = object : Migration(28, 29) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE account ADD COLUMN brn TEXT")
+                db.execSQL("ALTER TABLE account ADD COLUMN tan TEXT")
             }
         }
     }

@@ -269,6 +269,24 @@ class CloudSyncService @Inject constructor(
                 db.inventoryCountEntryDao().markSynced(unsyncedInventoryEntries.map { it.entry_id })
             }
 
+            // Update local Account with BRN/TAN from tax config (for receipt printing)
+            syncResponse.taxConfig?.let { tc ->
+                val brn = tc["brn"] as? String
+                val tan = tc["tan"] as? String
+                val enabled = tc["is_enabled"] == true
+                if (enabled && (brn != null || tan != null)) {
+                    try {
+                        val account = db.accountDao().getAccountById(accountId)
+                        if (account != null && (account.brn != brn || account.tan != tan)) {
+                            db.accountDao().insertAccounts(listOf(account.copy(brn = brn, tan = tan)))
+                            Log.d(TAG, "Updated Account BRN=$brn TAN=$tan")
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to update account tax info: ${e.message}")
+                    }
+                }
+            }
+
             // Mark error logs as synced and clean up old ones
             if (unsyncedErrorLogs.isNotEmpty()) {
                 db.errorLogDao().markSynced(unsyncedErrorLogs.map { it.id })

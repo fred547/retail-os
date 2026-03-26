@@ -51,6 +51,11 @@ class BluetoothPrinter {
             out.write(ReceiptPrinter.FONT_H2)
             out.write("${orderDetails.account?.businessname ?: ""}\n".toByteArray())
             out.write(ReceiptPrinter.FONT_NORMAL)
+            // MRA compliance: BRN + TAN
+            val brn = orderDetails.account?.brn
+            val tan = orderDetails.account?.tan
+            if (!brn.isNullOrBlank()) out.write("BRN: $brn\n".toByteArray())
+            if (!tan.isNullOrBlank()) out.write("TAN: $tan\n".toByteArray())
             out.write(ReceiptPrinter.LEFT_ALIGN)
             out.write("Receipt: ${orderDetails.documentno}\n".toByteArray())
             out.write("Date: ${orderDetails.dateorderedtext ?: ""}\n".toByteArray())

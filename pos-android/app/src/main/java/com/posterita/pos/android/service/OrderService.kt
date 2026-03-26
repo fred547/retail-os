@@ -265,7 +265,9 @@ class OrderService @Inject constructor(
                 phone1 = account.phone1,
                 receiptmessage = account.receiptmessage,
                 currency = account.currency,
-                isvatable = account.isvatable
+                isvatable = account.isvatable,
+                brn = account.brn,
+                tan = account.tan
             ),
             store = OrderDetails.StoreDetail(
                 name = store.name,

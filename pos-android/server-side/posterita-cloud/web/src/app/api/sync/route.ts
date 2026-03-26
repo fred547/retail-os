@@ -1096,6 +1096,13 @@ export async function POST(req: NextRequest) {
       siblingBrands = allBrands ?? [];
     }
 
+    // Fetch tax config (BRN/TAN for receipts)
+    let taxConfig: any = null;
+    try {
+      const { data } = await db.from("account_tax_config").select("brn, tan, is_enabled").eq("account_id", body.account_id).single();
+      taxConfig = data;
+    } catch (_) {}
+
     const serverTime = new Date().toISOString();
 
     // Log sync request for monitoring
@@ -1167,6 +1174,7 @@ export async function POST(req: NextRequest) {
       inventory_sessions: inventorySessions ?? [],
       serial_items: serialItems ?? [],
       sibling_brands: siblingBrands,
+      tax_config: taxConfig,
       // Stats
       error_logs_synced: errorLogsSynced,
       orders_synced: ordersSynced,

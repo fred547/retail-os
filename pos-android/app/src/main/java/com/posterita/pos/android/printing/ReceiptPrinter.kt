@@ -112,6 +112,15 @@ class ReceiptPrinter(
         order.store?.address?.let { out.write("$it\n".toByteArray()) }
         order.store?.city?.let { out.write("$it\n".toByteArray()) }
         order.account?.phone1?.let { out.write("Tel: $it\n".toByteArray()) }
+        // MRA compliance: BRN + TAN on every receipt
+        val brn = order.account?.brn
+        val tan = order.account?.tan
+        if (!brn.isNullOrBlank() || !tan.isNullOrBlank()) {
+            out.write(FONT_SMALL)
+            if (!brn.isNullOrBlank()) out.write("BRN: $brn\n".toByteArray())
+            if (!tan.isNullOrBlank()) out.write("TAN: $tan\n".toByteArray())
+            out.write(FONT_NORMAL)
+        }
 
         out.write(LINE_FEED)
         out.write(LEFT_ALIGN)

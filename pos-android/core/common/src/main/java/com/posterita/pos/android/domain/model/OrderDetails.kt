@@ -119,7 +119,9 @@ data class OrderDetails(
         var phone1: String? = null,
         var receiptmessage: String? = null,
         var currency: String? = null,
-        var isvatable: String? = null
+        var isvatable: String? = null,
+        var brn: String? = null,
+        var tan: String? = null
     ) : Serializable
 
     data class StoreDetail(
