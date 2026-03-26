@@ -197,10 +197,21 @@ async function getAuthenticatedAccountId(): Promise<string | null> {
   return posUser?.account_id ?? null;
 }
 
+/**
+ * AI import status tracking — NEVER sets account.status to "failed".
+ * A failed import must not break the account. Only "draft" and "in_progress"
+ * are safe intermediate states that revert naturally. "failed" would poison
+ * the entire account lifecycle.
+ */
 async function setAccountStatus(
   accountId: string,
   status: "draft" | "in_progress" | "ready" | "failed"
 ) {
+  // Never set account to "failed" — a failed import is not a failed account
+  if (status === "failed") {
+    console.warn(`[ai-import] Import failed for ${accountId} — NOT setting account status to failed`);
+    return;
+  }
   await getDb()
     .from("account")
     .update({ status })

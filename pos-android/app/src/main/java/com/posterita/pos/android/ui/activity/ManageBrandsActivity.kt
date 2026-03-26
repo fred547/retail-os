@@ -157,21 +157,8 @@ class ManageBrandsActivity : BaseActivity() {
     }
 
     private fun showNewBrandDialog() {
-        val items = arrayOf(
-            "Demo Brand — sample products & images",
-            "AI Import — discover products online"
-        )
-        MaterialAlertDialogBuilder(this)
-            .setTitle("New Brand")
-            .setItems(items) { dialog, which ->
-                dialog.dismiss()
-                when (which) {
-                    0 -> showCreateDemoBrandDialog()
-                    1 -> showCreateAiBrandDialog()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        // AI Import is web-only (via /ai-import on web console) — not available on Android
+        showCreateDemoBrandDialog()
     }
 
     private fun showCreateDemoBrandDialog() {
