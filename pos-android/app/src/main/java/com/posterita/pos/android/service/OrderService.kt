@@ -273,7 +273,10 @@ class OrderService @Inject constructor(
                 name = store.name,
                 address = store.address,
                 city = store.city
-            )
+            ),
+            promotion_name = cart.promotionName,
+            promotion_id = cart.promotionId,
+            promotion_discount = cart.promotionDiscount
         )
     }
 

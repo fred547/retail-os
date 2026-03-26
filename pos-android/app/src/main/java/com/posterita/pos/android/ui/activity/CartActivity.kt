@@ -2400,6 +2400,7 @@ class CartActivity : BaseDrawerActivity() {
                     }
                     if (result != null) {
                         appliedPromotion = result
+                        setPromotionOnCart(result)
                         shoppingCartViewModel.setDiscountOnTotal(result.discountAmount, 0.0)
                         Toast.makeText(
                             this@CartActivity,
@@ -3142,6 +3143,7 @@ class CartActivity : BaseDrawerActivity() {
             if (applicable.isNotEmpty()) {
                 val best = applicable.first()
                 appliedPromotion = best
+                setPromotionOnCart(best)
                 // Apply promotion as discount on total (auto-apply, no user action needed)
                 val currentDiscount = shoppingCartViewModel.shoppingCart.discountOnTotalAmount
                 val currentPct = shoppingCartViewModel.shoppingCart.discountOnTotalPercentage
@@ -3151,15 +3153,24 @@ class CartActivity : BaseDrawerActivity() {
                 }
             } else {
                 appliedPromotion = null
+                clearPromotionOnCart()
             }
         }
     }
 
-    /** Get the current applied promotion discount amount (for order creation). */
-    fun getPromotionDiscount(): Double = appliedPromotion?.discountAmount ?: 0.0
+    private fun setPromotionOnCart(promo: com.posterita.pos.android.service.PromotionService.AppliedPromotion) {
+        val cart = shoppingCartViewModel.shoppingCart
+        cart.promotionName = promo.promotion.name
+        cart.promotionId = promo.promotion.id
+        cart.promotionDiscount = promo.discountAmount
+    }
 
-    /** Get the current applied promotion name (for order JSON). */
-    fun getPromotionName(): String? = appliedPromotion?.promotion?.name
+    private fun clearPromotionOnCart() {
+        val cart = shoppingCartViewModel.shoppingCart
+        cart.promotionName = null
+        cart.promotionId = null
+        cart.promotionDiscount = 0.0
+    }
 
     private fun awardLoyaltyPoints(uuid: String, grandTotal: Double) {
         if (!loyaltyRepository.isEnabled) return

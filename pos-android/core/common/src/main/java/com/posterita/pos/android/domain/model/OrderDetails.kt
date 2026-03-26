@@ -50,7 +50,10 @@ data class OrderDetails(
     var mra_fiscal_id: String? = null,
     var mra_invoice_counter: Int? = null,
     var account: AccountDetail? = null,
-    var store: StoreDetail? = null
+    var store: StoreDetail? = null,
+    var promotion_name: String? = null,
+    var promotion_id: Int? = null,
+    var promotion_discount: Double = 0.0
 ) : Serializable {
 
     data class Discount(

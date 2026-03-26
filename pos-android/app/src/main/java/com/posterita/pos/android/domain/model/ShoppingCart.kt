@@ -26,6 +26,11 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
     var note: String? = null
     var orderType: String = "dine_in" // "dine_in", "take_away", or "delivery"
 
+    // Applied promotion (set by PromotionService auto-apply or promo code entry)
+    var promotionName: String? = null
+    var promotionId: Int? = null
+    var promotionDiscount: Double = 0.0
+
     // Delivery details (populated by showDeliveryDetailsDialog)
     var deliveryCustomerName: String? = null
     var deliveryCustomerPhone: String? = null
