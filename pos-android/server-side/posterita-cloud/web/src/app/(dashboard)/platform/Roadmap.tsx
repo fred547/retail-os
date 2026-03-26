@@ -129,7 +129,7 @@ const phases: Phase[] = [
           { name: "PIN login + lock screen (30-min timeout)", status: "done" },
           { name: "Role-based UI visibility", status: "done" },
           { name: "Owner email shown on home screen", status: "done" },
-          { name: "Shift clock in/out", status: "planned", detail: "From legacy restaurant: clock_in_out table with user, terminal, time_in, time_out, sync" },
+          { name: "Shift clock in/out", status: "done", detail: "Clock in/out API, hours computation, break tracking, dashboard" },
           { name: "Staff scheduling", status: "future" },
           { name: "Commission tracking", status: "future" },
         ],
