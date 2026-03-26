@@ -314,6 +314,15 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
             put("grandtotal", grandTotalAmount)
             put("discountOnTotalPercentage", discountOnTotalPercentage)
             put("discountOnTotalAmount", discountOnTotalAmount)
+            // Promotion info (for attribution on server)
+            promotionName?.let { put("promotion_name", it) }
+            promotionId?.let { put("promotion_id", it) }
+            if (promotionDiscount > 0) put("promotion_discount", promotionDiscount)
+            // Delivery info (backup — also in delivery table)
+            deliveryCustomerName?.let { put("delivery_customer_name", it) }
+            deliveryCustomerPhone?.let { put("delivery_customer_phone", it) }
+            deliveryAddress?.let { put("delivery_address", it) }
+            deliveryNotes?.let { put("delivery_notes", it) }
         }
     }
 
