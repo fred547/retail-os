@@ -322,7 +322,7 @@ Force Sync button available on login screen. Sync always triggered at login. Con
 SplashActivity priority: (1) Active account with PIN → LockScreen. (2) No active account but registry has brands with PIN → restores first matching brand, goes to LockScreen. (3) Demo account → Home. (4) Nothing → SetupWizard.
 
 ### Account Resolution (`getSessionAccountId`)
-Priority: (1) OTT cookie (Android WebView). (2) Super admin impersonation session. (3) Owner → `owner_account_session`. (4) Owner → first account by `owner_id`. (5) Fallback: owner by email → first account. (6) `pos_user.auth_uid` → account. Owner table PK is `id` (not `owner_id`).
+Priority: (1) Cached account_id cookie (fast path). (2) Super admin impersonation session. (3) Owner → `owner_account_session`. (4) `pos_user.account_id` (regular user). (5) Owner fallback by email → first account. (6) OTT cookie (Android WebView — last resort, only when no Supabase Auth user). Owner table PK is `id` (not `owner_id`).
 
 ### Signup Validation
 - Email/phone uniqueness checked in real-time on field blur (`POST /api/auth/check`)
@@ -559,7 +559,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `sync_request_log` | id, account_id, terminal_id, store_id, device_id, device_model, app_version, request_at, duration_ms, status, orders_pushed, products_pulled, sync_errors (JSONB) | |
 | `ci_report` | id, git_sha, branch, commit_message, android_passed/failed, web_passed/failed, ts_errors, status, created_at | |
 | `modifier` | modifier_id, account_id, product_id, productcategory_id, name, sellingprice, isactive, ismodifier | |
-| `till` | till_id, account_id, store_id, terminal_id, uuid, documentno, open_by, close_by, opening_amt, closing_amt, cash_amt, card_amt, grand_total, date_opened, date_closed, **status** (open/closed), **is_deleted**, **deleted_at**, is_sync | |
+| `till` | till_id, account_id, store_id, terminal_id, uuid, documentno, open_by, close_by, opening_amt, closing_amt, cash_amt, card_amt, grand_total, date_opened, date_closed, **status** (open/closed — Supabase only, not in Room; Android derives from dateClosed), **is_deleted**, **deleted_at**, is_sync | |
 | `till_adjustment` | till_adjustment_id, till_id, user_id, amount, pay_type, reason, date | |
 | `v_price_review` (view) | product_id, account_id, product_name, sellingprice, image, price_set_by, set_by_name, **price_set_at**, category_name | ~~updated_at~~ (use `price_set_at`) |
 | `serial_item` | serial_item_id, account_id, product_id, store_id, **serial_number**, serial_type (vin/imei/serial/certificate), **status** (received/in_stock/reserved/sold/delivered/returned/in_service), supplier_name, purchase_date, cost_price, order_id, customer_id, sold_date, selling_price, **delivered_date**, warranty_months, **warranty_expiry** (auto-computed: delivered_date + warranty_months), color, year, engine_number, is_deleted, is_sync | |
