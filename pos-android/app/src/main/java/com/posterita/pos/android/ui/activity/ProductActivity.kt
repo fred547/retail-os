@@ -77,6 +77,9 @@ class ProductActivity : BaseDrawerActivity() {
     @Inject
     lateinit var db: AppDatabase
 
+    @Inject
+    lateinit var menuScheduleService: com.posterita.pos.android.service.MenuScheduleService
+
     private lateinit var productAdapter: ProductAdapter
     private var cartAdapter: CartProductAdapter? = null
     private var categoryAdapter: ProductCategoryAdapter? = null
@@ -2134,11 +2137,22 @@ class ProductActivity : BaseDrawerActivity() {
         }
 
         productViewModel.productCategories.observe(this) { categories ->
-            categoryList = categories
-            categoryAdapter?.setCategories(categories)
-            // Re-measure category overflow after data loads
-            binding.recyclerViewCategories.post {
-                measureAndSetCategoryOverflow()
+            // Apply menu schedule filtering if configured
+            lifecycleScope.launch {
+                val storeId = sessionManager.store?.storeId ?: 0
+                val activeCategoryIds = withContext(Dispatchers.IO) {
+                    menuScheduleService.getActiveCategoryIds(storeId)
+                }
+                val filtered = if (activeCategoryIds != null) {
+                    categories.filter { it.productcategory_id in activeCategoryIds }
+                } else {
+                    categories
+                }
+                categoryList = filtered
+                categoryAdapter?.setCategories(filtered)
+                binding.recyclerViewCategories.post {
+                    measureAndSetCategoryOverflow()
+                }
             }
         }
 
