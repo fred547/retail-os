@@ -66,7 +66,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 32 entities, 32 DAOs, AppDatabase, converters, schema v28 (25 migrations)
+:core:database      → Room DB: 32 entities, 32 DAOs, AppDatabase, converters, schema v28 (24 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -534,7 +534,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Owners tab** — all owners with name, email, phone, brand count, join date, active status. Edit panel: change name/email/phone, send password reset. Summary cards.
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
-- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 179 web unit (16 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1000+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 196 web unit (17 files) + 301 scenario (44 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
