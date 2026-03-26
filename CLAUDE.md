@@ -295,6 +295,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/serial-items/[id]` | GET/PATCH | Serial item detail / update (status, delivery, warranty) |
 | `/api/stock` | POST | Manual stock adjustment (set new qty, records journal entry) |
 | `/api/stock/journal` | GET | Stock movement history (filter by product, reason, date range) |
+| `/api/reports/z-report` | GET | Z-report / end-of-day summary (date, store, terminal filters, CSV export) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -592,7 +593,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 1. **MRA e-invoicing** ✅ — Mauritius compliance: BRN, TAN, VAT ID, datetime, unique transaction ID on every receipt. DB tables: `account_tax_config`, `mra_counter`. Migration: `00032_mra_ebs.sql`.
 2. **Stock deduction on sale** ✅ — auto-decrement product `quantity_on_hand` when orders sync. `stock_journal` audit trail. Manual adjustments via `/api/stock`. Migration: `00033_stock_deduction.sql`.
 3. **Customer loyalty** — wallet, points, award on purchase, redeem at POS, balance display
-4. **Z-report / daily summary** — end-of-day report: totals by payment type, tax summary, discount summary, void count
+4. **Z-report / daily summary** ✅ — end-of-day report at `/reports/z-report`: totals by payment type, tax summary, discount summary, void count, till sessions. CSV export. API: `GET /api/reports/z-report`.
 5. **WhatsApp receipt sharing** — send receipt PDF/text via WhatsApp after payment. **Blocked:** need phone number + Meta Business verification.
 6. **Supplier & Purchase Orders** — supplier management, PO creation, goods received note (GRN), cost tracking
 7. **Promotions engine** — auto-apply, time-based, buy-X-get-Y, promo codes with rules

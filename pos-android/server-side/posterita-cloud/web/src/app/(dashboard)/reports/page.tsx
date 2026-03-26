@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { dataQuery, dataQueryMulti } from "@/lib/supabase/data-client";
-import { BarChart3, Calendar, Download, TrendingUp } from "lucide-react";
+import { BarChart3, Calendar, Download, TrendingUp, FileText } from "lucide-react";
+import Link from "next/link";
 import { SkeletonStat, SkeletonTable } from "@/components/Skeleton";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -116,6 +117,18 @@ export default function ReportsPage() {
             Export CSV
           </button>
         </div>
+      </div>
+
+      {/* Quick links */}
+      <div className="flex gap-3">
+        <Link
+          href="/customer/reports/z-report"
+          className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 hover:border-posterita-blue hover:bg-blue-50/50 transition text-sm"
+        >
+          <FileText size={16} className="text-posterita-blue" />
+          <span className="font-medium">Z-Report</span>
+          <span className="text-gray-400">End-of-day summary</span>
+        </Link>
       </div>
 
       {loading ? (
