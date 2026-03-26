@@ -67,6 +67,15 @@ class BluetoothPrinter {
             out.write(("-".repeat(width) + "\n").toByteArray())
             out.write("TOTAL: ${com.posterita.pos.android.util.NumberUtils.formatPrice(orderDetails.grandtotal)}\n".toByteArray())
 
+            // MRA fiscal reference (shown on reprint when available)
+            val fiscalId = orderDetails.mra_fiscal_id
+            val invoiceCounter = orderDetails.mra_invoice_counter
+            if (!fiscalId.isNullOrBlank() || invoiceCounter != null) {
+                out.write(("-".repeat(width) + "\n").toByteArray())
+                if (invoiceCounter != null) out.write("MRA Invoice #: $invoiceCounter\n".toByteArray())
+                if (!fiscalId.isNullOrBlank()) out.write("Fiscal ID: $fiscalId\n".toByteArray())
+            }
+
             // WhatsApp QR code
             if (!whatsappNumber.isNullOrBlank()) {
                 try {

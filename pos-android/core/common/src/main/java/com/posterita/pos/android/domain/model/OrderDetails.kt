@@ -47,6 +47,8 @@ data class OrderDetails(
     var currency: String? = null,
     var tipsamt: Double = 0.0,
     var couponids: String? = null,
+    var mra_fiscal_id: String? = null,
+    var mra_invoice_counter: Int? = null,
     var account: AccountDetail? = null,
     var store: StoreDetail? = null
 ) : Serializable {

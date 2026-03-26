@@ -184,6 +184,22 @@ class ReceiptPrinter(
             }
         }
 
+        // MRA fiscal reference (shown on reprint when available)
+        val fiscalId = order.mra_fiscal_id
+        val invoiceCounter = order.mra_invoice_counter
+        if (!fiscalId.isNullOrBlank() || invoiceCounter != null) {
+            out.write(LINE_FEED)
+            out.write((padLine("-", lineWidth) + "\n").toByteArray())
+            out.write(FONT_SMALL)
+            if (invoiceCounter != null) {
+                out.write("MRA Invoice #: $invoiceCounter\n".toByteArray())
+            }
+            if (!fiscalId.isNullOrBlank()) {
+                out.write("Fiscal ID: $fiscalId\n".toByteArray())
+            }
+            out.write(FONT_NORMAL)
+        }
+
         // Receipt message
         order.account?.receiptmessage?.let {
             if (it.isNotEmpty()) {
