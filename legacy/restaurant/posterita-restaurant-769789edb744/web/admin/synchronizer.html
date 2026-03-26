@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<meta content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'" http-equiv="Content-Security-Policy">
+	<meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+	
+	<title>Posterita Sync Status</title>
+	
+	<script type="text/javascript" src="../html/1.0/lib/jquery-1.8.3.js"></script> 
+	<script type="text/javascript" src="../html/1.0/lib/angular.js"></script>	
+	
+	<script>
+	
+	var app = angular.module('app', []);
+	app.controller('MainController', function($scope, $http){
+		
+		var ctrl = this;
+		
+		$http.get("/json/sync_date").then(function(response){
+			
+			ctrl.data = response.data;
+			
+		});
+		
+		ctrl.sync = function( option, index ){
+			
+			console.log(index);
+			
+			ctrl.data[index]['eventdate'] = "synchronizing ...";
+			
+			var action = null;
+			
+			switch( option ){
+			
+				case 'ORDERS' : action = 'orders'; break;
+				case 'SYSTEM' : action = 'data'; break;
+				case 'TERMINAL' : action = 'documentNo'; break;
+				case 'CLOCK_INOUT' : action = 'clockInOut'; break;
+				case 'CLOSE_TILL' : action = 'closeTill'; break;
+				
+				default: break;
+			
+			}
+			
+			if( action == null ){
+				
+				ctrl.data[index]['eventdate'] = "Error invalid action";
+				return;
+			}
+			
+			var param = {};
+			param['action'] = action;
+
+			param = JSON.stringify(param);
+			
+			$http.get("/synchronize?json=" + param).then(function success(response){
+				
+				var result = response.data;
+				
+				if(result['synchronized'] == 'true'){
+					
+					ctrl.data[index]['eventdate'] = 'success';
+					
+				}
+				else
+				{
+					ctrl.data[index]['eventdate'] = 'Error. ' + result.error;
+				}
+				
+			}, function myError(response) {
+				ctrl.data[index]['eventdate'] = response.statusText;
+		    });
+			
+			
+		}
+		
+	})
+	
+	</script>
+	
+		
+</head>
+<body ng-app="app" ng-controller="MainController as ctrl">
+<h3>Posterita Synchronizer</h3>
+
+	<table>
+		<tr><th>Table</th><th>Date</th><th>&nbsp;</th></tr>
+		<tr ng-repeat="x in ctrl.data">
+			<td>{{x.event}}</td>
+			<td>{{x.eventdate}}</td>
+			<td>
+				<button ng-debounced-click="ctrl.sync(x.event, $index)" >Sync</button>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

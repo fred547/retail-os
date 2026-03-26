@@ -1,0 +1,25 @@
+<div class="modal-content" data-test-id="deposit-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="deposit.transactions" style="vertical-align: sub;">Deposit Transactions</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="deposit-transaction-selection-container">
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="issueDepositPopUp()" data-ng-show="isSales" data-test-id="issue-deposit-button">
+   			<div data-i18n="issue.gift.card">Issue Deposit</div>
+		</button>
+  	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="redeemDepositPopUp()" data-ng-show="isSales" 
+		data-ng-disabled="isShoppingCartEmpty" data-test-id="redeem-deposit-button">
+   			<div data-i18n="redeem.gift.card">Redeem Deposit</div>
+		</button>
+
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="refundDepositPopUp()" data-ng-hide="isSales" data-test-id="refund-deposit-button">
+   			<div data-i18n="redeem.gift.card">Refund Deposit</div>
+		</button>
+	</div>
+  </div>
+</div><!-- /.modal-content -->

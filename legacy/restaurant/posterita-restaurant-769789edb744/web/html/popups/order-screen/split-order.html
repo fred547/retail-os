@@ -1,0 +1,59 @@
+<div class="modal-content" data-test-id="split-order-popup">
+<form name="myform" autocomplete="off" ng-if="$ctrl.isEqualMode">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+		<span class="glyphicons glyphicons-group modal-header-icon"></span>
+		&nbsp;
+    	<span data-i18n="split.order">Split Order</span>
+    </h4>
+  </div>
+  <div class="modal-body split-order-user-container">
+  	<div>Split Amount {{$ctrl.amount}}</div>
+  	<button ng-repeat="commission in $ctrl.commissions | orderBy:'username' " 
+  	ng-debounced-click="commission.active = !commission.active"
+  	ng-class="{ active : commission.active, 'btn-primary' : commission.active, 'btn-default' :  !commission.active }"
+  	class="btn btn-lg" data-test-id="commission">
+  		<div data-test-id="username">{{ commission.username }}</div>
+  		<div data-test-id="amount">{{ commission.amount | number:2 }}</div>  		
+  	</button>    
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.reset()" data-test-id="reset">Reset</button>
+  
+    <button class="btn btn-lg btn-default button-white" data-i18n="split.equally" ng-debounced-click="$ctrl.splitEqually()" data-test-id="split-equally">Split Equally</button>
+	<button class="btn btn-lg btn-default button-white" data-i18n="custom" ng-debounced-click="$ctrl.setCustomMode()" data-test-id="custom">Custom</button>
+  </div>
+</form>
+
+<form name="myform" autocomplete="off" ng-if="!$ctrl.isEqualMode">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="split.order">Split Order</span>
+    </h4>
+  </div>
+  <div class="modal-body split-order-user-container">
+    	
+  	<div>Split Amount {{$ctrl.amount}}</div>
+  	
+  	<div class="row-container">
+  		<div class="row form-group" ng-repeat="commission in $ctrl.selected | orderBy:'username' " data-test-id="commission">
+  			<div>
+  				<label data-test-id="username">{{ commission.username }}</label>
+  			</div>
+  			<div>
+  				<input type="number" class="form-control" ng-model="commission.amount" ng-focus="$ctrl.setRemainder(commission)" select-on-focus  data-test-id="amount">
+  			</div>
+  		</div>  	
+  	</div>
+  	
+  	<div>Remainder Amount <span data-test-id="remainder">{{ $ctrl.getRemainder() }}</span></div>
+  	
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.resetCustom()" data-test-id="reset">Reset</button>
+	<button class="btn btn-lg btn-default button-white" data-i18n="custom" ng-debounced-click="$ctrl.customSplit()" ng-disabled="$ctrl.getRemainder() != 0" data-test-id="split">Split</button>
+  </div>
+</form>
+</div><!-- /.modal-content -->

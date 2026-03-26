@@ -1,0 +1,102 @@
+<div id="header-white-background">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div class="header-logo">
+			<img src='images/logo.png' alt="">
+		</div>
+		
+		<div style="width:25%;">
+		
+			<a data-test-id="switch-terminal" href="#/terminal"><i class="glyphicons glyphicons-cogwheels" style="font-size: 27px;"></i></a>
+		
+		</div>
+		
+	</div>				
+	<div class="grey-separator"></div>		
+</div>
+
+<div id="body-content">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div>
+		
+			<form name="loginform" autocomplete="off">
+				<div class="row-container login-container">
+					
+					<!-- Login Title -->
+					<div>
+						<div class="login-title form-group">
+							Log In
+						</div>
+					</div><!-- Login Title -->
+					
+					<!-- Store Name -->
+					<div>
+						<div class="form-group">
+							<label for="store">Store</label>
+							 
+							<div id="store-name-container" class="login-disabled-fields"><label>{{ ctrl.store.name }}</label></div>
+							<!--
+							<select class="form-control" ng-change="ctrl.renderTerminalList(ctrl.store)" ng-model="ctrl.store" ng-options="store as store.name for store in ctrl.storeList track by store.id"></select>
+							-->
+						</div>
+					</div><!-- Store Name -->
+					
+					<!-- Terminal Name -->
+					<div>
+						<div class="form-group">
+							<label for="terminal">Terminal</label>
+							 
+							<div id="terminal-name-container"class="login-disabled-fields"><label>{{ ctrl.terminal.u_posterminal_name }}</label></div>
+							<!--
+							 <select class="form-control" ng-model="ctrl.terminal" ng-options="terminal as terminal.u_posterminal_name for terminal in ctrl.terminalList track by terminal.id"></select>
+							  -->
+						</div>
+					</div><!-- Terminal Name -->
+					
+					<!-- Username -->
+					<div>
+						<div class="form-group">
+							<label for="username">Username</label>
+							<input type="text" name="username" tabindex="1" ng-model="ctrl.username" value="" class="form-control" id="username" required focus-me="true" select-on-focus>
+						</div>
+					</div><!-- Username -->
+					
+					<!-- Password -->
+					<div>
+						<div class="form-group">
+							<label for="password">Password</label>
+							<input type="password" name="password" tabindex="2" ng-model="ctrl.password" value="" class="form-control" id="password" required>
+						</div>
+					</div><!-- Password -->					
+					
+					<!-- Login Button -->
+					<div class="column-container login-button-container">
+						<div>
+							<button type="button" class="btn btn-md btn-danger button-danger" id="exit-button" ng-debounced-click="ctrl.exit()" style="float:left;">
+								<i class="glyphicons glyphicons-exit xs"></i>
+								<div data-i18n="login">Exit</div>
+							</button>
+							
+							<button type="submit" class="btn btn-md btn-success button-green" id="login-button" ng-debounced-click="ctrl.login()">
+								<i class="glyphicons glyphicons-log-in xs"></i>
+								<div data-i18n="login">Login</div>
+							</button>
+						</div>
+					</div><!-- Login Button -->
+					
+				</div>
+			</form>
+		</div>
+		
+		<div style="width:25%;"></div>
+		
+	</div>
+	<!-- <div class="grey-separator">
+		<a href="/html/4.2/select-user.html">Switch to old</a>
+	</div>	 -->
+</div>

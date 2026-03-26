@@ -1,0 +1,31 @@
+<div class="modal-content" id="external-payment-confirmation-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicon glyphicon-phone modal-header-icon"></span>
+    	<span data-i18n="payment.external.card">Payment Confirmation - {{title}}</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p>Has the {{title}} payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-danger button-red" data-ng-debounced-click="$close()" data-test-id="no">
+    	<div class="" data-i18n="no">No</div>
+    </button>
+    
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="paymentAccepted(tenderType)"  data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

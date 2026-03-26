@@ -1,0 +1,5 @@
+<a ng-debounced-click="ctrl.addProduct(match.model)"><div>
+    <span style="display:block;" class="registration" bind-html-unsafe="match.model.name | typeaheadHighlight:query"></span>
+    <span style="display:block;" bind-html-unsafe="match.model.upc | typeaheadHighlight:query"></span>  
+    <span style="display:block; border-bottom: solid 1px #666666;" bind-html-unsafe="match.model.description | typeaheadHighlight:query"></span>
+</div></a>

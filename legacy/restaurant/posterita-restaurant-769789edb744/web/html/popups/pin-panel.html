@@ -1,0 +1,51 @@
+<div class="modal-content" data-test-id="pin-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Enter your PIN
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform">
+		  <div class="form-group">
+		    <input class="form-control" type="password" id="popup-pin-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		  </div>
+		  <div id="popup-pin-keypad">
+		  	<table>
+		  		<tr>
+		  			<td><button data-test-id="1" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '1'" debounce-timeout="100">1</button></td>
+		  			<td><button data-test-id="2" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '2'" debounce-timeout="100">2</button></td>
+		  			<td><button data-test-id="3" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '3'" debounce-timeout="100">3</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="4" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '4'" debounce-timeout="100">4</button></td>
+		  			<td><button data-test-id="5" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '5'" debounce-timeout="100">5</button></td>
+		  			<td><button data-test-id="6" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '6'" debounce-timeout="100">6</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="7" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '7'" debounce-timeout="100">7</button></td>
+		  			<td><button data-test-id="8" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '8'" debounce-timeout="100">8</button></td>
+		  			<td><button data-test-id="9" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '9'" debounce-timeout="100">9</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="clear" type="button" class="btn" ng-debounced-click="$ctrl.input = ''" debounce-timeout="100">Clear</button></td>
+		  			<td><button data-test-id="0" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '0'" debounce-timeout="100">0</button></td>
+		  			<td><button data-test-id="backspace" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input.slice(0,$ctrl.input.length-1)" debounce-timeout="100"><i class="fa fa-arrow-left"></i></button></td>
+		  		</tr>
+		  	</table>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-lg btn-danger pull-left btn-big" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+		 <button type="button" class="btn btn-lg btn-success btn-big" ng-debounced-click="$ctrl.ok()" ng-disabled="!$ctrl.isValid()" data-test-id="ok-button">
+			OK
+		</button>
+		
+	</div>
+</div>

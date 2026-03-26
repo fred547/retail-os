@@ -1,0 +1,214 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+	<div class="row-container" style="height: 100%">
+		
+			<div>
+				<!-- order details, cash details, buttons -->
+				<div class="column-container" style="height: 100%">
+				
+					<!-- Order Receipt details -->
+					<div style="width: 60%;">
+					
+						<div class="view-transfer-container">
+							
+							<!-- Receipt Title to Receipt product list header -->
+							<div>
+								
+								<!-- Receipt Header -->
+								<div class="column-container receipt-header">
+									<div>{{ ctrl.transfer.title }}</div>
+									
+									<div>#{{ ctrl.transfer.header.documentNo }}</div>
+								</div><!-- Receipt Header -->
+								
+								<!-- Receipt Address -->
+								<div class="column-container store-address">
+									<div>
+										<span style="float: left;">
+										<strong>
+											<span>
+												{{ ctrl.transfer.header.org.name }}
+											</span>
+										</strong> <br/>
+										{{ ctrl.transfer.header.org.address }}
+										<br/>
+										{{ ctrl.transfer.header.org.city }}
+										<br/>
+										{{ ctrl.transfer.header.org.postal }}
+										<br/>
+										{{ ctrl.transfer.header.warehouseName }}
+										</span>
+									</div>
+									
+									<div>
+										<span style="float: right;">
+										<strong>
+											<span>
+												{{ ctrl.transfer.header.orgTo.name }}
+											</span>
+										</strong> <br/>
+										{{ ctrl.transfer.header.orgTo.address }}
+										<br/>
+										{{ ctrl.transfer.header.orgTo.city }}
+										<br/>
+										{{ ctrl.transfer.header.orgTo.postal }}
+										<br/>
+										{{ ctrl.transfer.header.warehouseToName }}
+										</span>
+									</div>
+								</div><!-- Receipt Address -->
+								
+								<!-- Receipt Type, Date, Status -->
+								<div class="column-container receipt-status">
+									<div>
+										Sales Rep: {{ ctrl.transfer.header.salesRep }}
+									</div>
+									
+									<div>
+										{{ ctrl.transfer.header.movementDateWithoutTime }}<br/>
+										<span data-i18n="status">Status:</span> 
+										<label style="color: rgb(255, 19, 0);">In Progress</label>
+									</div>
+								</div><!-- Receipt Type, Date, Status -->
+								
+								<!-- product list header -->	
+								<div class="row-container">	
+									<div class="receipt-product-list">
+										<div>
+											<div class="column-container receipt-product-list-header">												
+												<div>Name</div>
+												<div>Description</div>
+												<div>Qty</div>
+											</div>
+										</div>
+									</div>
+								</div><!-- product list header -->
+							</div><!-- Receipt Title to Receipt product list header -->
+							
+							
+							
+							<!-- Receipt product list -->
+							<div>
+								<div class="receipt-product-list" style="height: 100%;overflow-y:auto;">
+									
+									<!-- Receipt product list search data -->
+									<div class="receipt-product-list-search-result" ng-repeat="line in ctrl.transfer.lines track by $index">
+									
+										<div class="column-container">											
+											<div>
+												{{ line.name }}
+											</div>
+											<div>
+												{{ line.description }}
+											</div>
+											<div>
+												{{ line.qty }}
+											</div>
+										</div>
+										
+										<div class="column-container" ng-repeat="bom in line.boms track by $index">
+											<div>
+												{{ bom.name }}
+											</div>
+											<div>
+												{{ bom.description }}
+											</div>
+											<div>
+												{{ bom.qty }}
+											</div>
+										</div>
+										
+										<div class="column-container" ng-repeat="modifier in line.modifiers track by $index">
+											<div>
+												{{ modifier.name }}
+											</div>
+											<div>
+												{{ modifier.description }}
+											</div>
+											<div>
+												{{ modifier.qty }}
+											</div>											
+										</div>		
+									
+									</div><!-- Receipt product list search data -->									
+										
+								</div>
+							</div><!-- Receipt product list -->
+							
+							
+							
+							<!-- Totals and footer -->
+  							<div>
+								<!-- Receipt Totals -->
+								<div class="row-container transfer-totals">									
+									<div class="row">
+										<div>
+											Total Received
+										</div>
+										<div>&nbsp;</div>
+										<div style="text-align: right; padding-right: 15px;">
+											{{ ctrl.transfer.header.qtyTotal }}
+										</div>
+									</div>
+								</div><!-- Receipt Totals -->
+																
+							</div><!-- Totals and footer -->
+							
+						</div>
+								
+					</div><!-- Order Receipt details -->
+					
+					<!--  cash details, buttons -->
+					<div style="width: 40%; padding: 16px 16px 10px 0px;">
+					
+						<div class="row-container" style="height: 100%;">
+							<!-- amount container-->
+							<div>
+								<div class="row-container amount-container">
+									
+									<div class="row" style="font-size: 18pt;">
+										<div>Total Received</div>
+										<div>{{ ctrl.transfer.header.qtyTotal }}</div>
+									</div>	
+									
+									<div class="row" style="font-size: 14pt;">
+										<div>{{ ctrl.transfer.header.org.name }}</div>
+										<div>{{ ctrl.transfer.header.orgTo.name }}</div>
+									</div>	
+																
+								</div>
+								
+								<div class="row-container">
+								
+									<div class="row">
+										<div>
+											<button style="width: 100%;margin-top: 20px;" class="btn btn-success button-green" ng-debounced-click="ctrl.complete()">
+												<i class="glyphicons glyphicons-shopping-cart xs"></i>
+												<div>Complete</div>
+											</button>
+										</div>
+									</div>
+								
+								</div>
+								
+							</div>
+							
+														
+							
+							
+						</div>
+					
+					</div>
+				</div>
+			
+			</div>
+			
+			<div id="footer">
+				<div style="padding: 0px 16px;">					
+				</div>
+			</div>					
+		</div>
+</div>
+
+		

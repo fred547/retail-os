@@ -1,0 +1,97 @@
+<div class="modal-content" id="more-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-plus modal-header-icon"></span>
+    	<span data-i18n="more_options">More Options</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="more-option-button-container">
+
+     		<div class="column-container fixed-layout">
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="comment();$close()" id="comment-button">
+						<i class="glyphicons glyphicons-comments xs"></i>
+						<div>	
+							Comment
+							<span ng-show="isCommentPresent()" class="badge">1</span>	
+						</div>
+					</button>
+				</div>
+				<div ng-show="role.allow_order_split == 'Y' && !shoppingCart.isEmpty()">
+					<button class="btn btn-primary button-blue" ng-debounced-click="splitOrder();$close()" id="split-order-button">
+						<i class="glyphicons glyphicons-group xs"></i>
+						<div>Split Order</div>
+					</button>
+				</div>
+			</div>
+     		
+     		<div class="column-container fixed-layout">
+				<div ng-show="isSales && !shoppingCart.isEmpty()">
+					<button class="btn btn-primary button-blue" ng-debounced-click="redeemCoupon();$close()" id="redeem-coupon-button">
+						<i class="glyphicons glyphicons-fabric xs"></i>
+						<div>Redeem Coupon</div>
+					</button>
+				</div>
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="openGiftCard();$close()" id="gift-card-button">
+						<i class="glyphicons glyphicons-gift xs"></i>
+						<div>Gift Card</div>
+					</button>
+				</div>
+				<div ng-show="$ctrl.terminal.istaxincluded == 'Y' && !shoppingCart.isEmpty()" id="change-tax-button">
+					<button class="btn btn-primary button-blue" ng-debounced-click="changeTax();$close()">
+						<i class="glyphicons glyphicons-pie-chart xs"></i>
+						<div>Change Tax</div>
+					</button>
+				</div>
+				
+				<div ng-show="role.allow_order_backdate == 'Y' ">
+					<button class="btn btn-primary button-blue" ng-debounced-click="backdateOrder();$close()" id="backdate-button">
+						<i class="glyphicons glyphicons-calendar xs"></i>
+						<div>Backdate Order</div>
+					</button>
+				</div>
+				
+				<!-- <div>
+					<button class="btn btn-danger button-red" ng-debounced-click="discountOnTotal();$close()">
+						<i class="glyphicons glyphicons-tag xs"></i>
+						<div>Discount on Total</div>
+					</button>
+				</div> -->
+				
+			</div>
+
+			<div class="column-container fixed-layout">
+				<div ng-show="isSales">
+					<button class="btn btn-primary button-blue" ng-debounced-click="showPromotions();$close()" id="promotions-button">
+						<i class="glyphicons glyphicons-fabric xs"></i>
+						<div>Redeem Points</div>
+					</button>
+				</div>
+
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="openDeposit();$close()" id="deposit-button">
+						<i class="glyphicons glyphicons-money xs"></i>
+						<div>Deposit</div>
+					</button>
+				</div>
+
+				<div ng-if="searchByBarcodeOnly">
+					<button class="btn btn-primary button-blue" ng-debounced-click="searchItems();$close()" id="search-items-button">
+						<i class="glyphicons glyphicons-search xs"></i>
+						<div>Search Items</div>
+					</button>
+				</div>
+			</div>
+					
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->

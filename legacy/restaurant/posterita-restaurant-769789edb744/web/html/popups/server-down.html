@@ -1,0 +1,16 @@
+<div class="modal-content" id="alert-popup">
+	<div class="modal-header alert-danger">		 
+		<h4 class="modal-title">
+			<i class="fa fa-exclamation-triangle"></i>
+			Server Unreachable
+		</h4>
+	</div>
+	<div class="modal-body">
+		<h4 class="text-danger">Server connection failed! Check your network connection.</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.retry()" data-test-id="retry-button">
+			Retry
+		</button>
+	</div>
+</div>

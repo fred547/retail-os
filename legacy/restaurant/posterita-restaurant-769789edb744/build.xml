@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ======================================================== -->
+<!-- 				Posterita POS Client                      -->
+<!-- ======================================================== -->
+<project name="posterita" default="build" basedir=".">
+	
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="build.dir" value="${basedir}/build"/>
+	
+	<target name="version">	
+		<propertyfile  file="${src.dir}/org/posterita/posterita.properties" comment="Posterita built info">
+		  <entry  key="version" value="1.0"/>
+		  <entry  key="date" type="date" value="now" pattern="YYYYMMdd_HHmm"/>
+		</propertyfile>
+	</target>
+	
+	<target name="compile" depends="version">		
+		<echo message = "=========== Compiling project ===========" />
+		<delete dir = "${basedir}/bin"/>
+		<mkdir dir = "${basedir}/bin"/>
+		<javac encoding="UTF-8" debug="true" srcdir="${basedir}/src" destdir="${basedir}/bin">
+            <classpath>
+                <fileset dir="${basedir}/lib/">
+                    <include name="*.jar" />
+                </fileset>
+            </classpath>
+        </javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		
+		<delete dir = "${basedir}/build/posterita-client" />
+		<mkdir dir = "${basedir}/build/posterita-client" />	
+		
+		<war destfile="${basedir}/build/posterita-client/webapps/posterita.war">
+			<fileset dir="${basedir}/web">
+			</fileset>
+		</war>
+		
+		<jar destfile="${basedir}/build/posterita-client/lib/posterita.jar">
+			<fileset dir="${basedir}/bin"></fileset>
+			<fileset dir="${basedir}/src">
+				<include name="**/*.properties"/>
+				<include name="**/*.png"/>
+			</fileset>
+		</jar>	
+		
+		<copy file="${basedir}/lib/tools.jar" tofile="${basedir}/build/posterita-client/lib/tools.jar"/>
+	</target>
+	
+	<target name="tools">
+		<unjar dest="${basedir}/build/buildJar">
+			<fileset dir="${basedir}/jars">
+			</fileset>
+		</unjar>
+		
+		<jar destfile="${basedir}/lib/tools.jar" basedir="${basedir}/build/buildJar"></jar>		
+		<delete dir="${basedir}/build/buildJar"/>
+	</target>
+	
+	<target name="build" depends="checksum">		
+		
+		<copy todir="${basedir}/build/posterita-client">
+			<fileset dir="files"></fileset>
+		</copy>
+		
+		<chmod file="${basedir}/build/posterita-client/posterita.sh" perm="ugo+rx"/>
+		<chmod file="${basedir}/build/posterita-client/posterita" perm="ugo+rx"/>
+		<chmod file="${basedir}/build/posterita-client/posterita-x86" perm="ugo+rx"/>
+				
+		<!-- Create zip -->
+		<zip destfile="${basedir}/build/posterita-client/client.zip" basedir="${basedir}/build/posterita-client">
+		</zip>
+		
+		<!--
+		
+		<copy todir="/home/Praveen/Desktop/posterita-client">
+			<fileset dir="${basedir}/build/posterita-client"></fileset>
+		</copy>
+		
+		<copy todir="/home/Praveen/workspace-forus/posterita/web/posterita-client" overwrite="true">
+			<fileset dir="${basedir}/build/posterita-client"></fileset>
+		</copy>
+		
+		-->
+		
+	</target>
+	
+	<target name="checksum" depends="jar">
+		
+		<java fork="true" failonerror="yes" classname="org.posterita.util.ChecksumFileCreator">
+			
+			<!-- 1. Base directory -->
+			<arg line="${basedir}/build/posterita-client"/>
+			
+			<!-- 2. Checksum file -->
+			<arg line="checksum.txt"/>
+			
+			<!-- 3. Files to compute checksum for -->			
+			<arg line="lib/posterita.jar"/>
+			<arg line="lib/tools.jar"/>
+		    <arg line="webapps/posterita.war"/>
+			
+			<classpath>
+				<pathelement location="${basedir}/build/posterita-client/lib/posterita.jar"/>
+				<pathelement location="${basedir}/build/posterita-client/lib/tools.jar"/>
+			</classpath>
+			
+		</java>
+				
+	</target>
+	
+	<target name="templates">		
+		<java fork="true" failonerror="yes" classname="org.posterita.util.MergeTemplates">
+			<classpath>
+				<pathelement location="${basedir}/build/posterita-client/lib/posterita.jar"/>
+				<pathelement location="${basedir}/build/posterita-client/lib/tools.jar"/>
+			</classpath>
+		</java>
+	</target>
+</project>

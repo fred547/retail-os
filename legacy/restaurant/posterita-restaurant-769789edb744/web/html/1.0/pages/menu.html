@@ -1,0 +1,214 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+
+	<div  class="menu-container">
+	    <!-- restaurant -->
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<a data-test-id="take-order" ui-sref="choose-order-type">
+					<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+					<span>Take Order</span>
+				</a>
+				
+				<a data-test-id="table-list" href="javascript:void(0);" ng-debounced-click="validatePath('tables')">
+					<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+					<span>Table List</span>
+				</a>
+				
+				<a data-test-id="take-away-list" href="javascript:void(0);" ng-debounced-click="validatePath('take-aways')">
+					<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+					<span>Take-Away List</span>
+				</a>
+				
+				<a data-test-id="printer-logs" ui-sref="printer-logs">
+					<i class="glyphicons glyphicons-notes menu-options-icon"></i>
+					<span>Printer Logs</span>
+				</a>
+				
+				<a data-test-id="table-logs" ui-sref="restaurant-logs">
+					<i class="glyphicons glyphicons-notes menu-options-icon"></i>
+					<span>Table Logs</span>
+				</a>
+				
+				<a data-test-id="items-ordered-history" ui-sref="items-ordered-logs" ng-show="role.name == 'Administrator'">
+					<i class="glyphicons glyphicons-notes menu-options-icon"></i>
+					<span>Items Ordered History</span>
+				</a>				
+				
+				<a data-test-id="kitchen-bar-history" ui-sref="kitchen-order-logs" ng-show="role.name == 'Administrator'">
+					<i class="glyphicons glyphicons-notes menu-options-icon"></i>
+					<span>Kitchen/Bar History</span>
+				</a>
+				
+			</div>
+		</div>
+		<!-- restaurant -->
+	
+		<div class="panel panel-default">
+		 
+		  <div class="panel-body">
+		    
+		    <!-- 
+		    <a ui-sref="order-screen">
+				<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+				<span>Make a Sale</span>
+			</a>
+			<a ui-sref="order-screen({action : 'refundOrder'})" ng-show="role.make_a_return == 'Y'" data-test-id="refund">
+				<i class="glyphicons glyphicons-cart-out menu-options-icon"></i>
+				<span>Make a Return</span>
+			</a>
+			 -->
+			 
+			<a href="javascript:void(0);" ng-debounced-click="displayClockInOutPopup()" ng-controller="ClockInClockOutController" id="clock-inout-menu">
+				<i class="glyphicons glyphicons-clock menu-options-icon"></i>
+				<span>Clock In/Out</span>
+			</a>
+			<a ui-sref="close-till" ng-hide="role.close_till == 'N'" data-test-id="close-till">
+				<i class="glyphicons glyphicons-rotation-lock menu-options-icon"></i>
+				<span>Close Till</span>
+			</a>
+		    <a ui-sref="exchange-order" >
+				<i class="glyphicons glyphicons-sorting menu-options-icon"></i>
+				<span>Exchange</span>
+			</a>
+		    <a href="javascript:void(0);" ng-debounced-click="displayProductInfoPopup()" ng-controller="ProductInfoController">
+				<i class="glyphicons glyphicons-search menu-options-icon"></i>
+				<span>Product Info</span>
+			</a>
+			<a ui-sref="cashier-control" ng-hide="role.cashier_control == 'N' " data-test-id="cashier-control">
+				<i class="glyphicons glyphicons-notes-2 menu-options-icon"></i>
+				<span>Cashier Control</span>
+			</a>
+			<!-- 
+			<a ui-sref="quotation">
+				<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+				<span>Quotation</span>
+			</a>
+			 -->
+		  </div>
+		</div>
+		
+		<div class="panel panel-default">
+		  
+		  <div class="panel-body">
+		  
+		    <a ui-sref="order-history" ng-show="role.sales_history == 'Y'" data-test-id="sales-history">
+				<i class="glyphicons glyphicons-notes menu-options-icon"></i>
+				<span>Sales History</span>
+			</a>
+			<a ui-sref="clock-in-out-report">
+				<i class="glyphicons glyphicons-clock menu-options-icon"></i>
+				<span>Clock In/Out Report</span>
+			</a>
+			<a ui-sref="close-till-report"  ng-hide="role.view_closetill == 'N' ">
+				<i class="glyphicons glyphicons-log-book menu-options-icon"></i>
+				<span>Terminal Closure Report</span>
+			</a>
+			<a ui-sref="price-change-report">
+				<i class="glyphicons glyphicons-notes-2 menu-options-icon"></i>
+				<span>Price Change Report</span>
+			</a>
+			
+			<a ui-sref="daily-sales-receipt" ng-show="role.daily_sales_receipt == 'Y' ">
+				<i class="glyphicons glyphicons-notes-2 menu-options-icon"></i>
+				<span>Daily Sales Receipt</span>
+			</a>
+			
+			<a ui-sref="daily-item-sales-report">
+				<i class="glyphicons glyphicons-notes-2 menu-options-icon"></i>
+				<span>Daily Item Sales</span>
+			</a>
+		
+		  </div>
+		</div>
+		
+		<div class="panel panel-default">
+		 
+		  <div class="panel-body">
+		    
+		    <a href="javascript:void(0);" ng-debounced-click="displayInventoryAvailable()" ng-controller="InventoryAvailableController">
+				<i class="glyphicons glyphicons-package menu-options-icon"></i>
+				<span>Inventory Available</span>
+			</a>
+			<a ui-sref="stock-transfer({'transferType' : 'stock-transfer-request'})" ng-show="role.request_stock == 'Y' ">
+				<i class="glyphicons glyphicons-disk-save menu-options-icon"></i>
+				<span>Request Stock</span>
+			</a>
+			<a ui-sref="stock-transfer({'transferType' : 'stock-transfer-send'})" ng-show="role.send_stock == 'Y' ">
+				<i class="glyphicons glyphicons-disk-open menu-options-icon"></i>
+				<span>Send Stock</span>
+			</a>
+			
+			<a ui-sref="receive-item" ng-show="role.receive_item == 'Y' ">
+				<i class="glyphicons glyphicons-history menu-options-icon"></i>
+				<span>Receive Item</span>
+			</a>
+			
+			<!-- 
+			<a ui-sref="backoffice-item">
+				<i class="glyphicons glyphicons-history menu-options-icon"></i>
+				<span>Manage Items</span>
+			</a>
+			 -->
+		    
+		  </div>
+		</div>
+		
+		<div class="panel panel-default">
+		
+		  <div class="panel-body">
+		    
+		    <a href="javascript:void(0);" ng-debounced-click="displayRequestSupportPopup()" ng-controller="RequestSupportController">
+				<i class="glyphicons glyphicons-phone-alt menu-options-icon"></i>
+				<span>Request Support</span>
+			</a>
+			<a ui-sref="hardware-settings">
+				<i class="glyphicons glyphicons-wrench menu-options-icon"></i>
+				<span>Hardware Settings</span>
+			</a>
+			<a href="javascript:void(0);" ng-debounced-click="synchronize()" data-test-id="synchronize">
+				<i class="glyphicons glyphicons-refresh menu-options-icon"></i>
+				<span>Synchronize</span>
+			</a>
+			
+			<a ui-sref="import-customer" ng-show="role.import_customer == 'Y' ">
+					<i class="glyphicons glyphicons-disk-import menu-options-icon"></i>
+					<span>Import Customer</span>
+				</a>
+						
+			
+			<a href="javascript:void(0);" ng-debounced-click="displayRemoteAccessPopup()" ng-controller="RemoteAccessController">
+				<i class="glyphicons glyphicons-bug menu-options-icon"></i>
+				<span>Remote Access</span>
+			</a>
+			
+			<a href="javascript:void(0);" ng-debounced-click="displayAboutPopup()" ng-controller="AboutController">
+				<i class="glyphicons glyphicons-circle-info menu-options-icon"></i>
+				<span>About</span>
+			</a>
+		    
+		  </div>
+		</div>
+				
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<a ui-sref="purchase" ng-show="role.purchase == 'Y' ">
+					<i class="glyphicons glyphicons-truck menu-options-icon"></i>
+					<span>Make a Purchase</span>
+				</a>
+				
+				<a ui-sref="purchase-history" ng-show="role.purchase_history == 'Y' ">
+					<i class="glyphicons glyphicons-sort menu-options-icon"></i>
+					<span>Purchase History</span>
+				</a>
+			</div>
+		</div>
+		
+	</div>	
+	
+	
+	
+		
+	
+</div>

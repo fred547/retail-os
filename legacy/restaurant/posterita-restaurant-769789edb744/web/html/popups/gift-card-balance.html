@@ -1,0 +1,53 @@
+<div class="modal-content" data-test-id="gift-card-balance-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="gift.card.transactions" style="vertical-align: sub;">Gift Card Balance</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="row-container">
+     		
+		<div class="row">     			
+			<div><span data-i18n="card.number">Card No:</span></div>
+			<div data-test-id="card-no">{{ accountnumber }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="amount">Amount:</span></div>
+			<div data-test-id="amount">{{ amount | number:2 }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="balance">Balance:</span></div>
+			<div data-test-id="balance">{{ balance | number:2 }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="popup.city">Date Issued:</span></div>
+			<div>{{ dateissued }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="popup.dob">Expiry:</span></div>
+			<div>{{ expiry }}</div>     			
+		</div>
+
+		<!-- show reloaded info if any -->
+		<div class="row" ng-show="reloadedamount">     			
+			<div><span>Reloaded Amount:</span></div>
+			<div data-test-id="reloaded-amount">{{ reloadedamount | number:2 }}</div>     			
+		</div>
+		<div class="row" ng-show="reloadeddate">     			
+			<div><span>Reloaded Date:</span></div>
+			<div>{{ reloadeddate }}</div>     			
+		</div>
+		<div class="row" ng-show="store">     			
+			<div><span>Store:</span></div>
+			<div>{{ store }}</div>     			
+		</div>		
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

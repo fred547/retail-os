@@ -1,0 +1,156 @@
+<div class="modal" style="display: none;" id="card.popup.panel"	tabindex="-1" aria-labelledby="card.popup.panel" aria-hidden="true">
+	<form name="myform" autocomplete="off">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true" id="card.popup.cancelButton">×</button>
+				<h4 class="modal-title">
+					<div class="glyphicons glyphicons-pro credit_card"></div>
+					&nbsp;Payment Credit Card
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row padding-bottom-8"
+					style="font-size: 16pt; font-family: arial; color: #1d1d1d;">
+					<div class="col-md-3 col-xs-3">Total</div>
+					<div class="col-md-4 col-xs-4 padding-bottom-8">
+						<span id="card.popup.totalLabel"></span>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12 col-xs-12 popup-label">Amount
+						Tendered</div>
+				</div>
+				<div class="row padding-bottom-8">
+					<div class="col-md-12 col-xs-12 popup-label">
+						<input type="text" id="card.popup.amountTextfield"
+							class="number input-sm">
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 col-xs-12 popup-label">Card</div>
+				</div>
+				<div class="row padding-bottom-8">
+					<div class="col-md-12 col-xs-12">
+						<select id="card.popup.cardSelectList"
+							class="selectField input-sm">
+							<option value="V" selected="selected">Visa</option>
+							<option value="M">MasterCard</option>
+							<option value="A">American Express</option>
+							<option value="N">Discover</option>
+							<option value="H">Carte Blance</option>
+							<option value="L">JAL</option>
+							<option value="B">JCB</option>
+							<option value="E">Enroute</option>
+							<option value="D">Diner's Club</option>
+							<option value="W">Switch</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="row padding-bottom-8">
+					<div class="col-md-1 col-xs-1">
+						<form id="checkboxDemo" action="checkvalues.php"
+							method="post">
+							<label for="checkbox-4" tabindex="4"></label> <input
+								type="checkbox" id="card.popup.swipeCardCheckBox"
+								class="input-sm" value="true" checked="">
+						</form>
+					</div>
+					<div class="col-md-11 col-xs-11 popup-label">Swipe Card</div>
+				</div>
+
+				<div id="card.popup.trackDataDetailsPane">
+					<div class="row">
+						<div class="col-md-12 col-xs-12 popup-label">Swipe
+							Data:</div>
+					</div>
+
+					<div class="row padding-bottom-8">
+						<div class="col-md-12 col-xs-12">
+							<input type="password" id="card.popup.trackDataTextField"
+								class="textField input-sm" value="">
+						</div>
+					</div>
+				</div>
+
+
+				<div class="row" id="card.popup.cardDetailsPane"
+					style="display: none;">
+					<div class="col-md-12 col-xs-12 no-padding">
+						<div class="row">
+							<div class="col-md-12 col-xs-12 popup-label">Card No:
+								*</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.cardNumberTextField"
+									class="number input-sm">
+							</div>
+						</div>
+
+						<div class="row padding-bottom-8">
+							<div class="col-md-6 col-xs-6 padding-right-8">
+								<div class="row popup-label">Expiration(MMYY):</div>
+								<div class="row">
+									<input type="text" id="card.popup.cardExpiryDateTextField"
+										size="4" maxlength="4" class="number input-sm">
+								</div>
+							</div>
+							<div class="col-md-6 col-xs-6">
+								<div class="row popup-label">CVV2: *</div>
+								<div class="row">
+									<input type="text" id="card.popup.cardCvvTextField"
+										class="number input-sm">
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-12 col-xs-12 popup-label">Name:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.cardHolderNameTextField"
+									class="input-sm">
+							</div>
+						</div>
+
+						<div class="row popup-label">
+							<div class="col-md-12 col-xs-12">Address:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.streetAddressTextField"
+									class="input-sm">
+							</div>
+						</div>
+
+						<div class="row popup-label">
+							<div class="col-md-12 col-xs-12">Zip Code:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-121 col-xs-12">
+								<input type="text" id="card.popup.zipCodeTextField"
+									class="input-sm">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="row">
+					<button type="button" class="btn btn-xs btn-success button-green"
+						style="width: 20%;" id="card.popup.okButton">
+						<div class="glyphicons glyphicons-pro ok_2"></div>
+						<div data-i18n="">Ok</div>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</form>
+</div>
+					

@@ -1,0 +1,45 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<div id="body-content">
+
+	<div class="column-container" style="padding: 0px 10px;">
+		<div>
+			<h3 style="margin-top: 5px;" class="report-title">Daily Sales Receipt</h3>
+		</div>
+		<div style="text-align: right;">
+			<button class="btn btn-primary" ng-debounced-click="showSearchDialog()">
+				<span class="glyphicon glyphicon-search"></span> Search
+			</button>
+		</div>
+		
+	</div>
+
+	<table class="display dataTable" id="daily_sales_receipt_table">
+		
+		<thead>
+	        <tr>
+	            <th>Date</th>
+	            <th>Document No #</th>
+	            <th>Order Type</th>
+	            <th>Sales Rep</th>
+	            <th>Customer</th>
+	            <th>Payment</th>
+	            <th>Doc Status</th>
+	        </tr>
+	    </thead>
+	    <tbody></tbody>
+	    <tfoot>
+	    	<tr>
+	            <th>Date</th>
+	            <th>Document No #</th>
+	            <th>Order Type</th>
+	            <th>Sales Rep</th>
+	            <th>Customer</th>
+	            <th>Payment</th>
+	            <th>Doc Status</th>
+	        </tr>
+	    </tfoot>
+		
+	</table>
+	
+</div>

@@ -1,0 +1,28 @@
+<div class="modal-content" data-test-id="clock-out-user-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="clock.out.user">Clock Out User</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="username" data-i18n="username">Username:</label>
+	    <input type="text" class="form-control" id="username" name="username" ng-model="$ctrl.username" disabled>
+	  </div>
+	  <div>
+	    <label for="password" data-i18n="password">Password:</label>
+	    <input type="password" class="form-control" id="password" name="password" ng-model="$ctrl.password" required="required" focus-me="true" ng-enter="$ctrl.clockOut()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.clockOut()" data-test-id="ok-button" ng-disabled="myform.password.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

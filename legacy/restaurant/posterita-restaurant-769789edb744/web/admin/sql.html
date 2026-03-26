@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<meta content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'" http-equiv="Content-Security-Policy">
+	<meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    
+	<title>Posterita SQL Editor</title>
+	
+	<link rel="stylesheet" type="text/css" href="../html/1.0/lib/data-table/css/jquery.dataTables.css"/>
+	
+	<style type="text/css">
+	
+	textarea {
+		
+		width: 75%;
+		padding: 10px;
+		line-height: 1.5;
+		color: #501784;
+		font-size: 20px;
+	
+	}
+	
+	td, th {
+	
+		empty-cells: show;
+		font-size: 14px;
+	
+	}
+	
+	#demo {	
+	
+		padding-top: 10px;
+    	background-color: #F8F3F3;
+    	margin-top: 10px;
+    }
+    
+    #error {
+    	color: #870606;
+    }
+    
+    * {
+		font-family: Arial, Helvetica, sans-serif;
+	}
+	
+	</style>
+	
+	<script type="text/javascript" src="../html/1.0/lib/jquery-1.8.3.js"></script> 
+	<script type="text/javascript" src="../html/1.0/lib/angular.js"></script>
+	<script type="text/javascript" src="../html/1.0/lib/data-table/js/jquery.dataTables.min.js"></script>	
+	
+	<script>
+	
+	var app = angular.module('app', []);
+	app.controller('MainController', function($scope, $http){
+		       		
+		var ctrl = this;
+		
+		ctrl.error = null;
+		
+		ctrl.run = function( sql ){
+			
+			console.log(sql);
+			
+			sql = encodeURI( sql );
+			
+			$http.get("/sql?q=" + sql).then(function(response){
+				
+				var dataObject = response.data;
+				
+				if(dataObject.error){
+					
+					ctrl.error = dataObject.error;
+					return;
+					
+				}
+				else
+				{
+					ctrl.error = null;
+				}
+				
+				$('#demo').html( '<table id="example" class="cell-border hover" cellspacing="0" width="100%"></table>' );
+				
+				ctrl.columns = dataObject.columns;
+				
+				var selected = [];
+				
+				$('#example').DataTable({
+				    "data": dataObject.data,
+				    "columns": dataObject.columns,
+				    "scrollX": true,
+				    "rowCallback": function( row, data ) {
+			            if ( $.inArray(data.DT_RowId, selected) !== -1 ) {
+			                $(row).addClass('selected');
+			            }
+			        }
+				  });
+				
+				$('#example tbody').on('click', 'tr', function () {
+			        var id = this.id;
+			        var index = $.inArray(id, selected);
+			 
+			        if ( index === -1 ) {
+			            selected.push( id );
+			        } else {
+			            selected.splice( index, 1 );
+			        }
+			 
+			        $(this).toggleClass('selected');
+			    } );
+				
+			});
+			
+		};		
+		
+	})
+	
+	</script>
+	
+		
+</head>
+<body ng-app="app" ng-controller="MainController as ctrl">
+
+	<h3>SQL Editor</h3>
+	<p id="error">{{ctrl.error}}</p>
+	<textarea rows="5" cols="20" ng-model="sql"></textarea>
+	
+	<div>
+	<br>
+	<button ng-click="ctrl.run(sql)">Run</button>
+	</div>
+	
+	
+	<div id="demo">
+	</div>
+	
+</body>
+</html>

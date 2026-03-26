@@ -1,0 +1,132 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<!-- Body -->
+<div id="body-content">
+
+	<div class="center-block" 
+		style="width: 100%;
+		padding-right: 20%;
+	    padding-left: 20%;
+	    position: absolute;
+	    bottom: 0px;
+	    overflow-y: scroll;
+	    top: 50px;">
+	
+		<h3>Hardware Settings</h3>
+		
+		<form method="post">
+			
+			<!-- 
+			<div class="form-group">
+				<div class="checkbox">
+					<label class="checkbox">
+						<input name="checkbox" type="checkbox">Enable Printing
+					</label>
+				</div>			
+			</div>	
+			 -->
+			
+			<div class="form-group" >
+				<switch id="enabled" name="enabled" ng-model="ctrl.settings.enable" class="blue"></switch> 
+				<div style="display: inline-block; position: relative; top: -12px; left: 10px;" ng-debounced-click="ctrl.settings.enable=!ctrl.settings.enable">Enable Printing</div>
+			</div>		
+			
+			<!-- 
+			<div class="form-group">
+				<label class="control-label" for="printing-implementation">Choose printing implementation *</label> 
+				<select class="select form-control" id="printing-implementation" ng-model="ctrl.settings.implementation" ng-disabled="!ctrl.settings.enable">
+					<option value="">
+					</option>
+					<option value="Posteria Print" >
+						ESC/POS Printer
+					</option>
+					<option value="Star WebPRNT">
+						Star WebPRNT
+					</option>
+					<option value="Epson ePOS-Print">
+						Epson ePOS
+					</option>
+				</select>
+			</div>
+			 -->
+			
+			<div class="form-group" ng-show="ctrl.settings.implementation == 'Posteria Print'">			
+				<label class="control-label" for="printer-name">Choose printer *</label> 
+				<select class="select form-control" id="printer-name" ng-model="ctrl.settings.printer" ng-disabled="!ctrl.settings.enable">
+					<option value=""></option>
+					<option value="{{printer}}" ng-repeat="printer in ctrl.printers track by $index" ng-selected="printer == ctrl.settings.printer">{{ printer }}</option>
+				</select>
+			</div>
+			
+			<div class="form-group" ng-hide="ctrl.settings.implementation == 'Posteria Print'">
+				<label class="control-label" for="printer-ip">Enter printer IP address *</label> 
+				<input class="form-control" id="printer-ip" ng-model="ctrl.settings.ip" type="text" ng-disabled="!ctrl.settings.enable">
+			</div>
+			
+			<div class="form-group">
+				<label class="control-label" for="printer-line-width">Enter printer line width *</label> 
+				<input class="form-control" id="printer-line-width" ng-model="ctrl.settings.width" type="number" ng-disabled="!ctrl.settings.enable">
+			</div>
+			
+			<!-- pole display -->
+			<div class="form-group" >
+				<switch id="enabled_pole" name="enabled_pole" ng-model="ctrl.settings.enable_pole" class="blue"></switch> 
+				<div style="display: inline-block; position: relative; top: -12px; left: 10px;" ng-debounced-click="ctrl.settings.enable_pole=!ctrl.settings.enable_pole">Enable Pole Display</div>
+			</div>
+			
+			<div class="form-group">
+				<label class="control-label" for="pole-name">Choose display *</label> 
+				<select class="select form-control" id="pole-name" ng-model="ctrl.settings.pole" ng-disabled="!ctrl.settings.enable_pole">
+					<option value=""></option>
+					<option value="{{printer}}" ng-repeat="printer in ctrl.printers track by $index" ng-selected="printer == ctrl.settings.pole">{{ printer }}</option>
+				</select>
+			</div>
+			
+			<!-- restaurant -->
+			<div class="form-group">
+				<label class="control-label" for="pole-name">Kitchen Printers</label> 
+				<div>
+					<table class="table table-bordered ">
+						<tr>
+							<th>Name</th>
+							<th>IP</th>
+							<th style="width:50px;">
+								<button class="btn" ng-debounced-click="ctrl.addKitchenPrinter()">
+									<i class="glyphicons glyphicons-plus"></i>
+								</button>
+							</th>
+						</tr>
+						<tbody>
+						<tr ng-repeat="kitchen_printer in ctrl.settings.kitchen_printers">
+							<td>
+								<input type="text" ng-model="kitchen_printer.name" class="form-control" placeholder="Printer Name">
+							</td>
+							<td>
+								<input type="text" ng-model="kitchen_printer.ip" class="form-control" placeholder="Printer IP Address">
+							</td>
+							<td>
+								<button class="btn" ng-debounced-click="ctrl.settings.kitchen_printers.splice($index,1)">
+									<i class="glyphicon glyphicon-trash"></i>
+								</button>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<!-- restaurant -->
+			
+			<div class="form-group">
+				<div>
+					<button class="btn btn-lg btn-primary button-blue pull-left" type="button" ng-disabled="!ctrl.settings.enable" ng-debounced-click="ctrl.testPrinter()">Test Printer</button> 
+					<button class="btn btn-lg btn-primary button-blue pull-left" style="margin-left: 6px;'" type="button" ng-disabled="!ctrl.settings.enable_pole" ng-debounced-click="ctrl.testPoleDisplay()">Test Pole Display</button> 
+					
+					<button data-test-id="save-button" class="btn btn-lg btn-success button-green pull-right" type="button" ng-debounced-click="ctrl.save()">Save</button>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+			
+		</form>			
+	</div>
+	
+</div><!-- Body -->

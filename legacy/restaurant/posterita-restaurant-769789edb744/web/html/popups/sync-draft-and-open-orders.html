@@ -1,0 +1,30 @@
+<div class="modal-content" data-test-id="sync-draft-and-open-orders-popup">
+	<div class="modal-header">		 
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Synchronize Draft & Open Orders
+		</h4>
+	</div>
+	<div class="modal-body draft-and-open-order">
+		<div>Found:</div>
+		<ul>
+			<li ng-show="$ctrl.draftOrders.length > 0 ">
+				<span class="text-danger">{{ $ctrl.draftOrders.length }} Draft {{ $ctrl.draftOrders.length == 1 ? 'Order' : 'Orders' }}.</span>
+			</li>
+			
+			<li ng-show="$ctrl.openOrders.length > 0 ">
+				<span class="text-danger">{{ $ctrl.openOrders.length }} Open {{ $ctrl.openOrders.length == 1 ? 'Order' : 'Orders' }}.</span>
+			</li>		
+		</ul>
+		
+		<div>Do you want to synchronize them ?</div>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.yes()" data-test-id="yes-button">
+			Yes
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.no()" data-test-id="no-button">
+			No
+		</button>
+	</div>
+</div>

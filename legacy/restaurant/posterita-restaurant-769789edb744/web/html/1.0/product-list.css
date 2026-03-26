@@ -1,0 +1,30 @@
+#product-search-result-container div.column-container > div
+		{
+			vertical-align: middle;
+		}
+		
+		#product-search-result-container .product-search-result-header {
+			background-color: #d7d8da;
+			color: #5b5b5b;		
+		}
+		
+		.product-search-result div.column-container
+		{
+			min-height: 40px;
+		}
+		
+		.product-search-result div.column-container div:nth-child(2)
+		{
+			text-align:right;
+			width:10%
+		}
+		
+		.product-search-result div.column-container:nth-child(even)
+		{
+			background-color:#e5e5e5;
+		}
+		
+		.product-search-result div.column-container:nth-child(odd)
+		{
+			background-color:#FFF;
+		}

@@ -1,0 +1,132 @@
+<div class="modal-content" data-test-id="payment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-shopping-cart modal-header-icon"></span>
+    	<span data-i18n="checkout">Checkout</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="check-out-buttons">
+     		<div class="column-container">
+     		
+ 				<div ng-show="$ctrl.tendersTypes.indexOf('B') !=-1">     				
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="cashPayment()" data-test-id="cash">
+						<i class="glyphicons glyphicons-money xs"></i>
+						<div data-i18n="cash">Cash</div>
+					</button>     				
+ 				</div>
+ 				 <div ng-show="$ctrl.tendersTypes.indexOf('K') !=-1">
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="creditCardPayment()" data-test-id="credit-card">
+						<i class="glyphicons glyphicons-credit-card xs"></i>
+						<div data-i18n="credit.card">Credit Card</div>
+					</button>     				
+ 				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('S') !=-1">     				
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="checkPayment()" data-test-id="check">
+  						<i class="glyphicons glyphicons-pen xs"></i>
+  						<div data-i18n="check">Check</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('P') !=-1">
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="onCreditPayment()" data-test-id="on-credit">
+  						<i class="glyphicons glyphicons-log-book xs"></i>
+  						<div data-i18n="on.credit">On Credit</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('E') !=-1">
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="externalCardPayment()" data-test-id="ext-card">
+  						<i class="glyphicons glyphicons-tablet xs"></i>
+  						<div data-i18n="ext.card">Ext Card</div>
+  					</button>     				
+   				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container">
+     		
+     			<!-- 
+   				<div ng-show=" $ctrl.orderType == 'POS Order' ">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="giftCardPayment()">
+  						<i class="glyphicons glyphicons-gift xs"></i>
+  						<div data-i18n="gift.card">Gift Card</div>
+  					</button>     				
+   				</div>
+   				 -->
+   				 
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('V') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="voucherPayment()" data-test-id="voucher">
+  						<i class="glyphicons glyphicons-certificate xs"></i>
+  						<div data-i18n="voucher">Voucher</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('M') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mixPayment()" data-test-id="mix">
+  						<i class="glyphicons glyphicons-wallet xs"></i>
+  						<div data-i18n="mix">Mix</div>
+  					</button>     				
+   				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container" ng-show=" $ctrl.orderType == 'POS Order' ">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('L') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="loyaltyPayment()" data-test-id="loyalty">
+  						<i class="glyphicons glyphicons-handshake xs"></i>
+  						<div data-i18n="loyalty">Loyalty</div>
+  					</button>     				
+   				</div>
+     		     		
+     		</div>
+     		
+     		<div class="column-container" ng-show=" $ctrl.orderType == 'POS Order' ">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('J') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mcbJuicePayment()" data-test-id="mcb-juice">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mcb.juice">MCB Juice</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('Y') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mytMoneyPayment()" data-test-id="myt-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mty.money">MY.T Money</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('T') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="emtelMoneyPayment()" data-test-id="emtel-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="emtel.money">Blink</div>
+  					</button>     				
+   				</div>
+   				<div ng-show="$ctrl.tendersTypes.indexOf('U') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="giftsMuPayment()" data-test-id="gifts-mu">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="gifts.mu">Gifts.mu</div>
+  					</button>     				
+   				</div> 
+   				
+   				<div ng-show="$ctrl.tendersTypes.indexOf('I') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mipsPayment()" data-test-id="mips">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mips">MIPS</div>
+  					</button>     				
+   				</div>    			
+     		     		
+     		</div>
+     		
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->

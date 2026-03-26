@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<meta content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'" http-equiv="Content-Security-Policy">
+	<meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    
+	<title>Posterita Offline Administrator</title>
+	
+	<script type="text/javascript" src="../html/1.0/lib/angular.js"></script>
+	<script>
+		var app = angular.module('app', []);
+		app.controller('MainController', function($scope, $http){
+			
+			var ctrl = this;
+			
+			ctrl.msg = null;
+			
+			ctrl.setLevel = function( level ){
+				
+				var param = {};
+				param['action'] = 'setLogLevel';
+				param['level'] = level;
+
+				param = JSON.stringify(param);
+				
+				$http.get("/system?json=" + param).then(function success(response){
+					
+					var result = response.data;
+					
+					if(result['error']){
+						
+						ctrl.msg = result['error'];
+						
+					}
+					else
+					{
+						ctrl.msg = 'Level set to: ' + result['level'];
+					}
+					
+				}, function myError(response) {
+					
+					ctrl.msg = response.statusText;
+					
+			    });
+				
+			};
+			
+		});
+	</script>
+	
+</head>
+
+<body ng-app="app" ng-controller="MainController as ctrl">
+
+<h3>Posterita Admin Dashboard</h3>
+<ul>
+	<li>
+		<a href="sql.html">Sql Editor</a>
+	</li>
+	
+	<li>
+		<a href="synchronizer.html">Synchronizer</a>
+	</li>
+	
+	<li>
+		<a href="/log/">Logs</a>
+	</li>
+</ul>
+
+<p>Log Level</p>
+<div>
+	<button ng-debounced-click="ctrl.setLevel('debug')">DEBUG</button>&nbsp;
+	<button ng-debounced-click="ctrl.setLevel('info')">INFO</button>&nbsp;
+	<button ng-debounced-click="ctrl.setLevel('warn')">WARN</button>
+</div>
+<p>{{ctrl.msg}}<p>
+
+
+
+</body>
+</html>

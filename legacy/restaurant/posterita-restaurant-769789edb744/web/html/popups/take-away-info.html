@@ -1,0 +1,37 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="take.away.info">Take-Away Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     
+	  <div class="form-group">
+	    <label for="customer" data-i18n="Customer">Customer:</label>
+	    <input type="text" class="form-control" id="customer" name="customer" ng-model="$ctrl.customer">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="phone" data-i18n="phone">Phone:</label>
+	    <input type="text" class="form-control" id="phone" name="phone" ng-model="$ctrl.phone">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="time" data-i18n="time">Time:</label>
+	    <input type="text" class="form-control" id="time" name="time" ng-model="$ctrl.time">
+	  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.ok()" 
+    ng-disabled="myform.password.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

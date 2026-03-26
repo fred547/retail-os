@@ -1,0 +1,55 @@
+				
+<div class="modal-content" data-test-id="cash-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="payment.cash">Payment Cash</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row form-group">
+			<label data-i18n="total">Total:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		<div class="row form-group">
+			<label data-i18n="amount.tendered">Amount Tendered:</label>
+			<div>
+				<input data-test-id="amount" type="number" name="amount" ng-model="amountTendered" class="form-control"  required="required" ng-keyup="calculateAmtPaid(amountTendered)" focus-me/>
+			</div>
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="payment.amount">Payment Amount:</label>
+			<div>
+				<input data-test-id="amount-paid" type="number" ng-model="amountPaid" name="amountPaid"  class="form-control"  required="required" select-on-focus/>
+			</div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>
+		
+		<div class="row" style="border-top: solid 1px #000; font-size: 24px;">
+			<label data-i18n="change.amount">Change Amount:</label>
+			<div data-test-id="change-amount">
+				{{ amountTendered - amountPaid | number:2 }}
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->

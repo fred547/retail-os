@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	
+	<link href="layout.css" media="all" rel="stylesheet" type="text/css">
+	<style type="text/css">
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		
+		.shopping-cart-totals > div:last-child {
+		font-size: 24px;
+			
+		}
+		
+		.shopping-cart-totals > div.row > div:last-child  {
+		
+		text-align: right;	
+		
+		}
+		
+		
+		.shopping-cart-lines > div.row.active {
+			color: #fff;
+			background-color: #007aff;
+		}
+		
+		.shopping-cart-lines > div.row > div {
+			text-decoration: underline;
+			padding-left: 4px;
+		}
+		
+		.shopping-cart-lines > div.row > div:first-child { width: 10%; }
+		.shopping-cart-lines > div.row > div:nth-child(2) { width: 60%; }
+		.shopping-cart-lines > div.row > div:nth-child(3) { width: 20%; text-align: right; }
+		.shopping-cart-lines > div.row > div:last-child { width: 10%; text-align: right; text-decoration: none;}
+		
+		.shopping-cart-background {
+			background : linear-gradient(#D7D8DA,#FFF) repeat scroll 0 0 rgba(0,0,0,0)
+		}
+	</style>
+</head>
+<body>
+<!-- start of template -->
+<div class="row-container" style="height: 100%; width: 40%;">
+
+	<!-- shopping cart lines-->
+	<div class="shopping-cart-background">
+	
+		<div class="row-container shopping-cart-lines">
+			
+			<div class="row">
+				<div>1</div>
+				<div>
+					Product 1<br/>
+					Description
+				</div>
+				<div>100</div>
+				<div>X</div>
+			</div>
+			
+			<div class="row">
+				<div>1</div>
+				<div>
+					Product 1<br/>
+					Description
+				</div>
+				<div>100</div>
+				<div>X</div>
+			</div>
+			
+			<div class="row active">
+				<div>1</div>
+				<div>
+					Product 1<br/>
+					Description
+				</div>
+				<div>100</div>
+				<div>X</div>
+			</div>			
+			
+		</div>
+	
+	</div><!-- shopping cart lines-->
+	
+	<!-- shopping cart totals-->
+	<div style="height: 100px;">
+	
+		<div class="row-container shopping-cart-totals" >
+		
+			<div class="row">
+				<div style="width:10%;">&nbsp;</div>
+				<div style="width:40%;">subtotal</div>
+				<div style="width:50%;">1</div>
+			</div>
+			
+			<div class="row">
+				<div>&nbsp;</div>
+				<div>taxtotal</div>
+				<div>1</div>
+			</div>
+			
+			<div class="row">
+				<div>1x</div>
+				<div>grandtotal</div>
+				<div>1</div>
+			</div>
+		</div>
+	
+	</div><!-- shopping cart totals-->
+	
+	<!-- order buttons -->
+	<div style="height: 100px;">
+	
+		<div class="column-container">
+			<div>Checkout</div>
+		</div>
+		
+		<div class="column-container">
+			<div>1</div>
+			<div>2</div>
+		</div>
+		
+		<div class="column-container">
+			<div>1</div>
+			<div>2</div>
+			<div>3</div>
+			<div>4</div>
+		</div>
+	
+	</div><!-- order buttons -->
+	
+</div>
+</body>
+</html>

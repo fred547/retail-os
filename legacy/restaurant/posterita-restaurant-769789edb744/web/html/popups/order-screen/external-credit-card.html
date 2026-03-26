@@ -1,0 +1,31 @@
+<div class="modal-content" data-test-id="ext-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-tablet modal-header-icon"></span>
+    	<span data-i18n="payment.external.card">Payment External Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p data-i18n="has.the.payment.gone.through">Has the payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-md btn-danger button-red" data-ng-debounced-click="$close()">
+    	<div class="" data-i18n="no" data-test-id="no">No</div>
+    </button>
+    
+    <button type="button" class="btn btn-md btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

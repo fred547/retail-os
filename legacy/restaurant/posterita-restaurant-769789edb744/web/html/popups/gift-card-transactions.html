@@ -1,0 +1,32 @@
+<div class="modal-content" data-test-id="gift-card-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="gift.card.transactions" style="vertical-align: sub;">Gift Card Transactions</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="gift-card-transaction-selection-container">
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="issueGiftCardPopUp()" data-ng-show="isSales" data-test-id="issue-button">
+   			<div data-i18n="issue.gift.card">Issue Gift Card</div>
+		</button>
+  	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="reloadGiftCardPopUp()" data-ng-show="isSales" data-test-id="reload-button">
+   			<div data-i18n="reload.gift.card">Reload Gift Card</div>
+		</button>
+	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="checkGiftCardBalancePopUp()" data-test-id="balance-button">
+   			<div data-i18n="check.balance">Check Gift Card Balance</div>
+		</button>
+		
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="redeemGiftCardPopUp()" data-ng-show="isSales" data-ng-disabled="isShoppingCartEmpty" data-test-id="redeem-button">
+   			<div data-i18n="redeem.gift.card">Redeem Gift Card</div>
+		</button>
+
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="refundGiftCardPopUp()" data-ng-hide="isSales" data-test-id="refund-button">
+   			<div data-i18n="redeem.gift.card">Refund Gift Card</div>
+		</button>
+	</div>
+  </div>
+</div><!-- /.modal-content -->

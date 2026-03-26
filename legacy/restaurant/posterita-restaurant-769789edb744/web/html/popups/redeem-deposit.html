@@ -1,0 +1,25 @@
+<div class="modal-content" data-test-id="redeem-deposit-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="redeem.deposit" style="vertical-align: sub;">Redeem Deposit</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">     
+		  <div class="form-group">
+		    <label for="deposit_no" data-i18n="deposit.no">Deposit no</label>
+		    <input type="text" class="form-control" id="deposit_no" name="deposit_no" ng-model="deposit_no" required="required" focus-me="true" select-on-focus data-test-id="deposit-no">
+		  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="redeemDeposit( deposit_no )"  ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

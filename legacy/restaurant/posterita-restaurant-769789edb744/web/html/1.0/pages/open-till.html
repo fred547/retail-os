@@ -1,0 +1,71 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<!-- Body -->
+<div id="body-content">
+	<div class="column-container">
+	
+		<div style="width:25%;">{{ctrl.hideMenu()}}</div>
+		
+		<div>
+			
+			<!-- <form name="opentill"> -->
+				<div class="row-container open-close-till-container">
+				
+					<!-- Open Till Title -->
+					<div>
+						<div class="open-close-till-title form-group">
+							Open Till
+						</div>
+					</div><!-- Open Till Title -->
+					
+					<!-- Open Till Help Description -->
+					<div>
+						<p>Please enter the cash amount in the drawer.</p>
+					</div><!-- Open Till Help Description -->
+					
+					<!-- Cash Amount Input -->
+					<div>
+						<div class="form-group" style="margin-top: 16px;">
+							<label for="cash_amount">Cash Amount</label>
+							<input data-test-id="cash-amount-input" type="number" name="cash_amount" tabindex="2" ng-model="ctrl.amount" value="" class="form-control" id="cash-amount" required>
+						</div>
+					</div><!-- Cash Amount Input -->
+					
+					<!-- Buttons -->
+					<div>
+						<div class="column-container open-close-till-buttons-container">
+							<div>
+								<button data-test-id="open-drawer-button" type="button" class="btn btn-md btn-default button-white" ng-debounced-click="ctrl.openDrawer()">
+									<i class="glyphicons glyphicons-eject xs"></i>
+									<div data-i18n="open.drawer">Open Drawer</div>
+								</button>
+							</div>
+						
+							<div>
+								<button data-test-id="denomination-button" type="button" class="btn btn-md btn-default button-white" ng-debounced-click="ctrl.showDenominationPopup()">
+									<i class="glyphicons glyphicons-calculator xs"></i>
+									<div data-i18n="denomination">Denomination</div>
+								</button>
+							</div>
+							
+							<div></div>
+							
+							<div>
+								<button data-test-id="open-button" type="submit" class="btn btn-md btn-success button-green" ng-debounced-click="ctrl.openTill()">
+									<i class="glyphicons glyphicons-log-in xs"></i>
+									<div data-i18n="continue">Open</div>
+								</button>
+							</div>
+						</div>
+					</div><!-- Buttons -->
+										
+				</div>
+			<!-- </form> -->
+			
+		</div>
+		
+		<div style="width:25%;"></div>
+	</div>
+		
+	
+</div><!-- Body -->

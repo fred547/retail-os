@@ -1,0 +1,40 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+	 
+	<div class="column-container" style="padding: 5px 10px;">
+		<div class="report-title">Kitchen/Bar Orders History</div>
+		<div style="text-align: right;">
+			<button class="btn btn-primary" ng-debounced-click="showSearchDialog()">
+				<span class="glyphicon glyphicon-search"></span> Search
+			</button>
+		</div>
+		
+	</div>			
+			
+	<table cellpadding="0" cellspacing="0" border="0" class="display nowrap" id="kitchen_order_log_table">
+		<thead>
+			<tr>
+				<th>Date Ordered</th>
+				<th>Table</th>				
+				<th>Printer</th>
+				<th>Waiter</th>	
+				<th>Qty</th>					
+				<th>Product</th>
+			</tr>
+		</thead>
+		<tbody>		
+		</tbody>
+		<tfoot>
+			<tr>
+				<th>Date Ordered</th>
+				<th>Table</th>				
+				<th>Printer</th>
+				<th>Waiter</th>	
+				<th>Qty</th>					
+				<th>Product</th>
+			</tr>
+		</tfoot>
+	</table>
+	
+</div>

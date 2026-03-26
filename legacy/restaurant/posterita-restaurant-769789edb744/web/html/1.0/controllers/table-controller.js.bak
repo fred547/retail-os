@@ -1,0 +1,1389 @@
+angular.module('app').controller('ChooseOrderTypeController', function( $scope, $modal, $state, $location, TableService, ShoppingCartService, LoginService ){
+		
+	var ctrl = this;
+	
+	ctrl.requestPIN = function(type){
+		
+		if(type == 'D'){
+			$scope.requestPin(function(){
+				$state.go("tables");
+			});					
+		}
+		else
+		{
+			$scope.requestPin(function(){
+				//ctrl.showTakeAwayPopup();
+				var commandInfo = {
+						"type": "T", 
+						"takeAwayId" : 0,
+						"customer" : "",
+						"phone" : "",
+						"time" : ""									
+					};
+				
+				/*
+				$location.path("/order-screen").search({
+					'commandInfo' : JSON.stringify(commandInfo)
+				});	
+				*/
+				
+				$state.go("order-screen", {
+					"commandInfo": commandInfo
+				});
+				
+			});					
+		}		
+	};
+	
+	ctrl.showTakeAwayPopup = function(){
+		
+		$modal.open(
+				{
+					templateUrl: '/html/popups/take-away-info.html',
+					//size: 'lg',
+					scope : $scope,
+					controllerAs: '$ctrl',
+					controller: function($scope, $modalInstance, TableService)
+					{	
+						var ctrl = this;
+						
+						ctrl.ok = function()
+						{														
+							$modalInstance.close();
+							
+							var commandInfo = {
+									"type": "T", 
+									"takeAwayId" : 0,
+									"customer" : ctrl.customer,
+									"phone" : ctrl.phone,
+									"time" : ctrl.time									
+								};
+							
+							/*
+							$location.path("/order-screen").search({
+								'commandInfo' : JSON.stringify(commandInfo)
+							});	
+							*/
+							
+							$state.go("order-screen", {
+								"commandInfo": commandInfo
+							});
+						};
+						
+						ctrl.cancel = function(){
+							
+							$modalInstance.close();
+						};
+					}
+				});
+		
+	};
+	
+});
+
+angular.module('app').controller('TableController', function( $scope, $modal, $http, $state, TableService, ShoppingCartService, LoginService ){
+	
+	var uuid = APP.UTILS.UUID.getUUID();
+	
+	var socket = null;
+	
+	try
+	{
+		var x = window.location.origin.substr(4);		
+		
+		socket = new WebSocket("ws" + x + "/websocket/");
+		socket.onopen = function(e) {
+		  console.log("TableController [open] Connection established");
+		  console.log("Sending to server");
+		  socket.send(JSON.stringify({
+			  "identifier" : uuid,
+			  "type" : "onopen",
+			  "data" : {},
+			  "broadcast" : false
+		  }));
+		};
+
+		socket.onmessage = function(event) {
+		    console.log("[message] Data received from server: " + event.data );
+		    
+		    if(event.data.charAt(0) != "{"){
+		    	return;
+		    }
+		    	
+		    var data = JSON.parse(event.data);
+			
+			if( uuid == data.identifier ){
+				console.log("ignore");
+			}
+			else
+			{
+				TableService.getTables().then(function (response){
+					if(response.data){
+						ctrl.tables = response.data;
+						ctrl.showTableGroup(ctrl.activeGroup);
+					}
+				});
+			}
+		};
+
+		socket.onclose = function(event) {
+		  if (event.wasClean) {
+			  console.log("[close] Connection closed cleanly, code=" + event.code + " reason=" + event.reason);
+		  } else {
+		    // e.g. server process killed or network down
+		    // event.code is usually 1006 in this case
+			  console.log('[close] Connection died');
+		  }
+		};
+
+		socket.onerror = function(error) {
+			console.log("[error] " + error.message);
+		};	
+		
+		$scope.$on('$locationChangeStart', function (event, next, current) {
+			console.log("closing web socket ...");
+			socket.close();
+		});
+	}
+	catch(e)
+	{
+		console.log(e);
+	}
+	
+		
+	var ctrl = this;
+	ctrl.order_id = 0;
+	
+	ctrl.role = LoginService.role;
+	
+	//ctrl.tables = TableService.getTables();
+	ctrl.tables = [];	
+	ctrl.myIndex = 0;
+	ctrl.previous = function(){
+		ctrl.myIndex = ctrl.myIndex - 60;
+	};
+	ctrl.next = function(){
+		ctrl.myIndex = ctrl.myIndex + 60;
+	};
+	
+	TableService.getTables().then(function (response){
+		if(response.data){
+			ctrl.tables = response.data;
+			ctrl.showTableGroup(0);
+		}
+	});
+	
+	
+	ctrl.showTableGroup = function(group){
+		ctrl.activeGroup = group;
+				
+		var count  = parseInt(ctrl.tables.length/4);
+		var first = group * count;
+		var last = (group + 1) * count;
+		
+		var table = null;
+		var table_id = null;
+		
+		for(var i=0; i<ctrl.tables.length; i++)
+		{			
+			table = ctrl.tables[i];
+			table_id = table.table_id;
+			
+			if(table_id >= first && table_id < last)
+			{
+				table.visible = true;
+			}
+			else
+			{
+				table.visible = false;
+			}
+		}
+	};
+	
+	ctrl.activeTable = null;
+	ctrl.activeGroup = null;
+	
+	$scope.setActiveTable = function(table){
+		
+		ctrl.activeTable = table;		
+		TableService.setActiveTable( table );
+	};
+	
+	$scope.getActiveTable = function(){
+		return ctrl.activeTable;
+	};
+	
+	$scope.refreshTables = function( tables ){
+		
+		var activeTable = ctrl.activeTable;
+		
+		ctrl.tables = tables;
+		ctrl.setActiveTableId( activeTable.table_id );
+		ctrl.showTableGroup(ctrl.activeGroup);
+		
+		if(socket){
+			socket.send(JSON.stringify({
+			  "identifier" : uuid,
+			  "type" : "onopen",
+			  "data" : {},
+			  "broadcast" : true
+		  }));
+		}
+		
+		
+	};
+	
+	ctrl.refresh = function(){
+		TableService.getTables().then(function (response){
+			if(response.data){
+				ctrl.tables = response.data;
+				ctrl.showTableGroup(ctrl.activeGroup);
+			}
+		});
+	};
+	
+	ctrl.setActiveTableId = function(table_id){
+		
+		var table;
+		
+		for(var i=0; i<ctrl.tables.length; i++){
+			
+			table = ctrl.tables[i];
+			
+			if(table['table_id'] == table_id){
+				
+				$scope.setActiveTable(table);
+				break;
+			}
+		}
+	};
+		
+	ctrl.selectTable = function(table){
+		this.activeTable = table;
+	};
+	
+	ctrl.reserveTable = function(){
+		/*this.activeTable.status = 'R';*/
+		var table = this.activeTable;		
+		
+		TableService.reserveTable( table.table_id ).then(function (response){
+			if(response.data){
+				$scope.refreshTables( response.data );
+			}
+		});
+	}	
+	
+	ctrl.placeOrder = function(){
+		
+		var table = this.activeTable;
+		
+		if( table.order_id.length == 0 ){
+			
+			var commandInfo = {
+					"type": "D", 
+					"tableId" : table.table_id,
+					"orderId" : 0
+			};
+			
+			/*
+			$location.path("/order-screen").search({
+				'commandInfo' : JSON.stringify(commandInfo)
+			});
+			*/
+			
+			$state.go("order-screen", {
+				"commandInfo": commandInfo,
+				"action" : "placeOrder"
+			});
+			
+		}
+		else
+		{
+			var commandInfo = {
+					"type": "D", 
+					"tableId" : table.table_id,
+					"orderId" : table.order_id
+			};
+			
+			/*
+			$location.path("/order-screen").search({
+				"action": "invokeOrder",
+				"uuid" : commandInfo['orderId'],
+				'commandInfo' : JSON.stringify(commandInfo)
+			});
+			*/
+			
+			$scope.showModal();
+			
+			$http.get('/json/orders/' + table.order_id).then( function( response ){
+				
+				var order = response.data;
+				
+				$state.go("order-screen", {
+					"commandInfo": commandInfo,
+					"action": "invokeOrder",
+					"uuid" : commandInfo['orderId'],
+					"order" : order
+				});
+				
+				$scope.closeModal();
+				
+			}, function(){
+				
+				$scope.closeModal();
+				
+				$scope.alert("Failed to load order!");
+				
+			});
+			
+			
+		}			
+		
+	}
+	
+	ctrl.settlePayment = function(){
+		
+		var table = this.activeTable;
+		
+		var order_id = table.order_id;
+		
+		$scope.showModal();
+		
+		$http.get('/json/orders/' + order_id).then( function( response ){
+			
+			var order = response.data;
+			
+			var commandInfo = {
+					"type": "D", 
+					"tableId" : table.table_id,
+					"orderId" : table.order_id
+			};
+			
+			$state.go("order-screen", {
+				"commandInfo": commandInfo,
+				"action": "invokeOrder",
+				"uuid" : commandInfo['orderId'],
+				"order" : order
+			});
+			
+			$scope.closeModal();
+			
+		}, function(){
+			
+			$scope.closeModal();
+			
+			$scope.alert("Failed to load order!");
+			
+		});
+		
+	}
+	
+	ctrl.billTable = function(){
+		
+		var table = this.activeTable;	
+		
+		var order_id = table.order_id;				
+		
+		TableService.updateTableStatus( table.table_id, 'B' ).then(function (response){
+			if(response.data){
+				$scope.refreshTables( response.data );
+				
+				$scope.showModal();
+				
+				$http.get('/json/orders/' + order_id).then( function( response ){
+					
+					$scope.closeModal();
+					
+					var order = response.data;
+					APP.RESTAURANT.printBill( order );
+					
+				}, function(){
+					
+					$scope.closeModal();
+					
+					$scope.alert("Failed to load order!");
+					
+				});
+			}
+		});
+		
+		//1. get bill
+		//2. print bill
+		//3. update table status
+		
+	}
+	
+	ctrl.cancelReservation = function(){
+		
+		var table = this.activeTable;		
+		
+		TableService.cancelReservation( table.table_id ).then(function (response){
+			if(response.data){
+				$scope.refreshTables( response.data );
+			}
+		});
+	}
+	
+	ctrl.clearTable = function(){
+		
+		var table = this.activeTable;		
+		
+		$scope.confirm("Do you want to clear Table# " + table.name, function( result ){
+			
+			if(result == true){
+				TableService.clearTable( table.table_id ).then(function (response){
+					if(response.data){
+						$scope.refreshTables( response.data );
+					}
+				});
+			}
+			
+		});
+	};
+	
+	ctrl.switchTable = function(){
+		
+		$modal.open(
+		{
+			templateUrl: '/html/popups/switch-table.html',
+			size: 'lg',
+			scope : $scope,
+			controllerAs: '$ctrl',
+			controller: function($scope, $modalInstance, TableService)
+			{	
+				var ctrl = this;
+				ctrl.activeTable = $scope.getActiveTable();
+				
+				TableService.getAvailableTables().then( function(response){
+					
+					if(response.data){
+						ctrl.availableTables = response.data;
+					}
+				});
+				
+				ctrl.setToTable = function(table){
+					
+					$scope.to_table = table;
+					
+				};
+				
+				ctrl.ok = function()
+				{
+					var from_table = $scope.getActiveTable();
+					var to_table = $scope.to_table;
+					
+					TableService.switchTable( from_table['table_id'], to_table['table_id']).then( function(response){
+						
+						if(response.data){
+							$scope.setActiveTable(to_table);
+							$scope.refreshTables(response.data);
+							
+							//update order cache
+							APP.ORDER.initialize();
+							
+							//send note to kitchen
+							APP.RESTAURANT.printSwitchTableNote(from_table, to_table, from_table.waiter);
+						}
+					});					
+					
+					$modalInstance.close();
+				};
+				
+				ctrl.cancel = function(){
+					
+					$modalInstance.close();
+				};
+			}
+		});		
+		
+	};
+	
+	ctrl.mergeTables = function(){
+		
+		$modal.open(
+		{
+			templateUrl: '/html/popups/merge-tables.html',
+			size: 'lg',
+			scope : $scope,
+			controllerAs: '$ctrl',
+			controller: function($scope, $modalInstance, TableService)
+			{	
+				var ctrl = this;
+				ctrl.activeTable = $scope.getActiveTable();
+				ctrl.availableTables = [];
+				
+				TableService.getAvailableTables().then( function(response){
+					
+					if(response.data){
+						
+						var availableTables = response.data;
+						
+						//check for active table in list
+						if( ctrl.activeTable.status == 'A' )
+						{
+							//ok present in available tables list
+						}
+						else
+						{
+							//add available table to list
+							availableTables.push( ctrl.activeTable );
+						}
+						
+						ctrl.availableTables = availableTables;
+					}
+				});
+				
+				ctrl.ok = function()
+				{
+					var table = $scope.getActiveTable();
+					
+					var child_table_ids = ""; //1,5,6
+					
+					var selectedTables = ctrl.getSelectedTables();
+					
+					for( var i=0; i<selectedTables.length; i++){
+						if(i > 0){
+							child_table_ids += ",";
+						}
+						
+						child_table_ids += selectedTables[i].table_id;
+					}
+					
+					TableService.mergeTables( table['table_id'], child_table_ids ).then( function(response){
+						
+						if(response.data){
+							$scope.setActiveTable(table);
+							$scope.refreshTables(response.data);
+						}
+						
+						$modalInstance.close();
+						
+					});							
+					
+				};
+				
+				ctrl.cancel = function(){
+					
+					$modalInstance.close();
+				};
+				
+				ctrl.toggleTable = function(table){
+					table.selected = !table.selected;
+				};
+				
+				ctrl.getSelectedTables = function(){
+					
+					var selectedTables = [];
+					var table;
+					
+					for(var i=0; i< ctrl.availableTables.length; i++){
+						
+						table = ctrl.availableTables[i];
+						
+						if( table.selected ){
+							selectedTables.push(table);
+						}
+					}
+					
+					return selectedTables;
+				};
+			}
+		});			
+	
+	};
+   
+});
+
+//PrinterLogsController
+angular.module('app').controller("PrinterLogsController", function($scope, $modal, $window)
+{	
+	var ctrl = this;
+	
+	var cache = null;
+	
+	$window.$$reprintKitchenReceipt = function(uuid){
+		
+		var record = cache({'uuid': uuid}).first();
+		
+		var header = [["FEED"],["CENTER"],["FEED"],["H1","## RE-PRINT ##"]];
+		
+		var printFormat = JSON.parse(record.raw_receipt);
+		
+		header = header.concat(printFormat);
+		
+		var configuration = PrinterManager.getPrinterConfiguration();
+		var printers = configuration['KITCHEN_PRINTERS'];
+		
+		var printer;
+		var printer_ip;
+		var printer_name;
+		var printer_lines;
+		
+		for(var p=0; p<printers.length; p++)
+		{
+			printer = printers[p];
+			printer_ip = printer['ip'];
+			printer_name = printer['name'];
+			
+			if(record.printer_name == printer_name){
+				
+				HTTP_Printer.print( printer_ip, POSTERITA_Printer.format(header) ).done(function(msg){
+					
+					APP.RESTAURANT.updatePrinterLog({
+						'uuid' : uuid
+					});
+					
+				}).fail(function(error){
+					
+					alert(error);
+					
+				}).always(function(){
+				});				
+			}
+			
+		}
+		
+	};
+	
+	jQuery.get('/json/PRINTER_LOG',
+	{
+		json:{}
+	}, function(json, textStatus, jqXHR)
+	{
+		
+		var terminal = null;
+		
+		var records = json;
+		
+		cache = TAFFY(json);
+		
+		jQuery('#printer_log_table').DataTable({
+			
+			"sPaginationType": "full_numbers",
+			"searching": true,
+			"ordering": false,
+			"lengthChange": false,
+			"pageLength": 12,
+
+			data : records,
+			
+			"columns": [
+				{
+					"data": "date_logged"
+				},
+				{
+					"data": "order_type"
+				},
+				{
+					"data": "printer_name"
+				},
+				{
+					"data": "receipt"
+				},
+				{
+					"data": "printed"
+				}
+			],
+			
+			"createdRow": function ( row, data, index ){
+				
+				if(data.printed == 'N'){
+					jQuery('td', row).css({"background-color":"#e84f64"});
+				}
+				
+			},
+			
+			"columnDefs": [
+			    {
+					"render": function(data, type, row) {
+						return moment(data).format("DD-MMM-YYYY, HH:mm");
+					},
+					"targets": 0
+					
+			    },
+			    
+			    {
+					"render": function(data, type, row) {
+						return data == 'D' ? "Dine-In" : "Take-Away" ;
+					},
+					"targets": 1
+					
+			    },
+			    
+			    {
+					"render": function(data, type, row) {
+						return "<pre>" + data + "</pre>" ;
+					},
+					"targets": 3
+					
+			    },
+			    
+			    {
+					"render": function(data, type, row) {
+						
+						if(data == "N"){
+							
+							return "<button type=\"button\" onclick=\"$$reprintKitchenReceipt('" + row['uuid'] + "')\">Reprint</button>";
+							
+						}
+						else
+						{
+							return "Printed";
+						}
+					},
+					"targets": 4
+					
+			    }
+			 ]
+		});
+		
+	}, "json").fail(function()
+	{
+		$scope.alert("Failed to query printer logs");
+	});
+	
+	
+}); //PrinterLogsController
+
+
+//TakeAwayHistoryController
+angular.module('app').controller("TakeAwayHistoryController", function($scope, $modal, $window, $state, $http, OrderService)
+{
+	
+	$window.$$viewOrder = function( uuid ){
+		
+		$scope.showModal();
+		
+		$http.get('/json/orders/' + uuid).then( function( response ){
+			
+			var order = response.data;
+			
+			$state.go('view-order', {
+				'order' : order
+			});
+			
+			$scope.closeModal();
+			
+		}, function(){
+			
+			$scope.closeModal();
+			
+			$scope.alert("Failed to load order!");
+			
+		});
+		
+	
+	};
+	
+	var post = {};
+	post['action'] = 'get-take-aways';
+	post = JSON.stringify(post);
+	
+	var url = "/restaurant?json=" + post;
+	
+	var ctrl = this;
+	jQuery.get(url,
+	{
+		json:{}
+	}, function(json, textStatus, jqXHR)
+	{
+		
+		var terminal = null;
+		
+		var records = json;
+		
+		jQuery('#take_away_history_table').DataTable({
+			
+			"sPaginationType": "full_numbers",
+			"searching": true,
+			"ordering": false,
+			"lengthChange": false,
+			"pageLength": 12,
+
+			data : records,
+			
+			"columns": [
+				{
+					"data": "dateOrdered"
+				},
+				{
+					"data": "commandInfo.takeAwayId"					
+				},
+				{
+					"data": "documentNo"
+				},
+				{
+					"data": "docStatusName"
+				},
+				{
+					"data": "tenderType"
+				},
+				{
+					"data": "grandTotal"
+				}
+			],
+			
+			"columnDefs": [
+			    {
+					"render": function(data, type, row) {
+						return moment(data).format("DD-MMM-YYYY, HH:mm");
+					},
+					"targets": 0
+					
+			    },
+			    
+			    {
+					"render": function(data, type, row) {
+						return data ;
+					},
+					
+					"orderData": [ 0, 1 ],
+					
+					"targets": 1
+					
+			    },
+			    
+			    {
+					"render": function(data, type, row) {
+						var uuid = row["uuid"];
+						
+						return "<a href='javascript:void(0);' onclick='$$viewOrder(\"" + uuid + "\")'>" + data + "</a>";
+					},
+					"targets": 2
+					
+			    },
+			    
+			 ]
+		});
+		
+	}, "json").fail(function()
+	{
+		$scope.alert(I18n.t("failed.to.query.take.aways.data"));
+	});
+	
+	
+}); //take_away_history_table
+
+//RestaurantLogController
+angular.module('app').controller("RestaurantLogsController", function($scope, $modal)
+{
+	
+	var ctrl = this;
+	jQuery.get('/json/RESTAURANT_LOG',
+	{
+		json:{}
+	}, function(json, textStatus, jqXHR)
+	{
+		
+		var terminal = null;
+		
+		var records = json;
+		
+		jQuery('#restaurant_log_table').DataTable({
+			
+			"sPaginationType": "full_numbers",
+			"searching": true,
+			"ordering": false,
+			"lengthChange": false,
+			"pageLength": 12,
+
+			data : records,
+			
+			"columns": [
+				{
+					"data": "date_logged"
+				},
+				{
+					"data": "action"
+				},
+				{
+					"data": "description"
+				},
+				{
+					"data": "user_id"
+				}
+			],
+			
+			"columnDefs": [
+			    {
+					"render": function(data, type, row) {
+						return moment(data).format("DD-MMM-YYYY, HH:mm");
+					},
+					"targets": 0
+					
+			    },			    
+			    {
+					"render": function(data, type, row) {
+						return APP.USER.getUserById(data).name ;
+					},
+					"targets": 3
+					
+			    }
+			 ]
+		});
+		
+	}, "json").fail(function()
+	{
+		$scope.alert(I18n.t("failed.to.query.restaurant.log.data"));
+	});
+	
+	
+}); //RestaurantLogController
+
+
+//ItemsOrderedLogsController
+angular.module('app').controller("ItemsOrderedLogsController", function($scope, $modal, $window, $state, $http)
+{	
+	var ctrl = this;
+	
+	$scope.params = {				
+		dateFrom : "",
+		dateTo : "",
+		date1: new Date(),
+		date2: new Date()
+	};
+	
+	$scope.params.dateFrom = moment().format('YYYY-MM-DD');
+	$scope.params.dateTo = moment().format('YYYY-MM-DD');
+	
+	$scope.getParameter = function(name){		
+		return $scope.params[name];		
+	};
+	
+	$scope.renderReport = function(){
+		
+		$scope.report = jQuery('#items_ordered_log_table').DataTable({
+			
+			dom: 'Bfrtip',
+			buttons: [{
+	                extend: 'excelHtml5',
+	                exportOptions: {
+	                    columns: ':visible'
+	                }
+	            }],
+			
+			"sPaginationType": "full_numbers",
+			"searching": true,
+			"ordering": true,
+			"lengthChange": false,
+			"pageLength": 12,
+			 "scrollX": true,
+			
+			"language": {
+		      "emptyTable": "There are no data."
+		    },
+			    
+			"fnServerParams": function(aoData) {
+				
+				aoData.push({
+					"name": "name",
+					"value": "ItemsOrderedReport"
+				}); //report name
+				
+				aoData.push({
+					"name": "format",
+					"value": "json"
+				}); //report format
+				
+				
+				aoData.push({
+					"name": "dateFrom",
+					"value": $scope.getParameter("dateFrom")
+				}); //date from
+				aoData.push({
+					"name": "dateTo",
+					"value": $scope.getParameter("dateTo")
+				}); //date to				
+			},
+
+			"sAjaxSource": "/report",
+
+			"fnPreDrawCallback": function() {},
+			"columns": [
+				{
+					"data": "dateOrdered"
+				},
+				{
+					"data": "cashier"
+				},
+				{
+					"data": "documentNo"
+				},
+				{
+					"data": "docAction"
+				},
+				{
+					"data": "bpName"
+				},
+				{
+					"data": "commandInfo"
+				},
+				{
+					"data": "waiter"
+				},				
+				{
+					"data": "qty"
+				},
+				{
+					"data": "product"
+				},
+				{
+					"data": "price"
+				},
+				{
+					"data": "discount"
+				}
+		   		  ],
+			"columnDefs": [
+				{
+					"render": function(data, type, row) {
+						return moment(parseInt(data)).format("DD-MMM-YYYY, HH:mm");
+					},
+					"targets": 0
+				},
+				
+				{
+					"render": function(data, type, row) {
+						var uuid = row["uuid"];						
+						return "<a href='javascript:void(0);' onclick='$$viewOrder(\"" + uuid + "\")'>" + data + "</a>";
+					},
+					"targets": 2
+				},
+
+				{
+					"render": function(data, type, row) {
+						
+						var order = row;
+						var info = order['commandInfo'];
+						
+						if(info){
+							
+							if(info['type'] == 'D'){
+								return "Table #" + info['tableId'];
+							}
+							else
+							{
+								return "Take-Away #" + info['takeAwayId'];
+							}
+							
+						}
+						else
+						{
+							if (data == "POS Order") {
+								return "Sales";
+							} else {
+								return "Return";
+							}
+						}						
+
+					},
+					"targets": 5
+					},
+
+				{
+					"render": function(data, type, row) {
+
+						var id = parseInt(data);
+						var user = APP.USER.getUserById(id);						
+						return user != null ? user.name : data;
+
+					},
+					"targets": [1,6]
+					},
+
+				{
+					"render": function(data, type, row) {
+						return {
+							'CO': 'Completed',
+							'DR': 'Drafted',
+							'VO': 'Voided'
+						}[data];
+					},
+					"targets": 3
+					}
+		   		  ]
+		});		
+		
+	};
+	
+	$scope.reloadReport = function(params){
+		$scope.params = params;
+		$scope.report.ajax.reload();
+	};
+	
+	$scope.showSearchDialog = function(){
+		
+		$modal.open(
+		{
+			templateUrl: '/html/popups/search-by-date.html',
+			//size: 'lg',
+			scope : $scope,
+			controllerAs: '$ctrl',
+			resolve:{},
+			controller: function($scope, $timeout, $modalInstance)
+			{
+				var ctrl = this;
+				
+				ctrl.opened1 = false;
+				ctrl.open1 = function(e) {
+				    e.stopPropagation ();
+				    this.opened1 = true;
+				}
+				
+				ctrl.opened2 = false;
+				ctrl.open2 = function(e) {
+				    e.stopPropagation ();
+				    this.opened2 = true;
+				}
+				
+				ctrl.reset = function(){
+					
+					$scope.params = {				
+							dateFrom : "",
+							dateTo : "",
+							date1: null,
+							date2: null
+						};
+				};
+				
+				ctrl.search = function(){
+					
+					if($scope.params.date1 != null){
+						
+						$scope.params.dateFrom = moment($scope.params.date1).format("YYYY-MM-DD");
+						$scope.params.date1 = $scope.params.dateFrom;
+						
+					}
+					else
+					{
+						$scope.params.dateFrom = "";
+					}
+					
+					if($scope.params.date2 != null){
+						
+						$scope.params.dateTo = moment($scope.params.date2).format("YYYY-MM-DD");
+						$scope.params.date2 = $scope.params.dateTo;
+					}
+					else
+					{
+						$scope.params.dateTo = "";
+					}			
+					
+					$scope.reloadReport($scope.params);
+					
+					$modalInstance.close();
+				};
+			}
+		});
+		
+	};
+	
+	$window.$$viewOrder = function( uuid ){
+		
+		$scope.showModal();
+		
+		$http.get('/json/orders/' + uuid).then( function( response ){
+			
+			var order = response.data;
+			
+			/*
+			OrderService.setOrder(order);
+			$location.path("/view-order");
+			*/
+			$state.go('view-order', {
+				'order' : order
+			});
+			
+			$scope.closeModal();
+			
+		}, function(){
+			
+			$scope.closeModal();
+			
+			$scope.alert("Failed to load order!");
+			
+		});
+		
+	};
+	
+	$scope.renderReport();
+	
+	
+}); //ItemsOrderedLogsController
+
+//KitchenOrderLogsController
+angular.module('app').controller("KitchenOrderLogsController", function($scope, $modal, $window, $location)
+{	
+	var ctrl = this;
+	
+	$scope.params = {				
+		dateFrom : "",
+		dateTo : "",
+		date1: new Date(),
+		date2: new Date()
+	};
+	
+	$scope.params.dateFrom = moment().format('YYYY-MM-DD');
+	$scope.params.dateTo = moment().format('YYYY-MM-DD');
+	
+	$scope.getParameter = function(name){		
+		return $scope.params[name];		
+	};
+	
+	$scope.renderReport = function(){
+		
+		$scope.report = jQuery('#kitchen_order_log_table').DataTable({
+			
+			dom: 'Bfrtip',
+			buttons: [{
+	                extend: 'excelHtml5',
+	                exportOptions: {
+	                    columns: ':visible'
+	                }
+	            }],
+			
+			"sPaginationType": "full_numbers",
+			"searching": true,
+			"ordering": true,
+			"lengthChange": false,
+			"pageLength": 12,
+			 "scrollX": true,
+			
+			"language": {
+		      "emptyTable": "There are no data."
+		    },
+			    
+			"fnServerParams": function(aoData) {
+				
+				aoData.push({
+					"name": "name",
+					"value": "KitchenOrderReport"
+				}); //report name
+				
+				aoData.push({
+					"name": "format",
+					"value": "json"
+				}); //report format
+				
+				
+				aoData.push({
+					"name": "dateFrom",
+					"value": $scope.getParameter("dateFrom")
+				}); //date from
+				aoData.push({
+					"name": "dateTo",
+					"value": $scope.getParameter("dateTo")
+				}); //date to				
+			},
+
+			"sAjaxSource": "/report",
+
+			"fnPreDrawCallback": function() {},
+			"columns": [
+				{
+					"data": "dateLogged"
+				},
+				{
+					"data": "table"
+				},
+				{
+					"data": "printer"
+				},
+				{
+					"data": "waiter"
+				},
+				{
+					"data": "qty"
+				},
+				{
+					"data": "product"
+				}
+		   		  ],
+			"columnDefs": [
+				{
+					"render": function(data, type, row) {
+						return moment(data).format("DD-MMM-YYYY, HH:mm");
+					},
+					"targets": 0
+				}				
+		   	]
+		});		
+		
+	};
+	
+	$scope.reloadReport = function(params){
+		$scope.params = params;
+		$scope.report.ajax.reload();
+	};
+	
+	$scope.showSearchDialog = function(){
+		
+		$modal.open(
+		{
+			templateUrl: '/html/popups/search-by-date.html',
+			//size: 'lg',
+			scope : $scope,
+			controllerAs: '$ctrl',
+			resolve:{},
+			controller: function($scope, $timeout, $modalInstance)
+			{
+				var ctrl = this;
+				
+				ctrl.opened1 = false;
+				ctrl.open1 = function(e) {
+				    e.stopPropagation ();
+				    this.opened1 = true;
+				}
+				
+				ctrl.opened2 = false;
+				ctrl.open2 = function(e) {
+				    e.stopPropagation ();
+				    this.opened2 = true;
+				}
+				
+				ctrl.reset = function(){
+					
+					$scope.params = {				
+							dateFrom : "",
+							dateTo : "",
+							date1: null,
+							date2: null
+						};
+				};
+				
+				ctrl.search = function(){
+					
+					if($scope.params.date1 != null){
+						
+						$scope.params.dateFrom = moment($scope.params.date1).format("YYYY-MM-DD");
+						$scope.params.date1 = $scope.params.dateFrom;
+						
+					}
+					else
+					{
+						$scope.params.dateFrom = "";
+					}
+					
+					if($scope.params.date2 != null){
+						
+						$scope.params.dateTo = moment($scope.params.date2).format("YYYY-MM-DD");
+						$scope.params.date2 = $scope.params.dateTo;
+					}
+					else
+					{
+						$scope.params.dateTo = "";
+					}			
+					
+					$scope.reloadReport($scope.params);
+					
+					$modalInstance.close();
+				};
+			}
+		});
+		
+	};
+	
+	$scope.renderReport();
+	
+}); //KitchenOrderLogsController
+

@@ -1,0 +1,40 @@
+<div class="modal-content" data-test-id="clock-in-clock-out-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="clock-in-out-panel-title">Clock In/Out</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+	<div class="row-container">
+    	<div>
+    		<div class="column-container clock-in-clock-out-header">
+    			<div>Username</div>
+    			<div>No. of hours</div>
+    		</div>	
+    	</div>
+    	
+    	<div class="clock-in-clock-out-result-container">
+    		<div>
+	    		<div class="column-container clock-in-clock-out-lines" ng-repeat="user in $ctrl.users | orderBy:'name'" ng-debounced-click="$ctrl.clockOutUser(user)" data-test-username="{{user.name}}">
+	    			<div>{{ user.name }}</div>
+	    			<div>{{ user.time_diff }}</div>
+	    		</div>
+    		</div>	
+    	</div>
+    </div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-primary button-blue" data-ng-debounced-click="$ctrl.clockInUser()" data-test-id="clock-in-user-button">
+    	<div data-i18n="clock.in.user">Clock In User</div>
+    </button>
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->

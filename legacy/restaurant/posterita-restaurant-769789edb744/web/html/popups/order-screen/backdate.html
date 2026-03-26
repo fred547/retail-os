@@ -1,0 +1,48 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-calendar modal-header-icon"></span>
+    	<span data-i18n="backdate.order">Backdate Order</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="tax" data-i18n="select.date.and.time">Select Date & Time</label>
+	    <div class="column-container">
+	    	<div style="font-size: 24px; padding: 4px;">
+	    		<select ng-model="$ctrl.date" required="required">
+	    			<option value="{{date}}" ng-repeat="date in $ctrl.dateList" ng-selected="$ctrl.date == date">{{date}}</option>	    			
+	    		</select>
+	    		/
+	    		<select ng-model="$ctrl.month" required="required">
+	    			<option value="{{ $ctrl.monthId[ $index ] }}" ng-repeat="month in $ctrl.monthList" ng-selected="$ctrl.month == $ctrl.monthId[ $index ]">{{month}}</option>
+	    		</select>
+	    		/
+	    		<select ng-model="$ctrl.year" required="required">
+	    			<option value="{{year}}" ng-repeat="year in $ctrl.yearList" ng-selected="$ctrl.year == year">{{year}}</option>
+	    		</select>
+	    		&nbsp;&nbsp;
+	    		<select ng-model="$ctrl.hour" required="required">
+	    			<option value="{{hour}}" ng-repeat="hour in $ctrl.hourList" ng-selected="$ctrl.hour == hour">{{hour}}</option>
+	    		</select>
+	    		:
+	    		<select ng-model="$ctrl.minute" required="required">
+	    			<option value="{{minute}}" ng-repeat="minute in $ctrl.minuteList" ng-selected="$ctrl.minute == minute">{{minute}}</option>
+	    		</select>
+	    	</div>
+	    </div>
+	    
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.ok()" 
+    ng-disabled="myform.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

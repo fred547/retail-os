@@ -1,0 +1,50 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+	 
+	<div class="column-container" style="padding: 5px 10px;">
+		<div class="report-title">Items Ordered History</div>
+		<div style="text-align: right;">
+			<button class="btn btn-primary" ng-debounced-click="showSearchDialog()">
+				<span class="glyphicon glyphicon-search"></span> Search
+			</button>
+		</div>
+		
+	</div>			
+			
+	<table cellpadding="0" cellspacing="0" border="0" class="display nowrap" id="items_ordered_log_table">
+		<thead>
+			<tr>
+				<th>Date Ordered</th>
+				<th>Cashier</th>
+				<th>Document No</th>						
+				<th>Status</th>
+				<th>Customer</th>
+				<th>Table</th>
+				<th>Waiter</th>
+				<th>Qty</th>
+				<th>Product</th>
+				<th>Price</th>
+				<th>Discount</th>
+			</tr>
+		</thead>
+		<tbody>		
+		</tbody>
+		<tfoot>
+			<tr>
+				<th>Date Ordered</th>
+				<th>Cashier</th>
+				<th>Document No</th>						
+				<th>Status</th>
+				<th>Customer</th>
+				<th>Table</th>
+				<th>Waiter</th>
+				<th>Qty</th>
+				<th>Product</th>
+				<th>Price</th>
+				<th>Discount</th>
+			</tr>
+		</tfoot>
+	</table>
+	
+</div>

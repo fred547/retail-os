@@ -1,0 +1,52 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="apply.payment.processor">Apply Payment Processor</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div class="text-danger text-uppercase" data-i18n="payment.processor.not.found">
+				Payment Processor not found
+			</div>			
+		</div>
+		<div class="row">
+			<div>
+				<p data-i18n="posterita.preferred.payment.processor">We highly reccomend you to use a Posterita preferred payment processor.</p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<p data-i18n="by.doing.so">By doing so you will be able to:</p>
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="checkout.speed">
+				1) Increase the checkout speed.
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="card.errors">
+				2) Reduce credit card errors.
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="credit.card.fees">
+				3) And most of all reduce your credit card fees.
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="applyPaymentProcessor()">
+    	<div class="" data-i18n="apply">Apply</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

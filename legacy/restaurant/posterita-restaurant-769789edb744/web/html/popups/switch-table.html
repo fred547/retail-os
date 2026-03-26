@@ -1,0 +1,35 @@
+<div class="modal-content" data-test-id="switch-table-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Switch Table #{{ $ctrl.activeTable.name }}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<!-- 
+		<form name="myform">
+		  <div class="form-group">
+		    <label for="popup-input-textfield">Choose Table:</label>
+		    <select class="form-control input-lg" ng-model="to_table" ng-options="table.name for table in $ctrl.availableTables track by table.table_id"></select>
+		  </div>
+		</form>	
+		 -->
+		 
+		<form name="myform">
+		  <div class="form-group">
+		    <button data-test-id="table-{{table.table_id}}" class="merge-table-button" ng-class="{ 'btn-warning' : table.table_id == to_table.table_id }" ng-debounced-click="$ctrl.setToTable(table)" ng-repeat="table in $ctrl.availableTables | orderBy : 'table_id'">{{table.name}}</button>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="to_table == null">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+	</div>
+</div>

@@ -1,0 +1,24 @@
+<div class="modal-content"  data-test-id="redeem-coupon-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-fabric modal-header-icon"></span>
+    	<span data-i18n="check.card.balance" style="padding-left: 24px;">Redeem Coupon</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="coupon_no" data-i18n="card.no">Coupon no</label>
+	    <input type="text" class="form-control" data-test-id="coupon_no" id="coupon_no" name="coupon_no" ng-model="coupon_no" required="required" focus-me="true" autocomplete="off">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="redeem(coupon_no)" ng-disabled="!isValid()" data-test-id="redeem-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

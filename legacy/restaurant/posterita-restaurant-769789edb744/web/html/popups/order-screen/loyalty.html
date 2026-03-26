@@ -1,0 +1,40 @@
+<div class="modal-content" data-test-id="loyalty-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-handshake modal-header-icon"></span>
+    	&nbsp;
+    	<span data-i18n="redeem.loyalty">Redeem Loyalty</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+		<div class="row">
+			<label data-i18n="grand.total" data-test-id="total">Grand Total:</label>
+			<div>
+				{{ total | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.available" data-test-id="available">Loyalty Available:</label>
+			<div>
+				{{ loyaltyPoints | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.remaining" data-test-id="remaining">Loyalty Remaining:</label>
+			<div>
+				{{ loyaltyPointsEarned - loyaltyPointsSpent | number:2 }}
+			</div>
+		</div>		
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

@@ -1,0 +1,104 @@
+<div class="modal-content" id="cash-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="payment.cash">Payment Cash</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+   <form name="myform" autocomplete="off">
+    <div class="column-container"> 
+	   
+	    <div style="width: 60%; padding: 0 16px;">
+
+			<div class="column-container" style="font-size:14pt; padding-bottom:8px;">
+				<div data-i18n="total" style="width:50%">Total:</div>
+				<div style="text-align:right;" data-test-id="total">
+					{{ total | number:2 }}
+				</div>
+			</div>
+
+			<div class="column-container" style="font-size:14pt; padding-bottom:8px;">
+				<div data-i18n="amount.tendered" style="width:50%">Amount Tendered:</div>
+				<div>
+					<input type="number" name="amount" ng-model="amount" class="form-control"  required="required" select-on-focus  data-test-id="amount"/>
+				</div>
+			</div>
+
+			<div style="border-top: 1px solid #8e8e93;border-bottom: 1px solid #1d1d1d;padding: 8px 0px;margin-top: 8px;">
+			<div class="column-container" style="font-size:18pt">
+				<div data-i18n="change.amount" style="width:50%">Change Amount:</div>
+				<div style="text-align:right;" data-test-id="change">
+					{{ (amount - total) | number:2 }}
+				</div>
+			</div>
+			</div>
+		    
+		</div>		
+		
+		<div style="width: 40%;">			
+			<div id="keypad">
+			  
+				<div class="row-container" data-test-id="denominations">
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(200)" debounce-timeout="100" data-test-id="200">200</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(500)" debounce-timeout="100" data-test-id="500">500</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(1000)" debounce-timeout="100" data-test-id="1000">1000</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(2000)" debounce-timeout="100" data-test-id="2000">2000</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(10)" debounce-timeout="100" data-test-id="10">10</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(20)" debounce-timeout="100" data-test-id="20">20</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(50)" debounce-timeout="100" data-test-id="50">50</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(100)" debounce-timeout="100" data-test-id="100">100</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.50)" debounce-timeout="100" data-test-id="0.50">0.50</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(1)" debounce-timeout="100" data-test-id="1">1</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(2)" debounce-timeout="100" data-test-id="2">2</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(5)" debounce-timeout="100" data-test-id="5">5</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.01)" debounce-timeout="100" data-test-id="0.01">0.01</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.05)" debounce-timeout="100" data-test-id="0.05">0.05</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.10)" debounce-timeout="100" data-test-id="0.10">0.10</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.25)" debounce-timeout="100" data-test-id="0.25">0.25</button></div>
+					</div>
+				</div>
+				
+				<div class="row-container">
+					<div class="column-container">
+						<div>
+							<button type="button" class="btn btn-success btn-lg btn-block" style="height: 65px;" ng-debounced-click="exactAmount()" data-test-id="exact-amount">Exact Amount</button>
+						</div>
+						
+						<div>
+							<button type="button" class="btn btn-danger btn-lg btn-block" style="height: 65px;" ng-click="clear()" data-test-id="clear">CLR</button>
+						</div>
+					
+					</div>
+				</div>				
+				
+				<!-- <div class="column-container" style="table-layout: fixed;width: 310px;">
+					<div>
+						<button type="button" class="btn btn-primary btn-lg btn-block" style="width: 100%;height: 55px;" ng-debounced-click="exactAmount()">Exact Amount</button>
+					</div>						
+				</div>
+				<div class="column-container" style="table-layout: fixed;width: 310px;">
+					<div>
+						<button type="button" class="btn btn-danger btn-lg btn-block" style="width: 100%;height: 55px;" ng-debounced-click="clear()">CLR</button>
+					</div>						
+				</div> -->
+				
+			</div> 			
+		</div>		
+	</div>
+   </form> 
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

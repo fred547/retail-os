@@ -1,0 +1,57 @@
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-tag modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="line.item.discount">Line Item Discount</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform" autocomplete="off">
+		
+		  <div class="form-group">
+		    <label for="price" data-i18n="price">Price</label>
+		    <input type="number" class="form-control" id="price" name="price" ng-model="data.price" ng-change="onPriceChange(data.price)" required="required" select-on-focus focus-me="true">
+		  </div>
+		  
+		  <div class="form-group">
+		    <label for="total" data-i18n="total">Total</label>
+		    <input type="number" class="form-control" id="total" name="total" ng-model="data.total" ng-change="onTotalChange(data.total)" required="required" select-on-focus>
+		  </div>
+		  
+		  <div class="form-group">
+		    %<label for="discount" data-i18n="discount">Discount</label> {{x}}
+		    <input type="number" class="form-control" id="discount" name="discount" ng-model="data.discount" ng-change="onDiscountChange(data.discount)" required="required" select-on-focus>
+		  </div>
+		  
+		  <div class="form-group">
+		    <label>Discount Given: {{data.discountAmt | number:2 }}</label>
+		  </div>
+
+		  <!-- discount codes  -->
+		  <div class="form-group" ng-show="codes.length > 1">
+		    <label>Discount Code</label>
+			<select ng-model="data.discountCode" ng-options="code.name for code in codes | orderBy:'percentage'">
+			</select>
+			<button class="btn btn-default" ng-debounced-click="applyDiscountCode()" ng-disabled="!( data.discountCode && data.discountCode.u_pos_discountcode_id > 0)">Apply</button>
+		  </div>
+		  
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="override()">
+			<div data-i18n="override">Override</div>
+		</button>
+		
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="apply()" ng-disabled="myform.$dirty && myform.$invalid">
+			<div data-i18n="apply">Apply</div>
+		</button>
+	</div>
+</div>

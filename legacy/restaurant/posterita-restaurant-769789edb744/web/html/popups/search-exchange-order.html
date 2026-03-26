@@ -1,0 +1,65 @@
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-search modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="search.order">Search Exchange Order</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form id="myform" name="myform" autocomplete="off">
+			
+			<div class="form-group">
+				<label data-i18n="date.ordered">Date Ordered (YYYY-DD-MM)</label>								
+			</div>
+			
+			<div class="row form-group">
+				<div class="col-md-6">
+					<div class="input-group">
+					<input class="form-control" id="date-from" ng-model="params.date1" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened1"> 
+					<span class="input-group-btn">
+        				<button class="btn btn-default" ng-debounced-click="$ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+      				</span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="input-group">
+						<input class="form-control" id="date-to" ng-model="params.date2" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened2"> 
+						<span class="input-group-btn">
+	        				<button class="btn btn-default" ng-debounced-click="$ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	      				</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label data-i18n="customer">Customer</label> 
+				<select class="form-control" data-placeholder="Choose a customer ..." id="customer-id" ng-model="params.customer"
+				ng-options="customer as customer.name for customer in ctrl.customers track by customer.id">
+				</select>
+			</div>
+			<div class="form-group">
+				<label data-i18n="product">Item Barcode</label> 
+				<input class="form-control" data-placeholder="Enter barcode" id="barcode" name="barcode" ng-model="params.barcode"> 
+			</div>
+			<div class="form-group">
+				<label data-i18n="store">Store</label> 
+				<select class="form-control" data-placeholder="Choose Store ..." id="store" name="store" ng-model="params.store" 
+				ng-options="store as store.name for store in ctrl.stores track by store.id">
+				</select>
+			</div>
+			
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.search()">
+			<div data-i18n="search">Search</div>
+		</button>
+	</div>
+</div>

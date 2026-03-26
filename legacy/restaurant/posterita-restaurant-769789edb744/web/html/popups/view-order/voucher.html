@@ -1,0 +1,49 @@
+<div class="modal-content" data-test-id="voucher-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-certificate modal-header-icon"></span>
+    	<span data-i18n="payment.voucher">Payment Voucher</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+    	
+    	<div class="row form-group">
+			<label data-i18n="open.amount">Open Amount:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+
+		<div class="row form-group">
+		  <label for="store_id" data-i18n="store">Voucher Store:</label>
+		    
+		  <div>  
+		  	<select class="form-control" id="store_id" name="store_id" ng-model="voucherStoreId" focus-me="true"  data-test-id="store">
+		   		<option ng-repeat="store in stores" value="{{ store.id }}" ng-selected="current_store_id == store.id">
+		   			{{ store.name }}
+		   		</option>
+		   	</select>
+		   </div>	    
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="check.number">Voucher No:</label>
+			<div>
+				<input type="text" name="voucherNo" ng-model="voucherNo" class="form-control"  required="required" data-test-id="voucher-no"/>
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->

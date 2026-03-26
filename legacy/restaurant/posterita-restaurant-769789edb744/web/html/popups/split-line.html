@@ -1,0 +1,26 @@
+<div class="modal-content" data-test-id="split-line-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-list modal-header-icon"></span>
+    	<span data-i18n="line.item">Split Line Item</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off"> 
+	  <div class="form-group">
+	    <label for="qty" data-i18n="enter.quantity">Enter quantity:</label>
+	    <input data-test-id="split-line-popup-qty-textfield" type="number" class="form-control" id="item-line-qty" name="qty" ng-model="qty" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.apply()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	
+    <button data-test-id="split-line-popup-split-button" type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="apply()" 
+    ng-disabled="myform.qty.$dirty && myform.qty.$invalid">
+    	<div data-i18n="apply">Split</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

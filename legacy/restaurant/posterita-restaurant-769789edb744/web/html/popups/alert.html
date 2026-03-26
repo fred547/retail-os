@@ -1,0 +1,17 @@
+<div class="modal-content" id="alert-popup">
+	<div class="modal-header alert-danger">
+		 <button type="button" class="close" data-ng-debounced-click="$ctrl.close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-exclamation-triangle"></i>
+			Error
+		</h4>
+	</div>
+	<div class="modal-body">
+		<h4 class="text-danger">{{$ctrl.msg}}</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.close()" id="close-alert-popup-button">
+			Ok
+		</button>
+	</div>
+</div>

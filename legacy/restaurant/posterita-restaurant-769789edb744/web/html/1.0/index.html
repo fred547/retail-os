@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<meta content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'" http-equiv="Content-Security-Policy">
+	<title>Posterita POS</title>
+	
+	<link rel="stylesheet" href="lib/bootstrap-3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="lib/bootstrap-3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="lib/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="lib/glyphicons/glyphicons.css">
+	<link rel="stylesheet" href="lib/angular-ui-switch.min.css">
+	<link rel="stylesheet" href="lib/data-table/css/jquery.dataTables.css" />
+	
+	<link rel="stylesheet" href="lib/jquery-mcustomscrollbar-3.0.6/jquery.mCustomScrollbar.min.css" media="all">
+	<link rel="stylesheet" href="css/layout.css" media="all">
+	
+	<script type="text/javascript" src="lib/jquery-1.8.3.js"></script>
+	<script type="text/javascript" src="lib/angular.js"></script>
+	<!-- 
+	<script type="text/javascript" src="lib/angular-route.js"></script>	
+	 -->
+	<script type="text/javascript" src="lib/angular-ui-route.min.js"></script>
+	
+	<script type="text/javascript" src="lib/ydn.db-jquery.js"></script>
+	<script type="text/javascript" src="lib/taffy.js"></script>
+	<script type="text/javascript" src="lib/sha1.js"></script>
+	<script type="text/javascript" src="lib/jquery.cookie.js"></script>
+	<!-- <script type='text/javascript' src='../../javascripts/firebug-lite-compressed.js'></script>  -->
+	<!-- <script type="text/javascript" src="lib/raven.min.js"></script> -->
+	<script type="text/javascript" src="lib/i18n.js"></script>	
+	<script type="text/javascript" src="lib/forus.js"></script>
+	
+	
+	<script type="text/javascript" src="lib/shoppingCart.js"></script>
+	<script type="text/javascript" src="lib/BigNumber.js"></script>
+	<script type="text/javascript" src="lib/app.js"></script>
+	
+	<script type="text/javascript" src="lib/online-services.js"></script>
+	<script type="text/javascript" src="lib/clockinout.js"></script>
+	<script type="text/javascript" src="lib/till.js"></script>
+	<script type="text/javascript" src="lib/printing.js"></script>
+	<script type="text/javascript" src="lib/scrollglue.js"></script>
+	
+	<script type="text/javascript" src="lib/data-table/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="lib/moment-with-locales.js"></script>
+	
+	<script type="text/javascript" src="lib/ng-infinite-scroll.min.js"></script>
+	<script type="text/javascript" src="lib/angular-ui-switch.min.js"></script>
+	<script type="text/javascript" src="lib/data-synchronizer.js"></script>
+	<script type="text/javascript" src="lib/ui-bootstrap/ui-bootstrap-custom-tpls-0.12.1.min.js"></script>
+	<script type="text/javascript" src="lib/jquery-mcustomscrollbar-3.0.6/jquery.mCustomScrollbar.concat.min.js"></script>
+	<script type="text/javascript" src="lib/lodash.min.js"></script>
+	
+	<!-- module -->
+	<script type="text/javascript" src="lib/app.module.js"></script>
+	
+	<!-- directives -->
+	<script type="text/javascript" src="lib/app.directives.js"></script>
+	
+	<!-- filters -->
+	<script type="text/javascript" src="lib/app.filters.js"></script>
+	
+	<!-- routes -->
+	<script type="text/javascript" src="lib/app.routes.js"></script>
+	
+	<!-- controllers -->
+	<script type="text/javascript" src="controllers/about-controller.js"></script>
+	<script type="text/javascript" src="controllers/clock-controller.js"></script>
+	<script type="text/javascript" src="controllers/clock-in-clock-out-controller.js"></script>
+	<script type="text/javascript" src="controllers/clock-in-clock-out-report-controller.js"></script>
+	<script type="text/javascript" src="controllers/close-till-report-controller.js"></script>
+	<script type="text/javascript" src="controllers/commission-controller.js"></script>
+	<script type="text/javascript" src="controllers/customer-controller.js"></script>
+	<script type="text/javascript" src="controllers/daily-item-sales-report-controller.js"></script>
+	<script type="text/javascript" src="controllers/exchange-order-controller.js"></script>
+	<script type="text/javascript" src="controllers/glider-controller.js"></script>
+	<script type="text/javascript" src="controllers/hardware-settings-controller.js"></script>
+	<script type="text/javascript" src="controllers/import-customer-controller.js"></script>
+	<script type="text/javascript" src="controllers/inventory-available-controller.js"></script>
+	<script type="text/javascript" src="controllers/login-controller.js"></script>
+	<script type="text/javascript" src="controllers/main-controller.js"></script>
+	<script type="text/javascript" src="controllers/menu-controller.js"></script>
+	<script type="text/javascript" src="controllers/order-history-controller.js"></script>
+	<script type="text/javascript" src="controllers/orderscreen-buttons-controller.js"></script>
+	<script type="text/javascript" src="controllers/orderscreen-controller.js"></script>
+	<script type="text/javascript" src="controllers/price-change-report-controller.js"></script>
+	<script type="text/javascript" src="controllers/product-info-controller.js"></script>
+	<script type="text/javascript" src="controllers/purchase-controller.js"></script>
+	<script type="text/javascript" src="controllers/quotation-controller.js"></script>
+	<script type="text/javascript" src="controllers/report-controller.js"></script>
+	<script type="text/javascript" src="controllers/request-support-controller.js"></script>
+	<script type="text/javascript" src="controllers/shopping-cart-controller.js"></script>
+	<script type="text/javascript" src="controllers/splash-controller.js"></script>
+	<script type="text/javascript" src="controllers/stock-transfer-controller.js"></script>
+	<script type="text/javascript" src="controllers/till-controller.js"></script>
+	<script type="text/javascript" src="controllers/user-info-controller.js"></script>
+	<script type="text/javascript" src="controllers/view-order-button-controller.js"></script>
+	<script type="text/javascript" src="controllers/view-order-controller.js"></script>
+	<script type="text/javascript" src="controllers/remote-access-controller.js"></script>
+	
+	<!-- services -->
+	<script type="text/javascript" src="services/clock-in-out-service.js"></script>
+	<script type="text/javascript" src="services/commission-service.js"></script>
+	<script type="text/javascript" src="services/customer-service.js"></script>
+	<script type="text/javascript" src="services/login-service.js"></script>
+	<script type="text/javascript" src="services/online-page-service.js"></script>
+	<script type="text/javascript" src="services/order-screen-service.js"></script>
+	<script type="text/javascript" src="services/order-service.js"></script>
+	<script type="text/javascript" src="services/product-service.js"></script>
+	<script type="text/javascript" src="services/purchase-service.js"></script>
+	<script type="text/javascript" src="services/shopping-cart-service.js"></script>
+	
+	<!-- other controllers -->
+	<script type="text/javascript" src="controllers/second-splash-controller.js"></script>	
+	<script type="text/javascript" src="controllers/terminal-controller.js"></script>	
+	<script type="text/javascript" src="controllers/choose-order-type-controller.js"></script>
+	<script type="text/javascript" src="controllers/items-ordered-logs-controller.js"></script>
+	<script type="text/javascript" src="controllers/kitchen-order-logs-controller.js"></script>
+	<script type="text/javascript" src="controllers/printer-logs-controller.js"></script>
+	<script type="text/javascript" src="controllers/restaurant-logs-controller.js"></script>
+	<script type="text/javascript" src="controllers/table-controller.js"></script>
+	<script type="text/javascript" src="controllers/take-away-history-controller.js"></script>
+	<!-- other services -->
+	<script type="text/javascript" src="services/table-service.js"></script>
+	<!-- other libraries -->
+	<script type="text/javascript" src="lib/app.restaurant.js"></script>
+	<script type="text/javascript" src="lib/restaurant.js"></script>	
+	<script type="text/javascript" src="lib/hotkeys.min.js"></script>
+	
+	<script type="text/javascript" src="lib/http-printer.js"></script>
+	<script type="text/javascript" src="lib/posterita-debugger.js"></script>
+	<!-- testing libraries -->
+	<!-- 
+	<script src="lib/mock-printer.js" type="text/javascript"></script>
+	 -->
+	
+	
+</head>
+
+<body ng-app="app" ng-controller="MainController">
+	<div class="row-container" id="main-container" ui-view >
+	</div>
+</body>
+
+</html>

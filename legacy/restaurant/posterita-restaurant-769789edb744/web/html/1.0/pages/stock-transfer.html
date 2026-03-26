@@ -1,0 +1,244 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content"  >
+
+	<div class="row-container" style="height: 100%">
+			
+				<!-- first row -->
+				<div style="height: 50px;">
+				
+					<!-- search product & search customer -->
+					<div class="column-container" style="padding:16px;">
+					
+						<!-- search product -->
+						<div id="product-search-container">
+						
+							<div class="column-container">
+							
+								<div>
+									<input autocomplete="off" type="text" class="search-textfield" ng-model="productSearchTerm" ng-enter="searchProduct(productSearchTerm)" placeholder="Barcode, SKU, Name, Description, Groups">
+								</div>
+								
+								<div style="width: 50px;">
+									<button class="btn btn-primary" type="button" ng-debounced-click="searchProduct(productSearchTerm)">
+							        	<i class="glyphicons glyphicons-search xs"></i>
+							        </button>
+								</div>
+								
+							</div>
+						
+						</div><!-- search product -->
+						
+						<!-- search customer -->
+						<div id="customer-search-container">
+						
+							<div class="column-container">
+							
+								<div>
+									<select id="warehouse-dropdown" ng-model="warehouse_id">
+										<option ng-repeat="warehouse in warehouseList" value="{{ warehouse.id }}">{{ warehouse.name }}</option>
+									</select>
+								</div>							
+								
+							</div>
+						
+						</div><!-- search customer -->
+						
+					</div><!-- search product & search customer -->
+					
+				</div><!-- first row -->
+				
+				<!-- second row -->
+				<div>
+				
+					<!-- glider, product list & shopping cart -->
+					<div class="column-container" style="height: 100%;padding:0px 16px;">
+					
+						<!-- glider -->
+						<div style="width: 15%;" ng-controller="GliderController as gc" class="glider-container">
+							<div class="column-container"  ng-hide="gc.glider.level == 0">
+							
+								<div style="width: 30%;">
+									<button ng-debounced-click="gc.glider.back()"><i class="glyphicons glyphicons-chevron-left xs"></i></button>
+								</div>
+								
+								<div>
+									<button ng-debounced-click="gc.glider.home()"><i class="glyphicons glyphicons-home xs"></i></button>
+								</div>
+								
+							</div>
+							<div ng-repeat="tile in gc.glider.getTiles()" class="glider-tile" ng-debounced-click="gc.glider.setLevel(gc.glider.level + 1, tile)">
+								{{ tile }}
+							</div>
+						</div><!-- glider -->
+						
+						<!-- product list -->
+						<div style="width: 45%;">
+							
+							<!-- product list -->
+							<div id="product-search-result-container">
+							
+								<!-- product list header -->
+								<div style="height:35px;">
+								
+									<div class="column-container product-search-result-header" style="height:100%;">
+										<div>
+											Name/Description
+										</div>
+										
+										<div style="text-align: right;">
+											Stock in Hand
+										</div>
+									</div>
+									
+								</div>
+								<!-- product list header -->
+								
+								<!-- product list result box -->
+								<div class="product-search-result">									
+																	
+										<!-- product result -->
+										<div class="column-container" ng-repeat="result in productSearchList" ng-debounced-click="addToCart(result)"										
+											ng-class="{ active : result.m_product_id == productSearchSelectedId }">
+											<div>
+												{{ result.name }} <br/>
+												{{ result.description }}
+											</div>
+											
+											<div>
+												{{ result.qtyonhand }}
+											</div>
+										</div>										
+										
+										
+										<!-- <div style="position:; top:0px; bottom: 0px; left:214px; right:317px; overflow: auto;">
+									   		<div class="product-tiles" ng-repeat="result in productSearchList" ng-debounced-click="addToCart(result)">
+									   			<div class="label">{{result.name}}</div>
+									   		</div>
+									   </div> -->										
+										
+										
+										<!-- product result 1 -->
+									
+								</div>
+								<!-- product list result box -->
+								
+							</div>
+							<!-- product list -->
+							
+						</div><!-- product list -->
+						
+						<!-- shopping cart -->
+						<div style="width: 40%;">
+														
+							<div style="position:absolute; width: 100%; top: 0; bottom: 0;background:linear-gradient(#d7d8da,#fff);">
+							
+								<div class="box-number" ng-show="currentBoxNumber">Current Box/Bag: {{currentBoxNumber}}</div>
+								
+							<!-- shopping cart lines-->
+								<div ng-controller="ShoppingCartController" scroll-glue class="shopping-cart-lines" style="bottom:160px;">
+								
+									<div ng-repeat="line in shoppingCart.lines.toArray() | groupBy:'boxNo'">									
+										<div class="box-number-header" ng-show="line.boxNo != null && line.group_by_key">{{ line.boxNo }}</div>
+										
+										<div class="column-container" ng-class="{ active : line.lineId == shoppingCart.selectedIndex }" scroll-if="line.lineId == shoppingCart.selectedIndex">
+											<div ng-debounced-click="editQty(line); setShoppingCartSelectedIndex(line.lineId)">
+												{{ line.qty.toString() }}
+											</div>
+											<div ng-debounced-click="showProductInfo(line.product); setShoppingCartSelectedIndex(line.lineId)">
+												<span>{{ line.product.name }}</span><br>
+												<span>{{ line.description }}</span>
+											</div>											
+											<div>
+												<button ng-debounced-click="shoppingCart.removeFromCart(line.lineId)">
+													<i class="glyphicons glyphicons-bin xs"></i>
+												</button>
+											</div>
+										</div>									
+									</div>							
+									
+								</div><!-- shopping cart lines-->
+								
+								<!-- shopping cart totals-->
+								<div class="shopping-cart-totals" style="height:30px;bottom:120px;">
+									<div class="row-container">
+										<div class="row">
+											<div>
+												Total to be {{ transferType == 'stock-transfer-request' ? 'requested' : 'sent' }}
+											</div>
+											<div>
+												{{ shoppingCart.qtyTotal.toString() }}
+											</div>
+										</div>
+									</div>
+								</div><!-- shopping cart totals-->
+								<!-- order buttons -->
+								<div class="shopping-cart-buttons" style="">
+									<div class="column-container">
+									
+										<div>
+											<button class="btn btn-success button-green" ng-debounced-click="transfer()" ng-disabled="shoppingCart.isEmpty()">
+												<i class="glyphicons glyphicons-shopping-cart xs"></i>
+												<div>{{ title }}</div>
+											</button>
+										</div>										
+										
+									</div>	
+									
+									<div class="column-container">
+									
+										<div>
+											<button class="btn btn-danger button-red" ng-debounced-click="reset()" ng-disabled="shoppingCart.isEmpty() && currentBoxNumber == null">
+												<i class="glyphicons glyphicons-bin xs"></i>
+												<div>Clear Cart</div>
+											</button>
+										</div>
+										
+										<div>
+											<button class="btn btn-primary button-blue" ng-debounced-click="comment()" ng-disabled="shoppingCart.isEmpty()">
+												<i class="glyphicons glyphicons-comments xs"></i>
+												<div>	
+													Comment
+													<span ng-show="isCommentPresent()" class="badge">1</span>	
+												</div>
+											</button>
+										</div>
+										
+										<div ng-if="transferType != 'stock-transfer-request'" ng-debounced-click="boxNo()">
+											<button class="btn btn-primary button-blue">
+												<i class="glyphicons glyphicons-list xs"></i>
+												<div>	
+													Box/Bag No.	
+												</div>
+											</button>
+										</div>
+										
+									</div>
+								</div>
+								
+								
+								
+							</div>
+							
+						</div><!-- shopping cart -->
+						
+					</div><!-- glider, product list & shopping cart -->
+					
+				</div><!-- second row -->
+				
+				<div id="footer">
+					<div class="column-container" style="padding:0px 16px;">
+						<div>
+							&nbsp;
+						</div>
+						<div style="vertical-align:middle; width: 10%;">
+							You are Online.
+						</div>
+					</div>
+				</div>
+				
+			</div>
+	
+</div>
+
+		

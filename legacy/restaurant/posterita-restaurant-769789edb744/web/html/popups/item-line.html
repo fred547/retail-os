@@ -1,0 +1,30 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="line.item" style="vertical-align: sub;">Line Item</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform">
+	  <div class="form-group">
+	    <label for="qty" data-i18n="enter.quantity">Enter quantity:</label>
+	    <input type="number" class="form-control" id="item-line-qty" name="qty" ng-model="$ctrl.qty" required="required" select-on-focus focus-me="true" autocomplete="off" ng-enter="$ctrl.apply()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	
+  	<button type="button" class="btn btn-lg btn-primary" data-ng-debounced-click="$ctrl.splitLine()" ng-disabled="!$ctrl.isValid()">
+    	<div data-i18n="split">Split</div>
+    </button>
+  	
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.apply()" 
+    ng-disabled="myform.qty.$dirty && myform.qty.$invalid">
+    	<div data-i18n="apply">Apply</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

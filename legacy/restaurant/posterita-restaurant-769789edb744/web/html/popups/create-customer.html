@@ -1,0 +1,95 @@
+<div class="modal-content" id="create-customer-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="create.customer" style="vertical-align: sub;">Create Customer</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    <form name="myform" autocomplete="off">
+	<div class="column-container">
+		<div>	
+			<div class="form-group">
+		    	<label for="customer_id" data-i18n="customer.id">Customer ID</label>*
+		    	<input type="text" class="form-control" id="customer_id" name="value" ng-model="value" required="required" focus-me="true">
+		  	</div>		
+			<div class="form-group">
+		    	<label for="name" data-i18n="name">Name</label>*
+		    	<input type="text" class="form-control" id="name" name="name" ng-model="name" required="required">
+		  	</div>
+		  	<div class="form-group">
+		   	 	<label for="email" data-i18n="email">Email</label>
+		    	<input type="email" class="form-control" id="email" name="email" ng-model="email" required="required">
+		  	</div>
+		  	<div class="form-group">
+		    	<label for="phone" data-i18n="phone">Phone</label>
+		    	<input type="phone" class="form-control" id="phoneNo" name="phoneNo" ng-model="phoneNo" required="required">
+		  	</div>
+		  	
+		  	<!-- <div class="form-group">
+		    	<label for="title" data-i18n="title">Title</label>
+			    <select ng-model="title" class="form-control">
+			    	<option value="Mr">Mr</option>
+			    	<option value="Mrs">Mrs</option>
+			    	<option value="Miss">Miss</option>
+			    	<option value="Ms">Ms</option>
+			    </select>
+		  	</div>
+		  	<div class="form-group">
+		    	<label for="address" data-i18n="address">Address</label>
+		    	<input type="text" class="form-control" id="address" name="address" ng-model="address" required="required">
+		  	</div>
+		  	<div class="checkbox form-group">
+		  		<label data-i18n="more.fields">
+		  			<input type="checkbox" ng-model="more_fields" value="true" checked="checked" />
+		  			More fields
+		  		</label>
+		  	</div> -->
+		</div>
+		<div>&nbsp;</div>
+		<div>
+			<!-- <div class="additional-customer-fields" ng-show="more_fields">
+				<div class="form-group">
+			    	<label for="city" data-i18n="city">City</label>
+			    	<input type="text" class="form-control" id="city" name="city" ng-model="city" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="dob" data-i18n="dob">DOB</label>
+			    	<input type="text" class="form-control" id="dob" name="dob" ng-model="dob" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="mobile" data-i18n="mobile">Mobile</label>
+			    	<input type="text" class="form-control" id="mobileNo" name="mobileNo" ng-model="mobileNo" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom1" data-i18n="custom1">Custom1</label>
+			    	<input type="text" class="form-control" id="custom1" name="custom1" ng-model="custom1" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom2" data-i18n="custom2">Custom2</label>
+			    	<input type="text" class="form-control" id="custom2" name="custom2" ng-model="custom2" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom3" data-i18n="custom3">Custom3</label>
+			    	<input type="text" class="form-control" id="custom3" name="custom3" ng-model="custom3" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom4" data-i18n="custom4">Custom4</label>
+			    	<input type="text" class="form-control" id="custom4" name="custom4" ng-model="custom4" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="notes" data-i18n="notes">Notes</label>
+			    	<textarea class="form-control" rows="" cols="" ng-model="notes"></textarea>
+			  	</div>
+		  </div> -->
+		</div>	
+	</div>	
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="save()" id="save-button">
+    	<div data-i18n="apply">Save</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

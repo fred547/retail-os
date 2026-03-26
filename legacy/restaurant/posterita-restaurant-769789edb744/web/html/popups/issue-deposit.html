@@ -1,0 +1,25 @@
+<div class="modal-content" data-test-id="issue-deposit-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="issue.card" style="vertical-align: sub;">Issue Deposit</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="amount" data-i18n="amount">Amount</label>
+	    <input type="number" class="form-control" id="amount" name="amount" ng-model="amount" required="required" focus-me="true" select-on-focus data-test-id="amount">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="issueDeposit(amount)"  data-test-id="proceed-button"
+    ng-disabled="!isValid()">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

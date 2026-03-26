@@ -1,0 +1,114 @@
+<div class="modal-content" id="customer-info-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+    	<span data-i18n="customer.info">Customer Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="column-container customer-info-popup">
+     
+     	<div>
+     		<img src="images/create-customers.png"  style="vertical-align: top;"/>
+     	</div>
+     	
+     	<div>
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.customer.id">Customer ID:</span></div>
+     				<div>{{ customer.identifier }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.name">Name:</span></div>
+     				<div>{{ customer.name }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.address">Address:</span></div>
+     				<div>{{ customer.address1 }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.city">City:</span></div>
+     				<div>{{ customer.city }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.dob">D.O.B:</span></div>
+     				<div>{{ customer.birthday }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.tel">Tel:</span></div>
+     				<div>{{ customer.phone}}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="mobile">Mobile:</span></div>
+     				<div>{{ customer.phone2 }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.email">Email:</span></div>
+     				<div>{{ customer.email }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.search.key">Search Key:</span></div>
+     				<div>{{ customer.identifier }}</div>     			
+     			</div>     		
+     		</div>
+     	</div>
+     	
+     	<div>
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.summary">Summary</span></div>
+     				<div></div>
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.available">Credit Available:</span></div>
+     				<div>{{ customer.so_creditused }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.limit">Credit Limit:</span></div>
+     				<div>{{ customer.so_creditlimit }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.open.balanace">Open Balance:</span></div>
+     				<div>{{ customer.totalopenbalance }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.status">Credit Status:</span></div>
+     				<div>{{ customer.socreditstatus }}</div>     			
+     			</div>
+     		</div>
+     		
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.summary">Loyalty</span></div>
+     				<div></div>
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.available">Starting Point:</span></div>
+     				<div>{{ customer.loyaltystartingpoints }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.limit">Point Earned:</span></div>
+     				<div>{{ customer.loyaltypointsearned }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.open.balanace">Points Used:</span></div>
+     				<div>{{ customer.loyaltypointsspent }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.status">Points Remaining:</span></div>
+     				<div>{{ customer.loyaltypoints}}</div>     			
+     			</div>
+     		</div>       		
+     	</div>
+     
+     </div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

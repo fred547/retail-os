@@ -1,0 +1,24 @@
+<div class="modal-content" data-test-id="check-gift-card-balance-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span style="vertical-align: sub;">Check Gift Card Balance</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="card_no" data-i18n="card.no">Card no</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" focus-me="true" data-test-id="card-no">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="checkBalanceGiftCard(card_no)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

@@ -1,0 +1,121 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<!-- Body -->
+<div id="body-content">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div>
+			
+			<!-- <form name="closetill"> -->
+				<div class="row-container open-close-till-container">
+				
+					<!-- Close Till Title -->
+					<div>
+						<div class="open-close-till-title form-group">
+							Close Till
+						</div>
+					</div><!-- Close Till Title -->
+					
+					<!-- Close Till Help Description -->
+					<div>
+						<p>Please enter the cash amount in the drawer.</p>
+					</div><!-- Close Till Help Description -->
+					
+					<!-- Cash Amount Input -->
+					<div>
+						<div class="form-group" style="margin-top: 16px;">
+							<label for="cash_amount">Cash Amount</label>
+							<input type="number" name="cash_amount" tabindex="2" ng-model="ctrl.amount" value="" class="form-control" id="cash-amount" required data-test-id="cash-amount">
+						</div>
+					</div><!-- Cash Amount Input -->
+					
+					
+					<!-- External card Amount Input -->
+					<div ng-show="ctrl.countExtCard">
+						<div class="form-group" style="margin-top: 16px;">
+							<label for="external_card_amount">External card Amount</label>
+							<input type="number" name=""external_card_amount"" tabindex="2" ng-model="ctrl.externalCardAmount" value="" class="form-control" id="external-card-amount" required>
+						</div>
+					</div><!-- External card Amount Input -->
+					
+					<!-- Buttons -->
+					<div>
+						<div class="column-container open-close-till-buttons-container">
+							<div>
+								<button type="button" class="btn btn-md btn-default button-white" ng-debounced-click="ctrl.openDrawer()">
+									<i class="glyphicons glyphicons-eject xs"></i>
+									<div data-i18n="open.drawer">Open Drawer</div>
+								</button>
+							</div>
+						
+							<div>
+								<button type="button" class="btn btn-md btn-default button-white" ng-debounced-click="ctrl.showDenominationPopup()">
+									<i class="glyphicons glyphicons-calculator xs"></i>
+									<div data-i18n="denomination">Denomination</div>
+								</button>
+							</div>
+							
+							<div></div>
+							
+							<div>
+								<button type="submit" class="btn btn-md btn-success button-green" ng-debounced-click="ctrl.closeTill()"  data-test-id="close-button">
+									<i class="glyphicons glyphicons-log-in xs"></i>
+									<div data-i18n="continue">Close</div>
+								</button>
+							</div>
+						</div>
+					</div><!-- Buttons -->
+					
+					<!-- Card/Credit Amount -->
+					<div>
+						<div class="column-container close-till-card-amount-container">
+							<div>
+								<div>Credit Card Amount</div>
+								<div>Check Amount</div>
+								<div ng-show="!ctrl.countExtCard">External Card Amount</div>
+								<div>Voucher Amount</div>
+								<div>Gift Card Amount</div>
+								<div>Loyalty Amount</div>
+								<div>Coupon Amount</div>
+								<div>Deposit Amount</div>
+								
+								<!-- mobile payments -->
+								<div>MCB Juice Amount</div>
+								<div>MY.T Money Amount</div>
+								<div>Blink Amount</div>
+								<div>Gifts.mu Amount</div>
+								<div>MIPS Amount</div>
+							</div>
+							
+							<div>
+								<div>{{ ctrl.tenderAmounts.card | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.cheque | number:2 }}</div>
+								<div ng-show="!ctrl.countExtCard">{{ ctrl.tenderAmounts.ext_card | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.voucher | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.gift | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.loyalty | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.coupon | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.deposit | number:2 }}</div>
+								
+								<!-- mobile payments -->
+								<div>{{ ctrl.tenderAmounts.mcbJuice | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.mytMoney | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.emtelMoney | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.giftsMu | number:2 }}</div>
+								<div>{{ ctrl.tenderAmounts.mips | number:2 }}</div>
+							</div>
+						</div>
+					</div><!-- Card/Credit Amount -->
+					
+				</div>
+			<!-- </form> -->
+			
+		</div>
+		
+		<div style="width:25%;"></div>
+	</div>
+		
+	
+</div><!-- Body -->

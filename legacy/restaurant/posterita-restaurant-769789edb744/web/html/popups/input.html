@@ -1,0 +1,28 @@
+<div class="modal-content" id="input-popup">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			{{$ctrl.title}}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform" autocomplete="off">
+		  <div class="form-group">
+		    <label for="popup-input-textfield">{{$ctrl.msg}}:</label>
+		    <input ng-if="!$ctrl.password" type="text" class="form-control" id="popup-input-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		    <input ng-if="$ctrl.password" type="password" class="form-control" id="popup-input-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="!$ctrl.isValid()" id="input-popup-ok-button">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()" id="input-popup-cancel-button">
+			Cancel
+		</button>
+	</div>
+</div>

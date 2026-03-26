@@ -1,0 +1,144 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-calculator modal-header-icon"></span>
+    	<span style="padding-left: 24px;">Denomination</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     	<div style="padding-bottom: 20px;">
+     		Enter the number of notes and coins below
+     	</div>
+     	
+     	<table id="table-till-denomination">
+	     	<tr>
+	     		<td>
+		     		<table>	
+					  <tr>
+					    <th>Notes</th>
+					  </tr> 
+					   
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_2000" class="form-control" min="0" /> &nbsp;&nbsp; x 2000
+					    </td>
+					    <td> = {{ denomination.note_2000 * 2000 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_1000" class="form-control" min="0" /> &nbsp;&nbsp; x 1000
+					    </td>
+					    <td> = {{ denomination.note_1000 * 1000 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_500" class="form-control" min="0" /> &nbsp;&nbsp; x 500
+					    </td>
+					    <td> = {{ denomination.note_500 * 500 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_200" class="form-control" min="0" /> &nbsp;&nbsp; x 200
+					    </td>
+					    <td> = {{ denomination.note_200 * 200 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_100" class="form-control" min="0" /> &nbsp;&nbsp; x 100
+					    </td>
+					    <td> = {{ denomination.note_100 * 100 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_50" class="form-control" min="0" /> &nbsp;&nbsp; x 50
+					    </td>
+					    <td> = {{ denomination.note_50 * 50 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_25" class="form-control" min="0" /> &nbsp;&nbsp; x 25
+					    </td>
+					    <td> = {{ denomination.note_25 * 25 }} </td>
+					  </tr>
+					</table>
+				</td>
+
+		     	<td>
+		     		<table>	
+					  <tr>
+					    <th>Coins</th>
+					  </tr> 
+					   
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_20" class="form-control" min="0" /> &nbsp;&nbsp; x 20
+					    </td>
+					    <td> = {{ denomination.coin_20 * 20 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_10" class="form-control" min="0" /> &nbsp;&nbsp; x 10
+					    </td>
+					    <td> = {{ denomination.coin_10 * 10 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_5" class="form-control" min="0" />  &nbsp;&nbsp; x 5
+					    </td>
+					    <td> = {{ denomination.coin_5 * 5 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_1" class="form-control" min="0" /> &nbsp;&nbsp; x 1
+					    </td>
+					    <td> = {{ denomination.coin_1 * 1 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_050" class="form-control" min="0" /> &nbsp;&nbsp; x 0.50
+					    </td>
+					    <td> = {{ denomination.coin_050 * 0.50 | number:2 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_020" class="form-control" min="0" /> &nbsp;&nbsp; x 0.20
+					    </td>
+					    <td> = {{ denomination.coin_020 * 0.20 | number:2 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_005" class="form-control" min="0" /> &nbsp;&nbsp; x 0.05
+					    </td>
+					    <td> = {{ denomination.coin_005 * 0.05 | number:2 }} </td>
+					  </tr>
+					</table>
+				</td>
+	     	</tr>
+     	</table>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	<div id="till-denomination-total">
+  		Total Amount: Rs{{ denomination.getTotal() | number:2 }}
+  	</div> 
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="confirmDenomination()">
+    	<div data-i18n="confirm">Confirm</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

@@ -1,0 +1,659 @@
+package org.posterita.client;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.Worker.State;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
+import org.controlsfx.dialog.Dialogs;
+import org.posterita.config.Configuration;
+import org.posterita.database.Database;
+import org.posterita.database.DatabaseSynchronizer;
+import org.posterita.exception.EmbeddedJettyServerException;
+import org.posterita.server.EmbeddedJettyServer;
+
+public class PosteritaOld extends Application 
+{
+	private Stage stage;
+	String baseURL = "http://localhost:8888/html/4.2/select-user.html";	
+	CustomCookieHandler cookieHandler;
+	EmbeddedJettyServer server;
+	
+	public static void main(String[] args) 
+	{
+		launch(args);
+	}
+
+	@Override
+	public void start(final Stage stage) throws Exception 
+	{
+		this.stage = stage;	
+		
+		this.stage.setFullScreenExitKeyCombination(new KeyCodeCombination(KeyCode.F11));
+		
+		this.stage.hide();
+		this.stage.setScene(new Scene(new HBox(), 1024, 768));
+		this.stage.centerOnScreen();
+		
+		String version = "";
+		String date = "";
+		
+		// load version from posterita properties 
+		Properties properties = new Properties();
+		properties.load(ClassLoader.getSystemResourceAsStream("org/posterita/posterita.properties"));
+		
+		version = properties.getProperty("version");
+		if(version == null)
+		{
+			version = "1.0";
+		}
+		
+		date = properties.getProperty("date");
+		if(date != null)
+		{
+			version = version + "." + date;
+		}
+		
+		stage.setTitle("Posterita " + version);
+		
+		//launcher updater
+		Updater updater = new Updater(){
+			public boolean beforeUpdate(){
+				
+				Action response = Dialogs.create()
+				        .owner(stage)
+				        .title("Update")
+				        //.masthead("You chose to exit")
+				        .message("A new version is available.\nWould you like to install it?")
+				        .actions(Dialog.Actions.YES, Dialog.Actions.NO)
+				        .showConfirm();
+
+				if (response == Dialog.Actions.NO) {
+				    // ... user chose NO
+					return false;
+				}
+				
+				return true;
+			}
+			
+			public boolean afterUpdate(){
+				
+				Dialogs.create()
+	            .owner(stage)
+	            .title("Update")
+	            .masthead(null)
+	            .message("The update was completed successfully.\n"
+	            		+ "Please restart the application in order the changes take effect.")
+	            .showInformation(); 
+				
+				//write restart file
+				setRestartFlag();
+				
+				Platform.exit();
+				
+				return true;
+			}
+			
+			public void downloadFiles(final ArrayList<UpdateFileEntry> entries)
+			{
+				Service<Void> service = new Service<Void>() {					
+					@Override
+					protected Task<Void> createTask() {
+						return new Task<Void>() {
+
+							@Override
+							protected Void call() throws Exception {
+								// TODO Auto-generated method stub
+								HttpClient client = new DefaultHttpClient();
+								HttpGet get = null;
+								HttpResponse response = null;
+								
+								try 
+								{
+									// download and apply updates
+									for(UpdateFileEntry entry : entries)
+									{
+										String filename = entry.getFilename();
+										
+										updateMessage(String.format("Downloading %s ..", filename));
+										
+										long fileLength = entry.getLength();										
+										log.info(filename + " ==> " + fileLength);
+										
+										get = new HttpGet(serverAddress + "/posterita-client/" + filename);				
+										response = client.execute(get);
+													
+										HttpEntity entity = response.getEntity();
+										if (entity != null) {
+										    
+											InputStream inputStream = entity.getContent();											
+											
+											File file = new File(updateDir + filename);
+											file.getParentFile().mkdirs();  
+										    
+										    BufferedInputStream bis = new BufferedInputStream(inputStream);
+										    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+										    
+										    byte data[] = new byte[4096];
+								            long total = 0;
+								            int count;
+								            while ((count = bis.read(data)) != -1) {
+								                // allow canceling with back button
+								                
+								                total += count;
+								                // publishing the progress....
+								                if (fileLength > 0){
+								                	// only if total length is known
+								                	updateProgress(total, fileLength);
+								                }
+								                    
+								                bos.write(data, 0, count);
+								            }
+										    
+										    bis.close();
+										    bos.close();
+										}
+										
+										updateMessage(String.format("Successfully updated %s", filename));										
+										
+									}
+									
+									// apply updates
+									File dir = new File(updateDir);
+									File[] updates = dir.listFiles();
+									
+									for(File update : updates)
+									{
+										String fileName = update.getName();
+										
+										if(update.isDirectory())
+										{											
+											FileUtils.copyDirectory(update, new File(fileName));
+										}
+										else
+										{
+											FileUtils.copyFile(update, new File(fileName));
+										}
+									}									
+									
+								} 
+								catch (Exception e) 
+								{
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} 
+								finally
+								{
+									client.getConnectionManager().shutdown();
+								}
+								return null;
+							}
+						};
+					}
+				};
+				
+				Dialogs.create()
+		        .owner(stage)
+		        .title("Update")
+		        .masthead("Downloading updates ...")
+		        .showWorkerProgress(service);
+				
+				service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+		            @Override
+		            public void handle(WorkerStateEvent t) {
+		            	afterUpdate();
+		            }
+		        });
+				
+				service.start();				
+				
+			}
+		};
+				
+		String separator = System.getProperty("file.separator");		
+		updater.updateDir = "updates" + separator;
+		updater.start();
+				
+		//check configuration file
+		Configuration config = Configuration.get(true);
+		
+		//check for server address
+		String serverAddress = config.getServerAddress();
+		
+		if(serverAddress == null) {
+			//show configuration window
+			setScene(ConfigurationScene());
+			return;
+		}
+		
+		setScene(SynchronizationScene());
+		
+	}
+	
+	private void setScene(Scene scene)
+	{
+		this.stage.hide();
+		this.stage.setScene(scene);
+		this.stage.centerOnScreen();
+		this.stage.show();
+	}
+	
+	/**
+	 * Creates the configuration scene
+	 * @return
+	 */
+	private Scene ConfigurationScene()
+	{
+		GridPane grid = new GridPane();
+		grid.setAlignment(Pos.CENTER);
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(25, 25, 25, 25));
+		
+		Text scenetitle = new Text("Configure Posterita");
+		scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+		grid.add(scenetitle, 0, 0, 2, 1);
+
+		Label serverURL = new Label("Server URL:");
+		grid.add(serverURL, 0, 2);
+
+		final TextField serverURLTextField = new TextField();
+		grid.add(serverURLTextField, 1, 2);
+		serverURLTextField.setMinWidth(200);
+
+		Label merchantKey = new Label("Merchant Key:");
+		grid.add(merchantKey, 0, 3);
+
+		final TextField merchantKeyTextField = new TextField();
+		grid.add(merchantKeyTextField, 1, 3);
+		
+		Label terminalKey = new Label("Terminal Key:");
+		grid.add(terminalKey, 0, 4);
+
+		final  TextField terminalKeyTextField = new TextField();
+		grid.add(terminalKeyTextField, 1, 4);
+		
+		Button saveBtn = new Button("Save");
+		Button cancelBtn = new Button("Cancel");
+		
+		
+		HBox hbBtn = new HBox(10);
+		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+		hbBtn.getChildren().addAll(saveBtn, cancelBtn);
+		grid.add(hbBtn, 1, 6);
+        
+        saveBtn.setOnAction(new EventHandler<ActionEvent>() {        	 
+            
+        	public void handle(ActionEvent e) {   	
+            	
+            	Configuration config = new Configuration();
+				
+				config.setServerAddress(serverURLTextField.getText());
+				config.setMerchantKey(merchantKeyTextField.getText());
+				config.setTerminalKey(terminalKeyTextField.getText());
+				
+				try 
+				{
+					config.test();				
+					config.save();
+					
+					Dialogs.create()
+		            .owner(stage)
+		            .title("Info")
+		            .masthead(null)
+		            .message("Configuration saved!")
+		            .showInformation(); 
+					
+					setScene(SynchronizationScene());
+				} 
+				catch (Exception e1) 
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					Dialogs.create()
+		            .owner(stage)
+		            .title("Error")
+		            .masthead(null)
+		            .message(e1.getMessage())
+		            .showError();
+				} 
+            }
+        });
+        
+        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {        	 
+           public void handle(ActionEvent e) {
+            	try 
+            	{
+					Platform.exit();
+				} 
+            	catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+            }
+        });
+        
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.CENTER);
+        
+        Image img = new Image(ClassLoader.getSystemResourceAsStream("org/posterita/resource/config-2.png"));
+		ImageView imgView = new ImageView(img);
+		
+		vbox.getChildren().add(imgView);
+		vbox.getChildren().add(grid);
+
+		Scene scene = new Scene(vbox, 1024, 768);
+		
+		return scene;
+	}
+	
+	/**
+	 * Creates the synchronization scene
+	 * @return
+	 */
+	private Scene SynchronizationScene()
+	{
+		GridPane grid = new GridPane();
+		grid.setAlignment(Pos.CENTER);
+		grid.setHgap(20);
+		grid.setVgap(20);
+		grid.setPadding(new Insets(25, 25, 25, 25));
+		grid.setStyle("");
+		
+		Image img = new Image(ClassLoader.getSystemResourceAsStream("org/posterita/resource/sync.png"));
+		ImageView imgView = new ImageView(img);
+
+		
+		final Label text = new Label("Synchronizing ...");
+		text.setTextAlignment(TextAlignment.CENTER);
+		
+		final ProgressIndicator indicator = new ProgressIndicator();
+		indicator.setVisible(false);
+		
+		HBox hb = new HBox();
+		hb.setAlignment(Pos.CENTER);
+		hb.getChildren().add(text);		
+		
+		grid.add(indicator, 0, 0, 2, 1);
+		grid.add(hb, 0, 1, 2, 1);
+		
+		grid.add(imgView, 0, 7, 2, 1);
+				
+		final Button synchronizeBtn = new Button("Synchronize");
+		final Button skipBtn = new Button("Skip");
+		
+		skipBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				// show synchronization window
+				stage.setScene(BrowserScene());
+				stage.show();
+				stage.setFullScreen(true);
+			}
+		});
+		
+		final Service<Void> service = new Service<Void>(){			
+			@Override
+			protected Task<Void> createTask() {
+				return new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						
+						try 
+						{
+							DatabaseSynchronizer synchronizer = new DatabaseSynchronizer();	
+							updateMessage("Loading Database ..");
+							Database.initialize();
+							
+							//check if first time
+							String json = Database.getAllFrom("TERMINAL");
+							if("[]".equals(json))
+							{
+								updateMessage("Synchronizing Database ..");
+								synchronizer.synchronize();
+								
+								updateMessage("Updating Document No ..");
+								synchronizer.synchronizeDocumentNo(); 
+							}
+							else
+							{
+								updateMessage("Updating Document No ..");
+								synchronizer.synchronizeDocumentNo(); 
+								
+								updateMessage("Pushing Orders ..");
+								synchronizer.synchronizeOrders(false);
+								
+								updateMessage("Synchronizing Database ..");
+								synchronizer.synchronize();
+							}							
+							
+							updateProgress(1, 1);
+							updateMessage("Synchronization Completed");
+						} 
+						catch (Exception e) {
+							updateMessage("ERROR: " + e.getMessage());
+						}
+						
+						return null;
+					}
+				};
+		}};
+		
+		text.textProperty().bind(service.messageProperty());
+		indicator.progressProperty().bind(service.progressProperty());
+		
+		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+	            public void handle(WorkerStateEvent t) {
+	            	skipBtn.setText("Continue");
+	            }
+	     });
+		
+		service.runningProperty().addListener(new ChangeListener<Boolean>() {
+		      public void changed(ObservableValue<? extends Boolean> ov, Boolean wasRunning, Boolean isRunning) 
+		      {
+		          indicator.setVisible(isRunning);
+		          synchronizeBtn.setDisable(isRunning);
+		          skipBtn.setDisable(isRunning);
+		      }
+		 });
+		
+		synchronizeBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if(service.getState() == State.RUNNING){
+					return;
+				}				
+				else if(service.getState() == State.SUCCEEDED || service.getState() == State.FAILED || service.getState() == State.CANCELLED){
+					service.restart();
+				}
+				else
+				{
+					service.start();
+				}	
+										
+			}
+		});
+		
+		HBox buttons = new HBox(10);
+		buttons.setAlignment(Pos.CENTER);
+		buttons.getChildren().addAll(synchronizeBtn, skipBtn);
+		grid.add(buttons, 0, 6, 2, 1);
+		
+		Scene scene = new Scene(grid, 1024, 768);
+		return scene;
+	}
+	
+	/**
+	 * Create the browser scene
+	 * @return
+	 */
+	private Scene BrowserScene()
+	{
+		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {			
+			public void handle(WindowEvent event) {
+				
+				boolean close = onClose();
+				if(!close){
+					event.consume();
+				}
+			}
+		});
+		
+		// create the scene		
+		
+		BorderPane border = new BorderPane();		
+		
+		// start jetty
+		cookieHandler = new CustomCookieHandler(baseURL);
+		server = new EmbeddedJettyServer();
+		
+		try 
+		{
+			server.start();
+		} 
+		catch (EmbeddedJettyServerException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		Browser browser = new Browser(baseURL){
+			public void exit(){
+				stage.fireEvent(
+                        new WindowEvent(
+                                stage,
+                                WindowEvent.WINDOW_CLOSE_REQUEST
+                        ));
+			}
+		};
+		
+		border.setCenter(browser);			
+		
+		
+		return new Scene(border, 1024, 768);
+	}
+	
+	public boolean onClose()
+	{
+		Action response = Dialogs.create()
+		        .owner(stage)
+		        .title("Confirm Exit")
+		        //.masthead("You chose to exit")
+		        .message("Do you want to exit?")
+		        .actions(Dialog.Actions.YES, Dialog.Actions.NO)
+		        .showConfirm();
+
+		if (response == Dialog.Actions.NO) {
+		    // ... user chose NO
+			return false;
+
+		}
+		
+		// ..user chose YES
+		// save cookies
+		if(cookieHandler != null)
+		{
+			cookieHandler.saveCookies();
+		}
+		
+		if(server != null)
+		{
+			// stop jetty
+			try 
+			{
+				server.stop();
+			} 
+			catch (EmbeddedJettyServerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		Service<Void> service = new Service<Void>() {
+		    @Override
+		    protected Task<Void> createTask() {
+		        return new Task<Void>() {
+		            @Override
+		            protected Void call() throws InterruptedException {
+		                
+		            	try 
+						{
+							DatabaseSynchronizer synchronizer = new DatabaseSynchronizer();	
+							
+							updateProgress(1, 3);
+							updateMessage("Updating Document No ..");
+							synchronizer.synchronizeDocumentNo(); 
+							
+							updateProgress(2, 3);							
+							updateMessage("Pushing Orders ..");
+							synchronizer.synchronizeOrders(false);
+							
+							updateProgress(3, 3);
+							updateMessage("Synchronization Completed");
+						} 
+						catch (Exception e) {
+							updateMessage("ERROR: " + e.getMessage());
+						}
+		            	
+		                return null;
+		            }
+		        };
+		    }
+		};
+
+		Dialogs.create()
+		        .owner(stage)
+		        .title("Closing Posterita")
+		        .masthead("Pushing orders ...")
+		        .showWorkerProgress(service);
+
+		service.start();
+		
+		return true;
+	}
+
+}

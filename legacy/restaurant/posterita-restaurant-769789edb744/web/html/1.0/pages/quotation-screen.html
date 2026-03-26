@@ -1,0 +1,380 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+
+	<div class="row-container" style="height: 100%">
+			
+				<!-- first row -->
+				<div style="height: 50px;">
+				
+					<!-- search product & search customer -->
+					<div class="column-container" style="padding:16px;">
+					
+						<!-- search product -->
+						<div id="product-search-container">	
+																			
+							<div class="column-container">
+							
+								<div>
+									<input autocomplete="off" id="search-product-textfield" type="text" class="search-textfield" ng-model="productSearchTerm" ng-enter="searchByBarcodeOnly ? searchBarcode(productSearchTerm) : searchProduct(productSearchTerm)" placeholder="{{ searchByBarcodeOnly ? 'Barcode' : 'Barcode, SKU, Name, Description, Groups' }}">
+								</div>
+																
+								<div style="width:104px;text-align:right;">
+									<button class="btn btn-default" type="button" ng-debounced-click="searchByBarcodeOnly ? searchBarcode(productSearchTerm) : searchProduct(productSearchTerm)" id="search_product_button">
+							        	<i class="glyphicons glyphicons-search xs"></i>
+							        </button>
+									<button class="btn btn-default" type="button" ng-debounced-click="toggleGrid()">
+							        	<i class="glyphicons glyphicons-show-thumbnails xs" ng-hide="showGrid == true"></i>
+							        	<i class="glyphicons glyphicons-justify xs" ng-show="showGrid == true"></i>
+							        </button>
+								</div>
+								
+							</div>
+						
+						</div><!-- search product -->
+						
+						<!-- search customer -->
+						<div id="customer-search-container" ng-controller="CustomerController as cc">
+						
+							<div class="column-container">
+							
+								<div class="search-customer-autocomplete">
+									<input type="text" class="customer-search-textfield" placeholder="Search for Customer" ng-model="selectedCustomer" onfocus="this.select()"
+									typeahead="customer as customer.name for customer in searchCustomers($viewValue) | limitTo:5" 
+									typeahead-template-url="templates/customer-tpl.html">
+								</div>								
+								
+								<div style="width:110px;text-align:right;">
+									<button class="btn btn-default" type="button" ng-debounced-click="customerInfo()" id="customer_info_button">
+							        	<i class="glyphicons glyphicons-circle-info xs"></i>
+							        </button>
+							        <button class="btn btn-default" type="button" ng-debounced-click="createCustomer()" id="create_customer_button">
+							        	<i class="glyphicons glyphicons-user-add xs"></i>
+							        </button>
+								</div>								
+								
+							</div>
+						
+						</div><!-- search customer -->
+						
+					</div><!-- search product & search customer -->
+					
+				</div><!-- first row -->
+				
+				<!-- second row -->
+				<div>
+				
+					<!-- glider, product list & shopping cart -->
+					<div class="column-container" style="height: 100%;padding:0px 16px;">
+					
+						<!-- glider -->
+						<div style="width: 15%;" ng-controller="GliderController as gc" class="glider-container">
+							<div class="column-container"  ng-hide="gc.glider.level == 0">
+							
+								<div style="width: 30%;">
+									<button ng-debounced-click="gc.glider.back()"><i class="glyphicons glyphicons-chevron-left xs"></i></button>
+								</div>
+								
+								<div>
+									<button ng-debounced-click="gc.glider.home()"><i class="glyphicons glyphicons-home xs"></i></button>
+								</div>
+								
+							</div>
+							<div ng-repeat="tile in gc.glider.getTiles()" class="glider-tile" ng-debounced-click="gc.glider.setLevel(gc.glider.level + 1, tile)">
+								{{ tile }}
+							</div>
+						</div><!-- glider -->
+						
+						<!-- product list -->
+						<div style="width: 45%;">
+							
+							<!-- product list -->
+							<div id="product-search-result-container" ng-hide="showGrid == true">
+							
+								<!-- product list header -->
+								<div style="height:35px;">
+								
+									<div class="column-container product-search-result-header" style="height:100%;">
+										<div>
+											Name/Description x
+										</div>
+										
+										<div style="text-align: right;">
+											Stock in Hand
+										</div>
+									</div>
+									
+								</div>
+								<!-- product list header -->
+								
+								<!-- product list result box -->
+								<div class="product-search-result">									
+																	
+										<!-- product result -->
+										<div class="column-container" ng-repeat="result in productSearchList track by $index" ng-debounced-click="addToCart(result)"										
+											ng-class="{ active : result.m_product_id == productSearchSelectedId }" id="{{ 'product_' + result.m_product_id }}">
+											<div>
+												{{ result.name }} <br/>
+												{{ result.description }}
+											</div>
+											
+											<div>
+												{{ result.qtyonhand }}
+											</div>
+										</div>										
+										
+										
+										<!-- <div style="position:; top:0px; bottom: 0px; left:214px; right:317px; overflow: auto;">
+									   		<div class="product-tiles" ng-repeat="result in productSearchList" ng-debounced-click="addToCart(result)">
+									   			<div class="label">{{result.name}}</div>
+									   		</div>
+									   </div> -->										
+										
+										
+										<!-- product result -->
+									
+								</div>
+								<!-- product list result box -->
+								
+							</div>
+							<!-- product list -->
+							
+							<!-- product grid layout -->
+							<div id="product-search-result-grid-container" ng-show="showGrid == true">
+							
+								<div class="product-search-grid-result">
+								    
+								    <div class="product-search-element" ng-repeat="result in productSearchList track by $index" 
+								    	ng-debounced-click="addToCart(result)" ng-class="{ active : result.m_product_id == productSearchSelectedId }" id="{{ 'product_' + result.m_product_id }}">
+										<img src="images/default-product.jpg">    
+										<div>{{ result.name }}</div>
+									</div>
+									
+								</div>
+								
+							</div><!-- product grid layout -->
+							
+						</div><!-- product list -->
+						
+						<!-- shopping cart -->
+						<div style="width: 40%;">
+							
+							<div style="position:absolute; width: 100%; top: 0; bottom: 0;background:linear-gradient(#d7d8da,#fff);">
+							
+								<!-- shopping cart lines-->
+								<div ng-controller="ShoppingCartController" class="shopping-cart-lines">
+								
+									<div ng-repeat="line in shoppingCart.lines.toArray()" id="{{ 'shopping_cart_line_' + line.lineId }}">
+									
+										<div class="column-container" ng-class="{ active : line.lineId == shoppingCart.selectedIndex }" scroll-if="line.lineId == shoppingCart.selectedIndex">
+											<div ng-debounced-click="editQty(line); setShoppingCartSelectedIndex(line.lineId)">
+												{{ line.qty.toString() }}
+											</div>
+											<div ng-debounced-click="showProductInfo(line.product); setShoppingCartSelectedIndex(line.lineId)">
+												<div>{{ line.product.name }}</div>
+												<div>{{ line.description }}</div>
+												<div ng-show="line.discountMessage != null">{{ line.discountMessage }}</div>
+											</div>
+											<div ng-debounced-click="editPrice(line); setShoppingCartSelectedIndex(line.lineId)">
+												{{ line.baseAmt.float() | number:2 }}
+											</div>
+											<div>
+												<button ng-debounced-click="shoppingCart.removeFromCart(line.lineId)">
+													<i class="glyphicons glyphicons-bin xs"></i>
+												</button>
+											</div>
+										</div>
+										
+										<!-- modifiers -->
+										<div class="column-container" ng-repeat="modifier in line.modifiers">
+										
+											<div>
+												&nbsp;
+											</div>
+											<div>
+												{{ modifier.product.name }}
+											</div>
+											<div>
+												{{ modifier.lineAmt.float() | number:2 }}
+											</div>
+											<div>
+												&nbsp;
+											</div>
+										
+										</div><!-- modifiers -->
+										
+										<!-- boms -->
+										<div class="column-container" ng-repeat="bom in line.boms">
+										
+											<div>
+												{{ bom.qty.toString() }}
+											</div>
+											<div>
+												{{ bom.product.name }}
+											</div>
+											<div>
+												{{ bom.lineAmt.float() | number:2 }}
+											</div>
+											<div>
+												&nbsp;
+											</div>
+										
+										</div><!-- boms -->
+									
+									</div>								
+									
+								</div><!-- shopping cart lines-->
+								
+								<!-- shopping cart totals-->
+								<div class="shopping-cart-totals">
+									<div class="row-container">
+										<div class="row">
+											<div style="width:10%;">
+												&nbsp;
+											</div>
+											<div style="width:40%;">
+												Subtotal
+											</div>
+											<div style="width:50%;" id="sub-total-container">
+												{{ shoppingCart.subTotal.float() | number:2 }}
+											</div>
+										</div>
+										<div class="row">
+											<div>
+												&nbsp;
+											</div>
+											<div>
+												Tax
+											</div>
+											<div id="tax-total-container">
+												{{ shoppingCart.taxTotal.float() | number:2 }}
+											</div>
+										</div>
+										<div class="row">
+											<div id="qty-total-container">
+												{{ shoppingCart.qtyTotal.toString() }}x
+											</div>
+											<div>
+												Grand Total
+											</div>
+											<div>
+												<div ng-show="shoppingCart.isEmpty()" id="grand-total-container">
+													{{ currencySymbol }} 0.00
+												</div>
+												<div ng-debounced-click="discountOnTotal()" ng-show="!shoppingCart.isEmpty()" id="grand-total-container">
+													{{ currencySymbol }} {{ shoppingCart.grandTotal.float() | number:2 }}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div><!-- shopping cart totals-->
+								
+								
+								<!-- order buttons -->
+								<div ng-controller="QuotationButtonsController">
+								
+									<div class="shopping-cart-buttons checkout-buttons-container" ng-show="!shoppingCart.isEmpty()">
+										<div class="column-container fixed-layout">
+											<div>
+												<button class="btn btn-success button-green" ng-debounced-click="beforeCheckOut()" id="checkout-button">
+													<i class="glyphicons glyphicons-shopping-cart xs"></i>
+													<div>Quotation</div>
+												</button>
+											</div>
+										</div>
+										
+										<div class="column-container fixed-layout">
+											<div>
+												<button class="btn btn-danger button-red" ng-debounced-click="reset(true)" id="clear-cart-button">
+													<i class="glyphicons glyphicons-bin xs"></i>
+													<div>Clear Cart</div>
+												</button>
+											</div>
+											<div ng-show="role.saveorders == 'Y' ">
+												<button class="btn btn-primary button-blue" ng-debounced-click="saveOrder();$close()" id="save-order-button">
+													<i class="glyphicons glyphicons-floppy-disk xs"></i>
+													<div>Save</div>
+												</button>
+											</div>
+											<div style="width:120px">
+												<button class="btn btn-primary button-blue" ng-debounced-click="moreOptions()" id="more-options-button">
+													<i class="glyphicons glyphicons-circle-plus xs"></i>
+													<div>More Options</div>
+												</button>
+											</div>
+										</div>
+									</div>
+									
+									
+									<div class="shopping-cart-buttons" ng-show="shoppingCart.isEmpty()">
+										<div class="column-container fixed-layout">
+											<div>
+												<button class="btn btn-primary button-blue" ng-debounced-click="loadOrder()" id="load-order-button">
+													<i class="glyphicons glyphicons-folder-open xs"></i>
+													<div>Load Quotation</div>
+												</button>
+											</div>
+											<div>
+												<button class="btn btn-primary button-blue" ng-debounced-click="openDrawer()" id="open-drawer-button">
+													<i class="glyphicons glyphicons-eject xs"></i>
+													<div>Open Drawer</div>
+												</button>
+											</div>
+										</div>
+										<div class="column-container fixed-layout">
+										<!-- 
+											<div>
+												<button class="btn btn-danger button-red" ng-debounced-click="return()">
+													<i class="glyphicons glyphicons-undo xs"></i>
+													<div>Return</div>
+												</button>
+											</div>
+										 -->
+											<div ng-if="!searchByBarcodeOnly">
+												<a href="#/close-till">
+													<button class="btn btn-danger button-red" id="close-till-button">
+														<i class="glyphicons glyphicons-rotation-lock xs"></i>
+														<div>Close Till</div>
+													</button>
+												</a>
+											</div>
+											<div ng-if="searchByBarcodeOnly">
+												<button class="btn btn-danger button-red" ng-debounced-click="searchItems()" id="searh-item-button">
+													<i class="glyphicons glyphicons-search xs"></i>
+													<div>Search Items</div>
+												</button>
+											</div>
+											<div style="width:120px">
+												<button class="btn btn-primary button-blue" ng-debounced-click="moreOptions()" id="more-options-button">
+													<i class="glyphicons glyphicons-circle-plus xs"></i>
+													<div>More Options</div>
+												</button>
+											</div>
+										</div>
+									</div>
+								
+								</div>
+								<!-- order buttons -->
+								
+								
+							</div>
+							
+						</div><!-- shopping cart -->
+						
+					</div><!-- glider, product list & shopping cart -->
+					
+				</div><!-- second row -->
+				
+				<div id="footer">
+					<div class="column-container" style="padding:0px 16px;">						
+						<div style="vertical-align:middle; width: 10%;">
+							<!-- You are Online. -->
+						</div>
+					</div>
+				</div>
+				
+			</div>
+	
+</div>
+
+		

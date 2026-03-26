@@ -1,0 +1,33 @@
+<div class="column-container" style="height:100%">
+	<div>
+		<div class="btn-group" dropdown="" is-open="status.isopen">
+			<button class="btn btn-lg" dropdown-toggle="" id="menu-button" type="button"><i class="glyphicon glyphicon-th-list"></i></button>
+			<ul aria-labelledby="single-button" class="dropdown-menu" dropdown-menu="" role="menu">
+				
+				<li role="menuitem">
+					<a href="javascript:void(0);" ng-debounced-click="displayClockInOutPopup()" ng-controller="ClockInClockOutController"><i class="glyphicon glyphicon-time"></i>Clock In/Out</a>
+				</li>
+				
+				<li class="divider"></li>
+				
+				<li role="menuitem">
+					<a href="javascript:void(0);" ng-debounced-click="displayRequestSupportPopup()" ng-controller="RequestSupportController"><i class="glyphicon glyphicon-phone-alt"></i>Support</a>
+				</li>
+								
+				<li class="divider"></li>
+				
+				<li role="menuitem">
+					<a href="#/login"><i class="glyphicon glyphicon-off"></i>Logout</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div style="text-align: right; vertical-align: middle;">
+		<span ng-debounced-click="ctrl.showUserInfo()" ng-controller="UserInfoController as ctrl">{{ctrl.STORE}}, {{ctrl.TERMINAL}}<br>
+		{{ctrl.USER}}, {{ctrl.ROLE}}</span>
+	</div>
+	<div style="width: 100px; text-align: right; vertical-align: middle;">
+		<span ng-controller="ClockController as clock">{{ clock.time }}<br>
+		{{ clock.date }}</span>
+	</div>
+</div>

@@ -1,0 +1,47 @@
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-search modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="search">Search</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form id="myform" name="myform">
+		
+			<div class="form-group">
+				<label data-i18n="date">Date (YYYY-DD-MM)</label>								
+			</div>
+			
+			<div class="row form-group">
+				<div class="col-md-6">
+					<div class="input-group">
+					<input class="form-control" id="date-from" ng-model="params.date1" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened1"> 
+					<span class="input-group-btn">
+        				<button class="btn btn-default" ng-debounced-click="$ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+      				</span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="input-group">
+						<input class="form-control" id="date-to" ng-model="params.date2" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened2"> 
+						<span class="input-group-btn">
+	        				<button class="btn btn-default" ng-debounced-click="$ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	      				</span>
+					</div>
+				</div>
+			</div>			
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.search()">
+			<div data-i18n="search">Search</div>
+		</button>
+	</div>
+</div>

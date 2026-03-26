@@ -1,0 +1,101 @@
+<div id="mix.popup.panel" class="popup">
+<form name="myform" autocomplete="off">
+	<div id="mix.popup.panel.split"></div>
+	<table border="0" width="100%">
+		<tr>
+			<td>
+			<h3 data-i18n="popup.total">total:</h3>
+			</td>
+			<td><span id="mix.popup.totalLabel"></span></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.cash.amount">Cash Amount:</td>
+			<td><input type="text" id="mix.popup.cashAmountTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.cheque.amt">Cheque Amt:</td>
+			<td><input type="text" id="mix.popup.chequeAmountTextField" class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.check.no">Check No:</td>
+			<td><input type="text" id="mix.popup.chequeNumberTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.card.amount">Card Amount:</td>
+			<td><input type="text" id="mix.popup.cardAmountTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="card">card</td>
+			<td><select id="mix.popup.cardSelectList" class="selectField">
+				<option value="V" selected="selected">Visa</option>
+				<option value="M">MasterCard</option>
+				<option value="A">American Express</option>
+				<option value="N">Discover</option>
+				<option value="H">Carte Blance</option>
+				<option value="L">JAL</option>
+				<option value="B">JCB</option>
+				<option value="E">Enroute</option>
+				<option value="D">Diner's Club</option>
+				<option value="W">Switch</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.swipe.card">Swipe Card:</td>
+			<td><input type="checkbox" id="mix.popup.swipeCardCheckBox" value="true"
+				checked="checked" /></td>
+		</tr>
+		<tr id="mix.popup.trackDataDetailsPane">
+			<td data-i18n="popup.swipe.data">Swipe Data:</td>
+			<td><input type="password" id="mix.popup.trackDataTextField" class="textField" value="" /></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.voucher.amount">Voucher Amount:</td>
+			<td><input type="text" id="mix.popup.voucherAmountTextField"  class="numeric textField"/></td>
+			</tr>
+		<tr>
+			<td data-i18n="popup.order.no">Order No:</td>
+			<td><input type="text" id="mix.popup.voucherNoTextField" class="numeric textField" /></td>
+		</tr>
+		<tbody id="mix.popup.cardDetailsPane" style="display: none;">
+			<tr>
+				<td data-i18n="popup.card.no">Card No:</td>
+				<td><input type="text" id="mix.popup.cardNumberTextField" class="numeric textField"/>*</td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.expiration">Expiration(MMYY):</td>
+				<td><input type="text" id="mix.popup.cardExpiryDateTextField" size="4" maxlength="4" class="numeric textField"/>*</td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.cvv2">CVV2:</td>
+				<td><input type="text" id="mix.popup.cardCvvTextField" class="numeric textField"/></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.card.holder.name">Card Holder Name:</td>
+				<td><input type="text" id="mix.popup.cardHolderNameTextField" class="textField" /></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.street.address">Street Address:</td>
+				<td><input type="text" id="mix.popup.streetAddressTextField" class="textField" /></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.zip.code">Zip Code:</td>
+				<td><input type="text" id="mix.popup.zipCodeTextField" class="textField" /></td>
+			</tr>
+		</tbody>
+		<tr>
+			<td data-i18n="popup.external.card.amt">External Card Amt:</td>
+			<td><input type="text" id="mix.popup.externalCardAmountTextField" class="textField numeric"/></td>
+		</tr>
+		<tr>
+			<td colspan="2" align="right">
+				<button id="mix.popup.okButton" type="button" class="ok-button" data-i18n="ok">
+					Ok
+				</button>
+				<button id="mix.popup.cancelButton" type="button" class="cancel-button" data-i18n="cancel">
+					Cancel
+				</button>	
+			</td>
+		</tr>
+	</table>
+</form>
+</div>

@@ -1,0 +1,63 @@
+<div class="modal-content" data-test-id="more-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-plus modal-header-icon"></span>
+    	<span data-i18n="more_options">More Options</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="more-option-button-container">
+
+     		<div class="column-container">
+     			<!-- 
+				<div  ng-show="ctrl.getDocAction() == 'CO' && ctrl.getOrderType() == 'POS Order' ">
+					<button class="btn btn-primary button-blue" ng-debounced-click="printGift();$close()" data-test-id="print-gift-receipt">
+						<i class="glyphicons glyphicons-print xs"></i>
+						<div data-i18n="print.gift.receipt">Print Gift Receipt</div>
+					</button>
+				</div>
+			 	-->
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="comment();$close()"  data-test-id="comment">
+						<i class="glyphicons glyphicons-comments xs"></i>
+						<div>
+							<span data-i18n="comment">Comment</span>
+							<span ng-show="getCommentsCount() > 0" class="badge">{{ getCommentsCount() }}</span>
+						</div>											
+					</button>
+				</div>
+				<div ng-show="ctrl.getDocAction() == 'CO' && ctrl.getOrderType() == 'POS Order' && ctrl.role.allow_order_split == 'Y'">
+					<button class="btn btn-primary button-blue"  data-test-id="split-order" ng-debounced-click="splitOrder();$close()">
+						<i class="glyphicons glyphicons-group xs"></i>
+						<div data-i18n="split.order">Split Order</div>
+					</button>
+				</div>
+			</div>
+     		
+     		<div class="column-container fixed-layout">
+				<div ng-show="ctrl.getDocAction() != 'VO' && ctrl.role.allow_order_void == 'Y' ">
+					<button class="btn btn-danger button-red" ng-debounced-click="void();$close()" data-test-id="void">
+						<i class="glyphicons glyphicons-ban xs"></i>
+						<div data-i18n="void">Void</div>
+					</button>
+				</div>
+				
+				<div>
+					<button class="btn btn-danger button-red" ng-debounced-click="synchronizeOrder();$close()" data-test-id="synchronize">
+						<i class="glyphicons glyphicons-refresh xs"></i>
+						<div>Synchronize</div>
+					</button>
+				</div>	
+				
+			</div>
+						
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->

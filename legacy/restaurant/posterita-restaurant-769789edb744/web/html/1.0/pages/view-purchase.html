@@ -1,0 +1,130 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content" class="purchase">	
+	 
+	<div class="row-container" style="height: 100%; padding: 0px 20px;">
+		
+		<!-- order header -->
+		<div>
+		
+			<h2 style="text-align:center; color: #007AFF; margin-top: 10px;">Purchase Order #{{ ctrl.document.header.documentNo }}</h2>
+			
+			<div class="column-container">
+				<!-- purchaser -->
+				<div style="width: 35%; background-color: #F2F2F2; padding: 10px;">
+					<div class="bold">Purchaser</div>
+					<div class="bold">{{ ctrl.document.header.org.name }}</div>
+					<div>Date: {{ ctrl.document.header.dateOrdered }}</div>
+					<div>Requested by: {{ctrl.document.header.salesRep}}</div>
+					<div>Deliver to: {{ctrl.document.header.warehouse_name}}</div>
+				</div>
+				
+				<!-- supplier -->
+				<div style="width: 35%; background-color: #D9D9D9; padding: 10px;">
+					<div class="bold">Supplier</div>
+					<div class="bold">{{ ctrl.document.header.bpName }}</div>
+					<div>{{ ctrl.document.header.bpAddress1 }}</div>
+					<div>{{ ctrl.document.header.bpCity }}, {{ ctrl.document.header.bpCountry }}</div>
+					<div>Tax ID: {{ ctrl.document.header.bpTaxId }}</div>
+					<div>Phone: {{ ctrl.document.header.bpPhone }}</div>
+					<div>{{ ctrl.document.header.bpEmail }}</div>
+				</div>
+				
+				<!-- po details -->
+				<div style="background-color: #F2F2F2; padding: 10px;">
+					<div class="bold">PO Details</div>
+					<div>Price List: {{ ctrl.document.header.pricelist_name }}</div>
+					<div>Ref. Number: {{ ctrl.document.header.referenceNo }}</div>
+					<div>Payment Type: {{ ctrl.document.header.paymentRuleName }}</div>
+					<div>Promise Date: {{ ctrl.promiseDate }}</div>
+					<div>Status: <span class="bold">{{ ctrl.document.header.docStatusName }}</span></div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- purchase lines -->
+		<div class="cart-container">
+			<table class="cart-line-table">
+				<thead>
+				<tr>
+					<th style="width:30px;">#</th>
+					<th>Barcode</th>
+					<th>Name</th>
+					<th>Description</th>
+					<th style="width:150px;">Qty</th>
+					<th style="width:150px;">Unit Price</th>
+					<th style="width:120px; border-right-color: #666;">Total</th>
+				</tr>
+				</thead>
+				
+				<tbody ng-repeat="line in ctrl.document.lines | groupBy:'box'" >	
+				
+				<tr ng-class-odd="'alternate-row'" ng-show="line.box != null && line.group_by_key">
+					<td colspan="7" class="box-no">Box/Bag No: {{ line.box }}</td>
+				</tr>	
+				
+				<tr ng-class-odd="'alternate-row'">
+					<td>
+						{{ $index + 1 }}
+					</td>
+					<td>
+						{{ line.upc }}
+					</td>
+					<td>
+						{{ line.productName }}
+					</td>
+					<td>
+						{{ line.description }}
+					</td>
+					<td>
+						{{ line.qty }}
+					</td>
+					<td>
+						{{ line.priceEntered | number:2 }}
+					</td>
+					<td>
+						{{ ( ctrl.document.header.taxIncluded ? line.lineNetAmt : line.lineNetAmtWithoutTax ) | number:2  }}
+					</td>					
+				</tr>
+								
+				</tbody>
+				
+			</table>
+		</div>
+		
+		<!-- purchase totals -->
+		<div style="height: 200px;">
+			<table class="cart-total-table">
+				<tr class="bold">
+					<td>Number of items</td>
+					<td class="text-right" style="width:240px;">{{ ctrl.document.header.qtyTotal }}</td>
+				</tr>
+				<tr>
+					<td>Subtotal</td>
+					<td class="text-right">{{ ctrl.document.header.subTotal | number:2 }}</td>
+				</tr>
+				<tr ng-repeat="tax in ctrl.document.taxes">
+					<td>Tax ({{tax.rate}}%)</td>
+					<td class="text-right">{{ tax.amt | number:2 }}</td>
+				</tr>
+				<tr>
+					<td>Discount</td>
+					<td class="text-right">
+						{{ ctrl.document.header.discountAmount | number:2 }}
+					</td>
+				</tr>
+				<tr class="bold">
+					<td>Grand Total</td>
+					<td class="text-right">{{ ctrl.document.header.grandTotal | number:2 }}</td>
+				</tr>
+			</table>
+			
+			<div style="float: right;">
+				<button type="button" class="btn btn-outline-dark" ng-debounced-click="ctrl.exportPDF()">Export PDF</button>
+				<button type="button" class="btn btn-primary" ng-debounced-click="ctrl.editPO()" ng-show="ctrl.document.header.docStatus == 'DR'">Edit PO</button>
+			</div>
+		</div>
+	
+	</div>
+	
+</div>

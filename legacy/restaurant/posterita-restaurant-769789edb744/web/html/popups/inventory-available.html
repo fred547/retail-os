@@ -1,0 +1,45 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-package modal-header-icon"></span>
+    	<span data-i18n="inventory.available">Inventory Available</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+  	<div class="row-container">
+  		<div class="row">
+			<div>Business Name</div>
+			<div>{{$ctrl.inventory.terminal}}</div>
+		</div>
+		<div class="row">
+			<div>Store</div>
+			<div>{{$ctrl.inventory.store}}</div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>	
+		
+		<div class="row">
+			<div><h4>Inventory Available</h4></div>
+			<div><h4>{{$ctrl.inventory.qtyonhand}}</h4></div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>	
+		
+		<div class="row">
+			<a href='javascript:void(0)' onclick="exportInventoryAvailableReport()">Download CSV</a>
+		</div>
+  	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

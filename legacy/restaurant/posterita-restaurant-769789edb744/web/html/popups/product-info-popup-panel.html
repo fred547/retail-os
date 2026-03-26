@@ -1,0 +1,69 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-search modal-header-icon"></span>
+    	<span data-i18n="product-info-popup-title">Product Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+	<div class="row-container" id="product-info-container">
+		<div class="column-container">
+			<div>
+				<input id="product-info-textfield" type="text" autocomplete="off" class="product-info-textfield" ng-model="productInfoSearchTerm" ng-enter="$ctrl.getProductInfo(productInfoSearchTerm)" placeholder="Enter Barcode, Name, Desc">
+			</div>
+			
+			<div style="width:60px;">
+				<button class="btn btn-default" type="button" ng-debounced-click="$ctrl.getProductInfo(productInfoSearchTerm)" style="position: absolute; height: 100%;">
+		        	<i class="glyphicons glyphicons-search xs"></i>
+		        </button>
+			</div>
+			
+		</div>
+	</div>
+	<div class="row-container" ng-show="$ctrl.results" style="margin-top: 10px;">
+		<!-- product list header -->
+		<div>		
+			<div class="column-container product-search-result-header" style="height:100%;">
+				<div>
+					<strong>Name/Description x</strong>
+				</div>
+				
+				<div style="text-align: right;">
+					<strong>Stock in Hand</strong>
+				</div>
+			</div>
+			
+		</div>
+		<!-- product list header -->
+		
+		<!-- product list result box -->
+		<div>
+			<div style="height: 385px; overflow-y: auto; width: 100%; position: relative; top:0px;" class="product-search-result">											
+				<!-- product result -->
+				<div class="column-container" ng-repeat="result in $ctrl.results track by $index" ng-debounced-click="$ctrl.showProductInfo( result )">
+					<div>
+						{{ result.name }} <br/>
+						{{ result.description }}
+					</div>
+					
+					<div> 
+						{{ result.qtyonhand }}
+					</div>
+				</div>
+				<!-- product result -->			
+			</div>
+		</div>
+		<!-- product list result box -->
+			
+	</div>
+		
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()">
+    	<div data-i18n="close">Close</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

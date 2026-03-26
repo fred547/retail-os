@@ -1,0 +1,290 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+	<div class="row-container" style="height: 100%">
+		
+			<div>
+				<!-- order details, cash details, buttons -->
+				<div class="column-container" style="height: 100%">
+				
+					<!-- Order Receipt details -->
+					<div style="width: 60%;">
+					
+						<div class="view-receipt-container">
+							
+							<!-- Receipt Title to Receipt product list header -->
+							<div>
+								
+								<!-- Receipt Header -->
+								<div class="column-container receipt-header">
+									<div>{{ctrl.getTitle()}}</div>
+									
+									<div>#{{ctrl.order.documentNo}}</div>
+								</div><!-- Receipt Header -->
+								
+								<!-- Receipt Address -->
+								<div class="column-container receipt-address">
+									<div>
+										{{ ctrl.store.name }}<br>
+										{{ ctrl.store.address }}
+									</div>
+									
+									<div>
+										{{ ctrl.customer.name }}<br>
+										{{ ctrl.customer.address }}
+									</div>
+								</div><!-- Receipt Address -->
+								
+								<!-- Receipt Type, Date, Status -->
+								<div class="column-container receipt-status">
+									<div>
+										<label class="draft" data-i18n="draft" ng-show="ctrl.getDocAction() == 'DR'">Draft</label> 
+										<label class="paid" data-i18n="paid" ng-show="ctrl.getDocAction() == 'CO' && IS_PAID == true">paid</label> 
+										<label class="outstanding" data-i18n="outstanding" ng-show="ctrl.getDocAction() == 'CO' && IS_PAID == false">Outstanding</label> 
+										<label class="delivered" data-i18n="delivered" ng-show="ctrl.getDocAction() == 'CO' && ctrl.order.shipped == true">Delivered</label> 
+										<label class="void" data-i18n="voided" ng-show="ctrl.getDocAction() == 'VO'">Voided</label>
+										<br/>
+										Sales Rep: {{ ctrl.order.salesRep }}<br/>
+										&nbsp;
+									</div>
+									
+									<div>
+										{{ ctrl.getDateOrdered() }}<br/>
+										<span data-i18n="status">Status:</span> 
+										<label class="draft" data-i18n="drafted" ng-show="ctrl.getDocAction() == 'DR'">Drafted</label> 
+										<label class="completed" data-i18n="completed" ng-show="ctrl.getDocAction() == 'CO'">Completed</label> 
+										<label class="void" data-i18n="voided" ng-show="ctrl.getDocAction() == 'VO'">Voided</label>
+										<label class="in-progress" data-i18n="in.progress" ng-show="ctrl.getDocAction() == 'IP'">In Progress</label><br/>
+										<!-- Order Type: {{ ctrl.order.orderType }}  -->
+									</div>
+								</div><!-- Receipt Type, Date, Status -->
+								
+								<!-- product list header -->	
+								<div class="row-container">	
+									<div class="receipt-product-list">
+										<div>
+											<div class="column-container receipt-product-list-header">
+												<div>Qty</div>
+												<div>Name</div>
+												<div>Description</div>
+												<div>Price</div>
+											</div>
+										</div>
+									</div>
+								</div><!-- product list header -->
+							</div><!-- Receipt Title to Receipt product list header -->
+							
+							
+							
+							<!-- Receipt product list -->
+							<div>
+								<div class="receipt-product-list" style="height: 100%;overflow-y:auto;">
+									
+									<!-- Receipt product list search data -->
+									<div class="receipt-product-list-search-result" ng-repeat="line in ctrl.order.lines track by $index">
+									
+										<div class="column-container">
+											<div>
+												{{ line.qtyEntered }}
+											</div>
+											<div>
+												{{ line.productName }}
+											</div>
+											<div>
+												{{ line.description }}<br>
+												<span>{{ line.discountMessage }}</span>
+											</div>
+											<div>
+												{{ line.lineNetAmt | number:2 }}
+											</div>
+										</div>
+										
+										<div class="column-container" ng-repeat="bom in line.boms track by $index">
+											<div>
+												{{ bom.qtyEntered }}
+											</div>
+											<div>
+												{{ bom.productName }}
+											</div>
+											<div>
+												{{ bom.description }}
+											</div>
+											<div>
+												{{ bom.lineNetAmt | number:2 }}
+											</div>
+										</div>
+										
+										<div class="column-container" ng-repeat="modifier in line.modifiers track by $index">
+											<div>
+												{{ modifier.qtyEntered }}
+											</div>
+											<div>
+												{{ modifier.productName }}
+											</div>
+											<div>
+												{{ modifier.description }}
+											</div>
+											<div>
+												{{ modifier.lineNetAmt | number:2 }}
+											</div>
+										</div>		
+									
+									</div><!-- Receipt product list search data -->									
+										
+								</div>
+							</div><!-- Receipt product list -->
+							
+							
+							
+							<!-- Totals and footer -->
+  							<div>
+								<!-- Receipt Totals -->
+								<div class="row-container receipt-totals">
+								
+									<div class="row" ng-hide="ctrl.order.discountAmt == 0">
+										<div></div>
+										<div>Discount</div>
+										<div>
+											{{ (ctrl.order.discountAmt) | number:2 }}
+										</div>
+									</div>
+									
+									<div class="row">
+										<div></div>
+										<div>Subtotal</div>
+										<div>
+											{{ (ctrl.order.grandTotal - ctrl.order.taxTotal) | number:2 }}
+										</div>
+									</div>
+									
+									<div class="row" ng-repeat="orderTax in ctrl.taxes track by $index">
+										<div></div>
+										<div>
+											Tax - {{ orderTax.name }}
+										</div>
+										<div>
+											{{ orderTax.amt | number:3 }}
+										</div>
+									</div>
+									
+									<div class="row">
+										<div>
+											{{ctrl.order.qtyTotal}}x
+										</div>
+										<div>Total</div>
+										<div>
+											{{ ctrl.order.grandTotal | number:2 }}
+										</div>
+									</div>
+								</div><!-- Receipt Totals -->
+								
+								<!-- Receipt Thank You -->
+								<div class="column-container receipt-thank-you">
+									
+								</div><!-- Receipt Thank You -->
+								
+								<!-- Signature -->
+								<div class="row" id="signature-container" ng-show="{{ ctrl.order.signature && ctrl.order.signature.length > 0 }}">
+									
+								</div>
+								<!-- Signature -->
+							</div><!-- Totals and footer -->
+							
+						</div>
+								
+					</div><!-- Order Receipt details -->
+					
+					<!--  cash details, buttons -->
+					<div style="width: 40%; padding: 16px 16px 10px 0px;">
+					
+						<div class="row-container" style="height: 100%;">
+							<!-- amount container-->
+							<div>
+								<div class="row-container amount-container">
+									
+									<div class="row" ng-show="ctrl.getDocAction() == 'CO' && ctrl.getOpenAmt() > 0" style="font-size: 18pt;">
+										<div>Open Amt</div>
+										<div>{{ ctrl.getOpenAmt() | number:2 }}</div>
+									</div>
+									
+									<div class="row" ng-show="ctrl.order.payments.length == 1 && ctrl.order.tenderType == 'Cash'" style="font-size: 18pt;">
+										<div>Change Due</div>
+										<div>{{ ctrl.order.payments[0].amountRefunded | number:2 }}</div>
+									</div>
+									
+									<div class="row" ng-show="ctrl.order.payments.length == 1 && ctrl.order.tenderType == 'Cash'">
+										<div>Cash Tendered</div>
+										<div>{{ ctrl.order.payments[0].amountTendered | number:2 }}</div>
+									</div>
+								
+									<div class="row" ng-repeat="payment in ctrl.order.payments track by $index">
+										<div>{{ payment.tenderType }}</div>
+										<div>{{ payment.payAmt | number:2 }}</div>
+									</div>
+									
+									<div class="row" ng-show="ctrl.order.loyaltyPointsEarned && ctrl.order.loyaltyPointsEarned != 0">
+										<div>
+											<span data-i18n="loyalty.points.earned">Loyalty Points Earned</span>
+										</div>
+										<div>
+											<span>{{ ctrl.order.loyaltyPointsEarned | number:2 }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+														
+							<!-- view order buttons -->
+							<div class="view-order-buttons" ng-controller="ViewQuotationButtonController">
+								<div class="column-container fixed-layout">
+									<div>
+										<button class="btn btn-success button-green" ng-debounced-click="newQuotation()">
+											<i class="glyphicons glyphicons-shopping-bag xs"></i>
+											<div>New Quotation</div>
+										</button>
+									</div>
+										
+									<div ng-show="ctrl.getDocAction() == 'IP'">
+										<button class="btn btn-success button-green" ng-debounced-click="completeQuotation()">
+											<i class="glyphicons glyphicons-edit xs"></i>
+											<div>Complete</div>
+										</button>
+									</div>									
+								</div>
+								
+								<div class="column-container fixed-layout">
+									
+									<div ng-show="ctrl.getDocAction() != 'DR'">
+										<button class="btn btn-success button-blue" ng-debounced-click="exportPdf()">
+											<i class="glyphicons glyphicons-file-export xs"></i>
+											<div>Export PDF</div>
+										</button>
+									</div>
+									
+									<div>
+										<button class="btn btn-primary button-blue" ng-debounced-click="moreOptions()">
+											<i class="glyphicons glyphicons-circle-plus xs"></i>
+											<div>More Options</div>
+										</button>
+									</div>
+								</div>
+								
+							</div><!-- view order buttons -->
+							
+						</div>
+					
+					</div>
+				</div>
+			
+			</div>
+			
+			<div id="footer">
+				<div style="padding: 0px 16px;">
+					
+				</div>
+			</div>
+					
+		</div>
+</div>
+
+		

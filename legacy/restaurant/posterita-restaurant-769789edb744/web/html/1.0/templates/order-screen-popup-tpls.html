@@ -1,0 +1,1271 @@
+<script type="text/ng-template" id="/html/popups/order-screen/apply-payment-processor.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="apply.payment.processor">Apply Payment Processor</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div class="text-danger text-uppercase" data-i18n="payment.processor.not.found">
+				Payment Processor not found
+			</div>			
+		</div>
+		<div class="row">
+			<div>
+				<p data-i18n="posterita.preferred.payment.processor">We highly reccomend you to use a Posterita preferred payment processor.</p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<p data-i18n="by.doing.so">By doing so you will be able to:</p>
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="checkout.speed">
+				1) Increase the checkout speed.
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="card.errors">
+				2) Reduce credit card errors.
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="credit.card.fees">
+				3) And most of all reduce your credit card fees.
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="applyPaymentProcessor()">
+    	<div class="" data-i18n="apply">Apply</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/backdate.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-calendar modal-header-icon"></span>
+    	<span data-i18n="backdate.order">Backdate Order</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="tax" data-i18n="select.date.and.time">Select Date & Time</label>
+	    <div class="column-container">
+	    	<div style="font-size: 24px; padding: 4px;">
+	    		<select ng-model="$ctrl.date" required="required">
+	    			<option value="{{date}}" ng-repeat="date in $ctrl.dateList" ng-selected="$ctrl.date == date">{{date}}</option>	    			
+	    		</select>
+	    		/
+	    		<select ng-model="$ctrl.month" required="required">
+	    			<option value="{{ $ctrl.monthId[ $index ] }}" ng-repeat="month in $ctrl.monthList" ng-selected="$ctrl.month == $ctrl.monthId[ $index ]">{{month}}</option>
+	    		</select>
+	    		/
+	    		<select ng-model="$ctrl.year" required="required">
+	    			<option value="{{year}}" ng-repeat="year in $ctrl.yearList" ng-selected="$ctrl.year == year">{{year}}</option>
+	    		</select>
+	    		&nbsp;&nbsp;
+	    		<select ng-model="$ctrl.hour" required="required">
+	    			<option value="{{hour}}" ng-repeat="hour in $ctrl.hourList" ng-selected="$ctrl.hour == hour">{{hour}}</option>
+	    		</select>
+	    		:
+	    		<select ng-model="$ctrl.minute" required="required">
+	    			<option value="{{minute}}" ng-repeat="minute in $ctrl.minuteList" ng-selected="$ctrl.minute == minute">{{minute}}</option>
+	    		</select>
+	    	</div>
+	    </div>
+	    
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.ok()" 
+    ng-disabled="myform.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/cash.html">
+<div class="modal-content" id="cash-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="payment.cash">Payment Cash</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+   <form name="myform" autocomplete="off">
+    <div class="column-container"> 
+	   
+	    <div style="width: 60%; padding: 0 16px;">
+
+			<div class="column-container" style="font-size:14pt; padding-bottom:8px;">
+				<div data-i18n="total" style="width:50%">Total:</div>
+				<div style="text-align:right;" data-test-id="total">
+					{{ total | number:2 }}
+				</div>
+			</div>
+
+			<div class="column-container" style="font-size:14pt; padding-bottom:8px;">
+				<div data-i18n="amount.tendered" style="width:50%">Amount Tendered:</div>
+				<div>
+					<input type="number" name="amount" ng-model="amount" class="form-control"  required="required" select-on-focus  data-test-id="amount"/>
+				</div>
+			</div>
+
+			<div style="border-top: 1px solid #8e8e93;border-bottom: 1px solid #1d1d1d;padding: 8px 0px;margin-top: 8px;">
+			<div class="column-container" style="font-size:18pt">
+				<div data-i18n="change.amount" style="width:50%">Change Amount:</div>
+				<div style="text-align:right;" data-test-id="change">
+					{{ (amount - total) | number:2 }}
+				</div>
+			</div>
+			</div>
+		    
+		</div>		
+		
+		<div style="width: 40%;">			
+			<div id="keypad">
+			  
+				<div class="row-container" data-test-id="denominations">
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(200)" debounce-timeout="100" data-test-id="200">200</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(500)" debounce-timeout="100" data-test-id="500">500</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(1000)" debounce-timeout="100" data-test-id="1000">1000</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(2000)" debounce-timeout="100" data-test-id="2000">2000</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(10)" debounce-timeout="100" data-test-id="10">10</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(20)" debounce-timeout="100" data-test-id="20">20</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(50)" debounce-timeout="100" data-test-id="50">50</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(100)" debounce-timeout="100" data-test-id="100">100</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.50)" debounce-timeout="100" data-test-id="0.50">0.50</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(1)" debounce-timeout="100" data-test-id="1">1</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(2)" debounce-timeout="100" data-test-id="2">2</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(5)" debounce-timeout="100" data-test-id="5">5</button></div>
+					</div>
+					<div class="row">
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.01)" debounce-timeout="100" data-test-id="0.01">0.01</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.05)" debounce-timeout="100" data-test-id="0.05">0.05</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.10)" debounce-timeout="100" data-test-id="0.10">0.10</button></div>
+						<div><button type="button" class="btn button-grey btn-lg btn-block" ng-debounced-click="add(0.25)" debounce-timeout="100" data-test-id="0.25">0.25</button></div>
+					</div>
+				</div>
+				
+				<div class="row-container">
+					<div class="column-container">
+						<div>
+							<button type="button" class="btn btn-success btn-lg btn-block" style="height: 65px;" ng-debounced-click="exactAmount()" data-test-id="exact-amount">Exact Amount</button>
+						</div>
+						
+						<div>
+							<button type="button" class="btn btn-danger btn-lg btn-block" style="height: 65px;" ng-click="clear()" data-test-id="clear">CLR</button>
+						</div>
+					
+					</div>
+				</div>				
+				
+				<!-- <div class="column-container" style="table-layout: fixed;width: 310px;">
+					<div>
+						<button type="button" class="btn btn-primary btn-lg btn-block" style="width: 100%;height: 55px;" ng-debounced-click="exactAmount()">Exact Amount</button>
+					</div>						
+				</div>
+				<div class="column-container" style="table-layout: fixed;width: 310px;">
+					<div>
+						<button type="button" class="btn btn-danger btn-lg btn-block" style="width: 100%;height: 55px;" ng-debounced-click="clear()">CLR</button>
+					</div>						
+				</div> -->
+				
+			</div> 			
+		</div>		
+	</div>
+   </form> 
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/change-tax.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-pie-chart modal-header-icon"></span>
+    	<span data-i18n="change.tax">Change Tax</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform">
+	  <div class="form-group">
+	    <label for="tax" data-i18n="select.tax">Select Tax</label>
+	    <select name="tax" id="tax" ng-model="$ctrl.tax_id" class="form-control" required>
+	    	<option ng-repeat="t in $ctrl.taxes" value="{{t.id}}" ng-selected="t.id == $ctrl.tax_id">
+	    		{{t.taxName}}
+	    	</option>
+	    </select>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.setTax()" 
+    ng-disabled="myform.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/check.html">
+<div class="modal-content" id="check-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-pen modal-header-icon"></span>
+    	<span data-i18n="payment.check">Payment Check</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    <form name="myform" autocomplete="off">
+    <div class="row-container">
+						
+		<div class="row form-group">
+			<label data-i18n="check.number">Check No:</label>
+			<div>
+				<input type="number" name="chequeNo" ng-model="chequeNo" class="form-control"  required="required" data-test-id="check-no"/>
+			</div>
+		</div>
+		<div class="row form-group">
+			<label data-i18n="total">Total:</label>
+			<div  data-test-id="total">
+				{{ total | number:2 }}
+			</div>
+		</div>
+	
+	</div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/credit-card-e2e.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="e2e.popup.cancelButton">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro credit_card"></div>
+			&nbsp;<span data-i18n="credit.card">Credit Card</span>
+		</h4>
+	</div>
+	
+	<form name="myform" autocomplete="off">
+	<div class="modal-body" style="margin-left:25px;">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<div id="e2e.popup.panel.split"></div>
+			</div>
+		</div>
+		<div class="row" style="font-size:18px;padding-bottom:15px;">
+			<div class="col-xs-4 col-md-4" data-i18n="popup.total">
+				Total:
+			</div>
+			
+			<div class="col-xs-8 col-md-8">
+				<span id="e2e.popup.totalLabel"></span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-4 col-md-4" data-i18n="popup.swipe.card">
+				Swipe Card:
+			</div>
+			<div class="col-xs-8 col-md-8">
+				<input type="password" id="e2e.popup.trackDataTextField" class="textField" />
+			</div>
+		</div>
+	</div>
+	</form>
+	
+	<div class="modal-footer">
+		<button type="button" class="btn btn-success button-green" id="e2e.popup.okButton" data-i18n="ok">Ok</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/credit-card.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-credit-card modal-header-icon"></span>
+    	<span data-i18n="payment.credit.card">Payment Credit Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  <form name="myform" autocomplete="off">
+	  <!-- <div class="row-container">
+	  	<div class="row">
+			<label data-i18n="total">Total:</label>
+			<div>
+				1000
+			</div>
+		</div>	
+	  </div>
+	  <div class="form-group">
+	  	<label for="card" data-i18n="card">Card</label>
+	    <select class="form-control">
+			<option value="V" selected="selected">Visa</option>
+			<option value="M">MasterCard</option>
+			<option value="A">American Express</option>
+			<option value="N">Discover</option>
+			<option value="H">Carte Blance</option>
+			<option value="L">JAL</option>
+			<option value="B">JCB</option>
+			<option value="E">Enroute</option>
+			<option value="D">Diner's Club</option>
+			<option value="W">Switch</option>
+		</select>
+	</div> -->
+	<form>
+		<!-- <div class="form-group">
+			<input type="checkbox" ng-model="swipe" class="input-sm form-control" value="true" checked="checked" style="width: 20px;" />
+			<div data-i18n="swipe.card">Swipe Card</div>		
+		</div> -->
+		
+		<div class="checkbox form-group">
+			<label data-i18n="swipe.card">
+				<input type="checkbox" ng-model="swipe" value="true" checked="checked" />
+				Swipe Card
+			</label>
+		</div>
+				
+	</form>
+	<div class="form-group" ng-show="swipe">
+	    <label for="swipe.data" data-i18n="swipe.data">Swipe Data</label>
+	    <input type="password" class="form-control" name="" required="required">
+	</div>
+	<div ng-show="!swipe">
+		<div class="form-group">
+		    <label for="card.number" data-i18n="card.number">Card Number</label>
+		    <input type="number" class="form-control" name="" required="required">
+		</div>
+		<div class="column-container">
+			<div class="form-group" style="padding-right: 2px;">
+			    <label for="expiration" data-i18n="expiration">Expiration(MMYY)</label>
+			    <input type="text" class="form-control" name="" required="required">
+			</div>
+			<div class="form-group" style="padding-left: 2px;">
+			    <label for="cvv" data-i18n="expiration">CVV2</label>
+			    <input type="number" class="form-control" name="" required="required">
+			</div>
+		</div>
+		
+		<div class="form-group">
+		    <label for="name" data-i18n="name">Name</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+		<div class="form-group">
+		    <label for="address" data-i18n="address">Address</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+		<div class="form-group">
+		    <label for="zip.code" data-i18n="zip.code">Zip Code</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+				
+	</div>
+	</form>	
+</div>
+    
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="myform.$dirty && myform.$invalid">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/debit.html">
+<div id="debit.popup.panel" class="popup">
+<form name="myform" autocomplete="off">
+	<div id="debit.popup.panel.split"></div>
+	<table border="0" width="100%">
+		<tr>
+			<td>
+			<h3 data-i18n="popup.total">total:</h3>
+			</td>
+			<td><span id="debit.popup.totalLabel"></span></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.card.no">Card No:</td>
+			<td><input type="text" id="debit.popup.cardNumberTextField" class="numeric"/></td>
+		</tr>
+		<tr>
+			<td colspan="2" align="right">
+				<button id="debit.popup.okButton" type="button" class="ok-button" data-i18n="ok">
+					Ok
+				</button>
+				<button id="debit.popup.cancelButton" type="button" class="cancel-button" data-i18n="cancel">
+					Cancel
+				</button>	
+			</td>
+		</tr>
+	</table>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/delivery.html">
+<div class="modal-content" data-test-id="delivery-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-wallet modal-header-icon"></span>
+    	<span data-i18n="payment.mix">Payment {{tenderType == 'Mixed' ? 'Mixed' : 'On Credit'}}</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+	
+	<div class="form-group" ng-show="tenderType == 'Credit'">
+	    <label for="payment.term" data-i18n="payment.term">Payment Term</label>
+	    <select id="paymentTerm_list" class="form-control" ng-model="paymentTerm" ng-options="paymentTerm.name for paymentTerm in paymentTerms" data-test-id="payment-term">
+	    	<option value="">-- choose payment term --</option>
+	    </select>
+	    <!-- 
+	    <select class="form-control">
+			<option value="" selected="">1days</option>
+			<option value="">12days</option>
+			<option value="">30days</option>
+			<option value="">Immediate</option>
+		</select>
+		 -->
+	</div>
+	<div class="form-group">
+	    <label for="delivery.product.now" data-i18n="delivery.product.now">Do you want to deliver the products now?</label>
+	</div>
+	
+	<!-- <div class="form-group">
+		<label class="radio-inline" data-i18n="now"><input type="radio" value="Y"/>Now</label>
+		<label class="radio-inline" data-i18n="later"><input type="radio" value="N" ng-model="later" />Later</label>
+	</div> -->
+	
+	<div class="checkbox form-group">
+		<input id="now" type="radio" ng-model="deliveryRule" value="O"><!-- AfterOrder -->
+		<label for="now" data-i18n="now" style="padding-right:20px;padding-left:0px;"  data-test-id="deliver-now">Yes, Now</label>
+    	
+    	<input id="later" type="radio" ng-model="deliveryRule" value="M"><!-- Manual -->
+    	<label for="later" data-i18n="later" style="padding-right:20px;padding-left:0px;" data-test-id="deliver-later">No, Later</label>
+
+		<!--
+		<label>
+			<input type="checkbox" value="true" checked="checked" />
+			Yes, Now
+
+			<input type="checkbox" ng-model="later" value="true"/>
+			No, Later
+		</label> -->
+	</div>
+	
+	<div class="form-group" ng-show="deliveryRule == 'M'">
+		<label for="schedule.date" data-i18n="schedule.date">Schedule Date</label>		
+		 <div class="form-group" style="width: 50%;">      
+         	
+         	<p class="input-group">
+         	<input type="text" 
+            class="form-control" 
+            id="schedule_date" 
+            placeholder="Schedule Date" 
+            ng-click="schedule_date = !schedule_date"
+            datepicker-popup="{{format}}" 
+            ng-model="scheduleDate" 
+            is-open="schedule_date" 
+            min-date="minDate"             
+            datepicker-options="dateOptions" 
+            date-disabled="disabled(date, mode)" 
+            ng-required="true" 
+            close-text="Close"  data-test-id="schedule-date">
+                        
+            <span class="input-group-btn">
+            	<button type="button" class="btn btn-default button-white" ng-debounced-click="schedule_date= !schedule_date; $event.stopPropagation()" ><i class="glyphicons glyphicons-calendar xs"></i></button>
+          	</span>
+          	             		
+		</div>	
+	</div>
+    
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()"  data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+  </form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/edit-product-on-fly.html">
+<div class="modal-content">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="edit.on.fly">Edit on Fly</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    	<div class="form-group">
+			<h4>{{$ctrl.product.name}}</h4>
+		</div>
+		
+		<div class="form-group">
+			<label data-i18n="price">Price</label>
+			<div>
+				<input type="number" name="price" ng-model="$ctrl.price" class="form-control"  required="required" ng-disabled="$ctrl.product.editpriceonfly == 'N'"/>
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label data-i18n="description">Description</label>
+			<div>
+				<input type="text" name="description" ng-model="$ctrl.description" class="form-control"  required="required" ng-disabled="$ctrl.product.editdesconfly == 'N'"/>
+			</div>
+		</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success" data-ng-debounced-click="$ctrl.apply()">
+    	<div class="" data-i18n="apply">Apply</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/external-credit-card.html">
+<div class="modal-content" data-test-id="ext-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-tablet modal-header-icon"></span>
+    	<span data-i18n="payment.external.card">Payment External Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p data-i18n="has.the.payment.gone.through">Has the payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-md btn-danger button-red" data-ng-debounced-click="$close()">
+    	<div class="" data-i18n="no" data-test-id="no">No</div>
+    </button>
+    
+    <button type="button" class="btn btn-md btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/external-payment.html">
+<div class="modal-content" data-test-id="ext-payment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicon glyphicon-phone modal-header-icon"></span>
+    	<span data-i18n="payment.external.card">Payment - {{title}}</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p data-i18n="has.the.payment.gone.through">Has the {{title}} payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-danger button-red" data-ng-debounced-click="$close()">
+    	<div class="" data-i18n="no" data-test-id="no">No</div>
+    </button>
+    
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/gift-card.html">
+		
+<div class="modal-content" data-test-id="gift-card-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="payment.gift.card" style="vertical-align: sub;">Payment Gift Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+	<div class="row-container">
+	
+		<div class="row">
+			<label data-i18n="total" data-test-id="total">Total:</label>
+			<div>
+				{{ total | number:2}}
+			</div>
+		</div>
+	</div>		
+			
+	<div>
+		<div class="form-group">
+		    <label for="card.number" data-i18n="card.number" data-test-id="card-no">Card No:</label>
+		    <input type="text" class="form-control" name="giftCardNo" ng-model="giftCardNo" required="required">
+		</div>
+		<!-- <div class="form-group">
+		    <label for="cvv" data-i18n="cvv">CVV:</label>
+		    <input type="text" class="form-control" name="giftCardCVV" ng-model="giftCardCVV" >
+		</div> -->
+	</div>	
+	
+</div>
+    
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/loyalty.html">
+<div class="modal-content" data-test-id="loyalty-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-handshake modal-header-icon"></span>
+    	&nbsp;
+    	<span data-i18n="redeem.loyalty">Redeem Loyalty</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+		<div class="row">
+			<label data-i18n="grand.total" data-test-id="total">Grand Total:</label>
+			<div>
+				{{ total | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.available" data-test-id="available">Loyalty Available:</label>
+			<div>
+				{{ loyaltyPoints | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.remaining" data-test-id="remaining">Loyalty Remaining:</label>
+			<div>
+				{{ loyaltyPointsEarned - loyaltyPointsSpent | number:2 }}
+			</div>
+		</div>		
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/mix.html">
+<div id="mix.popup.panel" class="popup">
+<form name="myform" autocomplete="off">
+	<div id="mix.popup.panel.split"></div>
+	<table border="0" width="100%">
+		<tr>
+			<td>
+			<h3 data-i18n="popup.total">total:</h3>
+			</td>
+			<td><span id="mix.popup.totalLabel"></span></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.cash.amount">Cash Amount:</td>
+			<td><input type="text" id="mix.popup.cashAmountTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.cheque.amt">Cheque Amt:</td>
+			<td><input type="text" id="mix.popup.chequeAmountTextField" class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.check.no">Check No:</td>
+			<td><input type="text" id="mix.popup.chequeNumberTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.card.amount">Card Amount:</td>
+			<td><input type="text" id="mix.popup.cardAmountTextField"  class="numeric textField"/></td>
+		</tr>
+		<tr>
+			<td data-i18n="card">card</td>
+			<td><select id="mix.popup.cardSelectList" class="selectField">
+				<option value="V" selected="selected">Visa</option>
+				<option value="M">MasterCard</option>
+				<option value="A">American Express</option>
+				<option value="N">Discover</option>
+				<option value="H">Carte Blance</option>
+				<option value="L">JAL</option>
+				<option value="B">JCB</option>
+				<option value="E">Enroute</option>
+				<option value="D">Diner's Club</option>
+				<option value="W">Switch</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.swipe.card">Swipe Card:</td>
+			<td><input type="checkbox" id="mix.popup.swipeCardCheckBox" value="true"
+				checked="checked" /></td>
+		</tr>
+		<tr id="mix.popup.trackDataDetailsPane">
+			<td data-i18n="popup.swipe.data">Swipe Data:</td>
+			<td><input type="password" id="mix.popup.trackDataTextField" class="textField" value="" /></td>
+		</tr>
+		<tr>
+			<td data-i18n="popup.voucher.amount">Voucher Amount:</td>
+			<td><input type="text" id="mix.popup.voucherAmountTextField"  class="numeric textField"/></td>
+			</tr>
+		<tr>
+			<td data-i18n="popup.order.no">Order No:</td>
+			<td><input type="text" id="mix.popup.voucherNoTextField" class="numeric textField" /></td>
+		</tr>
+		<tbody id="mix.popup.cardDetailsPane" style="display: none;">
+			<tr>
+				<td data-i18n="popup.card.no">Card No:</td>
+				<td><input type="text" id="mix.popup.cardNumberTextField" class="numeric textField"/>*</td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.expiration">Expiration(MMYY):</td>
+				<td><input type="text" id="mix.popup.cardExpiryDateTextField" size="4" maxlength="4" class="numeric textField"/>*</td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.cvv2">CVV2:</td>
+				<td><input type="text" id="mix.popup.cardCvvTextField" class="numeric textField"/></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.card.holder.name">Card Holder Name:</td>
+				<td><input type="text" id="mix.popup.cardHolderNameTextField" class="textField" /></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.street.address">Street Address:</td>
+				<td><input type="text" id="mix.popup.streetAddressTextField" class="textField" /></td>
+			</tr>
+			<tr>
+				<td data-i18n="popup.zip.code">Zip Code:</td>
+				<td><input type="text" id="mix.popup.zipCodeTextField" class="textField" /></td>
+			</tr>
+		</tbody>
+		<tr>
+			<td data-i18n="popup.external.card.amt">External Card Amt:</td>
+			<td><input type="text" id="mix.popup.externalCardAmountTextField" class="textField numeric"/></td>
+		</tr>
+		<tr>
+			<td colspan="2" align="right">
+				<button id="mix.popup.okButton" type="button" class="ok-button" data-i18n="ok">
+					Ok
+				</button>
+				<button id="mix.popup.cancelButton" type="button" class="cancel-button" data-i18n="cancel">
+					Cancel
+				</button>	
+			</td>
+		</tr>
+	</table>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/more-options-button-panel.html">
+<div class="modal-content" id="more-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-plus modal-header-icon"></span>
+    	<span data-i18n="more_options">More Options</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="more-option-button-container">
+
+     		<div class="column-container fixed-layout">
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="comment();$close()" id="comment-button">
+						<i class="glyphicons glyphicons-comments xs"></i>
+						<div>	
+							Comment
+							<span ng-show="isCommentPresent()" class="badge">1</span>	
+						</div>
+					</button>
+				</div>
+				<div ng-show="role.allow_order_split == 'Y' && !shoppingCart.isEmpty()">
+					<button class="btn btn-primary button-blue" ng-debounced-click="splitOrder();$close()" id="split-order-button">
+						<i class="glyphicons glyphicons-group xs"></i>
+						<div>Split Order</div>
+					</button>
+				</div>
+			</div>
+     		
+     		<div class="column-container fixed-layout">
+				<div ng-show="isSales && !shoppingCart.isEmpty()">
+					<button class="btn btn-primary button-blue" ng-debounced-click="redeemCoupon();$close()" id="redeem-coupon-button">
+						<i class="glyphicons glyphicons-fabric xs"></i>
+						<div>Redeem Coupon</div>
+					</button>
+				</div>
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="openGiftCard();$close()" id="gift-card-button">
+						<i class="glyphicons glyphicons-gift xs"></i>
+						<div>Gift Card</div>
+					</button>
+				</div>
+				<div ng-show="$ctrl.terminal.istaxincluded == 'Y' && !shoppingCart.isEmpty()" id="change-tax-button">
+					<button class="btn btn-primary button-blue" ng-debounced-click="changeTax();$close()">
+						<i class="glyphicons glyphicons-pie-chart xs"></i>
+						<div>Change Tax</div>
+					</button>
+				</div>
+				
+				<div ng-show="role.allow_order_backdate == 'Y' ">
+					<button class="btn btn-primary button-blue" ng-debounced-click="backdateOrder();$close()" id="backdate-button">
+						<i class="glyphicons glyphicons-calendar xs"></i>
+						<div>Backdate Order</div>
+					</button>
+				</div>
+				
+				<!-- <div>
+					<button class="btn btn-danger button-red" ng-debounced-click="discountOnTotal();$close()">
+						<i class="glyphicons glyphicons-tag xs"></i>
+						<div>Discount on Total</div>
+					</button>
+				</div> -->
+				
+			</div>
+
+			<div class="column-container fixed-layout">
+				<div ng-show="isSales">
+					<button class="btn btn-primary button-blue" ng-debounced-click="showPromotions();$close()" id="promotions-button">
+						<i class="glyphicons glyphicons-fabric xs"></i>
+						<div>Redeem Points</div>
+					</button>
+				</div>
+
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="openDeposit();$close()" id="deposit-button">
+						<i class="glyphicons glyphicons-money xs"></i>
+						<div>Deposit</div>
+					</button>
+				</div>
+
+				<div ng-if="searchByBarcodeOnly">
+					<button class="btn btn-primary button-blue" ng-debounced-click="searchItems();$close()" id="search-items-button">
+						<i class="glyphicons glyphicons-search xs"></i>
+						<div>Search Items</div>
+					</button>
+				</div>
+			</div>
+					
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/on-credit.html">
+<div id="onCredit.popup.panel" class="popup">
+			<div id="onCredit.popup.panel.split"></div>
+		</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/payment-panel.html">
+<div class="modal-content" data-test-id="payment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-shopping-cart modal-header-icon"></span>
+    	<span data-i18n="checkout">Checkout</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="check-out-buttons">
+     		<div class="column-container">
+     		
+ 				<div ng-show="$ctrl.tendersTypes.indexOf('B') !=-1">     				
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="cashPayment()" data-test-id="cash">
+						<i class="glyphicons glyphicons-money xs"></i>
+						<div data-i18n="cash">Cash</div>
+					</button>     				
+ 				</div>
+ 				 <div ng-show="$ctrl.tendersTypes.indexOf('K') !=-1">
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="creditCardPayment()" data-test-id="credit-card">
+						<i class="glyphicons glyphicons-credit-card xs"></i>
+						<div data-i18n="credit.card">Credit Card</div>
+					</button>     				
+ 				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('S') !=-1">     				
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="checkPayment()" data-test-id="check">
+  						<i class="glyphicons glyphicons-pen xs"></i>
+  						<div data-i18n="check">Check</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('P') !=-1">
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="onCreditPayment()" data-test-id="on-credit">
+  						<i class="glyphicons glyphicons-log-book xs"></i>
+  						<div data-i18n="on.credit">On Credit</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('E') !=-1">
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="externalCardPayment()" data-test-id="ext-card">
+  						<i class="glyphicons glyphicons-tablet xs"></i>
+  						<div data-i18n="ext.card">Ext Card</div>
+  					</button>     				
+   				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container">
+     		
+     			<!-- 
+   				<div ng-show=" $ctrl.orderType == 'POS Order' ">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="giftCardPayment()">
+  						<i class="glyphicons glyphicons-gift xs"></i>
+  						<div data-i18n="gift.card">Gift Card</div>
+  					</button>     				
+   				</div>
+   				 -->
+   				 
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('V') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="voucherPayment()" data-test-id="voucher">
+  						<i class="glyphicons glyphicons-certificate xs"></i>
+  						<div data-i18n="voucher">Voucher</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('M') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mixPayment()" data-test-id="mix">
+  						<i class="glyphicons glyphicons-wallet xs"></i>
+  						<div data-i18n="mix">Mix</div>
+  					</button>     				
+   				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container" ng-show=" $ctrl.orderType == 'POS Order' ">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('L') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="loyaltyPayment()" data-test-id="loyalty">
+  						<i class="glyphicons glyphicons-handshake xs"></i>
+  						<div data-i18n="loyalty">Loyalty</div>
+  					</button>     				
+   				</div>
+     		     		
+     		</div>
+     		
+     		<div class="column-container" ng-show=" $ctrl.orderType == 'POS Order' ">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('J') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mcbJuicePayment()" data-test-id="mcb-juice">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mcb.juice">MCB Juice</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('Y') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mytMoneyPayment()" data-test-id="myt-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mty.money">MY.T Money</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('T') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="emtelMoneyPayment()" data-test-id="emtel-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="emtel.money">Blink</div>
+  					</button>     				
+   				</div>
+   				<div ng-show="$ctrl.tendersTypes.indexOf('U') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="giftsMuPayment()" data-test-id="gifts-mu">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="gifts.mu">Gifts.mu</div>
+  					</button>     				
+   				</div> 
+   				
+   				<div ng-show="$ctrl.tendersTypes.indexOf('I') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mipsPayment()" data-test-id="mips">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mips">MIPS</div>
+  					</button>     				
+   				</div>    			
+     		     		
+     		</div>
+     		
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/promotions.html">
+<div class="modal-content" data-test-id="promotions-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="promotions">Promotions</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	
+  	<div class="row">
+  		<div class="col-md-6">Customer: {{customer.name}}</div>
+  		<div class="col-md-6" style="text-align: right;">Points Available: {{pointsAvailable}} points</div>
+  	</div>
+  	
+  	<div>&nbsp;</div>
+  	
+  	<div>
+  		<table class="table table-striped table-bordered table-hover">
+	  		<thead style="background-color: #666; color: #FCFCFC;">
+	  			<tr>
+	  				<th>Description</th>
+	  				<th>Coupon Amt</th>
+	  				<th>No of Points</th>
+	  				<th>Expiry Date</th>
+	  				<th>&nbsp;</th>
+	  			</tr>
+	  		</thead>
+	  		<tbody>
+	  			<tr ng-repeat="promotion in promotionInfo.promotions" data-test-id="promotion">
+	  				<td>{{promotion.description}}</td>
+	  				<td>{{promotion.amount}}</td>
+	  				<td>{{promotion.points}}</td>
+	  				<td>{{formatDate(promotion.expirydate)}}</td>
+	  				<td style="text-align: right;">
+	  					<button data-test-id="redeem-button" class="btn" ng-class="{'btn-success': validate(promotion)}"  ng-disabled="!validate(promotion)" ng-debounced-click="redeem(promotion)">Redeem</button>
+	  				</td>
+	  			</tr>
+	  		</tbody>
+  		</table>
+  	</div>
+  	   
+  </div>
+  
+  <div class="modal-footer">
+  	<button class="btn btn-lg btn-danger" data-i18n="cancel" ng-debounced-click="$close()" data-test-id="cancel-button">Cancel</button>
+  </div>
+  
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/select-modifiers.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="modifiers">Modifiers</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	
+  	<div ng-repeat="modifier_group in $ctrl.modifier_groups" class="select-modifiers-button-container">
+  	
+  		<div>{{modifier_group.groupName}}</div>
+  		
+  		<button ng-repeat="modifier in modifier_group.lines" class="btn btn-lg btn-default button-white" ng-debounced-click="$ctrl.onSelect(modifier_group, modifier)">
+  			<li class="fa fa-check" ng-show="modifier.active"></li>
+  			{{ modifier.name }} <br/>
+  			{{ modifier.price | number:2 }}
+  		</button>
+  	
+  	</div>
+  	   
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.reset()">Reset</button>
+  
+    <button class="btn btn-lg btn-default button-white" data-i18n="ok" ng-debounced-click="$ctrl.apply()">Ok</button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/split-order.html">
+<div class="modal-content" data-test-id="split-order-popup">
+<form name="myform" autocomplete="off" ng-if="$ctrl.isEqualMode">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+		<span class="glyphicons glyphicons-group modal-header-icon"></span>
+		&nbsp;
+    	<span data-i18n="split.order">Split Order</span>
+    </h4>
+  </div>
+  <div class="modal-body split-order-user-container">
+  	<div>Split Amount {{$ctrl.amount}}</div>
+  	<button ng-repeat="commission in $ctrl.commissions | orderBy:'username' " 
+  	ng-debounced-click="commission.active = !commission.active"
+  	ng-class="{ active : commission.active, 'btn-primary' : commission.active, 'btn-default' :  !commission.active }"
+  	class="btn btn-lg" data-test-id="commission">
+  		<div data-test-id="username">{{ commission.username }}</div>
+  		<div data-test-id="amount">{{ commission.amount | number:2 }}</div>  		
+  	</button>    
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.reset()" data-test-id="reset">Reset</button>
+  
+    <button class="btn btn-lg btn-default button-white" data-i18n="split.equally" ng-debounced-click="$ctrl.splitEqually()" data-test-id="split-equally">Split Equally</button>
+	<button class="btn btn-lg btn-default button-white" data-i18n="custom" ng-debounced-click="$ctrl.setCustomMode()" data-test-id="custom">Custom</button>
+  </div>
+</form>
+
+<form name="myform" autocomplete="off" ng-if="!$ctrl.isEqualMode">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="split.order">Split Order</span>
+    </h4>
+  </div>
+  <div class="modal-body split-order-user-container">
+    	
+  	<div>Split Amount {{$ctrl.amount}}</div>
+  	
+  	<div class="row-container">
+  		<div class="row form-group" ng-repeat="commission in $ctrl.selected | orderBy:'username' " data-test-id="commission">
+  			<div>
+  				<label data-test-id="username">{{ commission.username }}</label>
+  			</div>
+  			<div>
+  				<input type="number" class="form-control" ng-model="commission.amount" ng-focus="$ctrl.setRemainder(commission)" select-on-focus  data-test-id="amount">
+  			</div>
+  		</div>  	
+  	</div>
+  	
+  	<div>Remainder Amount <span data-test-id="remainder">{{ $ctrl.getRemainder() }}</span></div>
+  	
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.resetCustom()" data-test-id="reset">Reset</button>
+	<button class="btn btn-lg btn-default button-white" data-i18n="custom" ng-debounced-click="$ctrl.customSplit()" ng-disabled="$ctrl.getRemainder() != 0" data-test-id="split">Split</button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/order-screen/voucher.html">
+<div class="modal-content" data-test-id="voucher-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-certificate modal-header-icon"></span>
+    	<span data-i18n="payment.voucher">Payment Voucher</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+    
+    	<div class="row form-group">
+			<label data-i18n="total" data-test-id="total">Total:</label>
+			<div>
+				{{ total | number:2 }}
+			</div>
+		</div>
+
+		<div class="row form-group">
+		  <label for="store_id" data-i18n="store">Voucher Store:</label>
+		  
+		  <div>  
+		  	<select class="form-control" id="store_id" name="store_id" ng-model="voucherStoreId" focus-me="true" data-test-id="store">
+		   		<option ng-repeat="store in stores" value="{{ store.id }}" ng-selected="current_store_id == store.id">
+		   			{{ store.name }}
+		   		</option>
+		   	</select>
+		   </div>	    
+		</div>
+						
+		<div class="row form-group">
+			<label data-i18n="voucher.number">Voucher No:</label>
+			<div>
+				<input type="text" name="voucherNo" ng-model="voucherNo" class="form-control"  required="required" data-test-id="voucher-no"/>
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+

@@ -1,0 +1,60 @@
+<div>
+	<!-- shopping cart lines-->
+	
+	<div class="row-container shopping-cart-lines" ng-controller="ShoppingCartController">
+		<div class="row" ng-repeat="line in shoppingCart.lines.toArray()">
+			<div ng-debounced-click="editQty(line)">
+				{{ line.qty + '' }}
+			</div>
+			<div ng-debounced-click="showProductInfo(line.product)">
+				{{ line.product.name }}<br>
+				{{ line.description }}
+			</div>
+			<div ng-debounced-click="editPrice(line)">
+				{{ line.lineAmt + '' }}
+			</div>
+			<div>
+				<button ng-debounced-click="shoppingCart.removeFromCart(line.lineId)">X</button>
+			</div>
+		</div>
+	</div><!-- shopping cart lines-->
+		
+<!-- shopping cart totals-->
+<div style="height: 100px;">
+	<div class="row-container shopping-cart-totals">
+		<div class="row">
+			<div style="width:10%;">
+				&nbsp;
+			</div>
+			<div style="width:40%;">
+				subtotal
+			</div>
+			<div style="width:50%;">
+				{{ shoppingCart.subTotal + '' }}
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				&nbsp;
+			</div>
+			<div>
+				taxtotal
+			</div>
+			<div>
+				{{ shoppingCart.taxTotal + '' }}
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				{{ shoppingCart.qtyTotal + '' }}x
+			</div>
+			<div>
+				grandtotal
+			</div>
+			<div>
+				${{ shoppingCart.grandTotal + '' }}
+			</div>
+		</div>
+	</div>
+</div><!-- shopping cart totals-->
+</div>

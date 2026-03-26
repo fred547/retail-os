@@ -1,0 +1,7 @@
+describe('empty spec', () => {
+  it('passes', () => {
+    let body = {"cash":646,"card":0,"cheque":788,"ext_card":2397.1,"voucher":-199,"gift":598,"loyalty":907,"coupon":328.9,"deposit":299,"mcbJuice":768,"mytMoney":758,"emtelMoney":748,"giftsMu":738,"taxTotal":0,"grandTotal":8249.1,"subTotal":8249.1,"discountTotal":0,"userDiscountTotal":0,"noOfOrders":19,"noOfReturns":3,"qtySold":30,"qtyReturned":7,"qtyItemsSold":30,"qtyItemsReturned":7,"qtyServicesSold":0,"qtyServicesReturned":0,"discountCodes":[],"employeeSales":[{"name":"Admin","amt":8249.1}],"draftOrders":["e083269b-372f-48da-aa97-d633df4b6c34"],"openOrders":[],"taxes":[{"taxId":"10011756","taxAmt":0,"taxBaseAmt":8249.1,"lineNetAmt":8249.1}],"tenderTypes":[{"name":"Cash","code":"B","amt":646},{"name":"Cheque","code":"S","amt":788},{"name":"Ext Card","code":"E","amt":2397.1},{"name":"MCB Juice","code":"J","amt":768},{"name":"MY.T Money","code":"Y","amt":758},{"name":"Emtel Money","code":"T","amt":748},{"name":"Gifts.mu","code":"U","amt":738},{"name":"Voucher","code":"V","amt":-199},{"name":"Loyalty","code":"L","amt":907}]};
+
+    expect(body.taxes).to.eql([{ "taxId": '10011756', "taxBaseAmt": 8249.1, "taxAmt": 0.00, "lineNetAmt": 8249.1 }]);
+  })
+})

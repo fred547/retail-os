@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<meta content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'" http-equiv="Content-Security-Policy">
+	<title>Layout</title>
+	
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	
+	<link href="layout.css" media="all" rel="stylesheet" type="text/css">
+	
+	<!-- 
+	<link href="jquery.mCustomScrollbar.css" media="all" rel="stylesheet" type="text/css">
+	<script src="jquery.mCustomScrollbar.concat.min.js"></script>
+	 -->
+	
+	
+	
+	<style type="text/css">
+	   
+	    html, body {
+	    
+	       overflow: hidden;
+	       height: 100%;
+	    
+	    }
+	    
+	    #main-container {
+	       height: 100%;
+	    }
+	   
+	    #main-container #header {
+	        height: 50px;
+	    }
+	    #main-container #footer {
+	        height: 45px;
+	    }
+	    
+	    #main-container #header, #main-container #footer {
+	    
+	     background-color: #363535;          
+	     width: 100%;
+	     
+	     font-family: Roboto;
+	     font-size: 10pt;
+	     color: #A8A8A8;
+	    
+	    }
+	    
+	    
+
+.search-textfield {
+    border: 1px solid #ccc;
+    border-bottom-left-radius: 6px;
+    border-top-left-radius: 6px;
+    box-shadow: none;
+    color: #333;
+    height: 40px;
+    padding: 0;
+    width: 100%;
+}
+	</style>
+	
+	
+      <script type="text/javascript" src="../../javascripts/jquery-all.js"></script>
+      <script type="text/javascript" src="../../javascripts/offline/ydn.db-jquery.js"></script>
+      <script type="text/javascript" src="../../javascripts/jquery/jquery.cookie.js"></script>
+      <script type="text/javascript" src="../../javascripts/offline/taffy.js"></script>      
+      <script type="text/javascript" src="../../javascripts/offline/sha1.js"></script>
+	
+	<script src="shoppingCart.js" type="text/javascript"></script>
+	<script src="BigNumber.js" type="text/javascript"></script>
+	
+	<script type="text/javascript" src="app.js"></script>
+	<script src="angular.js" type="text/javascript"></script>
+	<script src="ui-bootstrap-tpls-0.12.1.min.js" type="text/javascript"></script>
+	<script src="data.js" type="text/javascript"></script>	
+	<script src="forus.js" type="text/javascript"></script>	
+	<script src="services.js" type="text/javascript"></script>	
+	
+	<script src="clockinout.js" type="text/javascript"></script>	
+	
+	<script src="scrollglue.js"></script>	
+	<script src="angular-route.js"></script>
+	
+		
+</head>
+<body>
+	<div class="row-container" id="main-container" ng-controller="OrderScreenController as osc">
+	
+		<div id="header" ng-include="'pages/menu.html'"></div>
+		
+		<div id="body-content">
+			<div class="row-container" style="height: 100%">
+			
+				<!-- first row -->
+				<div style="height: 50px;">
+				
+					<!-- search product & search customer -->
+					<div class="column-container">
+					
+						<!-- search product -->
+						<div>
+						
+							<div class="column-container">
+							
+								<div>
+									<input type="text" class="search-textfield" ng-model="productSearchTerm" ng-enter="searchProduct(productSearchTerm)">
+								</div>
+								
+								<div style="width: 50px;">
+									<button class="btn btn-primary" type="button" ng-debounced-click="searchProduct(productSearchTerm)">
+							        	<i class="glyphicon glyphicon-search"></i>
+							        </button>
+								</div>
+								
+							</div>
+						
+						</div><!-- search product -->
+						
+						<!-- search customer -->
+						<div style="width:40%" ng-controller="CustomerController">
+						
+							<div class="column-container">
+							
+								<div class="search-customer-autocomplete">
+									<input type="text" class="search-textfield" placeholder="Search for Customer" ng-model="selectedCustomer" select-on-focus
+									typeahead="customer as customer.name for customer in searchCustomers($viewValue) | limitTo:5" 
+									typeahead-template-url="templates/customer-tpl.html">
+								</div>								
+								
+								<div style="width: 100px;">
+									<button class="btn btn-default" type="button" ng-debounced-click="customerInfo()">
+							        	<i class="glyphicon glyphicon-info-sign"></i>
+							        </button>
+							        <button class="btn btn-default" type="button" ng-debounced-click="createCustomer()">
+							        	<i class="glyphicon glyphicon-plus"></i>
+							        </button>
+								</div>								
+								
+							</div>
+						
+						</div><!-- search customer -->
+						
+					</div><!-- search product & search customer -->
+					
+				</div><!-- first row -->
+				
+				<!-- second row -->
+				<div>
+				
+					<!-- glider, product list & shopping cart -->
+					<div class="column-container" style="height: 100%">
+					
+						<!-- glider -->
+						<div style="width: 15%;">
+							glider
+						</div><!-- glider -->
+						
+						<!-- product list -->
+						<div style="width: 45%;">
+							
+							<!-- product list -->
+							<div style="height: 100%;" id="product-search-result-container">
+							
+								<!-- product list header -->
+								<div style="height:30px;">
+								
+									<div class="column-container product-search-result-header" style="height:100%;">
+										<div>
+											Name/Description
+										</div>
+										
+										<div style="text-align: right;">
+											Stock in Hand
+										</div>
+									</div>
+									
+								</div>
+								<!-- product list header -->
+								
+								<!-- product list result box -->
+								<div class="product-search-result">									
+																	
+										<!-- product result -->
+										<div class="column-container" ng-repeat="result in productSearchList" ng-debounced-click="addToCart(result)">
+											<div>
+												{{ result.name }} <br/>
+												{{ result.description }}
+											</div>
+											
+											<div>
+												{{ result.qtyonhand }}
+											</div>
+										</div>
+										<!-- product result 1 -->
+									
+								</div>
+								<!-- product list result box -->
+								
+							</div>
+							<!-- product list -->
+							
+						</div><!-- product list -->
+						
+						<!-- shopping cart -->
+						<div style="width: 40%;">
+							
+							<div style="position:absolute; width: 100%; top: 0; bottom: 0;">
+							
+								<!-- shopping cart lines-->
+								<div class="shopping-cart-lines" ng-controller="ShoppingCartController" scroll-glue>
+									<div class="column-container" ng-repeat="line in shoppingCart.lines.toArray()">
+										<div ng-debounced-click="editQty(line)">
+											{{ line.qty + '' }}
+										</div>
+										<div ng-debounced-click="showProductInfo(line.product)">
+											{{ line.product.name }} 1<br>
+											{{ line.product.description }}
+										</div>
+										<div ng-debounced-click="editPrice(line)">
+											{{ line.lineAmt + '' }}
+										</div>
+										<div>
+											<button ng-debounced-click="shoppingCart.removeFromCart(line.lineId)">
+												<i class="glyphicon glyphicon-trash"></i>
+											</button>
+										</div>
+									</div>
+								</div><!-- shopping cart lines-->
+								
+								<!-- shopping cart totals-->
+								<div class="shopping-cart-totals">
+									<div class="row-container">
+										<div class="row">
+											<div style="width:10%;">
+												&nbsp;
+											</div>
+											<div style="width:40%;">
+												subtotal
+											</div>
+											<div style="width:50%;">
+												{{ shoppingCart.subTotal + '' }}
+											</div>
+										</div>
+										<div class="row">
+											<div>
+												&nbsp;
+											</div>
+											<div>
+												taxtotal
+											</div>
+											<div>
+												{{ shoppingCart.taxTotal + '' }}
+											</div>
+										</div>
+										<div class="row">
+											<div>
+												{{ shoppingCart.qtyTotal + '' }}x
+											</div>
+											<div>
+												grandtotal
+											</div>
+											<div>
+												${{ shoppingCart.grandTotal + '' }}
+											</div>
+										</div>
+									</div>
+								</div><!-- shopping cart totals-->
+								<!-- order buttons -->
+								<div class="shopping-cart-buttons" ng-controller="OrderScreenButtonsController" ng-show="!shoppingCart.isEmpty()">
+									<div class="column-container">
+										<div>
+											<button class="btn btn-success" ng-debounced-click="checkOut()">Check Out</button>
+										</div>
+									</div>
+									<div class="column-container">
+										<div>
+											<button class="btn btn-primary" ng-debounced-click="comment()">Comment</button>
+										</div>
+										<div>
+											<button class="btn btn-primary" ng-debounced-click="saveOrder()">Save</button>
+										</div>
+										<div>
+											<button class="btn btn-primary" ng-debounced-click="splitOrder()">Split Order</button>
+										</div>
+										<div>
+											<button class="btn btn-primary" ng-debounced-click="giftCard()">Gift Card</button>
+										</div>
+									</div>
+									<div class="column-container">
+										<div>
+											<button class="btn btn-danger" ng-debounced-click="discountOnTotal()">Discount</button>
+										</div>
+										<div>
+											<button class="btn btn-danger" ng-debounced-click="shoppingCart.clearCart()">Clear</button>
+										</div>
+									</div>
+								</div>
+								
+								
+								<div style="height: 100px;" class="shopping-cart-buttons" ng-controller="OrderScreenButtonsController" ng-show="shoppingCart.isEmpty()">
+									<div class="column-container">
+										<div>
+											<button class="btn btn-primary" ng-debounced-click="loadOrder()">Load Order</button>
+										</div>
+										<div>
+											<button class="btn btn-default" ng-debounced-click="openDrawer()">Open Drawer</button>
+										</div>
+									</div>
+									<div class="column-container">
+										<div>
+											<button class="btn btn-danger" ng-debounced-click="keyPad()">Return</button>
+										</div>
+										<div>
+											<button class="btn btn-danger" ng-debounced-click="closeTill()">Close Till</button>
+										</div>
+										<div>
+											<button class="btn btn-danger" ng-debounced-click="giftCard()">Gift Card</button>
+										</div>
+									</div>
+								</div><!-- order buttons -->
+							</div>
+							
+						</div><!-- shopping cart -->
+						
+					</div><!-- glider, product list & shopping cart -->
+					
+				</div><!-- second row -->
+				
+				<div id="footer">
+					<div ng-repeat="commission in commissions" class="commission">
+						<div>{{ commission.salesrep.name }}</div>
+						<div>{{ commission.amount | number:2 }}</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>		
+	</div>
+</body>
+</html>

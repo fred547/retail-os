@@ -1,0 +1,24 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+
+	<div  class="menu-container">
+	
+		<div class="panel panel-default">
+		 
+		  <div class="panel-body">
+		  
+		  	<a data-test-id="dine-in" ng-debounced-click="ctrl.requestPIN('D')">
+				<i class="glyphicons glyphicons-shopping-cart menu-options-icon"></i>
+				<span>Dine In</span>
+			</a>
+			<a data-test-id="take-away" ng-debounced-click="ctrl.requestPIN('T')">
+				<i class="glyphicons glyphicons-cart-out menu-options-icon"></i>
+				<span>Take Away</span>
+			</a>
+		  
+		  </div>
+		  
+		</div>
+	</div>
+</div>

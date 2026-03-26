@@ -1,0 +1,10 @@
+import "../e2e/login.cy.js";
+import "../e2e/synchronize.cy.js";
+import "../e2e/sales.cy.js";
+import "../e2e/mix-sales.cy.js";
+import "../e2e/deposit.cy.js";
+import "../e2e/gift-card.cy.js";
+import "../e2e/coupon.cy.js";
+import "../e2e/promotion.cy.js";
+import "../e2e/cashier-control.cy.js";
+import "../e2e/close-tll.cy.js";

@@ -1,0 +1,163 @@
+<div class="border_pop border_pop59 popup" id="create.product.popup.panel">
+            <div class="popbar2">
+                <div class="pop_icon">
+                    <div class="create-product-icon"></div>
+                </div>
+                <div class="pop_head" data-i18n="new.item">NEW ITEM</div>
+                <div id="create.product.popup.close.button" class="pop_close cursorpointer">
+                    <div>Close X</div>
+                </div>
+            </div>
+            <div class="woodbg">
+                <div class="popup-create-details-wrapper">
+                    <div class="page-summary page-summary-popup">
+                        <div class="page-description page-description-popup">
+                            <div class="image">
+                                <a rel="prettyPhoto" id="product.image.link">
+                                    <img id="product.image" src="images3/create-products.png" class="frame-image" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page-information page-information-popup">
+                        <div class="page-information-inner page-information-inner-popup" id="items.fields">
+                            <div class="page-info-row">
+                                <label data-i18n="name">Name	<sup>*</sup>
+
+                                </label>	<span id="product.Name" style="display:none;">
+	{"encrypted":false,"help":"Name of Product. This is a Mandatory Field","unique":true,"readOnly":false,"updateable":true,"mandatory":true,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Description	<sup>*</sup>
+
+                                </label>	<span id="product.Description" style="display:none;">
+	{"encrypted":false,"help":"Product Description","unique":false,"readOnly":false,"updateable":true,"mandatory":true,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Selling Price</label>	<span id="priceSO.PriceStd" style="display:none;">
+	{"encrypted":false,"help":"Current Price","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Purchase Price</label>	<span id="pricePO.PriceStd" style="display:none;">
+	{"encrypted":false,"help":"Purchase Price","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>UPC/EAN</label>	<span id="product.UPC" style="display:none;">
+	{"encrypted":false,"help":"Barcode of the Product","unique":true,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>UnitsPerPack</label>	<span id="product.UnitsPerPack" style="display:none;">
+	{"encrypted":false,"help":"Units per pack","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="forum-gray-box">
+                                <div class="page-info-row">
+                                    <label>Product Template</label>	<span id="product.template">
+							<span id="product.M_ProductTemplate_ID" style="display:none;">
+	{"encrypted":false,"help":"Item Template","callout":"CalloutProduct.copyTemplate","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+</span>
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Product Type</label>	<span id="product.ProductType" style="display:none;">
+	{"encrypted":false,"help":"Product type whether an item or a service","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Tax Category</label>	<span id="product.C_TaxCategory_ID" style="display:none;">
+	{"encrypted":false,"help":"{ product.tax.category }","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Uom	<sup>*</sup>
+
+                                    </label>	<span id="product.C_UOM_ID" style="display:none;">
+	{"encrypted":false,"help":"Unit of Measure, Whether Litre, cm etc","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Primary Group</label>	<span id="product.PrimaryGroup" style="display:none;">
+	{"encrypted":false,"help":"Primary group e.g T-Shirts, Trousers","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group1">
+                                    <label>Group1</label>	<span id="product.Group1" style="display:none;">
+	{"encrypted":false,"help":"Group 1:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group2">
+                                    <label>Group2</label>	<span id="product.Group2" style="display:none;">
+	{"encrypted":false,"help":"Group 2:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group3">
+                                    <label>Group3</label>	<span id="product.Group3" style="display:none;">
+	{"encrypted":false,"help":"Group 3 :Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group4">
+                                    <label>Group4</label>	<span id="product.Group4" style="display:none;">
+	{"encrypted":false,"help":"Group 4:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group5">
+                                    <label>Group5</label>	<span id="product.Group5" style="display:none;">
+	{"encrypted":false,"help":"Group 5:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group6">
+                                    <label>Group6</label>	<span id="product.Group6" style="display:none;">
+	{"encrypted":false,"help":"Group 6:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group7">
+                                    <label>Group7</label>	<span id="product.Group7" style="display:none;">
+	{"encrypted":false,"help":"Group 7:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group8">
+                                    <label>Group8</label>	<span id="product.Group8" style="display:none;">
+	{"encrypted":false,"help":"Group 8:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="new-item-help" class="page-help">
+                        <div id="msg-box"></div>
+                        <div id="ErrorMessages"></div>
+                    </div>
+                    <div class="" style="margin-left:36px;float:left">
+                        <div class="smallbutton" id="create.product.popup.saveBtn">
+                            <div class="smallbuttonimg">
+                                <div class="save"></div>
+                            </div>
+                            <div class="smallbuttontext" style="margin-top:0px;">SAVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>

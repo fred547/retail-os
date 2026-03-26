@@ -1,0 +1,42 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<div id="body-content">
+
+	<div class="report-wapper">
+	
+		<h3 class="report-title">Price Change Report 
+			<button ng-debounced-click="ctrl.print()">Print</button>
+			<button onclick="exportReport('PriceChangeReport')">Export</button>
+		</h3>
+	
+		<table class="display dataTable" id="price_change_history_table">
+		
+		<thead>
+	        <tr>
+	            <th>Date Updated</th>
+	            <th>Name</th>
+	            <th>Description</th>
+				<th>UPC</th>
+				<th>SKU</th>
+				<th>Old Price</th>
+				<th>New Price</th>
+	        </tr>
+	    </thead>
+	    <tbody></tbody>
+	    <tfoot>
+	    	<tr>
+	            <th>Date Updated</th>
+	            <th>Name</th>
+	            <th>Description</th>
+				<th>UPC</th>
+				<th>SKU</th>
+				<th>Old Price</th>
+				<th>New Price</th>
+	        </tr>
+	    </tfoot>
+		
+		</table>
+	
+	</div>
+	
+</div>

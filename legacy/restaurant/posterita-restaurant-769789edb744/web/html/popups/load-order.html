@@ -1,0 +1,37 @@
+<div class="modal-content" data-test-id="load-order-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-folder-open modal-header-icon"></span>
+		<span data-i18n="load.order" style="padding-left: 24px;">Load Order</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     
+     <div class="form-group">
+	    <label for="order_no" data-i18n="store">Store:</label>
+	    
+	    <select class="form-control" id="store_id" name="store_id" ng-model="store_id" data-test-id="store-id">
+	    	<option ng-repeat="store in stores" value="{{ store.id }}" ng-selected="current_store_id == store.id">
+	    		{{ store.name }}
+	    	</option>
+	    </select>
+	    
+	  </div>
+     
+	  <div class="form-group">
+	    <label for="order_no" data-i18n="popup.order.no">Order No:</label>
+	    <input type="text" class="form-control" id="order_no" name="order_no" ng-model="order_no" ng-enter="load(store_id, order_no)" required="required" focus-me="true" data-test-id="order-no">
+	  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="load(store_id,order_no)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

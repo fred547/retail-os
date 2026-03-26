@@ -1,0 +1,21 @@
+package org.posterita.exception;
+
+public class UpdaterException extends Exception {
+	
+	public UpdaterException() {
+		super();
+	}
+	
+	public UpdaterException(String message) {
+		super(message);
+	}
+	
+	public UpdaterException(Throwable cause) {
+		super(cause);
+	}
+	
+	public UpdaterException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}

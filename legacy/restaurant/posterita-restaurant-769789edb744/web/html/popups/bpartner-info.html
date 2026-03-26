@@ -1,0 +1,203 @@
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="bpartnerInfo.popup.closeButton">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro circle_info"></div>
+			&nbsp;<span data-i18n="business.partner.info">Business Partner Info</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<div class="row">
+					<div class="col-xs-2 col-md-2 image float-left">
+						<a rel="prettyPhoto" id="bpartnerInfo.popup.image.link"> 
+							<img id="bpartnerInfo.popup.image" src="images/create-customers.png" class="frame-image" alt="" style=""/>
+						</a>
+					</div>
+					<div class="col-xs-6 col-md-6" id="info" style="font-family: Arial; font-size:12pt; color:#5b5b5b;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+								<strong>
+									<span data-i18n="popup.customer.id">Customer ID:</span> <span id="bpartnerInfo.popup.codeLabel" style="color:#5b5b5b;" >#code</span>
+								</strong>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.name">Name:</span> <span id="bpartnerInfo.popup.nameLabel" style="color:#5b5b5b;">#name</span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.address">Address:</span> <span id="bpartnerInfo.popup.address1Label" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.city">City:</span> <span id="bpartnerInfo.popup.cityLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.dob">D.O.B:</span> <span id="bpartnerInfo.popup.dobLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.tel">Tel:</span> <span id="bpartnerInfo.popup.telLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>										
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="mobile">Mobile:</span> <span id="bpartnerInfo.popup.mobileLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.email">Email:</span> <span id="bpartnerInfo.popup.emailLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<!-- 
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16"><span data-i18n="popup.search.key">Search Key:</span> <span id="bpartnerInfo.popup.searchKey" style="color:#5b5b5b;"></span></div>
+							</div>
+						</div>
+						 -->
+					</div>
+					<div class="col-xs-4 col-md-4" id="info" style="font-family: Arial; font-size:12pt; color:#1d1d1d;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4"><strong data-i18n="summary">Summary</strong></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.available">Credit Available:</span> <span id="bpartnerInfo.popup.creditAvailableLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.limit">Credit Limit:</span> <span	id="bpartnerInfo.popup.creditLimitLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.open.balance">Open Balance:</span> <span id="bpartnerInfo.popup.openBalanceLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.status">Credit Status:</span> <span id="bpartnerInfo.popup.creditStatusLabel"></span>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-xs-4 col-md-4" id="bp-loyalty-info" style="font-family: Arial; font-size:12pt; color:#1d1d1d; display:none; margin-top:10px;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4"><strong data-i18n="loyalty">Loyalty</strong></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.earned">Points Earned</span> : <span id="bpartnerInfo.popup.loyaltyPointsEarned"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.used">Points Used</span> : <span id="bpartnerInfo.popup.loyaltyPointsSpent"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.remaining">Points Remaining</span> : <span id="bpartnerInfo.popup.loyaltyPoints"></span>
+								</div>
+							</div>
+						</div>																
+					</div>
+				</div>
+				
+				<!-- 
+				<div class="row">
+					<div class="col-xs-2 col-md-2"> </div>
+					<div id="bpartnerInfo.popup.notes-container" class="col-xs-10 col-md-10 padding-16">
+						<div class="row" style="font-family: Arial; font-size:12pt; color:#5b5b5b;">
+							Notes
+						</div>
+						<div class="row">
+							<textarea rows="5%" cols="60%" style="resize:none;" id="bpartnerInfo.popup.panel.textfield"></textarea>
+						</div>
+						<div class="row padding-8">
+							<button type="button" class="btn btn-xs btn-danger pull-right" id="bpartnerInfo.popup.panel.notes.close.button" style="width:10%;">
+								Close
+							</button>							
+							<button type="button" class="btn btn-xs btn-success pull-right" id="bpartnerInfo.popup.panel.notes.save.button" style="width:10%;margin-right:5px;">
+								Save
+							</button>
+						</div>
+					</div>
+				</div>
+				 -->
+			</div>
+		</div>
+	</div>
+
+	<div style="float: left" id="right_box_bp"></div>
+
+	<div class="modal-footer">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<!-- 
+				<button id="bpartnerInfo.popup.takePictureButton" class="btn btn-xs btn-tertiary" style="width:20% ; " type="button">
+					<div class="glyphicons glyphicons-pro camera"></div>
+					<div>Take a Picture</div>
+				</button>
+				<button id="bpartnerInfo.popup.notes" class="btn btn-xs btn-tertiary" style="width:20% ;" type="button">
+					<div class="glyphicons glyphicons-pro notes_2"></div>
+					<div>Notes</div>
+				</button>
+				<button id="bpartnerInfo.popup.viewsalesButton" class="btn btn-xs btn-secondary" style="width:20%;border-color:#BDBEC2;" type="button">
+					<div class="glyphicons glyphicons-pro shopping_cart"></div>
+					<div>View Sales</div>
+				</button>
+				-->
+				
+				<button id="bpartnerInfo.popup.okButton" class="btn btn-success button-green" style="width:15%;" type="button" data-test-id="ok-button">
+					<!-- <div class="glyphicons glyphicons-pro ok_2"></div> -->
+					<div data-i18n="ok">Ok</div>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

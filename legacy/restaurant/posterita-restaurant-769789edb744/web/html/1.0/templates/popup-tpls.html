@@ -1,0 +1,3090 @@
+<script type="text/ng-template" id="/html/popups/about.html">
+<div class="modal-content">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">			
+	    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+	    	<span data-i18n="about">About</span>
+		</h4>
+	</div>
+	<div class="modal-body">	
+		
+		<h4>Posterita Account</h4>
+		
+		<div class="row-container">
+		
+			<div class="row">
+				<div>Business Name</div>
+				<div>{{$ctrl.info['domain']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Store</div>
+				<div>{{$ctrl.info['store']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Terminal</div>
+				<div>{{$ctrl.info['terminal']}}</div>
+			</div>
+		
+			<h4>Configurations</h4>
+			
+			<div class="row">
+				<div>Server URL</div>
+				<div>{{$ctrl.info['server-address']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Merchant Key</div>
+				<div>{{$ctrl.info['merchant-key']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Terminal Key</div>
+				<div>{{$ctrl.info['terminal-key']}}</div>
+			</div>
+			
+			<h4>Synchronization</h4>
+			
+			<div class="row">
+				<div>POS</div>
+				<div>{{$ctrl.info['system-sync-date']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Orders</div>
+				<div>{{$ctrl.info['orders-sync-date']}}</div>
+			</div>
+
+			<div class="row">
+				<div>Sequence No</div>
+				<div>{{$ctrl.info['documentno_sequence']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Sequence Prefix</div>
+				<div>{{$ctrl.info['sequence_prefix']}}</div>
+			</div>			
+			
+			<div class="row">
+				<div>Version</div>
+				<div>{{$ctrl.info['version']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Built</div>
+				<div>{{$ctrl.info['built']}}</div>
+			</div>
+			
+			<div class="row">
+				&nbsp;
+			</div>
+			
+			<div class="row">
+				<div>Java</div>
+				<div>{{ $ctrl.info['java-vendor'] + ', ' + $ctrl.info['java-version'] }}</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success button-green" ng-debounced-click="$close()" data-test-id="ok-button">
+			Ok
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/alert.html">
+<div class="modal-content" id="alert-popup">
+	<div class="modal-header alert-danger">
+		 <button type="button" class="close" data-ng-debounced-click="$ctrl.close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-exclamation-triangle"></i>
+			Error
+		</h4>
+	</div>
+	<div class="modal-body">
+		<h4 class="text-danger">{{$ctrl.msg}}</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.close()" id="close-alert-popup-button">
+			Ok
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/back-date.html">
+<div class="modal-content">
+<form name="myform" autocomplete="off">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id ="backDate.popup.cancelButton">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicon glyphicon-calendar"></div>
+			&nbsp;
+			<span data-i18n="change.order.date">Change Order Date</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+		<div class="row popup-label">
+			<span data-i18n="popup.order.date">Order Date:</span>
+			<input type="text" id="backDate.popup.documentNumberTextField" style="display: none;" class="numeric textField"/>
+			<input type="text" id="backDate.popup.referenceNumberTextField" style="display: none" class="textField"/>
+		</div> 
+		<div class="row padding-bottom-8">
+			<div id="backDate.popup.calendarContainer">
+				<select id="backDate.popup.dateSelectList"></select> <!-- removed inline css height: 30px -->
+				<select id="backDate.popup.monthSelectList"></select>
+				<select id="backDate.popup.yearSelectList"></select>
+				<select id="backDate.popup.hourSelectList"></select>
+				<select id="backDate.popup.minuteSelectList"></select>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div class="row">
+			<button type="button" class="btn btn-success" style="width:20%;" id="backDate.popup.okButton" data-test-id="ok-button">
+				<!-- <div class="glyphicons glyphicons-pro ok_2"></div> -->
+				<div data-i18n="ok">Ok</div>
+			</button>
+		</div>
+	</div>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/bpartner-info.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="bpartnerInfo.popup.closeButton">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro circle_info"></div>
+			&nbsp;<span data-i18n="business.partner.info">Business Partner Info</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<div class="row">
+					<div class="col-xs-2 col-md-2 image float-left">
+						<a rel="prettyPhoto" id="bpartnerInfo.popup.image.link"> 
+							<img id="bpartnerInfo.popup.image" src="images/create-customers.png" class="frame-image" alt="" style=""/>
+						</a>
+					</div>
+					<div class="col-xs-6 col-md-6" id="info" style="font-family: Arial; font-size:12pt; color:#5b5b5b;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+								<strong>
+									<span data-i18n="popup.customer.id">Customer ID:</span> <span id="bpartnerInfo.popup.codeLabel" style="color:#5b5b5b;" >#code</span>
+								</strong>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.name">Name:</span> <span id="bpartnerInfo.popup.nameLabel" style="color:#5b5b5b;">#name</span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.address">Address:</span> <span id="bpartnerInfo.popup.address1Label" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.city">City:</span> <span id="bpartnerInfo.popup.cityLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.dob">D.O.B:</span> <span id="bpartnerInfo.popup.dobLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.tel">Tel:</span> <span id="bpartnerInfo.popup.telLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>										
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="mobile">Mobile:</span> <span id="bpartnerInfo.popup.mobileLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16">
+									<span data-i18n="popup.email">Email:</span> <span id="bpartnerInfo.popup.emailLabel" style="color:#5b5b5b;"></span>
+								</div>
+							</div>
+						</div>
+						<!-- 
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-16"><span data-i18n="popup.search.key">Search Key:</span> <span id="bpartnerInfo.popup.searchKey" style="color:#5b5b5b;"></span></div>
+							</div>
+						</div>
+						 -->
+					</div>
+					<div class="col-xs-4 col-md-4" id="info" style="font-family: Arial; font-size:12pt; color:#1d1d1d;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4"><strong data-i18n="summary">Summary</strong></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.available">Credit Available:</span> <span id="bpartnerInfo.popup.creditAvailableLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.limit">Credit Limit:</span> <span	id="bpartnerInfo.popup.creditLimitLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.open.balance">Open Balance:</span> <span id="bpartnerInfo.popup.openBalanceLabel"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="popup.credit.status">Credit Status:</span> <span id="bpartnerInfo.popup.creditStatusLabel"></span>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-xs-4 col-md-4" id="bp-loyalty-info" style="font-family: Arial; font-size:12pt; color:#1d1d1d; display:none; margin-top:10px;">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4"><strong data-i18n="loyalty">Loyalty</strong></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.earned">Points Earned</span> : <span id="bpartnerInfo.popup.loyaltyPointsEarned"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.used">Points Used</span> : <span id="bpartnerInfo.popup.loyaltyPointsSpent"></span>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<div class="padding-left-4">
+									<span data-i18n="points.remaining">Points Remaining</span> : <span id="bpartnerInfo.popup.loyaltyPoints"></span>
+								</div>
+							</div>
+						</div>																
+					</div>
+				</div>
+				
+				<!-- 
+				<div class="row">
+					<div class="col-xs-2 col-md-2"> </div>
+					<div id="bpartnerInfo.popup.notes-container" class="col-xs-10 col-md-10 padding-16">
+						<div class="row" style="font-family: Arial; font-size:12pt; color:#5b5b5b;">
+							Notes
+						</div>
+						<div class="row">
+							<textarea rows="5%" cols="60%" style="resize:none;" id="bpartnerInfo.popup.panel.textfield"></textarea>
+						</div>
+						<div class="row padding-8">
+							<button type="button" class="btn btn-xs btn-danger pull-right" id="bpartnerInfo.popup.panel.notes.close.button" style="width:10%;">
+								Close
+							</button>							
+							<button type="button" class="btn btn-xs btn-success pull-right" id="bpartnerInfo.popup.panel.notes.save.button" style="width:10%;margin-right:5px;">
+								Save
+							</button>
+						</div>
+					</div>
+				</div>
+				 -->
+			</div>
+		</div>
+	</div>
+
+	<div style="float: left" id="right_box_bp"></div>
+
+	<div class="modal-footer">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<!-- 
+				<button id="bpartnerInfo.popup.takePictureButton" class="btn btn-xs btn-tertiary" style="width:20% ; " type="button">
+					<div class="glyphicons glyphicons-pro camera"></div>
+					<div>Take a Picture</div>
+				</button>
+				<button id="bpartnerInfo.popup.notes" class="btn btn-xs btn-tertiary" style="width:20% ;" type="button">
+					<div class="glyphicons glyphicons-pro notes_2"></div>
+					<div>Notes</div>
+				</button>
+				<button id="bpartnerInfo.popup.viewsalesButton" class="btn btn-xs btn-secondary" style="width:20%;border-color:#BDBEC2;" type="button">
+					<div class="glyphicons glyphicons-pro shopping_cart"></div>
+					<div>View Sales</div>
+				</button>
+				-->
+				
+				<button id="bpartnerInfo.popup.okButton" class="btn btn-success button-green" style="width:15%;" type="button" data-test-id="ok-button">
+					<!-- <div class="glyphicons glyphicons-pro ok_2"></div> -->
+					<div data-i18n="ok">Ok</div>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/change-terminal.html">
+<div class="modal-content">
+	<form name="TerminalForm" method="post" action="/TerminalAction.do" id="change-terminal-popup-panel-form">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="change-terminal-popup-panel-cancel-button">&times;</button>
+			<h4 class="modal-title">
+				<div class="glyphicons glyphicons-pro imac" data-i18n="change.terminal">&nbsp;Change Terminal</div>
+			</h4>
+		</div>
+		<div class="modal-body">
+			<input type="hidden" name="action" value="changeTerminal"/>
+			<input type="hidden" name="loginDate" value="" id="change-terminal-popup-panel-logindate-hidden-textfield"/>
+			<div class="row">
+				<div class="col-xs-12 col-md-12 popup-label" data-i18n="popup.organisation">
+					Organisation
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<select name="ad_org_id" class="input-sm" id="change-terminal-popup-panel-organisation-dropdown">
+						<option></option>
+					</select>
+				</div>
+			</div>
+			<div class="row padding-top-12">
+				<div class="col-xs-12 col-md-12 popup-label" data-i18n="popup.terminal">
+					Terminal
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<select name="u_posterminal_id" class="input-sm" id="change-terminal-popup-panel-terminal-dropdown">
+						<option></option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<div class="row">
+				<button type="button" class="btn btn-xs btn-success" style="width:20%;" id="change-terminal-popup-panel-ok-button" data-test-id="ok-button">
+					<div class="glyphicons glyphicons-pro ok_2"></div>
+					<div data-i18n="ok">Ok</div>
+				</button>
+			</div>
+		</div>
+	</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/change-user.html">
+<div class="modal-content">
+<form name="myform" autocomplete="off">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id ="pin.popup.cancelButton">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro user_add"></div>
+			&nbsp;<span data-i18n="change.user">Change User</span>
+		</h4>
+	</div>
+	<div class="modal-body" style="height:90px;">
+		<div class="row popup-label" data-i18n="please.enter.pin">
+			Please enter PIN:
+		</div>
+		
+		<div class="row">
+			<input type="password" id="pin.popup.pinTextField" class="numeric textField input-sm" focus-me="true" autocomplete="off"/>
+		</div>			
+	</div>
+	<div class="modal-footer">
+		<div class="row">
+			<button type="button" class="btn btn-xs btn-success" style="width:20%;" id="pin.popup.okButton" data-test-id="ok-button">
+				<div class="glyphicons glyphicons-pro ok_2"></div>
+				<div data-i18n="ok">Ok</div>
+			</button>
+		</div>
+	</div>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/check-balance-gift-card.html">
+<div class="modal-content" data-test-id="check-gift-card-balance-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span style="vertical-align: sub;">Check Gift Card Balance</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="card_no" data-i18n="card.no">Card no</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" focus-me="true" data-test-id="card-no">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="checkBalanceGiftCard(card_no)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/clock-in-clock-out-panel.html">
+<div class="modal-content" data-test-id="clock-in-clock-out-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="clock-in-out-panel-title">Clock In/Out</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+	<div class="row-container">
+    	<div>
+    		<div class="column-container clock-in-clock-out-header">
+    			<div>Username</div>
+    			<div>No. of hours</div>
+    		</div>	
+    	</div>
+    	
+    	<div class="clock-in-clock-out-result-container">
+    		<div>
+	    		<div class="column-container clock-in-clock-out-lines" ng-repeat="user in $ctrl.users | orderBy:'name'" ng-debounced-click="$ctrl.clockOutUser(user)" data-test-username="{{user.name}}">
+	    			<div>{{ user.name }}</div>
+	    			<div>{{ user.time_diff }}</div>
+	    		</div>
+    		</div>	
+    	</div>
+    </div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-primary button-blue" data-ng-debounced-click="$ctrl.clockInUser()" data-test-id="clock-in-user-button">
+    	<div data-i18n="clock.in.user">Clock In User</div>
+    </button>
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/clock-in-user.html">
+<div class="modal-content" data-test-id="clock-in-user-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="clock.in.user">Clock In User</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="username" data-i18n="username">Username:</label>
+	    <input type="text" class="form-control" id="username" name="username" ng-model="$ctrl.username" required="required" focus-me="true" autocomplete="off">
+	  </div>
+	  <div>
+	    <label for="password" data-i18n="password">Password:</label>
+	    <input type="password" class="form-control" id="password" name="password" ng-model="$ctrl.password" required="required" ng-enter="$ctrl.clockIn()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.clockIn()" data-test-id="ok-button" ng-disabled="myform.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/clock-out-user.html">
+<div class="modal-content" data-test-id="clock-out-user-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="clock.out.user">Clock Out User</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="username" data-i18n="username">Username:</label>
+	    <input type="text" class="form-control" id="username" name="username" ng-model="$ctrl.username" disabled>
+	  </div>
+	  <div>
+	    <label for="password" data-i18n="password">Password:</label>
+	    <input type="password" class="form-control" id="password" name="password" ng-model="$ctrl.password" required="required" focus-me="true" ng-enter="$ctrl.clockOut()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.clockOut()" data-test-id="ok-button" ng-disabled="myform.password.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/comment.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-comments modal-header-icon"></span>
+		<span data-i18n="comments">Comments</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+	 <div class="comment-container">
+    	<div ng-repeat="comment in $ctrl.previousComments">
+	    	<div class="column-container">
+	    		<div>
+    				<span class="glyphicons glyphicons-user xs"></span>
+	    			<div>{{comment.user}}</div>
+	    		</div>
+	    		<div>
+		    		<div>{{comment.date }}</div>
+		    		<div>{{comment.message}}</div>
+	    		</div>
+	    	</div>
+	    </div>
+     </div>
+
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="comments" data-i18n="enter.comments">Enter Comments:</label>
+	    <textarea class="form-control" id="comments" name="comments" ng-model="$ctrl.comments" required="required" focus-me="true" select-on-focus ng-enter="$ctrl.addComment($ctrl.comments)"></textarea>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.addComment($ctrl.comments)">
+    	<div data-i18n="save">Save</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/confirm.html">
+<div class="modal-content" id="confirm-popup">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Confirm
+		</h4>
+	</div>
+	<div class="modal-body">
+		{{$ctrl.msg}}
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.yes()" id="confirm-popup-yes-button">
+			Yes
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.no()" id="confirm-popup-no-button">
+			No
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/create-bpartner.html">
+<div id="bpartnerCreate.popup.panel" class="popup">
+	<form name="myform"  autocomplete="off">
+	<table border="0" width="100%">
+	    <tr>
+	        <td data-i18n="name-compulsory">Name*</td>
+	        <td>
+	            <input id="bpartnerCreate.name" type="text" focus-me="true"/>
+	        </td>
+	    </tr>
+	    <tr>
+	        <td data-i18n="email">E-mail</td>
+	        <td>
+	            <input id="bpartnerCreate.email" type="text" />
+	        </td>
+	    </tr>
+	    <tr>
+	        <td data-i18n="address">Address</td>
+	        <td>
+	            <input id="bpartnerCreate.address" type="text" />
+	        </td>
+	    </tr>
+	    <tr>
+	        <td data-i18n="city">City</td>
+	        <td>
+	            <input id="bpartnerCreate.city" type="text" />
+	        </td>
+	    </tr>
+	    <tr>
+	        <td data-i18n="tel">Tel</td>
+	        <td>
+	            <input id="bpartnerCreate.phone" type="text" />
+	        </td>
+	    </tr>
+	    <tr valign="bottom">
+	        <td align="right" colspan="2">
+	            <button id="bpartnerCreate.popup.okBtn" type="button" class="ok-button" data-i18n="ok" data-test-id="ok-button">Ok</button>
+	            <button id="bpartnerCreate.popup.cancelBtn" type="button" class="cancel-button" data-i18n="cancel">Cancel</button>
+	        </td>
+	    </tr>
+	</table>
+	</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/create-customer.html">
+<div class="modal-content" id="create-customer-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="create.customer" style="vertical-align: sub;">Create Customer</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    <form name="myform" autocomplete="off">
+	<div class="column-container">
+		<div>	
+			<div class="form-group">
+		    	<label for="customer_id" data-i18n="customer.id">Customer ID</label>*
+		    	<input type="text" class="form-control" id="customer_id" name="value" ng-model="value" required="required" focus-me="true">
+		  	</div>		
+			<div class="form-group">
+		    	<label for="name" data-i18n="name">Name</label>*
+		    	<input type="text" class="form-control" id="name" name="name" ng-model="name" required="required">
+		  	</div>
+		  	<div class="form-group">
+		   	 	<label for="email" data-i18n="email">Email</label>
+		    	<input type="email" class="form-control" id="email" name="email" ng-model="email" required="required">
+		  	</div>
+		  	<div class="form-group">
+		    	<label for="phone" data-i18n="phone">Phone</label>
+		    	<input type="phone" class="form-control" id="phoneNo" name="phoneNo" ng-model="phoneNo" required="required">
+		  	</div>
+		  	
+		  	<!-- <div class="form-group">
+		    	<label for="title" data-i18n="title">Title</label>
+			    <select ng-model="title" class="form-control">
+			    	<option value="Mr">Mr</option>
+			    	<option value="Mrs">Mrs</option>
+			    	<option value="Miss">Miss</option>
+			    	<option value="Ms">Ms</option>
+			    </select>
+		  	</div>
+		  	<div class="form-group">
+		    	<label for="address" data-i18n="address">Address</label>
+		    	<input type="text" class="form-control" id="address" name="address" ng-model="address" required="required">
+		  	</div>
+		  	<div class="checkbox form-group">
+		  		<label data-i18n="more.fields">
+		  			<input type="checkbox" ng-model="more_fields" value="true" checked="checked" />
+		  			More fields
+		  		</label>
+		  	</div> -->
+		</div>
+		<div>&nbsp;</div>
+		<div>
+			<!-- <div class="additional-customer-fields" ng-show="more_fields">
+				<div class="form-group">
+			    	<label for="city" data-i18n="city">City</label>
+			    	<input type="text" class="form-control" id="city" name="city" ng-model="city" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="dob" data-i18n="dob">DOB</label>
+			    	<input type="text" class="form-control" id="dob" name="dob" ng-model="dob" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="mobile" data-i18n="mobile">Mobile</label>
+			    	<input type="text" class="form-control" id="mobileNo" name="mobileNo" ng-model="mobileNo" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom1" data-i18n="custom1">Custom1</label>
+			    	<input type="text" class="form-control" id="custom1" name="custom1" ng-model="custom1" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom2" data-i18n="custom2">Custom2</label>
+			    	<input type="text" class="form-control" id="custom2" name="custom2" ng-model="custom2" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom3" data-i18n="custom3">Custom3</label>
+			    	<input type="text" class="form-control" id="custom3" name="custom3" ng-model="custom3" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="custom4" data-i18n="custom4">Custom4</label>
+			    	<input type="text" class="form-control" id="custom4" name="custom4" ng-model="custom4" required="">
+			  	</div>
+			  	<div class="form-group">
+			    	<label for="notes" data-i18n="notes">Notes</label>
+			    	<textarea class="form-control" rows="" cols="" ng-model="notes"></textarea>
+			  	</div>
+		  </div> -->
+		</div>	
+	</div>	
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="save()" id="save-button">
+    	<div data-i18n="apply">Save</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/create-product.html">
+<div class="border_pop border_pop59 popup" id="create.product.popup.panel">
+            <div class="popbar2">
+                <div class="pop_icon">
+                    <div class="create-product-icon"></div>
+                </div>
+                <div class="pop_head" data-i18n="new.item">NEW ITEM</div>
+                <div id="create.product.popup.close.button" class="pop_close cursorpointer">
+                    <div>Close X</div>
+                </div>
+            </div>
+            <div class="woodbg">
+                <div class="popup-create-details-wrapper">
+                    <div class="page-summary page-summary-popup">
+                        <div class="page-description page-description-popup">
+                            <div class="image">
+                                <a rel="prettyPhoto" id="product.image.link">
+                                    <img id="product.image" src="images3/create-products.png" class="frame-image" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page-information page-information-popup">
+                        <div class="page-information-inner page-information-inner-popup" id="items.fields">
+                            <div class="page-info-row">
+                                <label data-i18n="name">Name	<sup>*</sup>
+
+                                </label>	<span id="product.Name" style="display:none;">
+	{"encrypted":false,"help":"Name of Product. This is a Mandatory Field","unique":true,"readOnly":false,"updateable":true,"mandatory":true,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Description	<sup>*</sup>
+
+                                </label>	<span id="product.Description" style="display:none;">
+	{"encrypted":false,"help":"Product Description","unique":false,"readOnly":false,"updateable":true,"mandatory":true,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Selling Price</label>	<span id="priceSO.PriceStd" style="display:none;">
+	{"encrypted":false,"help":"Current Price","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>Purchase Price</label>	<span id="pricePO.PriceStd" style="display:none;">
+	{"encrypted":false,"help":"Purchase Price","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>UPC/EAN</label>	<span id="product.UPC" style="display:none;">
+	{"encrypted":false,"help":"Barcode of the Product","unique":true,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="page-info-row">
+                                <label>UnitsPerPack</label>	<span id="product.UnitsPerPack" style="display:none;">
+	{"encrypted":false,"help":"Units per pack","unique":false,"readOnly":false,"updateable":true,"styleClass":"numeric","mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                            </div>
+                            <div class="forum-gray-box">
+                                <div class="page-info-row">
+                                    <label>Product Template</label>	<span id="product.template">
+							<span id="product.M_ProductTemplate_ID" style="display:none;">
+	{"encrypted":false,"help":"Item Template","callout":"CalloutProduct.copyTemplate","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+</span>
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Product Type</label>	<span id="product.ProductType" style="display:none;">
+	{"encrypted":false,"help":"Product type whether an item or a service","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Tax Category</label>	<span id="product.C_TaxCategory_ID" style="display:none;">
+	{"encrypted":false,"help":"{ product.tax.category }","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Uom	<sup>*</sup>
+
+                                    </label>	<span id="product.C_UOM_ID" style="display:none;">
+	{"encrypted":false,"help":"Unit of Measure, Whether Litre, cm etc","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row">
+                                    <label>Primary Group</label>	<span id="product.PrimaryGroup" style="display:none;">
+	{"encrypted":false,"help":"Primary group e.g T-Shirts, Trousers","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group1">
+                                    <label>Group1</label>	<span id="product.Group1" style="display:none;">
+	{"encrypted":false,"help":"Group 1:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group2">
+                                    <label>Group2</label>	<span id="product.Group2" style="display:none;">
+	{"encrypted":false,"help":"Group 2:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group3">
+                                    <label>Group3</label>	<span id="product.Group3" style="display:none;">
+	{"encrypted":false,"help":"Group 3 :Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group4">
+                                    <label>Group4</label>	<span id="product.Group4" style="display:none;">
+	{"encrypted":false,"help":"Group 4:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group5">
+                                    <label>Group5</label>	<span id="product.Group5" style="display:none;">
+	{"encrypted":false,"help":"Group 5:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group6">
+                                    <label>Group6</label>	<span id="product.Group6" style="display:none;">
+	{"encrypted":false,"help":"Group 6:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group7">
+                                    <label>Group7</label>	<span id="product.Group7" style="display:none;">
+	{"encrypted":false,"help":"Group 7:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                                <div class="page-info-row" id="product_Group8">
+                                    <label>Group8</label>	<span id="product.Group8" style="display:none;">
+	{"encrypted":false,"help":"Group 8:Can be Model, Size, Color, depending on the attributes of your product","unique":false,"readOnly":false,"updateable":true,"mandatory":false,"alphanumeric":false,"password":false,"textOnly":false}
+</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="new-item-help" class="page-help">
+                        <div id="msg-box"></div>
+                        <div id="ErrorMessages"></div>
+                    </div>
+                    <div class="" style="margin-left:36px;float:left">
+                        <div class="smallbutton" id="create.product.popup.saveBtn">
+                            <div class="smallbuttonimg">
+                                <div class="save"></div>
+                            </div>
+                            <div class="smallbuttontext" style="margin-top:0px;">SAVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/customer-info.html">
+<div class="modal-content" id="customer-info-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+    	<span data-i18n="customer.info">Customer Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="column-container customer-info-popup">
+     
+     	<div>
+     		<img src="images/create-customers.png"  style="vertical-align: top;"/>
+     	</div>
+     	
+     	<div>
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.customer.id">Customer ID:</span></div>
+     				<div>{{ customer.identifier }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.name">Name:</span></div>
+     				<div>{{ customer.name }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.address">Address:</span></div>
+     				<div>{{ customer.address1 }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.city">City:</span></div>
+     				<div>{{ customer.city }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.dob">D.O.B:</span></div>
+     				<div>{{ customer.birthday }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.tel">Tel:</span></div>
+     				<div>{{ customer.phone}}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="mobile">Mobile:</span></div>
+     				<div>{{ customer.phone2 }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.email">Email:</span></div>
+     				<div>{{ customer.email }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.search.key">Search Key:</span></div>
+     				<div>{{ customer.identifier }}</div>     			
+     			</div>     		
+     		</div>
+     	</div>
+     	
+     	<div>
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.summary">Summary</span></div>
+     				<div></div>
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.available">Credit Available:</span></div>
+     				<div>{{ customer.so_creditused }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.limit">Credit Limit:</span></div>
+     				<div>{{ customer.so_creditlimit }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.open.balanace">Open Balance:</span></div>
+     				<div>{{ customer.totalopenbalance }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.status">Credit Status:</span></div>
+     				<div>{{ customer.socreditstatus }}</div>     			
+     			</div>
+     		</div>
+     		
+     		<div class="row-container">
+     			<div class="row">     			
+     				<div><span data-i18n="popup.summary">Loyalty</span></div>
+     				<div></div>
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.available">Starting Point:</span></div>
+     				<div>{{ customer.loyaltystartingpoints }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.limit">Point Earned:</span></div>
+     				<div>{{ customer.loyaltypointsearned }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.open.balanace">Points Used:</span></div>
+     				<div>{{ customer.loyaltypointsspent }}</div>     			
+     			</div>
+     			<div class="row">     			
+     				<div><span data-i18n="popup.credit.status">Points Remaining:</span></div>
+     				<div>{{ customer.loyaltypoints}}</div>     			
+     			</div>
+     		</div>       		
+     	</div>
+     
+     </div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/deposit-transactions.html">
+<div class="modal-content" data-test-id="deposit-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="deposit.transactions" style="vertical-align: sub;">Deposit Transactions</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="deposit-transaction-selection-container">
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="issueDepositPopUp()" data-ng-show="isSales" data-test-id="issue-deposit-button">
+   			<div data-i18n="issue.gift.card">Issue Deposit</div>
+		</button>
+  	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="redeemDepositPopUp()" data-ng-show="isSales" 
+		data-ng-disabled="isShoppingCartEmpty" data-test-id="redeem-deposit-button">
+   			<div data-i18n="redeem.gift.card">Redeem Deposit</div>
+		</button>
+
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="refundDepositPopUp()" data-ng-hide="isSales" data-test-id="refund-deposit-button">
+   			<div data-i18n="redeem.gift.card">Refund Deposit</div>
+		</button>
+	</div>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/discount-on-total.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-tag modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="discount.on.total">Discount on Total</span>
+		</h4>
+	</div>
+	
+	<div class="modal-body">
+	
+		<form name="myform" autocomplete="off">
+		
+		  <div class="form-group">
+		    %<label for="discount" data-i18n="discount">Discount</label>
+		    <input type="number" class="form-control" id="discount" name="discount" ng-model="$ctrl.data.discount" ng-change="$ctrl.onDiscountChange($ctrl.data.discount)" required="required" select-on-focus focus-me="true">
+		  </div>
+		
+		  <div class="form-group">
+		    <label for="price" data-i18n="amount.off">Amount Off</label>
+		    <input type="number" class="form-control" id="price" name="price" ng-model="$ctrl.data.amountOff" ng-change="$ctrl.onAmountOffChange($ctrl.data.amountOff)" required="required" select-on-focus>
+		  </div>
+		  
+		  <div class="form-group">
+		    <label for="total" data-i18n="total">Total</label>
+		    <input type="number" class="form-control" id="total" name="total" ng-model="$ctrl.data.total" ng-change="$ctrl.onTotalChange($ctrl.data.total)" required="required" select-on-focus>
+		  </div>		  
+		 
+		  
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.apply()" ng-disabled="myform.$dirty && myform.$invalid">
+			<div data-i18n="apply">Apply</div>
+		</button>
+	</div>
+</div>
+	
+	
+</script>
+
+<script type="text/ng-template" id="/html/popups/edit-on-fly.html">
+<div class="modal-content">
+<form name="myform" autocomplete="off">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id ="edit-on-fly-cancel-button">&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro package"></div>
+			&nbsp;
+			<span data-i18n="edit.on.fly">Edit on Fly</span>
+		</h4>
+	</div>
+	<div class="modal-body" style="height:150px;">
+		<div class="row popup-label">
+			<div class="float-left" data-i18n="price">Price</div>
+		</div>
+		<div class="row padding-bottom-12">
+			<input type="text" class="form-control numeric textField input-sm" placeholder="" id="edit-on-fly-price-textfield" focus-me="true" autocomplete="off"/>
+		</div>
+		<div class="row popup-label">
+			<div class="float-left" data-i18n="description">Description	</div>
+		</div>
+		<div class="row padding-bottom-12">
+			<input type="text" class="form-control textField input-sm" placeholder="" id="edit-on-fly-description-textfield"/>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div class="row">
+			<button type="button" class="btn btn-xs btn-success" style="width:20%;" id="edit-on-fly-ok-button" data-test-id="ok-button">
+				<div class="glyphicons glyphicons-pro ok_2"></div>
+				<div data-i18n="ok">Ok</div>
+			</button>
+		</div>
+	</div>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/gift-card-balance.html">
+<div class="modal-content" data-test-id="gift-card-balance-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="gift.card.transactions" style="vertical-align: sub;">Gift Card Balance</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="row-container">
+     		
+		<div class="row">     			
+			<div><span data-i18n="card.number">Card No:</span></div>
+			<div data-test-id="card-no">{{ accountnumber }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="amount">Amount:</span></div>
+			<div data-test-id="amount">{{ amount | number:2 }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="balance">Balance:</span></div>
+			<div data-test-id="balance">{{ balance | number:2 }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="popup.city">Date Issued:</span></div>
+			<div>{{ dateissued }}</div>     			
+		</div>
+		<div class="row">     			
+			<div><span data-i18n="popup.dob">Expiry:</span></div>
+			<div>{{ expiry }}</div>     			
+		</div>
+
+		<!-- show reloaded info if any -->
+		<div class="row" ng-show="reloadedamount">     			
+			<div><span>Reloaded Amount:</span></div>
+			<div data-test-id="reloaded-amount">{{ reloadedamount | number:2 }}</div>     			
+		</div>
+		<div class="row" ng-show="reloadeddate">     			
+			<div><span>Reloaded Date:</span></div>
+			<div>{{ reloadeddate }}</div>     			
+		</div>
+		<div class="row" ng-show="store">     			
+			<div><span>Store:</span></div>
+			<div>{{ store }}</div>     			
+		</div>		
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/gift-card-transactions.html">
+<div class="modal-content" data-test-id="gift-card-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="gift.card.transactions" style="vertical-align: sub;">Gift Card Transactions</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	<div class="gift-card-transaction-selection-container">
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="issueGiftCardPopUp()" data-ng-show="isSales" data-test-id="issue-button">
+   			<div data-i18n="issue.gift.card">Issue Gift Card</div>
+		</button>
+  	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="reloadGiftCardPopUp()" data-ng-show="isSales" data-test-id="reload-button">
+   			<div data-i18n="reload.gift.card">Reload Gift Card</div>
+		</button>
+	
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="checkGiftCardBalancePopUp()" data-test-id="balance-button">
+   			<div data-i18n="check.balance">Check Gift Card Balance</div>
+		</button>
+		
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="redeemGiftCardPopUp()" data-ng-show="isSales" data-ng-disabled="isShoppingCartEmpty" data-test-id="redeem-button">
+   			<div data-i18n="redeem.gift.card">Redeem Gift Card</div>
+		</button>
+
+		<button type="button" class="btn btn-primary button-blue" data-ng-debounced-click="refundGiftCardPopUp()" data-ng-hide="isSales" data-test-id="refund-button">
+   			<div data-i18n="redeem.gift.card">Refund Gift Card</div>
+		</button>
+	</div>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/info.html">
+<div class="modal-content" id="info-popup">
+	<div class="modal-header alert-success">
+		 <button type="button" class="close" data-ng-debounced-click="$ctrl.close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-info-circle"></i>
+			Info
+		</h4>
+	</div>
+	<div class="modal-body">
+		<h4 class="text-success">{{$ctrl.msg}}</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.close()" id="close-info-popup-button">
+			Ok
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/input.html">
+<div class="modal-content" id="input-popup">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			{{$ctrl.title}}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform" autocomplete="off">
+		  <div class="form-group">
+		    <label for="popup-input-textfield">{{$ctrl.msg}}:</label>
+		    <input ng-if="!$ctrl.password" type="text" class="form-control" id="popup-input-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		    <input ng-if="$ctrl.password" type="password" class="form-control" id="popup-input-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="!$ctrl.isValid()" id="input-popup-ok-button">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()" id="input-popup-cancel-button">
+			Cancel
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/inventory-available.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-package modal-header-icon"></span>
+    	<span data-i18n="inventory.available">Inventory Available</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+  	<div class="row-container">
+  		<div class="row">
+			<div>Business Name</div>
+			<div>{{$ctrl.inventory.terminal}}</div>
+		</div>
+		<div class="row">
+			<div>Store</div>
+			<div>{{$ctrl.inventory.store}}</div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>	
+		
+		<div class="row">
+			<div><h4>Inventory Available</h4></div>
+			<div><h4>{{$ctrl.inventory.qtyonhand}}</h4></div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>	
+		
+		<div class="row">
+			<a href='javascript:void(0)' onclick="exportInventoryAvailableReport()">Download CSV</a>
+		</div>
+  	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/invoke-document.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="invokeDocument.popup.cancelButton" >&times;</button>
+		<h4 class="modal-title">
+			<div class="glyphicons glyphicons-pro folder_open"></div>
+			&nbsp;Load Order No
+		</h4>
+	</div>
+	<div class="modal-body">
+		<form name="myform" autocomplete="off">
+			<div class="row">
+				<div class="float-left popup-label">Order No:</div>
+			</div>
+			<div class="row">
+				<div class="input-group float-left input-sm">
+					<input type="text" id="invokeDocument.popup.documentNumberTextField" class="numeric textField input-sm" focus-me="true" autocomplete="off">
+				</div>
+			</div>
+		</form>	
+	</div>
+	<div class="modal-footer">
+		<div class="row">
+			<button type="button" class="btn btn-xs btn-success" name="okBtn" value="Ok" style="width:20%;" id="invokeDocument.popup.okButton" data-test-id="ok-button">
+				<div class="glyphicons glyphicons-pro ok_2"></div>
+				<div>Ok</div>
+			</button>
+		</div>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/issue-deposit.html">
+<div class="modal-content" data-test-id="issue-deposit-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="issue.card" style="vertical-align: sub;">Issue Deposit</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="amount" data-i18n="amount">Amount</label>
+	    <input type="number" class="form-control" id="amount" name="amount" ng-model="amount" required="required" focus-me="true" select-on-focus data-test-id="amount">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="issueDeposit(amount)"  data-test-id="proceed-button"
+    ng-disabled="!isValid()">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/issue-gift-card.html">
+<div class="modal-content" data-test-id="issue-gift-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="issue.card" style="vertical-align: sub;">Issue Gift Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="card_no" data-i18n="card.no">Card no</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" focus-me="true" data-test-id="card-no">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="amount" data-i18n="amount">Amount</label>
+	    <input type="number" class="form-control" id="amount" name="amount" ng-model="amount" required="required" data-test-id="amount">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="issueCard(card_no, amount)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/item-line-discount.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-tag modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="line.item.discount">Line Item Discount</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform" autocomplete="off">
+		
+		  <div class="form-group">
+		    <label for="price" data-i18n="price">Price</label>
+		    <input type="number" class="form-control" id="price" name="price" ng-model="data.price" ng-change="onPriceChange(data.price)" required="required" select-on-focus focus-me="true">
+		  </div>
+		  
+		  <div class="form-group">
+		    <label for="total" data-i18n="total">Total</label>
+		    <input type="number" class="form-control" id="total" name="total" ng-model="data.total" ng-change="onTotalChange(data.total)" required="required" select-on-focus>
+		  </div>
+		  
+		  <div class="form-group">
+		    %<label for="discount" data-i18n="discount">Discount</label> {{x}}
+		    <input type="number" class="form-control" id="discount" name="discount" ng-model="data.discount" ng-change="onDiscountChange(data.discount)" required="required" select-on-focus>
+		  </div>
+		  
+		  <div class="form-group">
+		    <label>Discount Given: {{data.discountAmt | number:2 }}</label>
+		  </div>
+
+		  <!-- discount codes  -->
+		  <div class="form-group" ng-show="codes.length > 1">
+		    <label>Discount Code</label>
+			<select ng-model="data.discountCode" ng-options="code.name for code in codes | orderBy:'percentage'">
+			</select>
+			<button class="btn btn-default" ng-debounced-click="applyDiscountCode()" ng-disabled="!( data.discountCode && data.discountCode.u_pos_discountcode_id > 0)">Apply</button>
+		  </div>
+		  
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="override()">
+			<div data-i18n="override">Override</div>
+		</button>
+		
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="apply()" ng-disabled="myform.$dirty && myform.$invalid">
+			<div data-i18n="apply">Apply</div>
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/item-line.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="line.item" style="vertical-align: sub;">Line Item</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform">
+	  <div class="form-group">
+	    <label for="qty" data-i18n="enter.quantity">Enter quantity:</label>
+	    <input type="number" class="form-control" id="item-line-qty" name="qty" ng-model="$ctrl.qty" required="required" select-on-focus focus-me="true" autocomplete="off" ng-enter="$ctrl.apply()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	
+  	<button type="button" class="btn btn-lg btn-primary" data-ng-debounced-click="$ctrl.splitLine()" ng-disabled="!$ctrl.isValid()">
+    	<div data-i18n="split">Split</div>
+    </button>
+  	
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.apply()" 
+    ng-disabled="myform.qty.$dirty && myform.qty.$invalid">
+    	<div data-i18n="apply">Apply</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/keypad-panel.html">
+<div id="keypad-popup-panel" class="keypad-popup-panel" style="display:none;">
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<div class="row pin-pad-panel">
+						<table border="0" cellpadding="0" cellspacing="0" class="table">
+							<tr>
+								<td colspan="3">
+									<button id="keyDelete" class="keypad-button" style="width:98%; font-size:14px; background-color:#FFD0CC !important; background-image: none;" type="button">
+										<div class="glyphicons glyphicons-pro delete"></div>
+										<div class="keypad-value">Del</div>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button id="key7" class="keypad-button" type="button"><div class="keypad-value">7</div></button>
+								</td>
+								<td>
+									<button id="key8" class="keypad-button" type="button"><div class="keypad-value">8</div></button>
+								</td>
+								<td>
+									<button id="key9" class="keypad-button" type="button"><div class="keypad-value">9</div></button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button id="key4" class="keypad-button" type="button"><div class="keypad-value">4</div></button>
+								</td>
+								<td>
+									<button id="key5" class="keypad-button" type="button"><div class="keypad-value">5</div></button>
+								</td>
+								<td>
+									<button id="key6" class="keypad-button" type="button"><div class="keypad-value">6</div></button>
+								</td>
+								
+							</tr>
+							<tr>
+								<td>
+									<button id="key1" class="keypad-button" type="button"><div class="keypad-value">1</div></button>
+								</td>
+								<td>
+									<button id="key2" class="keypad-button" type="button"><div class="keypad-value">2</div></button>
+								</td>
+								<td>
+									<button id="key3" class="keypad-button" type="button"><div class="keypad-value">3</div></button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button id="key0" class="keypad-button" type="button"><div class="keypad-value">0</div></button>
+								</td>
+								<td>
+									<button id="keyDot" class="keypad-button" type="button"><div class="keypad-value">.</div></button>
+								</td>
+								<td>
+									<button id="keyMinus" class="keypad-button" type="button"><div class="keypad-value">-</div></button>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<button id="keyEnter" class="keypad-button" type="button"><div class="keypad-value">&crarr;</div></button>
+								</td>
+								<td>
+									<button id="keyClose" class="keypad-button" type="button"><div class="keypad-value" data-i18n="close">Close</div></button>
+								</td>
+							</tr>
+						</table>	
+					</div>
+				</div>
+			</div>
+		</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/load-order.html">
+<div class="modal-content" data-test-id="load-order-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-folder-open modal-header-icon"></span>
+		<span data-i18n="load.order" style="padding-left: 24px;">Load Order</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     
+     <div class="form-group">
+	    <label for="order_no" data-i18n="store">Store:</label>
+	    
+	    <select class="form-control" id="store_id" name="store_id" ng-model="store_id" data-test-id="store-id">
+	    	<option ng-repeat="store in stores" value="{{ store.id }}" ng-selected="current_store_id == store.id">
+	    		{{ store.name }}
+	    	</option>
+	    </select>
+	    
+	  </div>
+     
+	  <div class="form-group">
+	    <label for="order_no" data-i18n="popup.order.no">Order No:</label>
+	    <input type="text" class="form-control" id="order_no" name="order_no" ng-model="order_no" ng-enter="load(store_id, order_no)" required="required" focus-me="true" data-test-id="order-no">
+	  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="load(store_id,order_no)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/merge-tables.html">
+<div class="modal-content" data-test-id="merge-tables-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Merge Table #{{ $ctrl.activeTable.name }}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform">
+		  <div class="form-group">
+		    <button data-test-id="table-{{table.table_id}}" class="merge-table-button" ng-disabled="table.table_id == $ctrl.activeTable.table_id" ng-class="{ 'btn-success' : table.selected, 'btn-warning' : table.table_id == $ctrl.activeTable.table_id }" ng-debounced-click="$ctrl.toggleTable(table)" ng-repeat="table in $ctrl.availableTables | orderBy : 'table_id'">{{table.name}}</button>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="$ctrl.getSelectedTables().length == 0">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/modal.html">
+<div class="modal-content">	
+	<div class="modal-body">
+		<h1>{{ $ctrl.msg }}</h1>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/open-cash-drawer.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-eject modal-header-icon"></span>
+    	<span data-i18n="open.drawer">Open Drawer</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="username" data-i18n="username">Username</label>
+	    <input type="text" class="form-control" id="username" name="username" ng-model="username" required="required" focus-me="true">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="password" data-i18n="password">Password</label>
+	    <input type="password" class="form-control" id="password" name="password" ng-model="password" required="required">
+	  </div>
+	  
+	   <div class="form-group">
+	    <label for="reason" data-i18n="reason">Reason</label>
+	    <textarea rows="" cols="" class="form-control" name="reason" ng-model="reason" required="required"></textarea>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="openCashDrawer( username,password,reason )" ng-disabled="!isValid()">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/pin-panel.html">
+<div class="modal-content" data-test-id="pin-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Enter your PIN
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform">
+		  <div class="form-group">
+		    <input class="form-control" type="password" id="popup-pin-textfield" name="input" ng-model="$ctrl.input" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.ok()">
+		  </div>
+		  <div id="popup-pin-keypad">
+		  	<table>
+		  		<tr>
+		  			<td><button data-test-id="1" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '1'" debounce-timeout="100">1</button></td>
+		  			<td><button data-test-id="2" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '2'" debounce-timeout="100">2</button></td>
+		  			<td><button data-test-id="3" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '3'" debounce-timeout="100">3</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="4" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '4'" debounce-timeout="100">4</button></td>
+		  			<td><button data-test-id="5" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '5'" debounce-timeout="100">5</button></td>
+		  			<td><button data-test-id="6" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '6'" debounce-timeout="100">6</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="7" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '7'" debounce-timeout="100">7</button></td>
+		  			<td><button data-test-id="8" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '8'" debounce-timeout="100">8</button></td>
+		  			<td><button data-test-id="9" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '9'" debounce-timeout="100">9</button></td>
+		  		</tr>
+		  		<tr>
+		  			<td><button data-test-id="clear" type="button" class="btn" ng-debounced-click="$ctrl.input = ''" debounce-timeout="100">Clear</button></td>
+		  			<td><button data-test-id="0" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input + '0'" debounce-timeout="100">0</button></td>
+		  			<td><button data-test-id="backspace" type="button" class="btn" ng-debounced-click="$ctrl.input = $ctrl.input.slice(0,$ctrl.input.length-1)" debounce-timeout="100"><i class="fa fa-arrow-left"></i></button></td>
+		  		</tr>
+		  	</table>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-lg btn-danger pull-left btn-big" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+		 <button type="button" class="btn btn-lg btn-success btn-big" ng-debounced-click="$ctrl.ok()" ng-disabled="!$ctrl.isValid()" data-test-id="ok-button">
+			OK
+		</button>
+		
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/posterita-cms.customer.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-credit-card modal-header-icon"></span>
+    	<span data-i18n="posterita.loyalty" style="padding-left: 24px;">Posterita Loyalty</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="coupon_no" data-i18n="enter.posterita.loyalty.card.number">Enter Posterita Loyalty Card Number</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="ctrl.card_no" required="required" focus-me="true" autocomplete="off">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="ctrl.search(ctrl.card_no)" ng-disabled="!ctrl.isValid()">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/product-info-popup-panel.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-search modal-header-icon"></span>
+    	<span data-i18n="product-info-popup-title">Product Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+	<div class="row-container" id="product-info-container">
+		<div class="column-container">
+			<div>
+				<input id="product-info-textfield" type="text" autocomplete="off" class="product-info-textfield" ng-model="productInfoSearchTerm" ng-enter="$ctrl.getProductInfo(productInfoSearchTerm)" placeholder="Enter Barcode, Name, Desc">
+			</div>
+			
+			<div style="width:60px;">
+				<button class="btn btn-default" type="button" ng-debounced-click="$ctrl.getProductInfo(productInfoSearchTerm)" style="position: absolute; height: 100%;">
+		        	<i class="glyphicons glyphicons-search xs"></i>
+		        </button>
+			</div>
+			
+		</div>
+	</div>
+	<div class="row-container" ng-show="$ctrl.results" style="margin-top: 10px;">
+		<!-- product list header -->
+		<div>		
+			<div class="column-container product-search-result-header" style="height:100%;">
+				<div>
+					<strong>Name/Description x</strong>
+				</div>
+				
+				<div style="text-align: right;">
+					<strong>Stock in Hand</strong>
+				</div>
+			</div>
+			
+		</div>
+		<!-- product list header -->
+		
+		<!-- product list result box -->
+		<div>
+			<div style="height: 385px; overflow-y: auto; width: 100%; position: relative; top:0px;" class="product-search-result">											
+				<!-- product result -->
+				<div class="column-container" ng-repeat="result in $ctrl.results track by $index" ng-debounced-click="$ctrl.showProductInfo( result )">
+					<div>
+						{{ result.name }} <br/>
+						{{ result.description }}
+					</div>
+					
+					<div> 
+						{{ result.qtyonhand }}
+					</div>
+				</div>
+				<!-- product result -->			
+			</div>
+		</div>
+		<!-- product list result box -->
+			
+	</div>
+		
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()">
+    	<div data-i18n="close">Close</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/product-info.html">
+<div class="modal-content" id="product-info-popup">
+					<div class="modal-header">
+						<button type="button" class="close" ng-debounced-click="close()">&times;</button>
+						<h4 class="modal-title">
+							<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+							&nbsp;<span>{{product.name}}</span>
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-7 col-xs-7">
+								<div class="row">
+									<div class="col-xs-5 col-md-5 padding-bottom-16">
+										<div class="image-product" style="width: 140px; height: 140px;">
+											<a rel="prettyPhoto" id="productInfo.popup.image.link">
+												<!-- <img id="productInfo.popup.image" src="images3/create-products.png" alt=""/> -->
+												<!-- <img id="productInfo.popup.image" class="frame-image" alt="">
+												<i id="productInfo.popup.image" class="glyphicons product-image object-image no-padding"></i> -->
+											</a>
+										</div>
+									</div>
+									<div class="col-xs-7 col-md-7" style="font-family:arial; font-size: 13pt; color:#1d1d1d; font-weight:bold; ">
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.current.price">Current Price:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricestd | number:2}}</span>
+											</div>
+										</div>
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.rrp">RRP:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricelist | number:2}}</span>
+											</div>
+										</div>
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.min.price">Min Price:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricelimit | number:2}}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row header-2" style="font-family:arial;" ng-show="discountCodes.length > 0">
+									<div class="col-xs-12 col-md-12">
+										Discount Code
+									</div>
+								</div>
+								<div class="row header-3" style="font-family:arial;color:#8e8e93 !important;" ng-repeat="discountCode in discountCodes">
+									<div class="col-xs-8 col-md-8">
+										<span data-i18n="popup.min.price">{{discountCode.name}} - {{discountCode.percentage}}%</span>
+									</div>
+									<div class="col-xs-4 col-md-4">
+										<span class="pull-right" style="padding-right:36px">{{(( product.pricestd * ( 100 - discountCode.percentage ) )/100 ) | number:2 }}</span>
+									</div>
+								</div>
+								<div class="row header-2" style="font-family:arial;" ng-show="discountCodes.length > 0">
+									<div class="col-xs-12 col-md-12">&nbsp;</div>
+								</div>
+																
+								<div class="row header-2" style="font-family:arial;">
+									<div class="col-xs-12 col-md-12">
+										<div class="pull-left"><span data-i18n="popup.description">Description:</span>&nbsp;</div>
+										<div>{{product.description}}</div>
+									</div>
+								</div>
+
+								<div class="row header-3" style="font-family:arial;color:#8e8e93 !important;">
+									<div class="col-xs-12 col-md-12">
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.unit.of.measure">Unit of measure:</span>&nbsp;</div>
+												<span>{{product.c_uom_name}}</span>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.product.type">Product type:</span>&nbsp;</div>
+												<span id="productInfo.popup.productTypeLabel">Item</span>
+											</div>
+										</div>
+										<!-- <div>
+											<span id="productInfo.popup.unitOfMeasureLabel"></span> ,&nbsp; <span
+												id="productInfo.popup.productTypeLabel">Item</span>
+										</div> -->
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.upc">UPC/EAN:</span>&nbsp;</div>
+												<div>{{product.upc}}</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Mapping for current warehouse&nbsp;</div>
+												<div>{{status_message}}{{mappings}}</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div id="product.groups"></div>
+											</div>
+										</div>
+										<!-- <div id="productInfo.popup.barcodeLabel" class="colaclassic colaclassic_right"></div> -->
+										<div id="product.groups"></div>
+										<br/> <br/>
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div id="productInfo.popup.includesTaxLabel"></div>
+											</div>
+										</div>
+										<div class="row" style="display:none;">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Tax Exempt:&nbsp;</div>
+												<div id="productInfo.popup.taxLabel"></div>
+											</div>
+										</div>
+										<div class="row" style="display:none;">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Org:</div>
+												<div id="productInfo.popup.orgLabel" class="pull-left"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- <div id="productInfo.popup.includesTaxLabel" class="board_tax"></div>
+								<div id="productInfo.popup.taxLabel" class="board_tax"></div>
+								<div class="floatleft">Org:</div>
+								<div id="productInfo.popup.orgLabel" class="floatleft"></div> -->
+							</div>
+		
+							<!-- <div class="col-md-5 col-xs-5 no-padding">
+								<span class="header2">Stock</span>
+								<div>
+									<table id="product.stocks">
+										<tr>
+											<td height="0px" width="0px">Not available in offline mode!</td>
+										</tr>
+									</table>
+								</div>
+							</div> -->
+							
+							<div class="col-md-5 col-xs-5">
+								<div class="row padding-bottom-8 header-2">
+									<div class="col-xs-6 col-md-6" data-i18n="store">Store</div>		
+									<div class="col-xs-6 col-md-6">
+										<div class="pull-right" data-i18n="inventory.qty">Inventory Qty</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-12 col-md-12">
+										<div>{{status_message}}</div>
+									</div>
+								</div>
+								
+								<div class="row" ng-repeat="stock in stocks">
+									<div class="col-xs-6 col-md-6">{{stock.warehouse}}</div>		
+									<div class="col-xs-6 col-md-6">
+										<div class="pull-right">{{stock.qty}}</div>
+									</div>
+								</div>
+								
+							</div>
+						</div>
+					</div>
+					<div style="clear: both;"></div>
+					<div class="modal-footer">						
+							<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="close()" data-test-id="ok-button">
+								<div data-i18n="ok">Ok</div>
+							</button>
+					</div>
+				</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/product-search-error.html">
+<div class="modal-content" style="width:70%;">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id ="product.search.error.cancel">&times;</button>
+						<h4 class="modal-title">
+							<div class="glyphicons glyphicons-pro circle_exclamation_mark"></div>
+							&nbsp;<span data-i18n="search.product.not.found">Product Not Found</span>
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row" style="font-size:15px;font-family:arial;color:#FF4233;">
+							<div class="col-xs-12 col-md-12" ">
+								<span data-i18n="no.product.found.for.barcode">No product(s) found for barcode</span> <span id="product.search.error.barcode"></span>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<div class="row">
+							<button type="button" class="btn btn-xs btn-success" style="width:20%;" id="product.search.error.ok" data-test-id="ok-button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div data-i18n="ok">Ok</div>
+							</button>
+						</div>
+					</div>
+				</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/progress-modal.html">
+<div class="modal-content" data-test-id="progress-modal-popup">	
+	<div class="modal-body">
+		<h1>{{ msg }}</h1>
+		<p>{{ getProgress() }}</p>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/redeem-coupon.html">
+<div class="modal-content"  data-test-id="redeem-coupon-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-fabric modal-header-icon"></span>
+    	<span data-i18n="check.card.balance" style="padding-left: 24px;">Redeem Coupon</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="coupon_no" data-i18n="card.no">Coupon no</label>
+	    <input type="text" class="form-control" data-test-id="coupon_no" id="coupon_no" name="coupon_no" ng-model="coupon_no" required="required" focus-me="true" autocomplete="off">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="redeem(coupon_no)" ng-disabled="!isValid()" data-test-id="redeem-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/redeem-deposit.html">
+<div class="modal-content" data-test-id="redeem-deposit-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="redeem.deposit" style="vertical-align: sub;">Redeem Deposit</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">     
+		  <div class="form-group">
+		    <label for="deposit_no" data-i18n="deposit.no">Deposit no</label>
+		    <input type="text" class="form-control" id="deposit_no" name="deposit_no" ng-model="deposit_no" required="required" focus-me="true" select-on-focus data-test-id="deposit-no">
+		  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="redeemDeposit( deposit_no )"  ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/redeem-gift-card.html">
+<div class="modal-content" data-test-id="redeem-gift-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="redeem.card" style="vertical-align: sub;">Redeem Gift Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     
+		  <div class="form-group">
+		    <label for="card_no" data-i18n="card.no">Card no</label>
+		    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" focus-me="true" data-test-id="card-no">
+		  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="redeemCard( card_no )"  ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/refund-balance-gift-card.html">
+<div class="modal-content" data-test-id="refund-balance-gift-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="refund.card.balance" style="vertical-align: sub;">Refund Gift Card Balance</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="card_no" data-i18n="card.no">Gift Card No.</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" data-test-id="card-no">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="refundGiftCardBalance(card_no)" ng-disabled="!isValid()"  data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/refund-deposit.html">
+<div class="modal-content" data-test-id="refund-deposit-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span data-i18n="refund.deposit" style="vertical-align: sub;">Refund Deposit</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="deposit_no" data-i18n="card.no">Deposit No.</label>
+	    <input type="text" class="form-control" id="deposit_no" name="deposit_no" ng-model="deposit_no" required="required" focus-me="true" select-on-focus data-test-id="deposit-no">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="refundGiftCardBalance(deposit_no)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/reload-gift-card.html">
+<div class="modal-content" data-test-id="reload-gift-card-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-edit modal-header-icon"></span>
+    	<span style="vertical-align: sub;">Reload Gift Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="card_no" data-i18n="card.no">Card no</label>
+	    <input type="text" class="form-control" id="card_no" name="card_no" ng-model="card_no" required="required" focus-me="true" autocomplete="off" data-test-id="card-no">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="amount" data-i18n="amount">Amount</label>
+	    <input type="number" class="form-control" id="amount" name="amount" ng-model="amount" required="required" data-test-id="amount">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="reloadCard(card_no, amount)" ng-disabled="!isValid()" data-test-id="proceed-button">
+    	<div data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/request-support.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-phone-alt modal-header-icon"></span>
+    	<span data-i18n="request.support">Request Support</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="email" data-i18n="email.mandatory">Email *</label>
+	    <input type="text" class="form-control" id="email" name="email" ng-model="$ctrl.email" required="required" focus-me="true">
+	  </div>
+	  <div class="form-group">
+	    <label for="phoneNo" data-i18n="phone.no">Phone No</label>
+	    <input type="text" class="form-control" id="phoneNo" name="phoneNo" ng-model="$ctrl.phoneNo">
+	  </div>
+	  <div class="form-group">
+	    <label for="description" data-i18n="describe.your.problem.mandatory">Describe your Problem *</label>
+	    <textarea class="form-control support-description-textarea" id="description" name="description" ng-model="$ctrl.description" required="required"></textarea>
+	  </div>
+	  <div ng-show="true"> <!-- TODO: show/hide when in role permission to login is granted -->
+	    <label>
+	    	<input type="checkbox" name="allowRemoteLogin" ng-model="$ctrl.allowRemoteLogin" value="true"/> <span data-i18n="allow.reseller.to.login">Allow reseller to Login</span> 
+	    </label>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.sendRequest()" ng-disabled="myform.$invalid">
+    	<div data-i18n="send">Send</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/search-by-date.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-search modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="search">Search</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form id="myform" name="myform">
+		
+			<div class="form-group">
+				<label data-i18n="date">Date (YYYY-DD-MM)</label>								
+			</div>
+			
+			<div class="row form-group">
+				<div class="col-md-6">
+					<div class="input-group">
+					<input class="form-control" id="date-from" ng-model="params.date1" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened1"> 
+					<span class="input-group-btn">
+        				<button class="btn btn-default" ng-debounced-click="$ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+      				</span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="input-group">
+						<input class="form-control" id="date-to" ng-model="params.date2" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened2"> 
+						<span class="input-group-btn">
+	        				<button class="btn btn-default" ng-debounced-click="$ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	      				</span>
+					</div>
+				</div>
+			</div>			
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.search()">
+			<div data-i18n="search">Search</div>
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/search-exchange-order.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-search modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="search.order">Search Exchange Order</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form id="myform" name="myform" autocomplete="off">
+			
+			<div class="form-group">
+				<label data-i18n="date.ordered">Date Ordered (YYYY-DD-MM)</label>								
+			</div>
+			
+			<div class="row form-group">
+				<div class="col-md-6">
+					<div class="input-group">
+					<input class="form-control" id="date-from" ng-model="params.date1" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened1"> 
+					<span class="input-group-btn">
+        				<button class="btn btn-default" ng-debounced-click="$ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+      				</span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="input-group">
+						<input class="form-control" id="date-to" ng-model="params.date2" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened2"> 
+						<span class="input-group-btn">
+	        				<button class="btn btn-default" ng-debounced-click="$ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	      				</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label data-i18n="customer">Customer</label> 
+				<select class="form-control" data-placeholder="Choose a customer ..." id="customer-id" ng-model="params.customer"
+				ng-options="customer as customer.name for customer in ctrl.customers track by customer.id">
+				</select>
+			</div>
+			<div class="form-group">
+				<label data-i18n="product">Item Barcode</label> 
+				<input class="form-control" data-placeholder="Enter barcode" id="barcode" name="barcode" ng-model="params.barcode"> 
+			</div>
+			<div class="form-group">
+				<label data-i18n="store">Store</label> 
+				<select class="form-control" data-placeholder="Choose Store ..." id="store" name="store" ng-model="params.store" 
+				ng-options="store as store.name for store in ctrl.stores track by store.id">
+				</select>
+			</div>
+			
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.search()">
+			<div data-i18n="search">Search</div>
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/search-order.html">
+<div class="modal-content">
+	<div class="modal-header">
+		<button type="button" class="close" ng-debounced-click="$close()">&times;</button>
+		<h4 class="modal-title">
+			<span class="glyphicons glyphicons-search modal-header-icon"></span>
+			&nbsp;
+			<span data-i18n="search.order">Search Order</span>
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form id="myform" name="myform" autocomplete="off">
+		
+			<div class="form-group">
+				<label data-i18n="doc.no">Doc No.</label> 
+				<input class="form-control" id="document-no" ng-model="params.documentNo" type="text">
+			</div>
+			
+			<div class="form-group">
+				<label data-i18n="date.ordered">Date Ordered (YYYY-DD-MM)</label>								
+			</div>
+			
+			<div class="row form-group">
+				<div class="col-md-6">
+					<div class="input-group">
+					<input class="form-control" id="date-from" ng-model="params.date1" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened1"> 
+					<span class="input-group-btn">
+        				<button class="btn btn-default" ng-debounced-click="$ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+      				</span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="input-group">
+						<input class="form-control" id="date-to" ng-model="params.date2" placeholder="" type="text" datepicker-popup="yyyy-MM-dd" is-open="$ctrl.opened2"> 
+						<span class="input-group-btn">
+	        				<button class="btn btn-default" ng-debounced-click="$ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	      				</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label data-i18n="doc.status">Doc Status</label> 
+				<select class="form-control" id="doc-status" ng-model="params.docStatus"">
+					<option value="">
+					</option>
+					<option value="CO">
+						Completed
+					</option>
+					<option value="DR">
+						Drafted
+					</option>
+					<option value="VO">
+						Voided
+					</option>
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<label data-i18n="customer">Customer</label> 
+				<!--
+				<select class="form-control" data-placeholder="Choose a customer ..." id="customer-id" ng-model="params.customer"
+				ng-options="customer as customer.name for customer in ctrl.customers track by customer.id">
+				</select>
+				 -->
+				
+				<input type="text" class="form-control" placeholder="" ng-model="params.customer" onfocus="this.select()"
+									typeahead="customer as customer.name for customer in ctrl.searchCustomers($viewValue) | limitTo:5" 
+									typeahead-template-url="templates/customer-tpl.html">
+			</div>
+			<div class="form-group">
+				<label data-i18n="sales.rep">Sales Rep</label> 
+				<select class="form-control" data-placeholder="Choose a sales rep ..." id="sales-rep" name="sales-rep" ng-model="params.salesRep" 
+				ng-options="salesrep as salesrep.name for salesrep in ctrl.salesReps track by salesrep.id">
+				</select>
+			</div>
+			<div class="form-group">
+				<label data-i18n="payment.type">Payment Type</label> 
+				<select class="form-control" id="payment-type" name="payment-type" ng-model="params.paymentRule">
+					<option value="">
+					</option>
+					<option value="Emtel Money">
+						Blink
+					</option>
+					<option data-i18n="cash" value="Cash">
+						Cash
+					</option>
+					<option data-i18n="cheque" value="Cheque">
+						Cheque
+					</option>
+					<option data-i18n="credit.card" value="Card">
+						Credit Card
+					</option>
+					<option data-i18n="external.credit.card" value="Ext Card">
+						External Credit Card
+					</option>
+					<option value="Gifts.mu">
+						Gifts.mu
+					</option>
+					<option data-i18n="loyalty" value="Loyalty">
+						Loyalty
+					</option>
+					<option data-i18n="mips" value="MIPS">
+						MIPS
+					</option>
+					<option data-i18n="mixed" value="Mixed">
+						Mixed
+					</option>
+					<option value="MY.T Money">
+						MY.T Money
+					</option>
+					<option data-i18n="on.credit" value="Credit">
+						On Credit
+					</option>
+					<option data-i18n="voucher" value="Voucher">
+						Voucher
+					</option>
+				</select>
+			</div>
+			
+		</form>
+	
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.reset()">
+			<div data-i18n="reset">Reset</div>
+		</button>
+		<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="$ctrl.search()">
+			<div data-i18n="search">Search</div>
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/select-modifier.html">
+<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="select-modifier-cancel-button">&times;</button>
+						<h4 class="modal-title">
+							<div class="glyphicons glyphicons-pro pizza"></div>
+							&nbsp;<span data-i18n="modifier">Modifier</span>
+						</h4>
+					</div>
+					<div class="modal-body" style="height:400px;">
+						<div class="row" id="select-modifier-panel-modifier-groups-container">
+						</div>
+						<div class="row" id="select-modifier-panel-selection-container">
+							<div class="col-xs-4 col-md-4 no-padding">
+								<div id="select-modifier-panel-product"></div>
+							</div>
+							<div class="col-xs-6 col-md-6">
+								<div id="select-modifier-panel-modifiers"></div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-success" id="select-modifier-ok-button" data-i18n="ok" data-test-id="ok-button">Ok</button>
+					</div>
+				</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/server-down.html">
+<div class="modal-content" id="alert-popup">
+	<div class="modal-header alert-danger">		 
+		<h4 class="modal-title">
+			<i class="fa fa-exclamation-triangle"></i>
+			Server Unreachable
+		</h4>
+	</div>
+	<div class="modal-body">
+		<h4 class="text-danger">Server connection failed! Check your network connection.</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.retry()" data-test-id="retry-button">
+			Retry
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/shoppingcart-line-comment.html">
+<div class="modal-content" data-test-id="line-comment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-comments modal-header-icon"></span>
+		<span data-i18n="comments">Comments - {{ $ctrl.product.name }}</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+      
+     <form name="myform">
+	  <div class="form-group">
+	    <label for="comments" data-i18n="enter.comments">Enter Comments:</label>
+	    <textarea rows="6" class="form-control" id="comments" name="comments" ng-model="$ctrl.comments" required="required"></textarea>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" ng-debounced-click="$ctrl.suite()" data-test-id="suite-button">
+		<div data-i18n="suite">Suite</div>
+	</button>
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.addComment($ctrl.comments)" data-test-id="save-button">
+    	<div data-i18n="save">Save</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/split-line.html">
+<div class="modal-content" data-test-id="split-line-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-list modal-header-icon"></span>
+    	<span data-i18n="line.item">Split Line Item</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off"> 
+	  <div class="form-group">
+	    <label for="qty" data-i18n="enter.quantity">Enter quantity:</label>
+	    <input data-test-id="split-line-popup-qty-textfield" type="number" class="form-control" id="item-line-qty" name="qty" ng-model="qty" required="required" select-on-focus focus-me="true" ng-enter="$ctrl.apply()">
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	
+    <button data-test-id="split-line-popup-split-button" type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="apply()" 
+    ng-disabled="myform.qty.$dirty && myform.qty.$invalid">
+    	<div data-i18n="apply">Split</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/split-order-panel.html">
+<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="split-order-popup-cancel-button">&times;</button>
+						<h4 class="modal-title">
+							<div class="glyphicons glyphicons-pro file"></div>
+							&nbsp;<span data-i18n="split.order">Split Order</span>
+						</h4>
+					</div>
+	
+					<div class="modal-body">
+						
+					</div>
+					
+					<div class="modal-footer">
+						<div class="row">
+							<button type="button" class="btn btn-xs btn-success" name="okBtn" value="Ok" style="width:20%;" id="split-order-popup-ok-button" data-test-id="ok-button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div data-i18n="ok">Ok</div>
+							</button>
+						</div>
+					</div>
+				</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/split-order.html">
+<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" id ="split.order.popup.cancelButton">&times;</button>
+						<h4 class="modal-title">
+							<i class="glyphicons glyphicons-pro group"></i>
+							&nbsp;<span data-i18n="split.order">Split Order</span>
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div id="split.order.popup.inner.panel" class="border_pop46" style="height:300px;overflow:auto;width:auto;">
+							</div>
+						</div>
+						<div class="row">
+							<div id="split.order.select.salesrep.panel" class="popup">
+							</div>
+							
+							<div id="view.split.order.popup.panel" class="popup">
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<div class="row">
+							<button type="button" class="btn btn-xs btn-success" style="width:20%;" id="split.order.popup.okButton" data-test-id="ok-button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div data-i18n="ok">Ok</div>
+							</button>
+						</div>
+					</div>
+				</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/stock-synchronizing.html">
+<div class="modal-content">
+	<div class="modal-header alert-success">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-info-circle"></i>
+			Info
+		</h4>
+	</div>
+	<div class="modal-body">
+		<!-- <h4 class="text-success">Document successfully completed. Synchronize Pos.</h4> -->
+		<h4 class="text-success">{{ msgText }}</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="sync()">
+			Synchronize
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/switch-table.html">
+<div class="modal-content" data-test-id="switch-table-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Switch Table #{{ $ctrl.activeTable.name }}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<!-- 
+		<form name="myform">
+		  <div class="form-group">
+		    <label for="popup-input-textfield">Choose Table:</label>
+		    <select class="form-control input-lg" ng-model="to_table" ng-options="table.name for table in $ctrl.availableTables track by table.table_id"></select>
+		  </div>
+		</form>	
+		 -->
+		 
+		<form name="myform">
+		  <div class="form-group">
+		    <button data-test-id="table-{{table.table_id}}" class="merge-table-button" ng-class="{ 'btn-warning' : table.table_id == to_table.table_id }" ng-debounced-click="$ctrl.setToTable(table)" ng-repeat="table in $ctrl.availableTables | orderBy : 'table_id'">{{table.name}}</button>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="to_table == null">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/sync-draft-and-open-orders.html">
+<div class="modal-content" data-test-id="sync-draft-and-open-orders-popup">
+	<div class="modal-header">		 
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Synchronize Draft & Open Orders
+		</h4>
+	</div>
+	<div class="modal-body draft-and-open-order">
+		<div>Found:</div>
+		<ul>
+			<li ng-show="$ctrl.draftOrders.length > 0 ">
+				<span class="text-danger">{{ $ctrl.draftOrders.length }} Draft {{ $ctrl.draftOrders.length == 1 ? 'Order' : 'Orders' }}.</span>
+			</li>
+			
+			<li ng-show="$ctrl.openOrders.length > 0 ">
+				<span class="text-danger">{{ $ctrl.openOrders.length }} Open {{ $ctrl.openOrders.length == 1 ? 'Order' : 'Orders' }}.</span>
+			</li>		
+		</ul>
+		
+		<div>Do you want to synchronize them ?</div>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.yes()" data-test-id="yes-button">
+			Yes
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.no()" data-test-id="no-button">
+			No
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/synchronize.html">
+<div class="modal-content" data-test-id="synchronize-popup">
+	<div class="modal-header">
+		 <button type="button" class="close" data-test-id="cancel-popup" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			Synchronize POS
+		</h4>
+	</div>
+	<div class="modal-body">
+		Click the synchronize button to launch the synchronization process.
+	</div>
+	<div class="modal-footer">
+		 <button type="button" data-test-id="synchronize-button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.sync()">
+			Synchronize
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$close()">
+			Cancel
+		</button>
+	</div>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/take-away-info.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-clock modal-header-icon"></span>
+    	<span data-i18n="take.away.info">Take-Away Info</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     
+	  <div class="form-group">
+	    <label for="customer" data-i18n="Customer">Customer:</label>
+	    <input type="text" class="form-control" id="customer" name="customer" ng-model="$ctrl.customer">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="phone" data-i18n="phone">Phone:</label>
+	    <input type="text" class="form-control" id="phone" name="phone" ng-model="$ctrl.phone">
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="time" data-i18n="time">Time:</label>
+	    <input type="text" class="form-control" id="time" name="time" ng-model="$ctrl.time">
+	  </div>
+	  
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.ok()" 
+    ng-disabled="myform.password.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/terminal-info.html">
+<div class="modal-content" id="terminal-info-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+    	<span data-i18n="popup.information">Information</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div data-i18n="popup.user">User:</div>
+			<div>
+				{{ctrl.USER}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.role">Role:</div>
+			<div>
+				{{ctrl.ROLE}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.organisation">Organisation:</div>
+			<div >
+				{{ctrl.STORE}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.terminal">Terminal:</div>
+			<div>
+				{{ctrl.TERMINAL}}
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div class="" data-i18n="ok">OK</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/till-denomination.html">
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-calculator modal-header-icon"></span>
+    	<span style="padding-left: 24px;">Denomination</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform" autocomplete="off">
+     	<div style="padding-bottom: 20px;">
+     		Enter the number of notes and coins below
+     	</div>
+     	
+     	<table id="table-till-denomination">
+	     	<tr>
+	     		<td>
+		     		<table>	
+					  <tr>
+					    <th>Notes</th>
+					  </tr> 
+					   
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_2000" class="form-control" min="0" /> &nbsp;&nbsp; x 2000
+					    </td>
+					    <td> = {{ denomination.note_2000 * 2000 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_1000" class="form-control" min="0" /> &nbsp;&nbsp; x 1000
+					    </td>
+					    <td> = {{ denomination.note_1000 * 1000 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_500" class="form-control" min="0" /> &nbsp;&nbsp; x 500
+					    </td>
+					    <td> = {{ denomination.note_500 * 500 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_200" class="form-control" min="0" /> &nbsp;&nbsp; x 200
+					    </td>
+					    <td> = {{ denomination.note_200 * 200 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_100" class="form-control" min="0" /> &nbsp;&nbsp; x 100
+					    </td>
+					    <td> = {{ denomination.note_100 * 100 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_50" class="form-control" min="0" /> &nbsp;&nbsp; x 50
+					    </td>
+					    <td> = {{ denomination.note_50 * 50 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.note_25" class="form-control" min="0" /> &nbsp;&nbsp; x 25
+					    </td>
+					    <td> = {{ denomination.note_25 * 25 }} </td>
+					  </tr>
+					</table>
+				</td>
+
+		     	<td>
+		     		<table>	
+					  <tr>
+					    <th>Coins</th>
+					  </tr> 
+					   
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_20" class="form-control" min="0" /> &nbsp;&nbsp; x 20
+					    </td>
+					    <td> = {{ denomination.coin_20 * 20 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_10" class="form-control" min="0" /> &nbsp;&nbsp; x 10
+					    </td>
+					    <td> = {{ denomination.coin_10 * 10 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_5" class="form-control" min="0" />  &nbsp;&nbsp; x 5
+					    </td>
+					    <td> = {{ denomination.coin_5 * 5 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_1" class="form-control" min="0" /> &nbsp;&nbsp; x 1
+					    </td>
+					    <td> = {{ denomination.coin_1 * 1 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_050" class="form-control" min="0" /> &nbsp;&nbsp; x 0.50
+					    </td>
+					    <td> = {{ denomination.coin_050 * 0.50 | number:2 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_020" class="form-control" min="0" /> &nbsp;&nbsp; x 0.20
+					    </td>
+					    <td> = {{ denomination.coin_020 * 0.20 | number:2 }} </td>
+					  </tr>
+					  
+					  <tr>
+					    <td>
+					    	<input type="number" ng-model="denomination.coin_005" class="form-control" min="0" /> &nbsp;&nbsp; x 0.05
+					    </td>
+					    <td> = {{ denomination.coin_005 * 0.05 | number:2 }} </td>
+					  </tr>
+					</table>
+				</td>
+	     	</tr>
+     	</table>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+  	<div id="till-denomination-total">
+  		Total Amount: Rs{{ denomination.getTotal() | number:2 }}
+  	</div> 
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="confirmDenomination()">
+    	<div data-i18n="confirm">Confirm</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+

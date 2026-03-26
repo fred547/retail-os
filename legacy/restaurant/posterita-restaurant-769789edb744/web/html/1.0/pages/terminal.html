@@ -1,0 +1,79 @@
+<div id="header-white-background">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div class="header-logo">
+			<img src='../../images/v13/logo2.png'>
+		</div>
+		
+		<div style="width:25%;"></div>
+		
+	</div>				
+	<div class="grey-separator"></div>		
+</div>
+
+<div id="body-content">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div>
+		
+			<form name="loginform">
+				<div class="row-container login-container">
+					
+					<!-- Login Title -->
+					<div>
+						<div class="login-title form-group">
+							Select Store and Terminal
+						</div>
+					</div><!-- Login Title -->
+					
+					<!-- Store Name -->
+					<div>
+						<div class="form-group">
+							<label for="store">Store</label>							 
+							<select data-test-id="store" class="form-control" ng-change="ctrl.renderTerminalList(ctrl.store)" ng-model="ctrl.store" ng-options="store as store.name for store in ctrl.storeList track by store.id"></select>
+							
+						</div>
+					</div><!-- Store Name -->
+					
+					<!-- Terminal Name -->
+					<div>
+						<div class="form-group">
+							<label for="terminal">Terminal</label>							 
+							<select data-test-id="terminal" class="form-control" ng-model="ctrl.terminal" ng-options="terminal as terminal.u_posterminal_name for terminal in ctrl.terminalList track by terminal.id"></select>
+							
+						</div>
+					</div><!-- Terminal Name -->
+					
+								
+					
+					<!-- Login Button -->
+					<div class="column-container login-button-container">
+						<div>
+							<button type="button" class="btn btn-md btn-danger button-danger" id="exit-button" ng-debounced-click="ctrl.exit()" style="float:left;">
+								<i class="glyphicons glyphicons-exit xs"></i>
+								<div data-i18n="login">Exit</div>
+							</button>
+							
+							<button data-test-id="continue" type="submit" class="btn btn-md btn-success button-green" id="login-button" ng-debounced-click="ctrl.ok()" ng-disabled="!ctrl.isValid()">
+								<i class="glyphicons glyphicons-log-in xs"></i>
+								<div data-i18n="continue">Continue</div>
+							</button>
+						</div>
+					</div><!-- Login Button -->
+					
+				</div>
+			</form>
+			
+		</div>
+				
+		<div style="width:25%;"></div>
+		
+	</div>
+	<!-- <div class="grey-separator">
+		<a href="/html/4.2/select-user.html">Switch to old</a>
+	</div>	 -->
+</div>

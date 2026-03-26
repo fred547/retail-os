@@ -1,0 +1,46 @@
+<div class="modal-content" id="terminal-info-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+    	<span data-i18n="popup.information">Information</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div data-i18n="popup.user">User:</div>
+			<div>
+				{{ctrl.USER}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.role">Role:</div>
+			<div>
+				{{ctrl.ROLE}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.organisation">Organisation:</div>
+			<div >
+				{{ctrl.STORE}}
+			</div>
+		</div>
+		<div class="row">
+			<div data-i18n="popup.terminal">Terminal:</div>
+			<div>
+				{{ctrl.TERMINAL}}
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close()" data-test-id="ok-button">
+    	<div class="" data-i18n="ok">OK</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

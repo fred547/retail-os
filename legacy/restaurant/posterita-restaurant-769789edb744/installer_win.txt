@@ -1,0 +1,28 @@
+======================================================================================
+ CONVERT BAT TO EXE
+======================================================================================
+Step 1. Build offline project
+Step 2. Run Advanced BAT to EXE converter program (http://www.battoexeconverter.com/)
+Step 3. Select bat file (restart.bat)
+Step 4. Click compile
+Step 5. Select "Start Invisible" option
+Step 6. Select ICON
+Step 7. Click "Build EXE"
+
+
+======================================================================================
+ Build Installer
+======================================================================================
+Step 1. Launch Inno Setup Compiler (http://www.jrsoftware.org/isinfo.php)
+Step 2. Create an installer script File > New
+Step 3. Set Application Information
+Step 4. Set Application Folder
+Step 5. Set Application Files
+Step 6. Select posterita.exe
+Step 7. Select lib folder and set destination folder "lib"
+Step 8. Select webapps folder and set destination folder "webapps"
+Step 9. Save script
+Step 10. Compile project
+
+
+

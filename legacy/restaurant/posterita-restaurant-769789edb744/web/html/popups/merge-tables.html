@@ -1,0 +1,26 @@
+<div class="modal-content" data-test-id="merge-tables-panel">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-question-circle"></i>
+			Merge Table #{{ $ctrl.activeTable.name }}
+		</h4>
+	</div>
+	<div class="modal-body">
+	
+		<form name="myform">
+		  <div class="form-group">
+		    <button data-test-id="table-{{table.table_id}}" class="merge-table-button" ng-disabled="table.table_id == $ctrl.activeTable.table_id" ng-class="{ 'btn-success' : table.selected, 'btn-warning' : table.table_id == $ctrl.activeTable.table_id }" ng-debounced-click="$ctrl.toggleTable(table)" ng-repeat="table in $ctrl.availableTables | orderBy : 'table_id'">{{table.name}}</button>
+		  </div>
+		</form>		
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="$ctrl.ok()" ng-disabled="$ctrl.getSelectedTables().length == 0">
+			OK
+		</button>
+		<button type="button" class="btn btn-lg btn-danger" ng-debounced-click="$ctrl.cancel()">
+			Cancel
+		</button>
+	</div>
+</div>

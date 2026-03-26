@@ -1,0 +1,96 @@
+<div class="modal-content">
+	<div class="modal-header">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">			
+	    	<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+	    	<span data-i18n="about">About</span>
+		</h4>
+	</div>
+	<div class="modal-body">	
+		
+		<h4>Posterita Account</h4>
+		
+		<div class="row-container">
+		
+			<div class="row">
+				<div>Business Name</div>
+				<div>{{$ctrl.info['domain']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Store</div>
+				<div>{{$ctrl.info['store']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Terminal</div>
+				<div>{{$ctrl.info['terminal']}}</div>
+			</div>
+		
+			<h4>Configurations</h4>
+			
+			<div class="row">
+				<div>Server URL</div>
+				<div>{{$ctrl.info['server-address']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Merchant Key</div>
+				<div>{{$ctrl.info['merchant-key']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Terminal Key</div>
+				<div>{{$ctrl.info['terminal-key']}}</div>
+			</div>
+			
+			<h4>Synchronization</h4>
+			
+			<div class="row">
+				<div>POS</div>
+				<div>{{$ctrl.info['system-sync-date']}}</div>
+			</div>
+		
+			<div class="row">
+				<div>Orders</div>
+				<div>{{$ctrl.info['orders-sync-date']}}</div>
+			</div>
+
+			<div class="row">
+				<div>Sequence No</div>
+				<div>{{$ctrl.info['documentno_sequence']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Sequence Prefix</div>
+				<div>{{$ctrl.info['sequence_prefix']}}</div>
+			</div>			
+			
+			<div class="row">
+				<div>Version</div>
+				<div>{{$ctrl.info['version']}}</div>
+			</div>
+			
+			<div class="row">
+				<div>Built</div>
+				<div>{{$ctrl.info['built']}}</div>
+			</div>
+			
+			<div class="row">
+				&nbsp;
+			</div>
+			
+			<div class="row">
+				<div>Java</div>
+				<div>{{ $ctrl.info['java-vendor'] + ', ' + $ctrl.info['java-version'] }}</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success button-green" ng-debounced-click="$close()" data-test-id="ok-button">
+			Ok
+		</button>
+	</div>
+</div>

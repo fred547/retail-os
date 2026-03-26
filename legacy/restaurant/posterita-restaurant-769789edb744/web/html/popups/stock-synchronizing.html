@@ -1,0 +1,18 @@
+<div class="modal-content">
+	<div class="modal-header alert-success">
+		 <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+		<h4 class="modal-title">
+			<i class="fa fa-info-circle"></i>
+			Info
+		</h4>
+	</div>
+	<div class="modal-body">
+		<!-- <h4 class="text-success">Document successfully completed. Synchronize Pos.</h4> -->
+		<h4 class="text-success">{{ msgText }}</h4>
+	</div>
+	<div class="modal-footer">
+		 <button type="button" class="btn btn-lg btn-success" ng-debounced-click="sync()">
+			Synchronize
+		</button>
+	</div>
+</div>

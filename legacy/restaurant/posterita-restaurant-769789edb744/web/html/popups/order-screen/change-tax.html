@@ -1,0 +1,29 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-pie-chart modal-header-icon"></span>
+    	<span data-i18n="change.tax">Change Tax</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <form name="myform">
+	  <div class="form-group">
+	    <label for="tax" data-i18n="select.tax">Select Tax</label>
+	    <select name="tax" id="tax" ng-model="$ctrl.tax_id" class="form-control" required>
+	    	<option ng-repeat="t in $ctrl.taxes" value="{{t.id}}" ng-selected="t.id == $ctrl.tax_id">
+	    		{{t.taxName}}
+	    	</option>
+	    </select>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.setTax()" 
+    ng-disabled="myform.$invalid">
+    	<div data-i18n="ok">Ok</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->

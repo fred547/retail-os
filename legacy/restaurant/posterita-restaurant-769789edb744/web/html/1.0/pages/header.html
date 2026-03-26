@@ -1,0 +1,25 @@
+<div class="column-container" style="height:100%">
+	<div id="menu-dropdown">
+		<a href="#/menu" data-test-id="home-menu">	
+			<i class="glyphicons glyphicons-menu-hamburger"></i>
+		</a>
+	</div>
+	<div id="menu-logo">
+		<img src='images/logo.png' alt="">
+	</div>
+	<div id="menu-terminal-info" ng-controller="UserInfoController as ctrl">
+		<span ng-debounced-click="ctrl.showUserInfo()">{{ctrl.STORE}}, {{ctrl.TERMINAL}}<br>
+		{{ctrl.USER}}, {{ctrl.ROLE}}</span>
+	</div>
+	<div id="menu-date-time">
+		<span ng-controller="ClockController as clock">{{ clock.time }}<br>
+		{{ clock.date }}</span>
+	</div>
+	
+	<div id="menu-logout" ng-controller="UserInfoController as u">
+		<a href="javascript:void(0);" ng-debounced-click="u.logout()">
+			<i class="glyphicons glyphicons-log-out"></i>
+			<!-- <span>Logout</span>  -->
+		</a>
+	</div>
+</div>

@@ -1,0 +1,7 @@
+<servlet>
+  <servlet-name>default</servlet-name>
+  <init-param>
+    <param-name>useFileMappedBuffer</param-name>
+    <param-value>false</param-value>
+  </init-param>
+</servlet>

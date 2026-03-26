@@ -1,0 +1,180 @@
+<div class="modal-content" id="product-info-popup">
+					<div class="modal-header">
+						<button type="button" class="close" ng-debounced-click="close()">&times;</button>
+						<h4 class="modal-title">
+							<span class="glyphicons glyphicons-circle-info modal-header-icon"></span>
+							&nbsp;<span>{{product.name}}</span>
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-7 col-xs-7">
+								<div class="row">
+									<div class="col-xs-5 col-md-5 padding-bottom-16">
+										<div class="image-product" style="width: 140px; height: 140px;">
+											<a rel="prettyPhoto" id="productInfo.popup.image.link">
+												<!-- <img id="productInfo.popup.image" src="images3/create-products.png" alt=""/> -->
+												<!-- <img id="productInfo.popup.image" class="frame-image" alt="">
+												<i id="productInfo.popup.image" class="glyphicons product-image object-image no-padding"></i> -->
+											</a>
+										</div>
+									</div>
+									<div class="col-xs-7 col-md-7" style="font-family:arial; font-size: 13pt; color:#1d1d1d; font-weight:bold; ">
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.current.price">Current Price:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricestd | number:2}}</span>
+											</div>
+										</div>
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.rrp">RRP:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricelist | number:2}}</span>
+											</div>
+										</div>
+										<div class="row" style="padding-right:36px">
+											<div class="col-xs-8 col-md-8">
+												<span data-i18n="popup.min.price">Min Price:</span>
+											</div>
+											<div class="col-xs-4 col-md-4">
+												<span class="pull-right">{{product.pricelimit | number:2}}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row header-2" style="font-family:arial;" ng-show="discountCodes.length > 0">
+									<div class="col-xs-12 col-md-12">
+										Discount Code
+									</div>
+								</div>
+								<div class="row header-3" style="font-family:arial;color:#8e8e93 !important;" ng-repeat="discountCode in discountCodes">
+									<div class="col-xs-8 col-md-8">
+										<span data-i18n="popup.min.price">{{discountCode.name}} - {{discountCode.percentage}}%</span>
+									</div>
+									<div class="col-xs-4 col-md-4">
+										<span class="pull-right" style="padding-right:36px">{{(( product.pricestd * ( 100 - discountCode.percentage ) )/100 ) | number:2 }}</span>
+									</div>
+								</div>
+								<div class="row header-2" style="font-family:arial;" ng-show="discountCodes.length > 0">
+									<div class="col-xs-12 col-md-12">&nbsp;</div>
+								</div>
+																
+								<div class="row header-2" style="font-family:arial;">
+									<div class="col-xs-12 col-md-12">
+										<div class="pull-left"><span data-i18n="popup.description">Description:</span>&nbsp;</div>
+										<div>{{product.description}}</div>
+									</div>
+								</div>
+
+								<div class="row header-3" style="font-family:arial;color:#8e8e93 !important;">
+									<div class="col-xs-12 col-md-12">
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.unit.of.measure">Unit of measure:</span>&nbsp;</div>
+												<span>{{product.c_uom_name}}</span>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.product.type">Product type:</span>&nbsp;</div>
+												<span id="productInfo.popup.productTypeLabel">Item</span>
+											</div>
+										</div>
+										<!-- <div>
+											<span id="productInfo.popup.unitOfMeasureLabel"></span> ,&nbsp; <span
+												id="productInfo.popup.productTypeLabel">Item</span>
+										</div> -->
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left"><span data-i18n="popup.upc">UPC/EAN:</span>&nbsp;</div>
+												<div>{{product.upc}}</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Mapping for current warehouse&nbsp;</div>
+												<div>{{status_message}}{{mappings}}</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div id="product.groups"></div>
+											</div>
+										</div>
+										<!-- <div id="productInfo.popup.barcodeLabel" class="colaclassic colaclassic_right"></div> -->
+										<div id="product.groups"></div>
+										<br/> <br/>
+										<div class="row">
+											<div class="col-xs-12 col-md-12">
+												<div id="productInfo.popup.includesTaxLabel"></div>
+											</div>
+										</div>
+										<div class="row" style="display:none;">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Tax Exempt:&nbsp;</div>
+												<div id="productInfo.popup.taxLabel"></div>
+											</div>
+										</div>
+										<div class="row" style="display:none;">
+											<div class="col-xs-12 col-md-12">
+												<div class="pull-left">Org:</div>
+												<div id="productInfo.popup.orgLabel" class="pull-left"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- <div id="productInfo.popup.includesTaxLabel" class="board_tax"></div>
+								<div id="productInfo.popup.taxLabel" class="board_tax"></div>
+								<div class="floatleft">Org:</div>
+								<div id="productInfo.popup.orgLabel" class="floatleft"></div> -->
+							</div>
+		
+							<!-- <div class="col-md-5 col-xs-5 no-padding">
+								<span class="header2">Stock</span>
+								<div>
+									<table id="product.stocks">
+										<tr>
+											<td height="0px" width="0px">Not available in offline mode!</td>
+										</tr>
+									</table>
+								</div>
+							</div> -->
+							
+							<div class="col-md-5 col-xs-5">
+								<div class="row padding-bottom-8 header-2">
+									<div class="col-xs-6 col-md-6" data-i18n="store">Store</div>		
+									<div class="col-xs-6 col-md-6">
+										<div class="pull-right" data-i18n="inventory.qty">Inventory Qty</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-12 col-md-12">
+										<div>{{status_message}}</div>
+									</div>
+								</div>
+								
+								<div class="row" ng-repeat="stock in stocks">
+									<div class="col-xs-6 col-md-6">{{stock.warehouse}}</div>		
+									<div class="col-xs-6 col-md-6">
+										<div class="pull-right">{{stock.qty}}</div>
+									</div>
+								</div>
+								
+							</div>
+						</div>
+					</div>
+					<div style="clear: both;"></div>
+					<div class="modal-footer">						
+							<button type="button" class="btn btn-success button-green btn-lg" ng-debounced-click="close()" data-test-id="ok-button">
+								<div data-i18n="ok">Ok</div>
+							</button>
+					</div>
+				</div>

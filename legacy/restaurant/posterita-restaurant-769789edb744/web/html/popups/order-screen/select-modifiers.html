@@ -1,0 +1,28 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span data-i18n="modifiers">Modifiers</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+  	
+  	<div ng-repeat="modifier_group in $ctrl.modifier_groups" class="select-modifiers-button-container">
+  	
+  		<div>{{modifier_group.groupName}}</div>
+  		
+  		<button ng-repeat="modifier in modifier_group.lines" class="btn btn-lg btn-default button-white" ng-debounced-click="$ctrl.onSelect(modifier_group, modifier)">
+  			<li class="fa fa-check" ng-show="modifier.active"></li>
+  			{{ modifier.name }} <br/>
+  			{{ modifier.price | number:2 }}
+  		</button>
+  	
+  	</div>
+  	   
+  </div>
+  <div class="modal-footer">
+  	<button type="button" class="btn btn-danger button-red btn-lg pull-left" data-i18n="reset" ng-debounced-click="$ctrl.reset()">Reset</button>
+  
+    <button class="btn btn-lg btn-default button-white" data-i18n="ok" ng-debounced-click="$ctrl.apply()">Ok</button>
+  </div>
+</div><!-- /.modal-content -->

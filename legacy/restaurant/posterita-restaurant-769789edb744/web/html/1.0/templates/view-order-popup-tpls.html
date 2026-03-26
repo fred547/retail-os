@@ -1,0 +1,1106 @@
+<script type="text/ng-template" id="/html/popups/view-order/card.html">
+<div class="modal" style="display: none;" id="card.popup.panel"	tabindex="-1" aria-labelledby="card.popup.panel" aria-hidden="true">
+	<form name="myform" autocomplete="off">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true" id="card.popup.cancelButton">×</button>
+				<h4 class="modal-title">
+					<div class="glyphicons glyphicons-pro credit_card"></div>
+					&nbsp;Payment Credit Card
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row padding-bottom-8"
+					style="font-size: 16pt; font-family: arial; color: #1d1d1d;">
+					<div class="col-md-3 col-xs-3">Total</div>
+					<div class="col-md-4 col-xs-4 padding-bottom-8">
+						<span id="card.popup.totalLabel"></span>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12 col-xs-12 popup-label">Amount
+						Tendered</div>
+				</div>
+				<div class="row padding-bottom-8">
+					<div class="col-md-12 col-xs-12 popup-label">
+						<input type="text" id="card.popup.amountTextfield"
+							class="number input-sm">
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 col-xs-12 popup-label">Card</div>
+				</div>
+				<div class="row padding-bottom-8">
+					<div class="col-md-12 col-xs-12">
+						<select id="card.popup.cardSelectList"
+							class="selectField input-sm">
+							<option value="V" selected="selected">Visa</option>
+							<option value="M">MasterCard</option>
+							<option value="A">American Express</option>
+							<option value="N">Discover</option>
+							<option value="H">Carte Blance</option>
+							<option value="L">JAL</option>
+							<option value="B">JCB</option>
+							<option value="E">Enroute</option>
+							<option value="D">Diner's Club</option>
+							<option value="W">Switch</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="row padding-bottom-8">
+					<div class="col-md-1 col-xs-1">
+						<form id="checkboxDemo" action="checkvalues.php"
+							method="post">
+							<label for="checkbox-4" tabindex="4"></label> <input
+								type="checkbox" id="card.popup.swipeCardCheckBox"
+								class="input-sm" value="true" checked="">
+						</form>
+					</div>
+					<div class="col-md-11 col-xs-11 popup-label">Swipe Card</div>
+				</div>
+
+				<div id="card.popup.trackDataDetailsPane">
+					<div class="row">
+						<div class="col-md-12 col-xs-12 popup-label">Swipe
+							Data:</div>
+					</div>
+
+					<div class="row padding-bottom-8">
+						<div class="col-md-12 col-xs-12">
+							<input type="password" id="card.popup.trackDataTextField"
+								class="textField input-sm" value="">
+						</div>
+					</div>
+				</div>
+
+
+				<div class="row" id="card.popup.cardDetailsPane"
+					style="display: none;">
+					<div class="col-md-12 col-xs-12 no-padding">
+						<div class="row">
+							<div class="col-md-12 col-xs-12 popup-label">Card No:
+								*</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.cardNumberTextField"
+									class="number input-sm">
+							</div>
+						</div>
+
+						<div class="row padding-bottom-8">
+							<div class="col-md-6 col-xs-6 padding-right-8">
+								<div class="row popup-label">Expiration(MMYY):</div>
+								<div class="row">
+									<input type="text" id="card.popup.cardExpiryDateTextField"
+										size="4" maxlength="4" class="number input-sm">
+								</div>
+							</div>
+							<div class="col-md-6 col-xs-6">
+								<div class="row popup-label">CVV2: *</div>
+								<div class="row">
+									<input type="text" id="card.popup.cardCvvTextField"
+										class="number input-sm">
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-12 col-xs-12 popup-label">Name:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.cardHolderNameTextField"
+									class="input-sm">
+							</div>
+						</div>
+
+						<div class="row popup-label">
+							<div class="col-md-12 col-xs-12">Address:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-12 col-xs-12">
+								<input type="text" id="card.popup.streetAddressTextField"
+									class="input-sm">
+							</div>
+						</div>
+
+						<div class="row popup-label">
+							<div class="col-md-12 col-xs-12">Zip Code:</div>
+						</div>
+						<div class="row padding-bottom-8">
+							<div class="col-md-121 col-xs-12">
+								<input type="text" id="card.popup.zipCodeTextField"
+									class="input-sm">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="row">
+					<button type="button" class="btn btn-xs btn-success button-green"
+						style="width: 20%;" id="card.popup.okButton">
+						<div class="glyphicons glyphicons-pro ok_2"></div>
+						<div data-i18n="">Ok</div>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</form>
+</div>
+					
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/cash.html">
+				
+<div class="modal-content" data-test-id="cash-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-money modal-header-icon"></span>
+    	<span data-i18n="payment.cash">Payment Cash</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row form-group">
+			<label data-i18n="total">Total:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		<div class="row form-group">
+			<label data-i18n="amount.tendered">Amount Tendered:</label>
+			<div>
+				<input data-test-id="amount" type="number" name="amount" ng-model="amountTendered" class="form-control"  required="required" ng-keyup="calculateAmtPaid(amountTendered)" focus-me/>
+			</div>
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="payment.amount">Payment Amount:</label>
+			<div>
+				<input data-test-id="amount-paid" type="number" ng-model="amountPaid" name="amountPaid"  class="form-control"  required="required" select-on-focus/>
+			</div>
+		</div>
+		
+		<div class="row">
+			&nbsp;
+		</div>
+		
+		<div class="row" style="border-top: solid 1px #000; font-size: 24px;">
+			<label data-i18n="change.amount">Change Amount:</label>
+			<div data-test-id="change-amount">
+				{{ amountTendered - amountPaid | number:2 }}
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/check.html">
+<div class="modal-content" data-test-id="check-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-pen modal-header-icon"></span>
+    	<span data-i18n="payment.check">Payment Check</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+    	
+    	<div class="row form-group">
+			<label data-i18n="open.amount">Open Amount:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="amount.tendered">Check Amount:</label>
+			<div>
+				<input data-test-id="amount" type="number" name="amount" ng-model="amount" class="form-control"  required="required"/>
+			</div>
+		</div>
+						
+		<div class="row form-group">
+			<label data-i18n="check.number">Check No:</label>
+			<div>
+				<input data-test-id="check-no" type="number" name="chequeNo" ng-model="chequeNo" class="form-control"  required="required"/>
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/comment-panel.html">
+<div id="comment-panel" class="popup">
+<form name="myform" autocomplete="off">
+	<div id="comment-panel-comments-container"></div>
+	<textarea rows="2" cols="10" id="comment-panel-comments-textfield"></textarea>
+	<button type="button" id="comment-panel-post-button">Post</button>
+	<button type="button" id="comment-panel-close-button">Close</button>
+</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/comment.html">
+<div class="modal-content" data-test-id="comment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-comments modal-header-icon"></span>
+		<span data-i18n="comments">Comments</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="comment-container">
+    	<div ng-repeat="comment in $ctrl.comments">
+	    	<div class="column-container">
+	    		<div>
+    				<span class="glyphicons glyphicons-user xs"></span>
+	    			<div>{{comment.user}}</div>
+	    		</div>
+	    		<div>
+		    		<div>{{comment.date }}</div>
+		    		<div>{{comment.message}}</div>
+	    		</div>
+	    	</div>
+	    </div>
+    </div>
+    
+     <form name="myform" autocomplete="off">
+	  <div class="form-group">
+	    <label for="comments" data-i18n="enter.comments">Enter Comments:</label>
+	    <textarea class="form-control" data-test-id="comments" id="comments" name="comments" ng-model="$ctrl.comment" required="required" focus-me="true" select-on-focus ng-enter="$ctrl.addComment($ctrl.comments)"></textarea>
+	  </div>
+	</form>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$ctrl.addComment($ctrl.comment)"  data-test-id="add-comment">
+    	<div data-i18n="proceed" data-test-id="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/credit-card.html">
+<div class="modal-content">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-credit-card modal-header-icon"></span>
+    	<span data-i18n="payment.credit.card">Payment Credit Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+	  <div class="row-container">
+	  	<div class="row">
+			<label data-i18n="total">Total:</label>
+			<div>
+				1000
+			</div>
+		</div>		
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="enter.card.amount" data-i18n="enter.card.amount">Enter Card Amount</label>
+	    <input type="number" class="form-control" name="" required="required">
+	 </div>
+	  
+	 <div class="form-group">
+	  	<label for="card" data-i18n="card">Card</label>
+	    <select class="form-control">
+			<option value="V" selected="selected">Visa</option>
+			<option value="M">MasterCard</option>
+			<option value="A">American Express</option>
+			<option value="N">Discover</option>
+			<option value="H">Carte Blance</option>
+			<option value="L">JAL</option>
+			<option value="B">JCB</option>
+			<option value="E">Enroute</option>
+			<option value="D">Diner's Club</option>
+			<option value="W">Switch</option>
+		</select>
+	</div>
+	
+		<!-- <div class="form-group">
+			<input type="checkbox" ng-model="swipe" class="input-sm form-control" value="true" checked="checked" style="width: 20px;" />
+			<div data-i18n="swipe.card">Swipe Card</div>		
+		</div> -->
+		
+		<div class="checkbox form-group">
+			<label data-i18n="swipe.card">
+				<input type="checkbox" ng-model="swipe" value="true" checked="checked" />
+				Swipe Card
+			</label>
+		</div>
+				
+	
+	<div class="form-group" ng-show="swipe">
+	    <label for="swipe.data" data-i18n="swipe.data">Swipe Data</label>
+	    <input type="password" class="form-control" name="" required="required">
+	</div>
+	<div ng-show="!swipe">
+		<div class="form-group">
+		    <label for="card.number" data-i18n="card.number">Card Number</label>
+		    <input type="number" class="form-control" name="" required="required">
+		</div>
+		<div class="column-container">
+			<div class="form-group" style="padding-right: 2px;">
+			    <label for="expiration" data-i18n="expiration">Expiration(MMYY)</label>
+			    <input type="text" class="form-control" name="" required="required">
+			</div>
+			<div class="form-group" style="padding-left: 2px;">
+			    <label for="cvv" data-i18n="expiration">CVV2</label>
+			    <input type="number" class="form-control" name="" required="required">
+			</div>
+		</div>
+		
+		<div class="form-group">
+		    <label for="name" data-i18n="name">Name</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+		<div class="form-group">
+		    <label for="address" data-i18n="address">Address</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+		<div class="form-group">
+		    <label for="zip.code" data-i18n="zip.code">Zip Code</label>
+		    <input type="text" class="form-control" name="" required="required">
+		</div>
+				
+	</div>
+		
+</div>
+    
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/debit.html">
+<div id="debit.popup.panel" class="popup">
+	<div id="debit.popup.panel.split"></div>
+	<form name="myform" autocomplete="off">
+	<table border="0" width="100%">
+		<tbody>
+			<tr>
+				<td>
+					<h3>total:</h3>
+				</td>
+				<td><span id="debit.popup.totalLabel"></span></td>
+			</tr>
+			<tr>
+				<td>Card No:</td>
+				<td><input type="text"
+					id="debit.popup.cardNumberTextField" class="number">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="right">
+					<button id="debit.popup.okButton" type="button"
+						class="ok-button" data-i18n="ok">Ok</button>
+					<button id="debit.popup.cancelButton" type="button"
+						class="cancel-button" data-i18n="cancel">Cancel</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/delivery.html">
+<div class="modal" style="display: none;" id="delivery.popup.panel"	tabindex="-1" role="dialog" aria-labelledby="delivery.popup.panel" aria-hidden="true">
+	<form name="myform" autocomplete="off">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true" id="delivery.popup.close.button">×</button>
+				<h4 class="modal-title">
+					<div class="glyphicons glyphicons-pro wallet"></div>
+					&nbsp;Deliver
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row" id="delivery.popup.confirmation.panel">
+					<div class=" row deliver-top">
+						<div class="deliver-top-text">Do you want to deliver
+							the products now?</div>
+					</div>
+					<div class="modal-footer">
+						<div class="row">
+							<button type="button" class="btn btn-xs btn-secondary"
+								style="width: 40%;" id="delivery.popup.later.button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div>No, Later</div>
+							</button>
+
+							<button type="button" class="btn btn-xs btn-success"
+								style="width: 40%;" id="delivery.popup.now.button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div>Yes, Now</div>
+							</button>
+
+						</div>
+					</div>
+				</div>
+				<div class="row" id="delivery.popup.date.panel"
+					style="display: none">
+					<div class="row deliver-top">
+						<div class="deliver-top-text">Schedule Date</div>
+						<input type="text" id="delivery.popup.date.textfield">
+						<input id="delivery.popup.date.button" class="calendar-icon"
+							type="button" style="border: none;">
+					</div>
+					<div style="float: right; width: 35%;">
+						<button type="button" class="btn btn-xs btn-success"
+							style="width: 40%; float: right;"
+							id="delivery.popup.schedule.button">
+							<div class="glyphicons glyphicons-pro ok_2"></div>
+							<div>OK</div>
+						</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	</form>
+</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/external-card-confirmation.html">
+<div class="modal-content" data-test-id="external-card-confirmation-popup">
+<div class="modal-header">
+  <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+  <h4 class="modal-title">
+  	<span class="glyphicons glyphicons-tablet modal-header-icon"></span>
+  	<span data-i18n="payment.external.card">Payment External Card</span>
+  </h4>
+</div>
+<div class="modal-body">
+  
+  <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p data-i18n="has.the.payment.gone.through">Has the payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+  
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-lg btn-danger button-red" data-ng-debounced-click="$close()">
+  	<div class="" data-i18n="no">No</div>
+  </button>
+  
+  <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="paymentAccepted()">
+  	<div class="" data-i18n="proceed">Proceed</div>
+  </button>
+</div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/external-card.html">
+<div class="modal-content"  data-test-id="external-card-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-tablet modal-header-icon"></span>
+    	<span data-i18n="payment.ext.card">Payment Ext Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+    	
+    	<div class="row form-group">
+			<label data-i18n="open.amount">Open Amount:</label>
+			<div>
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="amount.tendered">Amount Tendered:</label>
+			<div>
+				<input type="number" name="amount" ng-model="amount" class="form-control"  required="required"/>
+			</div>
+		</div>
+						
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/external-payment-confirmation.html">
+<div class="modal-content" id="external-payment-confirmation-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicon glyphicon-phone modal-header-icon"></span>
+    	<span data-i18n="payment.external.card">Payment Confirmation - {{title}}</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+						
+		<div class="row">
+			<div>
+				<p>Has the {{title}} payment gone through?</p>
+			</div>			
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-danger button-red" data-ng-debounced-click="$close()" data-test-id="no">
+    	<div class="" data-i18n="no">No</div>
+    </button>
+    
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="paymentAccepted(tenderType)"  data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/external-payment.html">
+<div class="modal-content" data-test-id="external-payment-popup">
+<form name="myform" autocomplete="off">
+<div class="modal-header">
+  <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+  <h4 class="modal-title">
+  	<span class="glyphicon glyphicon-phone modal-header-icon"></span>
+  	<span data-i18n="payment.ext.card">Payment - {{title}}</span>
+  </h4>
+</div>
+<div class="modal-body">
+  
+  <div class="row-container">
+  	
+  	<div class="row form-group">
+			<label data-i18n="open.amount">Open Amount:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="amount.tendered">Amount Tendered:</label>
+			<div>
+				<input data-test-id="amount" type="number" name="amount" ng-model="amount" class="form-control"  required="required" focus-me/>
+			</div>
+		</div>
+						
+	</div>
+  
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="$close(); confirmationExternalPayment(amount, tenderType, title)" ng-disabled="!isValid()">
+  	<div class="" data-i18n="proceed" data-test-id="proceed">Proceed</div>
+  </button>
+</div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/gift-card.html">
+<div class="modal-content"  data-test-id="gift-card-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-gift modal-header-icon"></span>
+    	<span data-i18n="payment.gift.card" style="vertical-align: sub;">Payment Gift Card</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+	<div class="row-container">	
+		<div class="row">
+			<label data-i18n="total">Total:</label>
+			<div>
+				{{ openAmt | number:2}}
+			</div>
+		</div>
+	</div>
+		
+	<div>
+		<div class="form-group">
+		    <label for="card.number" data-i18n="card.number">Card No:</label>
+		    <input type="text" class="form-control" name="giftCardNo" ng-model="giftCardNo" required="required">
+		</div>
+		<div class="form-group">
+		    <label for="cvv" data-i18n="cvv">CVV:</label>
+		    <input type="text" class="form-control" name="giftCardCVV" ng-model="giftCardCVV" required="required">
+		</div>
+	</div>	
+	
+</div>
+    
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/keypad-panel.html">
+<div id="keypad-popup-panel" class="keypad-popup-panel"
+		style="display: none; z-index: 2000000;">
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<div class="row pin-pad-panel">
+					<table border="0" cellpadding="0" cellspacing="0" class="table">
+						<tbody>
+							<tr>
+								<td colspan="3">
+									<button id="keyDelete" class="keypad-button"
+										style="width: 98%; font-size: 14px; background-color: #FFD0CC !important; background-image: none;"
+										type="button">
+										<div class="glyphicons glyphicons-pro delete"></div>
+										<div class="keypad-value">Del</div>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button id="key7" class="keypad-button" type="button">
+										<div class="keypad-value">7</div>
+									</button>
+								</td>
+								<td>
+									<button id="key8" class="keypad-button" type="button">
+										<div class="keypad-value">8</div>
+									</button>
+								</td>
+								<td>
+									<button id="key9" class="keypad-button" type="button">
+										<div class="keypad-value">9</div>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button id="key4" class="keypad-button" type="button">
+										<div class="keypad-value">4</div>
+									</button>
+								</td>
+								<td>
+									<button id="key5" class="keypad-button" type="button">
+										<div class="keypad-value">5</div>
+									</button>
+								</td>
+								<td>
+									<button id="key6" class="keypad-button" type="button">
+										<div class="keypad-value">6</div>
+									</button>
+								</td>
+
+							</tr>
+							<tr>
+								<td>
+									<button id="key1" class="keypad-button" type="button">
+										<div class="keypad-value">1</div>
+									</button>
+								</td>
+								<td>
+									<button id="key2" class="keypad-button" type="button">
+										<div class="keypad-value">2</div>
+									</button>
+								</td>
+								<td>
+									<button id="key3" class="keypad-button" type="button">
+										<div class="keypad-value">3</div>
+									</button>
+								</td>
+								<!-- 
+                                    <td>
+										<button id="keyEnter" class="keypad-button" type="button">&crarr;</button>
+									</td>
+									 -->
+							</tr>
+							<tr>
+								<td>
+									<button id="key0" class="keypad-button" type="button">
+										<div class="keypad-value">0</div>
+									</button>
+								</td>
+								<td>
+									<button id="keyDot" class="keypad-button" type="button">
+										<div class="keypad-value">.</div>
+									</button>
+								</td>
+								<td>
+									<button id="keyMinus" class="keypad-button" type="button">
+										<div class="keypad-value">-</div>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<button id="keyEnter" class="keypad-button" type="button">
+										<div class="keypad-value">↵</div>
+									</button>
+								</td>
+								<td>
+									<button id="keyClose" class="keypad-button" type="button">
+										<div class="keypad-value">Close</div>
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/loyalty.html">
+<div class="modal-content" id="redeem-loyalty-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-handshake modal-header-icon"></span>
+    	&nbsp;
+    	<span data-i18n="redeem.loyalty">Redeem Loyalty</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+		<div class="row-container small text-muted">				
+			<div class="row">
+				Admin		
+			</div>
+			<div class="row">
+				{{ openAmt | number:2 }}		
+			</div>
+		</div>
+		<div class="row">
+			<span ng-controller="ClockController as clock">
+           		{{ clock.time }}
+           		{{ clock.date }}
+			</span>		
+		</div>
+		<div class="row">
+			<label data-i18n="grand.total">Grand Total:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.available">Loyalty Available:</label>
+			<div>
+				{{ loyaltyPoints | number:2 }}
+			</div>
+		</div>
+		<div class="row">
+			<label data-i18n="loyalty.remaining">Loyalty Remaining:</label>
+			<div>
+				{{ loyaltyPointsEarned - loyaltyPointsSpent | number:2 }}
+			</div>
+		</div>		
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/more-options-button-panel.html">
+<div class="modal-content" data-test-id="more-options-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-circle-plus modal-header-icon"></span>
+    	<span data-i18n="more_options">More Options</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="more-option-button-container">
+
+     		<div class="column-container">
+     			<!-- 
+				<div  ng-show="ctrl.getDocAction() == 'CO' && ctrl.getOrderType() == 'POS Order' ">
+					<button class="btn btn-primary button-blue" ng-debounced-click="printGift();$close()" data-test-id="print-gift-receipt">
+						<i class="glyphicons glyphicons-print xs"></i>
+						<div data-i18n="print.gift.receipt">Print Gift Receipt</div>
+					</button>
+				</div>
+			 	-->
+				<div>
+					<button class="btn btn-primary button-blue" ng-debounced-click="comment();$close()"  data-test-id="comment">
+						<i class="glyphicons glyphicons-comments xs"></i>
+						<div>
+							<span data-i18n="comment">Comment</span>
+							<span ng-show="getCommentsCount() > 0" class="badge">{{ getCommentsCount() }}</span>
+						</div>											
+					</button>
+				</div>
+				<div ng-show="ctrl.getDocAction() == 'CO' && ctrl.getOrderType() == 'POS Order' && ctrl.role.allow_order_split == 'Y'">
+					<button class="btn btn-primary button-blue"  data-test-id="split-order" ng-debounced-click="splitOrder();$close()">
+						<i class="glyphicons glyphicons-group xs"></i>
+						<div data-i18n="split.order">Split Order</div>
+					</button>
+				</div>
+			</div>
+     		
+     		<div class="column-container fixed-layout">
+				<div ng-show="ctrl.getDocAction() != 'VO' && ctrl.role.allow_order_void == 'Y' ">
+					<button class="btn btn-danger button-red" ng-debounced-click="void();$close()" data-test-id="void">
+						<i class="glyphicons glyphicons-ban xs"></i>
+						<div data-i18n="void">Void</div>
+					</button>
+				</div>
+				
+				<div>
+					<button class="btn btn-danger button-red" ng-debounced-click="synchronizeOrder();$close()" data-test-id="synchronize">
+						<i class="glyphicons glyphicons-refresh xs"></i>
+						<div>Synchronize</div>
+					</button>
+				</div>	
+				
+			</div>
+						
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/payment-panel.html">
+<div class="modal-content" data-test-id="payment-popup">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-shopping-cart modal-header-icon"></span>
+    	<span>Pay</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+     <div class="row-container">
+     
+     	<div class="check-out-buttons">
+     		<div class="column-container fixed-layout">
+     		
+ 				<div ng-show="$ctrl.tendersTypes.indexOf('B') !=-1">     				
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="cashPayment()" data-test-id="cash">
+						<i class="glyphicons glyphicons-money xs"></i>
+						<div data-i18n="cash">Cash</div>
+					</button>     				
+ 				</div>
+ 				 <div ng-show="$ctrl.tendersTypes.indexOf('K') !=-1">
+ 					<button type="button" class="btn btn-success button-green" ng-debounced-click="creditCardPayment()" data-test-id="card">
+						<i class="glyphicons glyphicons-credit-card xs"></i>
+						<div data-i18n="credit.card">Credit Card</div>
+					</button>     				
+ 				</div>   			
+     		     		
+     		</div>
+     		
+     		<div class="column-container fixed-layout">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('S') !=-1">     				
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="checkPayment()" data-test-id="check">
+  						<i class="glyphicons glyphicons-pen xs"></i>
+  						<div data-i18n="check">Check</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('E') !=-1">
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="externalCardPayment()" data-test-id="ext-card">
+  						<i class="glyphicons glyphicons-tablet xs"></i>
+  						<div data-i18n="ext.card">Ext Card</div>
+  					</button>     				
+   				</div> 
+   				
+   				<!-- 
+   				<div ng-show=" $ctrl.orderType == 'POS Order' ">     				
+   					<button type="button" class="btn btn-primary button-blue" ng-debounced-click="giftCardPayment()">
+  						<i class="glyphicons glyphicons-gift xs"></i>
+  						<div data-i18n="gift.card">Gift Card</div>
+  					</button>     				
+   				</div>  
+   				 -->			
+     		     		
+     		</div>
+     		
+     		<div class="column-container fixed-layout">
+   				
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('V') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="voucherPayment()" data-test-id="voucher">
+  						<i class="glyphicons glyphicons-certificate xs"></i>
+  						<div data-i18n="voucher">Voucher</div>
+  					</button>     				
+   				</div>  
+   				
+   				<div ng-show=" $ctrl.orderType == 'POS Order'  && $ctrl.tendersTypes.indexOf('L') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="loyaltyPayment()" data-test-id="loyalty">
+  						<i class="glyphicons glyphicons-handshake xs"></i>
+  						<div data-i18n="loyalty">Loyalty</div>
+  					</button>     				
+   				</div> 			
+     		     		
+     		</div>
+
+			<div class="column-container fixed-layout" ng-show=" $ctrl.orderType == 'POS Order' ">
+     		
+   				<div ng-show="$ctrl.tendersTypes.indexOf('J') !=-1">     				
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mcbJuicePayment()" data-test-id="mcb-juice">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mcb.juice">MCB Juice</div>
+  					</button>     				
+   				</div>
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('Y') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mytMoneyPayment()" data-test-id="myt-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mty.money">MY.T Money</div>
+  					</button>     				
+   				</div>   			
+   				 <div ng-show="$ctrl.tendersTypes.indexOf('T') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="emtelMoneyPayment()" data-test-id="emtel-money">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="emtel.money">Blink</div>
+  					</button>     				
+   				</div>
+   				<div ng-show="$ctrl.tendersTypes.indexOf('U') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="giftsMuPayment()" data-test-id="gifts-mu">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="gifts.mu">Gifts.mu</div>
+  					</button>     				
+   				</div> 
+   				
+   				<div ng-show="$ctrl.tendersTypes.indexOf('I') !=-1">
+   					<button type="button" class="btn btn-default button-white" ng-debounced-click="mipsPayment()" data-test-id="mips">
+  						<i class="glyphicon glyphicon-phone"></i>
+  						<div data-i18n="mips">MIPS</div>
+  					</button>     				
+   				</div>    			
+     		     		
+     		</div>
+     		
+     	</div>
+     
+     </div>
+    
+  </div>
+</div><!-- /.modal-content -->
+</script>
+
+<script type="text/ng-template" id="/html/popups/view-order/voucher.html">
+<div class="modal-content" data-test-id="voucher-popup">
+<form name="myform" autocomplete="off">
+  <div class="modal-header">
+    <button type="button" class="close" data-ng-debounced-click="$close()"><span>&times;</span></button>
+    <h4 class="modal-title">
+    	<span class="glyphicons glyphicons-certificate modal-header-icon"></span>
+    	<span data-i18n="payment.voucher">Payment Voucher</span>
+    </h4>
+  </div>
+  <div class="modal-body">
+    
+    <div class="row-container">
+    	
+    	<div class="row form-group">
+			<label data-i18n="open.amount">Open Amount:</label>
+			<div data-test-id="open-amt">
+				{{ openAmt | number:2 }}
+			</div>
+		</div>
+
+		<div class="row form-group">
+		  <label for="store_id" data-i18n="store">Voucher Store:</label>
+		    
+		  <div>  
+		  	<select class="form-control" id="store_id" name="store_id" ng-model="voucherStoreId" focus-me="true"  data-test-id="store">
+		   		<option ng-repeat="store in stores" value="{{ store.id }}" ng-selected="current_store_id == store.id">
+		   			{{ store.name }}
+		   		</option>
+		   	</select>
+		   </div>	    
+		</div>
+		
+		<div class="row form-group">
+			<label data-i18n="check.number">Voucher No:</label>
+			<div>
+				<input type="text" name="voucherNo" ng-model="voucherNo" class="form-control"  required="required" data-test-id="voucher-no"/>
+			</div>
+		</div>
+	
+	</div>
+    
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-lg btn-success button-green" data-ng-debounced-click="acceptPayment()" ng-disabled="!isValid()" data-test-id="proceed">
+    	<div class="" data-i18n="proceed">Proceed</div>
+    </button>
+  </div>
+</form>
+</div><!-- /.modal-content -->
+</script>
+

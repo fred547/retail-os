@@ -1,0 +1,545 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <base href="../../">
+      
+      <title>
+         Test Orders
+      </title>
+      
+       <link type="text/css" href="css/select-user.css" rel="stylesheet"/>
+       <link href="smart-admin/css/font-awesome.min.css" rel="stylesheet"/>
+       <link href="bootstrap-3.1.1/css/bootstrap.css" rel="stylesheet" type="text/css" media="screen"/>
+       <link href="css/glyphicons/css/glyphicons.css" rel="stylesheet"/>
+       
+      
+      <script type="text/javascript" src="javascripts/v_script.js"></script>
+      <script type="text/javascript" src="javascripts/utils.js"></script>
+      <script type="text/javascript" src="javascripts/jquery-all.js"></script>
+      <script type="text/javascript" src="javascripts/offline/ydn.db-jquery.js"></script>
+      <script type="text/javascript" src="javascripts/jquery/jquery.cookie.js"></script>
+      <script type="text/javascript" src="javascripts/offline/taffy.js"></script>
+      <script type="text/javascript" src="javascripts/app.js"></script>
+      <script type="text/javascript" src="javascripts/offline/sha1.js"></script>
+      
+      <script type="text/javascript" src="javascripts/rnd/BigNumber.js"></script>
+      <script type="text/javascript" src="javascripts/offline/shoppingCart.js"></script>
+      
+      
+      <script src="bootstrap-3.1.1/js/bootstrap.min.js"></script>
+	  <script type="text/javascript" src="javascripts/keyboard.js"></script>
+	  
+	  <script type='text/javascript' src='javascripts/printing.js'></script>
+      <script type='text/javascript' src='javascripts/webprnt/StarWebPrintBuilder.js'></script>
+      <script type='text/javascript' src='javascripts/webprnt/StarWebPrintTrader.js'></script>
+      <script type='text/javascript' src='javascripts/ePOS-Print/epos-print-3.0.0.js'></script> 
+        
+      <script type="text/javascript">
+            jQuery.noConflict(); 
+            
+            var STORE = JSON.parse(sessionStorage.store);
+            var TERMINAL = JSON.parse(sessionStorage.terminal);
+          	var USER = JSON.parse(sessionStorage.user);
+          	
+          	var ACTIVE_SALES_REP = USER;  
+          	var COUNTER = 0;
+          	
+          	var dataProvider = window.parent.frames[1];
+            var productGlider = dataProvider.PRODUCT_GLIDER;
+            var MODIFIER_GROUPS = dataProvider.MODIFIER_GROUPS;
+   		 	var MODIFIER_MAPPINGS = dataProvider.MODIFIER_MAPPINGS;
+            
+            var ProductManager = dataProvider.APP.PRODUCT;
+            var ProductBOMManager = dataProvider.APP.BOM;
+            var BPartnerManager = dataProvider.APP.BP;
+            var TaxManager = dataProvider.APP.TAX;       
+            var OrderManager = dataProvider.APP.ORDER;
+            var UserManager = dataProvider.APP.USER;   
+            var RoleManager = dataProvider.APP.ROLE;   
+            var TerminalManager = dataProvider.APP.TERMINAL;
+            
+            var StoreManager = dataProvider.APP.STORE;
+            
+            TerminalManager.terminal = TERMINAL;
+          	TerminalManager.terminalList = [TERMINAL];
+          	
+          	
+          	var shoppingCart = new ShoppingCart("POS Order");
+	        shoppingCart.isSoTrx = true;
+	        shoppingCart.pricelistId = TERMINAL.m_pricelist_id;
+	        shoppingCart.currencySymbol = TERMINAL.c_currency_name;
+	        shoppingCart.scale = 2;
+	        shoppingCart.priceListIncludeTax = (TERMINAL.istaxincluded == 'Y');
+	        
+	        shoppingCart.initializeShortcuts = function(){
+	        	console.log('Initializing shortcuts ...');
+	        };
+	        
+	        shoppingCart.updateCart = function(){
+	    		
+	    		/*update total*/
+	    		this.updateCartTotal();	
+	    	};
+	        
+	      	//Init tax
+           	if(TERMINAL.c_tax_id){
+               	 var tax = TaxManager.getTaxById(TERMINAL.c_tax_id);
+               	 shoppingCart.tax = tax;
+             }
+	        
+	        var products = ProductManager.searchProducts();
+	        
+	        var bps = BPartnerManager.searchBPartners({"iscustomer":"Y"});
+	        
+	        var TENDER_TYPE = {
+	        		CARD : 'Card',
+	        		CASH : 'Cash',
+	        		CHEQUE : 'Cheque',
+	        		CREDIT : 'Credit',
+	        		MIXED : 'Mixed',
+	        		VOUCHER : 'Voucher',
+	        		EXTERNAL_CARD : 'Ext Card',
+	        		GIFT_CARD : 'Gift Card',
+	        		SK_WALLET : 'SK Wallet',
+	        		ZAPPER : 'Zapper',
+	        		LOYALTY : 'Loyalty'
+	        };
+	        
+	        var tenderTypes = [TENDER_TYPE.CASH, TENDER_TYPE.CHEQUE, TENDER_TYPE.EXTERNAL_CARD];
+	        
+	        var order = {
+      				"action":"checkout",
+      				"prepareOrder":"",
+      				"bpartnerId":TERMINAL["c_bpartner_id"],
+      				"docAction":"CO",
+      				"orderId":"0",
+      				"orderType":"POS Order",
+      				"tenderType":"Ext Card",
+      				"amountTendered":"0",
+      				"amountRefunded":"0",
+      				"cashAmt":"0",
+      				"chequeNo":"",
+      				"chequeAmt":"0",
+      				"cardTrackData":"",
+      				"cardTrackDataEncrypted":"",
+      				"cardType":"",
+      				"cardholderName":"",
+      				"cardExpDate":"",
+      				"cardCVV":"",
+      				"cardStreetAddress":"",
+      				"cardZipCode":"",
+      				"cardNo":"",
+      				"cardAmt":"0",
+      				"externalCardAmt":"0",
+      				"isPaymentOnline":"false",
+      				"documentNo":"",
+      				"referenceNo":"",
+      				"dateOrdered":"2000-01-01",
+      				"splitSalesReps":"",
+      				"voucherAmt":"0",
+      				"voucherNo":"",
+      				"deliveryRule":"R",
+      				"movementDate":"",
+      				"giftCardAmt":"0",
+      				"giftCardTrackData":"",
+      				"giftCardNo":"",
+      				"giftCardCVV":"",
+      				"paymentTermId":"0",
+      				"signature":"",
+      				"comment":"",
+      				"otk":"",
+      				"skwalletAmt":"0",
+      				"zapperAmt":"0",
+      				"tipAmt":"0",
+      				"offlineDocumentNo":"",
+      				"offlineOrderId":"",
+      				"uuid":"",
+      				"paymentProcessor":""
+      			};
+      		
+      		var UOM_PRECISION = 0;
+			var CURRENCY_PRECISION = 2;
+          	
+          	function getDateOrdered(){    			
+    			
+    				var today = new Date();
+    					
+    				var year = today.getFullYear();
+    				var month = today.getMonth() + 1;					
+    				var date = today.getDate();
+    				var hours = today.getHours();
+    				var minutes = today.getMinutes();
+    				var seconds = today.getSeconds();
+    				
+    				if(month < 10) month = '0' + month;
+    				if(date < 10) date = '0' + date;
+    				if(hours < 10) hours = '0' + hours;
+    				if(minutes < 10) minutes = '0' + minutes;
+    				if(seconds < 10) seconds = '0' + seconds;
+    				
+    				var dateOrdered = year + "-" + month + "-" + date +
+    					" " + hours + ":" + minutes + ":" + seconds;
+    				
+    				return dateOrdered;
+    		}
+          	
+          	function generateOrder()
+          	{  
+          		COUNTER = COUNTER - 1;
+          		
+    	        /* clear cart */
+    			shoppingCart.clearCart();
+    	        
+    	        var noOfLines = 1 + Math.round(Math.random() * 9);
+    	        var index, product, qty;
+    			
+    	        for(var i=0; i< noOfLines; i++){
+    	        	
+    	        	try{
+    	        	qty = 1 + Math.round(Math.random() * 19)
+    	        	index = Math.round(Math.random() * products.length);
+    	        	
+    	        	if(index == products.length){
+    	        		index = products.length - 1;
+    	        	}
+    	        	
+    	        	product = products[index];
+    	        	
+    	        	if(product.isparent && product.isparent == 'Y') continue;
+    	        	if(product.isserialno == 'Y') continue;
+    	        	
+    	        	shoppingCart.addToCart(product.m_product_id, qty);
+    	        	} 
+    	        	catch (e)
+    	        	{
+    	        		console.error(qty + " " + index);
+    	        	}
+    	        }          		
+          		
+    			order["dateOrdered"] = getDateOrdered();         		
+          		
+          		var lines = [];
+    			shoppingCart.lines.each(function(pair) {
+    				var line = {};
+    				line.id = pair.value.product.m_product_id;
+    				line.c_uom_id = pair.value.product.c_uom_id;
+    				line.qtyEntered = pair.value.qty.toFixed(UOM_PRECISION);				
+    				line.productName = pair.value.product.name;
+    				line.description = pair.value.description;
+    				line.priceEntered = pair.value.priceEntered.toFixed(CURRENCY_PRECISION);
+    				line.taxId = pair.value.tax.taxId;
+    				line.discountAmt = pair.value.discountAmt.toFixed(CURRENCY_PRECISION);
+    				line.discountMessage = pair.value.discountMessage;
+    				
+    				line.priceList = pair.value.product.pricelist.toFixed(CURRENCY_PRECISION);
+    				
+    				if(shoppingCart.priceListIncludeTax){
+    					line.lineNetAmt = pair.value.lineNetAmt.toFixed(CURRENCY_PRECISION);
+    				}else{
+    					line.lineNetAmt = pair.value.lineAmt.toFixed(CURRENCY_PRECISION);
+    				}				
+    				
+    				/* set boms */
+    				line.boms = [];
+    				
+    				var boms = pair.value.boms;
+    				
+    				for(var i=0; i<boms.length; i++){					
+    					var bomLine = {};
+    					var bom = boms[i];
+    					
+    					bomLine.id = bom.product.m_product_id;
+    					bomLine.c_uom_id = bom.product.c_uom_id;
+    					bomLine.qtyEntered = bom.qty.toFixed(UOM_PRECISION);				
+    					bomLine.productName = bom.product.name;
+    					bomLine.description = bom.description;
+    					bomLine.priceEntered = bom.priceEntered.toFixed(CURRENCY_PRECISION);
+    					bomLine.taxId = bom.tax.taxId;
+    					
+    					if(shoppingCart.priceListIncludeTax){
+    						bomLine.lineNetAmt = bom.lineNetAmt.toFixed(CURRENCY_PRECISION);
+    					}else{
+    						bomLine.lineNetAmt = bom.lineAmt.toFixed(CURRENCY_PRECISION);
+    					}
+    					
+    					bomLine.priceList = bom.product.pricelist.toFixed(CURRENCY_PRECISION);
+    					
+    					line.boms.push(bomLine);
+    				}/*for*/
+    				
+    				/* set modifiers */
+    				line.modifiers = [];
+    				
+    				var modifiers = pair.value.modifiers;
+    				
+    				for(var i=0; i<modifiers.length; i++){					
+    					var modifierLine = {};
+    					var modifier = modifiers[i];
+    					
+    					modifierLine.id = modifier.product.m_product_id;
+    					modifierLine.c_uom_id = modifier.product.c_uom_id;
+    					modifierLine.qtyEntered = modifier.qty.toFixed(UOM_PRECISION);				
+    					modifierLine.productName = modifier.product.name;
+    					modifierLine.description = modifier.description;
+    					modifierLine.priceEntered = modifier.priceEntered.toFixed(CURRENCY_PRECISION);
+    					modifierLine.taxId = modifier.tax.taxId;
+    					
+    					if(shoppingCart.priceListIncludeTax){
+    						modifierLine.lineNetAmt = modifier.lineNetAmt.toFixed(CURRENCY_PRECISION);
+    					}else{
+    						modifierLine.lineNetAmt = modifier.lineAmt.toFixed(CURRENCY_PRECISION);
+    					}	
+    					
+    					/* add modifier id */
+    					modifierLine.modifierId = 0;
+    					if(modifier.modifier){
+    						modifierLine.modifierId = modifier.modifier.modifierId;
+    					}
+    					
+    					modifierLine.priceList = modifier.product.pricelist.toFixed(CURRENCY_PRECISION);
+    					
+    					line.modifiers.push(modifierLine);
+    				}/*for*/
+    				
+    				lines.push(line);
+    			});
+    			
+    			if(lines.length == 0){
+    				generateOrder();
+    				return;
+    			}
+    			
+    			order.lines = lines;
+    								
+    			if(order.offlineDocumentNo == null || order.offlineDocumentNo == ''){
+    				var today = new Date();
+    				
+    				var year = today.getFullYear();
+    				var month = today.getMonth() + 1;					
+    				var date = today.getDate();
+    				var hours = today.getHours();
+    				var minutes = today.getMinutes();
+    				var seconds = today.getSeconds();
+    	    			
+    				if(month < 10) month = '0' + month;
+    				if(date < 10) date = '0' + date;
+    				if(hours < 10) hours = '0' + hours;
+    				if(minutes < 10) minutes = '0' + minutes;
+    				if(seconds < 10) seconds = '0' + seconds;
+    				
+    				var reference = (year + '').substr(2) + month + date + hours + minutes + seconds;			
+    				
+    				order.offlineDocumentNo = "xxx-xxxxxxxx";				
+    			}
+    			
+    			if(order.offlineOrderId == null || order.offlineOrderId == ''){
+    				order.uuid = APP.UTILS.UUID.getUUID();
+    				order.id = order.uuid;
+    			}
+    			else
+    			{
+    				order.uuid = order.offlineOrderId;
+    				order.id = order.uuid;
+    			}
+    			
+    			/*
+    			if(order.offlineOrderId != null && order.offlineOrderId != ''){
+    				order.id = parseInt(order.offlineOrderId);
+    			}
+    			*/
+    			
+    			/*order taxes*/
+    			order.orderTaxes = shoppingCart.orderTaxes;			
+    			
+    			order.clientId = TerminalManager.terminal.ad_client_id;
+    			order.orgId = TerminalManager.terminal.ad_org_id;
+    			order.terminalId = TerminalManager.terminal.id;
+    			order.taxId = TerminalManager.terminal.taxId;
+    			order.priceListId = shoppingCart.pricelistId;
+    			
+    			/* see offline/orderScreen.jsp line 231 */
+    			order.salesRepId = ACTIVE_SALES_REP.ad_user_id;
+    			order.salesRep = ACTIVE_SALES_REP.name;
+    			
+    			order.bpName = TerminalManager.terminal.c_bpartner_name;
+    			order.grandTotal = shoppingCart.grandTotal.toFixed(CURRENCY_PRECISION);
+    			order.qtyTotal = shoppingCart.qtyTotal.toFixed(UOM_PRECISION);
+    			order.taxTotal = shoppingCart.taxTotal.toFixed(CURRENCY_PRECISION);
+    			order.subTotal = shoppingCart.subTotal.toFixed(CURRENCY_PRECISION);
+    			order.discountAmt = shoppingCart.discountOnTotal.toFixed(CURRENCY_PRECISION);
+    			
+    			order.status = '';
+    			order.comments = [];
+    			
+    			// set payments
+    			order.payments = [];
+    			
+    			// set random tender type
+    			var tenderType = tenderTypes[Math.round((Math.random() * 20)/10)];
+    			
+    			order["tenderType"] = tenderType;
+    			
+    			//reset previous values
+    			order["amountTendered"] = 0;
+    			order["cashAmt"] = 0;
+    			order["chequeAmt"] = 0;
+    			order["chequeNo"] = "";
+    			order["externalCardAmt"] = 0;
+    			
+    			if(order.tenderType == TENDER_TYPE.CASH) {
+    				order["amountTendered"] = order.grandTotal;
+    				order["cashAmt"] = order.grandTotal;
+				}
+				else if(order.tenderType == TENDER_TYPE.CHEQUE) {
+					order["chequeAmt"] = order.grandTotal;
+					order["chequeNo"] = "xxxxxxxxx";
+				}
+				else if(order.tenderType == TENDER_TYPE.EXTERNAL_CARD) {
+					order["externalCardAmt"] = order.grandTotal;
+				}
+				else {
+					
+				}
+    			
+    			
+    			if(order.docAction == 'CO') 
+    			{
+    				if(order.tenderType == TENDER_TYPE.MIXED || order.tenderType == TENDER_TYPE.CREDIT)
+    				{
+    					// do nothing
+    				}
+    				else 
+    				{
+    					var payment = {
+    						    "tenderType" : order.tenderType,
+    						    "discountAmt" : order.discountAmt,
+    						    "writeOffAmt" : 0,
+    						    "cardType" : "--",
+    						    "overUnderAmt" : 0,
+    						    "payAmt" : order.grandTotal
+    					};
+    					
+    					if(order.tenderType == TENDER_TYPE.CASH) {
+    						payment["cashAmt"] = order.grandTotal;
+    					}
+    					else if(order.tenderType == TENDER_TYPE.CARD) {
+    						payment["cardAmt"] = order.grandTotal;
+    					}
+    					else if(order.tenderType == TENDER_TYPE.CHEQUE) {
+    						payment["chequeAmt"] = order.grandTotal;
+    					}
+    					else if(order.tenderType == TENDER_TYPE.EXTERNAL_CARD) {
+    						payment["externalCardAmt"] = order.grandTotal;
+    					}
+    					else if(order.tenderType == TENDER_TYPE.GIFT_CARD) {
+    						payment["giftCardAmt"] = order.grandTotal;
+    					}
+    					else if(order.tenderType == TENDER_TYPE.VOUCHER) {
+    						payment["voucherAmt"] = order.grandTotal;
+    					}
+    					
+    					order.payments.push(payment);
+    				}
+    			}
+    			
+    						
+    			/* build split sales rep list */
+    			var splitSalesReps = [
+    				                {
+    				                	"id" : order.salesRepId,
+    				                	"name" : order.salesRep,
+    				                	"amount" : order.subTotal
+    				                }
+    				           ];
+    			
+    			order.splitSalesReps = splitSalesReps;			
+    			
+    			if(shoppingCart.priceListIncludeTax){
+    				order.subTotal = order.grandTotal;
+    			}
+    			
+    			/* set random customer */
+    			var bpIndex = Math.round(Math.random() * bps.length);
+	        	
+	        	if(bpIndex == bps.length){
+	        		bpIndex = bps.length - 1;
+	        	}
+	        	
+	        	var bp = bps[bpIndex];
+	        	order.bpName = bp["name"];
+	        	order.bpartnerId = bp["id"];
+    						
+    			/*offline/order.js*/
+    			OrderManager.saveOrder(order).done(function(){
+    				
+    				//console.log(COUNTER + " --> " + arguments[0]);
+    				
+    				jQuery("#logs").prepend("<div>" + COUNTER + " --> " + arguments[1].documentNo + "</div>");
+    				
+    				if(COUNTER <= 0){
+    					return;
+    				}
+    				
+    				generateOrder();
+    				
+    			}).fail(function(msg){
+    					
+    				console.log('Failed to checkout! ' + msg);
+    			});		
+    			
+    				
+          	}
+          	
+          	
+          	
+          	jQuery(document).ready(function(){
+          		
+          		jQuery("#generate-order-button").on("click", function(e){
+          			
+          			jQuery("#logs").html("");
+          			
+          			var count = parseInt(jQuery("#no-of-orders").val());
+          			
+          			COUNTER = count;
+          			
+          			generateOrder();
+          			
+          		}); 
+          		
+				jQuery("#view-orders-button").on("click", function(e){
+          			
+					window.location = "html/4.2/orders.html";
+          			
+          		}); 
+          		
+                	
+            });        
+        </script>     
+   </head>
+
+	<body class="">
+		<div class="row seperator-16">
+			<div class="col-xs-0 col-md-3"></div>
+			<div class="col-xs-12 col-md-6" style="padding: 8px 16px;">
+				<div class="col-xs-0 col-md-6">
+					<div class="row">
+						<div id="header-logo" class="login-logo">
+							<img src='images/v13/logo2.png' onerror='this.src="images/v13/logo2.png"' alt="">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-0 col-md-3"></div>
+		</div>
+
+		<div class="seperator-grey"></div>
+		<input type="text" value="50" id="no-of-orders">
+		<button id="generate-order-button">Generate</button>
+		
+		<button id="view-orders-button">Order History</button>
+		
+		<div id="logs"></div>
+
+	</body>
+</html>

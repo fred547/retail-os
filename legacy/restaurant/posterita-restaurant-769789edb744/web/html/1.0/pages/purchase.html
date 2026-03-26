@@ -1,0 +1,270 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content" class="purchase">
+	 
+	<div class="row-container" style="height: 100%; padding: 0px 20px;">
+	
+		<div style="height: 250px;" ng-show="ctrl.showHeader">
+				<h4>Make a Purchase Order</h4>
+				<!-- purchase header -->
+				<div class="column-container">				
+					<!-- Supplier details -->
+					<div style="width: 40%;">
+						<table class="supplier-table">
+							<tr>
+								<td>Select Supplier*&nbsp;</td>
+								<td>
+									<select id="purchase_supplier" class="form-control" ng-model="ctrl.supplier" ng-change="ctrl.updateSupplier()" ng-options="supplier.name for supplier in ctrl.suppliers track by supplier.id">
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Address:</td>
+								<td>{{ ctrl.getAddress(ctrl.supplier) }}</td>
+							</tr>
+							<tr>
+								<td>Tax ID:</td>
+								<td>{{ ctrl.supplier.taxid }}</td>
+							</tr>
+							<tr>
+								<td>Phone:</td>
+								<td>{{ ctrl.supplier.phone }}</td>
+							</tr>
+							<tr>
+								<td>Email:</td>
+								<td>{{ ctrl.supplier.email }}</td>
+							</tr>
+						</table>
+						
+											
+					</div>
+					
+					<!-- order details -->
+					<div style="width: 30%;">
+						<table class="purchase-details-table">
+							<tr>
+								<td>Deliver To*</td>
+								<td>
+									<select id="purchase_warehouse" class="form-control" ng-model="ctrl.warehouse" ng-change="ctrl.updateWarehouse()" ng-options="warehouse.name for warehouse in ctrl.warehouseList track by warehouse.id">
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Price List:</td>
+								<td>{{ ctrl.pricelist.name }}</td>
+							</tr>
+							<tr>
+								<td>Ref Number*</td>
+								<td>
+									<input autocomplete="off" id="purchase_referenceno" class="form-control" type="text" ng-model="ctrl.referenceno">
+								</td>
+							</tr>
+							<tr>
+								<td>Agent</td>
+								<td>
+									<input autocomplete="off" id="purchase_referenceno" class="form-control" type="text" ng-model="ctrl.agent">
+								</td>
+							</tr>
+							<tr>
+								<td>Payment Type*</td>
+								<td>
+									<select id="purchase_paymentrule" class="form-control" ng-model="ctrl.paymentrule">										
+										<option value="B">
+											Cash
+										</option>
+										<option value="S">
+											Cheque
+										</option>
+										<option value="E">
+											External Credit Card
+										</option>					
+										<option value="P">
+											On Credit
+										</option>					
+									</select>
+								</td>
+							</tr>
+						</table>
+					</div>
+					
+					<!-- order details -->
+					<div style="width: 30%;">
+						<table class="purchase-details-table">							
+							<tr>
+								<td>Deliver Date*</td>
+								<td>
+									<div>
+										<div class="input-group">
+											<input autocomplete="off" class="form-control" id="purchase_promisedate" ng-model="ctrl.promisedate" placeholder="" type="text" datepicker-popup="dd-MM-yyyy" is-open="ctrl.opened1"> 
+											<span class="input-group-btn">
+						        				<button class="btn btn-default" ng-debounced-click="ctrl.open1($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+						      				</span>
+										</div>									
+									</div>																
+								</td>
+							</tr>
+							<tr>
+								<td>Arrival Date*</td>
+								<td>
+									<div>
+										<div class="input-group">
+											<input autocomplete="off" class="form-control" id="purchase_arrivaldate" ng-model="ctrl.arrivaldate" placeholder="" type="text" datepicker-popup="dd-MM-yyyy" is-open="ctrl.opened2"> 
+											<span class="input-group-btn">
+						        				<button class="btn btn-default" ng-debounced-click="ctrl.open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+						      				</span>
+										</div>									
+									</div>																
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+	
+	</div>
+	
+	<div>
+		<div class="column-container">				
+			<div style="width: 50%;">
+				<a ng-debounced-click="ctrl.showHeader = !ctrl.showHeader">{{ ctrl.showHeader ? "Hide" : "Show" }} Header</a>	
+			</div>
+			<div style="width: 50%; text-align: right;">
+				<a ng-debounced-click="ctrl.setBoxNo()">Current Box/Bag No: {{ctrl.boxNumber == null ? 'N/A' : ctrl.boxNumber}}</a>
+			</div>
+		</div>
+		
+	</div>
+	
+	<!-- purchase lines -->
+	<div class="cart-container" style="top:{{ctrl.showHeader ? '275px' : '25px'}}">	
+	
+		<div>
+			<input autocomplete="off" type="text" class="form-control" placeholder="Search for product" ng-model="searchTerm"
+						id="search-textfield"
+						typeahead="product as product.name for product in ctrl.searchProduct($viewValue) | limitTo:5" 
+						typeahead-input-formatter="ctrl.addProduct(searchTerm)"
+						typeahead-template-url="templates/product-tpl.html">
+		</div>
+		
+		<div class="cart-lines">
+
+			<table class="cart-line-table">
+				<thead>
+				<tr>
+					<th>Name</th>
+					<th>Description</th>
+					<th style="width:160px;">Tax</th>
+					<th style="width:150px;">Qty</th>
+					<th style="width:150px;">Unit Price</th>
+					<th style="width:120px;">Total</th>
+					<th style="border-right-color: #666; width:20px;">&nbsp;</th>
+				</tr>
+				</thead>
+				
+				
+				<tbody ng-repeat="line in ctrl.shoppingCart.lines.toArray() | orderBy:'lineId' | groupBy:'boxNo'" >
+				
+				<tr ng-class-odd="'alternate-row'" ng-show="line.boxNo != null && line.group_by_key">
+					<td colspan="6" class="box-no">Box/Bag No: {{ line.boxNo }}</td>
+				</tr>
+				
+				<tr ng-class-odd="'alternate-row'">
+					<td>
+						{{ line.product.name }} 
+					</td>
+					<td>
+						{{ line.description }}
+					</td>
+					<td>
+						<!-- 
+						<select class="form-control" ng_model="line.tax" id="tax-{{$index}}" ng-value="line.c_tax_id" ng-change="ctrl.changeTax(line, line.tax)" ng-options="tax.taxName for tax in ctrl.taxList track by tax.id">
+						</select>
+						 -->
+						<select class="form-control" ng-model="x" ng-change="ctrl.setTax(line, x)">
+							<option ng-repeat="tax in ctrl.taxList" ng-value="tax.id" ng-selected="tax.id == line.tax.id">{{tax.taxName}}</option>
+						</select>
+					<td>
+						<input autocomplete="off" type="text" class="form-control input-sm" id="qty-{{$index}}" ng-value="line.qty.toString()" ng-blur="ctrl.updateQty(line, $index)"  ng-enter="ctrl.updateQty(line, $index)">
+					</td>
+					<td>
+						<input autocomplete="off" type="text" class="form-control input-sm" id="price-{{$index}}" ng-value="line.priceEntered.toString()" ng-blur="ctrl.updatePrice(line, $index)"  ng-enter="ctrl.updatePrice(line, $index)">
+					</td>
+					<td>
+						{{ line.baseAmt.float() | number:2  }}
+					</td>
+					<td>
+						<button ng-debounced-click="ctrl.shoppingCart.removeFromCart(line.lineId)">
+							<i class="glyphicons glyphicons-bin xs"></i>
+						</button>
+					</td>
+				</tr>
+				
+				</tbody>
+							
+				<tfoot>
+				<tr>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				</tbody>
+			</table>
+			
+		</div>
+		
+	</div>
+	
+	<!-- purchase totals -->
+	<div style="height: 165px;">
+		<table class="cart-total-table">
+			<tr class="bold">
+				<td>Number of items</td>
+				<td class="text-right" style="width:240px;">{{ ctrl.shoppingCart.qtyTotal.toString() }}</td>
+			</tr>
+			<tr>
+				<td>Subtotal</td>
+				<td class="text-right">{{ ctrl.shoppingCart.subTotal.float() | number:2 }}</td>
+			</tr>
+			<tr>
+				<td>Tax</td>
+				<td class="text-right">{{ ctrl.shoppingCart.taxTotal.float() | number:2 }}</td>
+			</tr>
+			<!-- 
+			<tr>
+				<td>Discount</td>
+				<td class="text-right">
+					<input autocomplete="off" type="text" class="form-control text-right" id="discount" ng-value="ctrl.shoppingCart.discountOnTotal.toString()" ng-blur="ctrl.updateDiscountOnTotal()"  ng-enter="ctrl.updateDiscountOnTotal()">
+				</td>
+			</tr>
+			 -->
+			<tr class="bold">
+				<td>Grand Total</td>
+				<td class="text-right">{{ ctrl.shoppingCart.grandTotal.minus(ctrl.shoppingCart.discountOnTotal).float() | number:2 }}</td>
+			</tr>
+		</table>
+				
+		<div style="float: right;">
+			<button type="button" class="btn btn-outline-dark" ng-debounced-click="ctrl.clearList()">Clear List</button>
+			<button type="button" class="btn btn-outline-dark" ng-debounced-click="ctrl.createPurchase(false)">Save</button>
+			<button type="button" class="btn btn-primary" ng-debounced-click="ctrl.createPurchase(true)">Create Purchase Order</button>
+		</div>
+	</div>
+	
+</div>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	
+	<title>Select User</title>
+	<link href="../../bootstrap-3.1.1/css/bootstrap.css" media="screen" rel="stylesheet" type="text/css">
+	
+	<link href="layout.css" media="all" rel="stylesheet" type="text/css">
+	<style type="text/css">
+		html, body {	    
+	       overflow: hidden;
+	       height: 100%;	    
+	    }
+	    
+	    #main-container {
+	       height: 100%;
+	    }
+	   
+	    #main-container #header {
+	        height: 80px;
+	    }
+	    
+	    #main-container #footer {
+	        height: 100px;
+	    }
+
+	    .login-title { font-size:24pt; }	    
+	    .login-button-container > div { text-align:right; }
+	    .login-button-container > div button { width:15%; }
+	</style>
+</head>
+<body>
+<!-- start of template -->
+	<!-- Login -->
+	<div class="row-container" id="main-container">
+
+		<div id="header">
+			Header
+		</div>
+		
+		<div id="body-content">
+			
+			<div class="row-container" style="height: 100%;">
+			
+				<div>
+					<div class="column-container">
+						
+						<!-- first column -->
+						<div style="width: 25%;"></div><!-- first column -->
+						
+						<!-- Login form column -->
+						<div style="width: 50%;">
+							<div class="row-container" style="height: 100%;">
+								
+								<!-- Login Title -->
+								<div class="login-title">
+									Login
+								</div><!-- Login Title -->
+								
+								<!-- Store Name -->
+								<div>
+									<div class="row-container">
+										<label for="store">Store</label>
+										<input type="text" class="form-control" id="store" disabled>
+									</div>
+								</div><!-- Store Name -->
+								
+								<!-- Terminal Name -->
+								<div>
+									<div class="row-container">
+										<label for="terminal">Terminal</label>
+										<input type="text" class="form-control" id="terminal" disabled>
+									</div>
+								</div><!-- Terminal Name -->
+								
+								<!-- Username -->
+								<div>
+									<div class="row-container">
+										<label for="username">Username</label>
+										<input type="text" class="form-control" id="username">
+									</div>
+								</div><!-- Username -->
+								
+								<!-- Password -->
+								<div>
+									<div class="row-container">
+										<label for="password">Password</label>
+										<input type="text" class="form-control" id="password">
+									</div>
+								</div><!-- Password -->
+								
+								<!-- Login Button -->
+								<div class="column-container login-button-container">
+									<div>
+										<button class="btn btn-success">Login</button>
+									</div>
+								</div><!-- Login Button -->
+								
+							</div>
+						</div><!-- Login form column -->
+						
+						<!-- third column -->
+						<div style="width: 25%;">
+						
+						<a href="/html/4.2/select-user.html">Switch Old</a>
+						
+						</div><!-- third column -->
+					</div>
+				</div>
+			
+			</div>
+			
+		</div>
+		
+		<div id="footer">
+			Footer
+		</div>
+	
+	</div>
+	<!-- Login -->
+</body>
+</html>

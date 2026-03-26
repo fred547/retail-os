@@ -1,0 +1,58 @@
+<div class="modal" style="display: none;" id="delivery.popup.panel"	tabindex="-1" role="dialog" aria-labelledby="delivery.popup.panel" aria-hidden="true">
+	<form name="myform" autocomplete="off">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true" id="delivery.popup.close.button">×</button>
+				<h4 class="modal-title">
+					<div class="glyphicons glyphicons-pro wallet"></div>
+					&nbsp;Deliver
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row" id="delivery.popup.confirmation.panel">
+					<div class=" row deliver-top">
+						<div class="deliver-top-text">Do you want to deliver
+							the products now?</div>
+					</div>
+					<div class="modal-footer">
+						<div class="row">
+							<button type="button" class="btn btn-xs btn-secondary"
+								style="width: 40%;" id="delivery.popup.later.button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div>No, Later</div>
+							</button>
+
+							<button type="button" class="btn btn-xs btn-success"
+								style="width: 40%;" id="delivery.popup.now.button">
+								<div class="glyphicons glyphicons-pro ok_2"></div>
+								<div>Yes, Now</div>
+							</button>
+
+						</div>
+					</div>
+				</div>
+				<div class="row" id="delivery.popup.date.panel"
+					style="display: none">
+					<div class="row deliver-top">
+						<div class="deliver-top-text">Schedule Date</div>
+						<input type="text" id="delivery.popup.date.textfield">
+						<input id="delivery.popup.date.button" class="calendar-icon"
+							type="button" style="border: none;">
+					</div>
+					<div style="float: right; width: 35%;">
+						<button type="button" class="btn btn-xs btn-success"
+							style="width: 40%; float: right;"
+							id="delivery.popup.schedule.button">
+							<div class="glyphicons glyphicons-pro ok_2"></div>
+							<div>OK</div>
+						</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	</form>
+</div>

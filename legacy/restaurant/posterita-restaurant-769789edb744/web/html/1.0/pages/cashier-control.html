@@ -1,0 +1,70 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+
+<!-- Body -->
+<div id="body-content">
+	<div class="column-container">
+	
+		<div style="width:25%;"></div>
+		
+		<div>
+			
+			<div class="row-container cashier-control-container">
+			
+				<!-- Cashier Control Title -->
+				<div>
+					<div class="cashier-control-title form-group">
+						Cashier Control
+					</div>
+				</div><!-- Cashier Control Title -->
+				
+				<!-- Cashier Control Help Description -->
+				<div>
+					<p>Please enter the cash amount and the external card amount.</p>
+				</div><!-- Cashier Control Help Description -->
+				
+				<!-- Cash Amount Input -->
+				<div>
+					<div class="form-group" style="margin-top: 16px;">
+						<label for="cash_amount">Cash Amount</label>
+						<input data-test-id="cash-amount" type="number" name="cash_amount" tabindex="2" ng-model="ctrl.amount" value="" class="form-control" id="cash-amount" required>
+					</div>
+				</div><!-- Cash Amount Input -->
+				
+				<!-- Ext. Card Amount Input -->
+				<div>
+					<div class="form-group" style="margin-top: 16px;">
+						<label for="external_card_amount">Ext. Card Amount</label>
+						<input data-test-id="external-card-amount" type="number" name="external_card_amount" tabindex="2" ng-model="ctrl.externalCardAmount" value="" class="form-control" id="external-card-amount" required>
+					</div>
+				</div><!-- Ext. Card Amount Input -->
+				
+				<!-- Buttons -->
+				<div>
+					<div class="column-container cashier-control-buttons-container">
+						<div>
+							<button data-test-id="denomination-button" type="button" class="btn btn-md btn-default button-white" ng-debounced-click="ctrl.showDenominationPopup()">
+								<i class="glyphicons glyphicons-calculator xs"></i>
+								<div data-i18n="denomination">Denomination</div>
+							</button>
+						</div>
+						
+						<div></div>
+						<div></div>
+						
+						<div>
+							<button data-test-id="save-button" type="submit" class="btn btn-md btn-success button-green" ng-debounced-click="ctrl.saveCashierControl()">
+								<i class="glyphicons glyphicons-floppy-disk xs"></i>
+								<div data-i18n="save">Save</div>
+							</button>
+						</div>
+					</div>
+				</div><!-- Buttons -->
+			</div>
+			
+		</div>
+		
+		<div style="width:25%;"></div>
+	</div>
+		
+	
+</div><!-- Body -->

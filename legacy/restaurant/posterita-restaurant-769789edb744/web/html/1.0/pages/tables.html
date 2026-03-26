@@ -1,0 +1,92 @@
+<div id="header" ng-include="'pages/header.html'"></div>
+		
+<div id="body-content">
+
+<table style="width: 100%">
+	<tr>
+		<td id="tables-container" style="vertical-align: top;">
+			<div id="table-groups">
+				<button data-test-id="table-group-0" ng-debounced-click="ctrl.showTableGroup(0)" ng-class="{ 'active' : ctrl.activeGroup == 0 }">0-24</button>
+				<button data-test-id="table-group-1" ng-debounced-click="ctrl.showTableGroup(1)" ng-class="{ 'active' : ctrl.activeGroup == 1 }">25-49</button>
+				<button data-test-id="table-group-2" ng-debounced-click="ctrl.showTableGroup(2)" ng-class="{ 'active' : ctrl.activeGroup == 2 }">50-74</button>
+				<button data-test-id="table-group-3" ng-debounced-click="ctrl.showTableGroup(3)" ng-class="{ 'active' : ctrl.activeGroup == 3 }">75-99</button>
+				<button data-test-id="refresh-tables" ng-debounced-click="ctrl.refresh()">
+					<i class="glyphicons glyphicons-refresh"></i>
+					<span>Refresh</span>
+				</button>
+			</div>
+			<div>
+				<!-- 
+				<button class="table" ng-debounced-click="ctrl.previous()" style="border: solid 2px #ccc;" ng-hide="ctrl.myIndex == 0">
+					<i class="glyphicons glyphicons-chevron-left"></i>
+					<span>Previous</span>
+				</button>
+				 -->
+			
+				<button data-test-id="table-{{table.table_id}}" class="table" ng-show="table.visible" ng-disabled="table.parent_table_id !== ''" ng-repeat="table in ctrl.tables" ng-debounced-click="ctrl.selectTable(table)" ng-class="{'available' : table.status=='A','reserved' : table.status == 'R', 'billed' : table.status == 'B', 'ordered' : table.status == 'O', 'active' : table == ctrl.activeTable}">
+					<div>
+						{{table.name}}
+					</div>
+					
+					<div style="font-size: 12px;">
+						<div>{{table.waiter}}</div>
+						<div>{{table.timediff}}</div>
+					</div>
+					 
+				</button>
+				
+				<!--
+				<button class="table" ng-debounced-click="ctrl.next()" style="border: solid 2px #ccc;" ng-hide="(ctrl.myIndex + 61) >= ctrl.tables.length">
+					<span>Next</span>
+					<i class="glyphicons glyphicons-chevron-right"></i>					
+				</button>	
+				 -->
+				
+				
+			</div>
+			
+			<!-- 
+			{{ctrl.activeTable | json }}
+			 -->
+			
+		</td>
+		<td id="tables-action-container">
+			<div>
+				<button data-test-id="reserve-table" class="btn btn-md btn-primary" ng-debounced-click="ctrl.reserveTable()" ng-disabled="ctrl.activeTable == null || ctrl.activeTable.status != 'A'">
+					<div>Reserve Table</div>
+				</button>
+				
+				<button data-test-id="place-order" class="btn btn-md btn-primary" ng-debounced-click="ctrl.placeOrder()" ng-disabled="ctrl.activeTable == null || (ctrl.activeTable.status =='B' && ctrl.role.name == 'Waiter')">
+					<div>Place Order</div>
+				</button>
+				
+				<button data-test-id="print-bill" class="btn btn-md btn-primary" ng-debounced-click="ctrl.billTable()" ng-disabled="ctrl.activeTable == null || !( ctrl.activeTable.status =='O' || ctrl.activeTable.status == 'B' ) ">
+					<div>Print Bill</div>
+				</button>
+				
+				<button data-test-id="settle-payment" class="btn btn-md btn-primary" ng-debounced-click="ctrl.settlePayment()" ng-disabled="ctrl.activeTable == null || ctrl.activeTable.status !='B' ">
+					<div>Settle Payment</div>
+				</button>
+				
+				<button data-test-id="merge-tables" class="btn btn-md btn-primary" ng-debounced-click="ctrl.mergeTables()" ng-disabled="ctrl.activeTable == null || ctrl.activeTable.status == 'B'">
+					<div>Merge tables</div>
+				</button>
+				
+				<button data-test-id="switch-table" class="btn btn-md btn-primary" ng-debounced-click="ctrl.switchTable()" ng-disabled="ctrl.activeTable == null || (ctrl.activeTable.status =='A' || ctrl.activeTable.status =='B')">
+					<div>Switch Table</div>
+				</button>
+				
+				<button data-test-id="cancel-reservation" class="btn btn-md btn-primary" ng-debounced-click="ctrl.cancelReservation()" ng-disabled="ctrl.activeTable == null || ctrl.activeTable.status !='R'">
+					<div>Cancel Reservation</div>
+				</button>
+				
+				<button data-test-id="clear-table" class="btn btn-md btn-danger" ng-debounced-click="ctrl.clearTable()" ng-disabled="ctrl.activeTable == null" ng-if="ctrl.role.name == 'Administrator'">
+					<div>Clear Table</div>
+				</button>
+			
+			</div>
+		</td>
+	</tr>
+</table>
+	
+</div>
