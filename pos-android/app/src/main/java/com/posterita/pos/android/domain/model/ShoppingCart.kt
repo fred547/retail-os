@@ -24,7 +24,13 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
     var tipsAmount: Double = 0.0
     var tipsPercentage: Double = 0.0
     var note: String? = null
-    var orderType: String = "dine_in" // "dine_in" or "take_away"
+    var orderType: String = "dine_in" // "dine_in", "take_away", or "delivery"
+
+    // Delivery details (populated by showDeliveryDetailsDialog)
+    var deliveryCustomerName: String? = null
+    var deliveryCustomerPhone: String? = null
+    var deliveryAddress: String? = null
+    var deliveryNotes: String? = null
     var discountOnTotalPercentage: Double = 0.0
     var discountOnTotalAmount: Double = 0.0
     private var lineNo: Int = 0

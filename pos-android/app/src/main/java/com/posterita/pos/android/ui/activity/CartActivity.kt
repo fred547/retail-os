@@ -107,6 +107,9 @@ class CartActivity : BaseDrawerActivity() {
     @Inject
     lateinit var promotionService: com.posterita.pos.android.service.PromotionService
 
+    @Inject
+    lateinit var deliveryDao: com.posterita.pos.android.data.local.dao.DeliveryDao
+
     private lateinit var cartAdapter: CartProductAdapter
 
     /** Currently applied auto-promotion (best one) */
@@ -624,18 +627,27 @@ class CartActivity : BaseDrawerActivity() {
             .setTitle("Delivery Details")
             .setView(container)
             .setPositiveButton("Continue") { _, _ ->
+                val name = nameInput.text.toString().trim()
+                val phone = phoneInput.text.toString().trim()
+                val address = addressInput.text.toString().trim()
+                val notes = notesInput.text.toString().trim()
+
+                // Store delivery details on cart for auto-creation after order
+                val cart = shoppingCartViewModel.shoppingCart
+                cart.deliveryCustomerName = name.ifBlank { null }
+                cart.deliveryCustomerPhone = phone.ifBlank { null }
+                cart.deliveryAddress = address.ifBlank { null }
+                cart.deliveryNotes = notes.ifBlank { null }
+
+                // Also append to order note for receipt printing
                 val deliveryNote = buildString {
                     append("DELIVERY")
-                    val name = nameInput.text.toString().trim()
                     if (name.isNotBlank()) append(" | $name")
-                    val phone = phoneInput.text.toString().trim()
                     if (phone.isNotBlank()) append(" | $phone")
-                    val address = addressInput.text.toString().trim()
                     if (address.isNotBlank()) append(" | $address")
-                    val notes = notesInput.text.toString().trim()
                     if (notes.isNotBlank()) append(" | $notes")
                 }
-                val currentNote = shoppingCartViewModel.shoppingCart.note ?: ""
+                val currentNote = cart.note ?: ""
                 shoppingCartViewModel.setNote(
                     if (currentNote.isNotBlank()) "$currentNote | $deliveryNote" else deliveryNote
                 )
@@ -1912,6 +1924,12 @@ class CartActivity : BaseDrawerActivity() {
                     awardLoyaltyPoints(uuid, order.grandTotal)
                 }
 
+                // Auto-create delivery record for delivery orders
+                val cart = shoppingCartViewModel.shoppingCart
+                if (cart.orderType == "delivery") {
+                    createDeliveryRecord(order, customer, store, account)
+                }
+
                 // Clear cart
                 shoppingCartViewModel.clearCart()
 
@@ -3109,6 +3127,42 @@ class CartActivity : BaseDrawerActivity() {
                     terminalId = terminal.terminalId
                 )
             )
+        }
+    }
+
+    // ==================== DELIVERY ====================
+
+    /**
+     * Auto-create a delivery record in Room when a delivery order is completed.
+     * The record will sync to Supabase on next CloudSync cycle.
+     */
+    private fun createDeliveryRecord(
+        order: com.posterita.pos.android.data.local.entity.Order,
+        customer: com.posterita.pos.android.data.local.entity.Customer,
+        store: com.posterita.pos.android.data.local.entity.Store,
+        account: com.posterita.pos.android.data.local.entity.Account
+    ) {
+        val cart = shoppingCartViewModel.shoppingCart
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val delivery = com.posterita.pos.android.data.local.entity.Delivery(
+                    id = 0, // server will assign real ID on sync
+                    account_id = account.account_id ?: "",
+                    order_id = order.orderId,
+                    store_id = store.storeId,
+                    customer_id = if (customer.customer_id > 0) customer.customer_id else null,
+                    customer_name = cart.deliveryCustomerName ?: customer.name,
+                    customer_phone = cart.deliveryCustomerPhone ?: customer.phone1 ?: customer.mobile,
+                    delivery_address = cart.deliveryAddress,
+                    delivery_notes = cart.deliveryNotes,
+                    status = "pending",
+                    created_at = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
+                )
+                deliveryDao.insertAll(listOf(delivery))
+                android.util.Log.d("CartActivity", "Delivery record created for order ${order.orderId}")
+            } catch (e: Exception) {
+                android.util.Log.w("CartActivity", "Failed to create delivery record", e)
+            }
         }
     }
 
