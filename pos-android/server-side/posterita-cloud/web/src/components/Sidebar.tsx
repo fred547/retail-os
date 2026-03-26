@@ -32,6 +32,7 @@ import {
   RefreshCw,
   Wallet,
   Tag,
+  Heart,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -62,6 +63,7 @@ const sections: NavSection[] = [
       { name: "Orders", href: "/orders", icon: ShoppingCart },
       { name: "Tills", href: "/tills", icon: Wallet },
       { name: "Customers", href: "/customers", icon: Users },
+      { name: "Loyalty", href: "/loyalty", icon: Heart },
       { name: "Reports", href: "/reports", icon: BarChart3 },
     ],
   },

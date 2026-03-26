@@ -658,6 +658,84 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Loyalty auto-earn: award points for new orders with a customer
+    if (newOrderIds.size > 0) {
+      try {
+        // Check if loyalty is active for this account
+        const { data: loyaltyConfig } = await getDb()
+          .from("loyalty_config")
+          .select("*")
+          .eq("account_id", body.account_id)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (loyaltyConfig) {
+          // Get new orders that have a customer_id
+          const { data: newOrders } = await getDb()
+            .from("orders")
+            .select("order_id, customer_id, grand_total")
+            .eq("account_id", body.account_id)
+            .in("order_id", [...newOrderIds])
+            .not("customer_id", "is", null)
+            .gt("customer_id", 0);
+
+          if (newOrders?.length) {
+            for (const order of newOrders) {
+              const earnedPoints = Math.floor((order.grand_total ?? 0) * (loyaltyConfig.points_per_currency ?? 1));
+              if (earnedPoints <= 0) continue;
+
+              // Get current balance
+              const { data: cust } = await getDb()
+                .from("customer")
+                .select("loyaltypoints")
+                .eq("customer_id", order.customer_id)
+                .eq("account_id", body.account_id)
+                .single();
+
+              const currentBalance = cust?.loyaltypoints ?? 0;
+              const newBalance = currentBalance + earnedPoints;
+
+              // Update customer points
+              await getDb()
+                .from("customer")
+                .update({ loyaltypoints: newBalance, updated: new Date().toISOString() })
+                .eq("customer_id", order.customer_id)
+                .eq("account_id", body.account_id);
+
+              // Log loyalty transaction
+              await getDb()
+                .from("loyalty_transaction")
+                .insert({
+                  account_id: body.account_id,
+                  customer_id: order.customer_id,
+                  order_id: order.order_id,
+                  type: "earn",
+                  points: earnedPoints,
+                  balance_after: newBalance,
+                  description: `Earned ${earnedPoints} pts on order #${order.order_id}`,
+                  store_id: body.store_id ?? null,
+                  terminal_id: body.terminal_id ?? null,
+                });
+            }
+          }
+        }
+      } catch (e: any) {
+        // Loyalty failure is non-blocking — log but don't fail sync
+        errors.push(`Loyalty earn: ${e.message}`);
+        try {
+          await getDb().from("error_logs").insert({
+            account_id: body.account_id,
+            severity: "ERROR",
+            tag: "LOYALTY_EARN",
+            message: `Loyalty auto-earn failed during sync: ${e.message}`,
+            stack_trace: e.stack ?? null,
+            device_info: `terminal:${body.terminal_id}`,
+            app_version: body.app_version ?? "unknown",
+          });
+        } catch (_) { /* swallow error-logging errors */ }
+      }
+    }
+
     // Sync payments
     if (body.payments?.length) {
       for (const payment of body.payments) {

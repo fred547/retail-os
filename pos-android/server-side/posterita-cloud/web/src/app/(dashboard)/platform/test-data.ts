@@ -74,8 +74,8 @@ export const TEST_SUITES = {
     ],
   },
   web: {
-    totalTests: 225,
-    totalFiles: 20,
+    totalTests: 239,
+    totalFiles: 21,
     allPassed: true,
     lastVerified: "2026-03-27",
     version: "Vitest 4.1, Next.js 16",
@@ -98,11 +98,12 @@ export const TEST_SUITES = {
       { name: "sync-register.test.ts", tests: 10, area: "Registration, demo accounts" },
       { name: "stock.test.ts", tests: 9, area: "Stock adjustment, journal, auth, validation" },
       { name: "z-report.test.ts", tests: 5, area: "Z-report generation, CSV export, empty data" },
+      { name: "loyalty.test.ts", tests: 14, area: "Loyalty config, earn, redeem, wallets, transactions" },
     ],
   },
   scenarios: {
-    totalTests: 308,
-    totalFiles: 45,
+    totalTests: 314,
+    totalFiles: 46,
     allPassed: true,
     lastVerified: "2026-03-26",
     version: "Vitest 4.1, hits production API + Supabase",
@@ -151,6 +152,7 @@ export const TEST_SUITES = {
       { name: "42-ai-import-save", tests: 7, area: "/api/ai-import/save categories + products + taxes" },
       { name: "43-admin-auth-guards", tests: 10, area: "Auth guards: platform, super-admin, blink, reset" },
       { name: "45-stock-deduction", tests: 7, area: "Stock columns, adjustment, journal CRUD, filter by reason" },
+      { name: "46-customer-loyalty", tests: 6, area: "Loyalty config, earn, redeem, insufficient points, adjust, wallets" },
     ],
   },
 };
