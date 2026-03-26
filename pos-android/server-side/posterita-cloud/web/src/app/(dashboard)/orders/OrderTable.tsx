@@ -21,6 +21,8 @@ interface Order {
   grand_total: number;
   is_paid: boolean;
   is_sync: boolean;
+  mra_status: string | null;
+  mra_fiscal_id: string | null;
   store?: { name: string } | null;
   terminal?: { name: string } | null;
 }
@@ -75,6 +77,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
             <th className="text-right">Total</th>
             <th>Status</th>
             <th>Sync</th>
+            <th>MRA</th>
           </tr>
         </thead>
         <tbody>
@@ -131,12 +134,36 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                       {o.is_sync ? "Synced" : "Pending"}
                     </span>
                   </td>
+                  <td>
+                    {o.mra_status && o.mra_status !== "pending" ? (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          o.mra_status === "filed" ? "bg-green-100 text-green-700" :
+                          o.mra_status === "failed" ? "bg-red-100 text-red-700" :
+                          o.mra_status === "exempt" ? "bg-gray-100 text-gray-400" :
+                          "bg-yellow-100 text-yellow-700"
+                        }`}
+                        title={o.mra_fiscal_id ? `Fiscal ID: ${o.mra_fiscal_id}` : undefined}
+                      >
+                        {o.mra_status === "filed" ? "✓ Filed" :
+                         o.mra_status === "failed" ? "✗ Failed" :
+                         o.mra_status === "exempt" ? "Exempt" :
+                         o.mra_status}
+                      </span>
+                    ) : o.mra_status === "pending" ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                        Pending
+                      </span>
+                    ) : (
+                      <span className="text-gray-300 text-xs">—</span>
+                    )}
+                  </td>
                 </tr>
 
                 {/* Order Lines */}
                 {isExpanded && (
                   <tr key={`lines-${o.order_id}`}>
-                    <td colSpan={10} className="!p-0">
+                    <td colSpan={11} className="!p-0">
                       <div className="bg-gray-50 border-y border-gray-100">
                         {linesLoading ? (
                           <SkeletonOrderLines />
