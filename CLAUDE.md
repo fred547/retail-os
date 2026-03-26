@@ -55,7 +55,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00038) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00039) |
 
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
@@ -242,7 +242,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/serial-items` + `/new` | ✅ | `/loyalty` (loyalty program) | ✅ |
 | `/suppliers` (supplier mgmt) | ✅ | `/purchase-orders` (PO + GRN) | ✅ |
 | `/menu-schedules` (time menus) | ✅ | `/shifts` (staff clock in/out) | ✅ |
-| `/deliveries` (delivery tracking) | ✅ | | |
+| `/deliveries` (delivery tracking) | ✅ | `/promotions` (promo engine) | ✅ |
 
 ## API Routes
 
@@ -314,6 +314,9 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/shifts` | GET/POST | List shifts (date, user, status filters) / clock in or clock out |
 | `/api/deliveries` | GET/POST | List deliveries (status, driver, date filters) / create delivery |
 | `/api/deliveries/[id]` | GET/PATCH | Delivery detail / update status, assign driver |
+| `/api/promotions` | GET/POST | List promotions (with usage counts) / create promotion |
+| `/api/promotions/[id]` | PATCH/DELETE | Update / soft delete promotion |
+| `/api/promotions/validate` | POST | Validate & compute discount for an order (auto-apply + promo code) |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -558,7 +561,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
 - **MRA tab** — MRA e-invoicing compliance dashboard (BRN/TAN validation, tax config, counters).
-- **Test Results tab** — ~1170+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 269 web unit (25 files) + 319 scenario (47 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1180+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 280 web unit (26 files) + 319 scenario (47 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
@@ -601,6 +604,8 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `menu_schedule` | id, account_id, store_id, name, description, category_ids (JSONB), start_time (TIME), end_time (TIME), days_of_week (JSONB), priority, is_active, created_at, updated_at | |
 | `shift` | id, account_id, store_id, terminal_id, user_id, user_name, clock_in, clock_out, break_minutes, hours_worked, notes, status (active/completed/cancelled), created_at | |
 | `delivery` | id, account_id, order_id, store_id, customer_id, customer_name, customer_phone, delivery_address, delivery_city, delivery_notes, driver_id, driver_name, status (pending/assigned/picked_up/in_transit/delivered/failed/cancelled), estimated_time, actual_delivery_at, assigned_at, picked_up_at, distance_km, delivery_fee, is_deleted, created_at, updated_at | |
+| `promotion` | id, account_id, name, description, type (percentage_off/fixed_off/buy_x_get_y/promo_code), discount_value, buy_quantity, get_quantity, applies_to (order/product/category), product_ids (JSONB), category_ids (JSONB), min_order_amount, max_discount_amount, promo_code, max_uses, max_uses_per_customer, start_date, end_date, days_of_week (JSONB), start_time, end_time, is_active, store_id, priority, is_deleted, created_at, updated_at | |
+| `promotion_usage` | id, account_id, promotion_id, order_id, customer_id, discount_applied, created_at | |
 
 ## Current Phase
 
@@ -622,7 +627,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 4. **Z-report / daily summary** ✅ — end-of-day report at `/reports/z-report`: totals by payment type, tax summary, discount summary, void count, till sessions. CSV export. API: `GET /api/reports/z-report`.
 5. **WhatsApp receipt sharing** — send receipt PDF/text via WhatsApp after payment. **Blocked:** need phone number + Meta Business verification.
 6. **Supplier & Purchase Orders** ✅ — supplier CRUD, PO creation with lines, GRN (goods received note) with stock update + journal. DB: `supplier`, `purchase_order`, `purchase_order_line`. Migration: `00035_suppliers_purchase_orders.sql`.
-7. **Promotions engine** — auto-apply, time-based, buy-X-get-Y, promo codes with rules
+7. **Promotions engine** ✅ — percentage/fixed/BOGO/promo codes, time-based, min order, max uses, validate endpoint. DB: `promotion`, `promotion_usage`. Migration: `00039_promotions.sql`.
 8. **Catalogue PDF** ✅ — grid/list/price-list/loyalty-card templates, QR codes, page sizes
 9. **Peach Payments SDK** — card terminal integration for Mauritius market
 10. **Menu scheduling** ✅ — time-based menus (breakfast/lunch/dinner), day-of-week, priority, active endpoint for POS. DB: `menu_schedule`. Migration: `00036_menu_scheduling.sql`.

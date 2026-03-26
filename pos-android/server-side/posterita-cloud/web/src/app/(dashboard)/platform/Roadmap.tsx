@@ -151,8 +151,8 @@ const phases: Phase[] = [
         features: [
           { name: "Discount codes on orders", status: "done" },
           { name: "Per-line discount (amount/percentage)", status: "done" },
-          { name: "Promotions engine (auto-apply, time-based)", status: "planned", detail: "Buy-X-get-Y, happy hour, promo codes with rules" },
-          { name: "Coupon management", status: "planned" },
+          { name: "Promotions engine (auto-apply, time-based)", status: "done", detail: "4 types, validate endpoint, time/day/min-order rules, usage tracking" },
+          { name: "Coupon management", status: "done", detail: "Promo codes with max uses + per-customer limits" },
         ],
       },
       {

@@ -68,6 +68,7 @@ const sections: NavSection[] = [
       { name: "Loyalty", href: "/loyalty", icon: Heart },
       { name: "Shifts", href: "/shifts", icon: Clock },
       { name: "Deliveries", href: "/deliveries", icon: Truck },
+      { name: "Promotions", href: "/promotions", icon: Tag },
       { name: "Reports", href: "/reports", icon: BarChart3 },
     ],
   },
