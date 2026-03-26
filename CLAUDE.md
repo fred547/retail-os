@@ -55,7 +55,7 @@ For deployments: Web deploys to Vercel, Android builds via Gradle. Always check 
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
 | `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (sync, data, AI import, intake, auth, Blink) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00034) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00035) |
 
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
@@ -240,6 +240,7 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/tables` (sections) | ✅ | `/inventory` + `/new` + `/[id]` | ✅ |
 | `/stations` (prep stations) | ✅ | `/tills` (till history) | ✅ |
 | `/serial-items` + `/new` | ✅ | `/loyalty` (loyalty program) | ✅ |
+| `/suppliers` (supplier mgmt) | ✅ | `/purchase-orders` (PO + GRN) | ✅ |
 
 ## API Routes
 
@@ -300,6 +301,11 @@ cd pos-android/server-side/posterita-cloud/web && npm run test:e2e
 | `/api/loyalty/wallets` | GET | List customers with loyalty points (search, pagination, summary) |
 | `/api/loyalty/transactions` | GET | Loyalty transaction history (filter by customer, type, date) |
 | `/api/reports/z-report` | GET | Z-report / end-of-day summary (date, store, terminal filters, CSV export) |
+| `/api/suppliers` | GET/POST | List suppliers (search, inactive filter) / create new supplier |
+| `/api/suppliers/[id]` | GET/PATCH/DELETE | Supplier detail / update / soft delete |
+| `/api/purchase-orders` | GET/POST | List POs (status, supplier filter) / create PO with lines |
+| `/api/purchase-orders/[id]` | GET/PATCH | PO detail with lines + supplier / update status |
+| `/api/purchase-orders/[id]/receive` | POST | GRN: receive goods, update stock + journal |
 | `/api/debug/session` | GET | Debug: shows resolved auth_user_id, email, account_id for current session |
 
 **Render Backend Endpoints** (`https://posterita-backend.onrender.com`):
@@ -544,7 +550,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 - **Errors tab** — full error logs dashboard inline. Filters by severity/tag/status. Mark Fixed/Ignore/Reopen. Expandable stack traces.
 - **Sync Monitor tab** — all `/api/sync` requests logged to `sync_request_log` table. Shows timing, push/pull counts, status (success/partial/error), expandable detail rows with full stats + errors. Account name resolved.
 - **MRA tab** — MRA e-invoicing compliance dashboard (BRN/TAN validation, tax config, counters).
-- **Test Results tab** — ~1120+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 239 web unit (21 files) + 314 scenario (46 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
+- **Test Results tab** — ~1140+ total tests: 419 Android unit (21 files) + 106 Android instrumented (10 files) + 247 web unit (22 files) + 319 scenario (47 files) + 45 E2E Playwright + 4 DB regression. CI reports from `ci_report` table. Static breakdown in `test-data.ts`.
 - **Benchmark tab** — performance benchmarks.
 - **Infra tab** — live service status + DB row counts.
 - **Changelog tab** — recent git history / release notes.
@@ -581,6 +587,9 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 | `stock_journal` | id, account_id, product_id, store_id, quantity_change, quantity_after, reason (sale/receive/adjustment/count_reconcile/return/transfer), reference_type, reference_id, user_id, notes, created_at | |
 | `loyalty_config` | id, account_id (unique), points_per_currency, redemption_rate, min_redeem_points, is_active, welcome_bonus, created_at, updated_at | |
 | `loyalty_transaction` | id, account_id, customer_id, order_id, type (earn/redeem/adjust/welcome/expire), points, balance_after, description, created_by, store_id, terminal_id, created_at | |
+| `supplier` | supplier_id, account_id, name, contact_name, phone, email, address, city, country, tax_id, payment_terms, notes, is_active, is_deleted, deleted_at, created_at, updated_at | |
+| `purchase_order` | po_id, account_id, supplier_id, store_id, po_number, status (draft/sent/partial/received/cancelled), subtotal, tax_total, grand_total, notes, order_date, expected_date, received_date, created_by, is_deleted, deleted_at, created_at, updated_at | |
+| `purchase_order_line` | id, po_id, account_id, product_id, product_name, quantity_ordered, quantity_received, unit_cost, line_total, notes, created_at | |
 
 ## Current Phase
 
@@ -601,7 +610,7 @@ Account manager / super admin view. Tabbed layout (`/platform?tab=brands|owners|
 3. **Customer loyalty** ✅ — config, earn on purchase (auto via sync), redeem at POS, wallet dashboard. DB: `loyalty_config`, `loyalty_transaction`. Migration: `00034_customer_loyalty.sql`.
 4. **Z-report / daily summary** ✅ — end-of-day report at `/reports/z-report`: totals by payment type, tax summary, discount summary, void count, till sessions. CSV export. API: `GET /api/reports/z-report`.
 5. **WhatsApp receipt sharing** — send receipt PDF/text via WhatsApp after payment. **Blocked:** need phone number + Meta Business verification.
-6. **Supplier & Purchase Orders** — supplier management, PO creation, goods received note (GRN), cost tracking
+6. **Supplier & Purchase Orders** ✅ — supplier CRUD, PO creation with lines, GRN (goods received note) with stock update + journal. DB: `supplier`, `purchase_order`, `purchase_order_line`. Migration: `00035_suppliers_purchase_orders.sql`.
 7. **Promotions engine** — auto-apply, time-based, buy-X-get-Y, promo codes with rules
 8. **Catalogue PDF** ✅ — grid/list/price-list/loyalty-card templates, QR codes, page sizes
 9. **Peach Payments SDK** — card terminal integration for Mauritius market

@@ -33,6 +33,7 @@ import {
   Wallet,
   Tag,
   Heart,
+  Truck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -79,6 +80,8 @@ const sections: NavSection[] = [
     items: [
       { name: "Stock Counts", href: "/inventory", icon: ClipboardList },
       { name: "Serial Items", href: "/serial-items", icon: Tag },
+      { name: "Suppliers", href: "/suppliers", icon: Truck },
+      { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
     ],
   },
   {

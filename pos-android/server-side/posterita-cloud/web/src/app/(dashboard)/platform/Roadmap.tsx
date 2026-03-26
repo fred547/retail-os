@@ -246,11 +246,11 @@ const phases: Phase[] = [
         ],
       },
       {
-        id: 18, name: "Supplier & Purchase Order Management", status: "planned",
+        id: 18, name: "Supplier & Purchase Order Management", status: "partial",
         features: [
-          { name: "Supplier directory", status: "planned" },
-          { name: "Purchase order creation", status: "planned" },
-          { name: "Goods received note (GRN)", status: "planned" },
+          { name: "Supplier directory", status: "done", detail: "CRUD, search, soft delete" },
+          { name: "Purchase order creation", status: "done", detail: "PO with lines, status workflow" },
+          { name: "Goods received note (GRN)", status: "done", detail: "Receive → stock update + journal" },
           { name: "Cost price tracking from PO", status: "planned" },
           { name: "Supplier performance metrics", status: "future" },
         ],
