@@ -278,23 +278,42 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={taxConfig.brn ?? ""}
-                  onChange={(e) => setTaxConfig({ ...taxConfig, brn: e.target.value })}
+                  onChange={(e) => {
+                    const v = e.target.value.toUpperCase();
+                    setTaxConfig({ ...taxConfig, brn: v });
+                  }}
                   placeholder="C07062336"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none font-mono"
+                  className={`w-full px-4 py-2 rounded-lg border focus:ring-2 outline-none font-mono ${
+                    taxConfig.brn && !/^[IC]\d{7,9}$/.test(taxConfig.brn)
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-gray-200 focus:border-posterita-blue focus:ring-posterita-blue/20"
+                  }`}
                 />
-                <p className="text-xs text-gray-400 mt-1">Business Registration Number</p>
+                {taxConfig.brn && !/^[IC]\d{7,9}$/.test(taxConfig.brn) ? (
+                  <p className="text-xs text-red-500 mt-1">BRN must start with I or C followed by 7-9 digits</p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-1">Business Registration Number (e.g. C07062336)</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">TAN</label>
                 <input
                   type="text"
                   value={taxConfig.tan ?? ""}
-                  onChange={(e) => setTaxConfig({ ...taxConfig, tan: e.target.value })}
+                  onChange={(e) => setTaxConfig({ ...taxConfig, tan: e.target.value.replace(/\D/g, "").slice(0, 8) })}
                   placeholder="20351590"
                   maxLength={8}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none font-mono"
+                  className={`w-full px-4 py-2 rounded-lg border focus:ring-2 outline-none font-mono ${
+                    taxConfig.tan && !/^\d{8}$/.test(taxConfig.tan)
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-gray-200 focus:border-posterita-blue focus:ring-posterita-blue/20"
+                  }`}
                 />
-                <p className="text-xs text-gray-400 mt-1">Tax Account Number (8 digits)</p>
+                {taxConfig.tan && !/^\d{8}$/.test(taxConfig.tan) ? (
+                  <p className="text-xs text-red-500 mt-1">TAN must be exactly 8 digits</p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-1">Tax Account Number (8 digits)</p>
+                )}
               </div>
             </div>
 

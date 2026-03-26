@@ -54,7 +54,7 @@ router.post("/webhook/mra/submit-invoice", async (req: Request, res: Response) =
     // 2. Get the order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
-      .select("order_id, document_no, grand_total, subtotal, tax_total, date_ordered, currency, json_data, uuid")
+      .select("order_id, document_no, grand_total, subtotal, tax_total, date_ordered, currency, json_data, uuid, order_type, doc_status")
       .eq("order_id", order_id)
       .eq("account_id", account_id)
       .single();
@@ -98,14 +98,28 @@ router.post("/webhook/mra/submit-invoice", async (req: Request, res: Response) =
       buyerType: "NVTR",
     };
 
-    // 7. Build invoice
+    // 7. Detect refund/void — needs Credit Note (CRN) instead of Standard (STD)
+    const isRefund = order.order_type === "REFUND" || order.doc_status === "VO";
+
+    // For credit notes, find the original invoice reference
+    let refInvoiceId = "";
+    if (isRefund && orderDetails.refund_order_uuid) {
+      const { data: originalOrder } = await supabase
+        .from("orders")
+        .select("document_no, mra_fiscal_id")
+        .eq("uuid", orderDetails.refund_order_uuid)
+        .single();
+      refInvoiceId = originalOrder?.document_no || "";
+    }
+
+    // 8. Build invoice
     const invoice = buildMraInvoice(
       {
         documentno: order.document_no || order.uuid,
-        grandtotal: order.grand_total || 0,
-        subtotal: order.subtotal || 0,
-        taxtotal: order.tax_total || 0,
-        discountamt: orderDetails.discountamt || 0,
+        grandtotal: Math.abs(order.grand_total || 0),
+        subtotal: Math.abs(order.subtotal || 0),
+        taxtotal: Math.abs(order.tax_total || 0),
+        discountamt: Math.abs(orderDetails.discountamt || 0),
         dateordered: new Date(order.date_ordered).getTime(),
         currency: order.currency || "MUR",
         payments: orderDetails.payments || [{ paymenttype: "CASH" }],
@@ -125,7 +139,14 @@ router.post("/webhook/mra/submit-invoice", async (req: Request, res: Response) =
       previousHash
     );
 
-    // 8. Authenticate + transmit
+    // Override for credit note (refund/void)
+    if (isRefund) {
+      invoice.invoiceTypeDesc = "CRN";
+      invoice.invoiceRefIdentifier = refInvoiceId;
+      invoice.reasonStated = orderDetails.void_reason || orderDetails.note || "Refund";
+    }
+
+    // 9. Authenticate + transmit
     const config: MraConfig = {
       username: taxConfig.api_username,
       password: taxConfig.api_password,
