@@ -113,6 +113,10 @@ export const TEST_SUITES = {
       { name: "deliveries.test.ts", tests: 7, area: "Delivery CRUD, status workflow, driver assignment" },
       { name: "promotions.test.ts", tests: 11, area: "Promotion CRUD, validate, promo codes, min order, usage counts" },
       { name: "warehouse.test.ts", tests: 12, area: "Stock GET/POST, auth, filters, journal, transfer, reconciliation" },
+      { name: "pos/cart-store.test.ts", tests: 20, area: "Cart: add/remove/qty/tax/tips/clear/price override/precision" },
+      { name: "pos/escpos.test.ts", tests: 14, area: "ESC/POS: init/text/align/bold/cut/drawer/receipt/BRN" },
+      { name: "pos/barcode-listener.test.ts", tests: 5, area: "USB barcode scanner: scan detect, min length, input ignore" },
+      { name: "pos/print-relay.test.ts", tests: 5, area: "Print relay: SSRF IP validation (private/public ranges)" },
     ],
   },
   scenarios: {
