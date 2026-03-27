@@ -289,6 +289,12 @@
             android:name=".ui.activity.PutAwayActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.CrmHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.LogisticsHomeActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 
