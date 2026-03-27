@@ -57,6 +57,7 @@ vi.mock('@supabase/supabase-js', () => ({
 
 vi.mock('@/lib/account-context', () => ({
   getSessionAccountId: () => Promise.resolve('test-account-id'),
+  getSessionUserId: () => Promise.resolve('test-user-id'),
 }));
 
 function mockRequest(body: any, headers?: Record<string, string>): any {

@@ -410,5 +410,6 @@ class CartSerializationTest {
         override suspend fun countProductsNeedingPriceReview(): Int = 0
         override suspend fun clearPriceReviewFlag(productId: Int) {}
         override suspend fun clearAllPriceReviewFlags() {}
+        override suspend fun updateStockQuantity(productId: Int, qty: Double) {}
     }
 }

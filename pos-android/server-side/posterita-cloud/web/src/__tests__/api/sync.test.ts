@@ -138,12 +138,11 @@ describe('/api/sync POST – validation', () => {
     expect(json.error).toContain('account_id');
   });
 
-  it('returns 400 when terminal_id is missing', async () => {
+  it('defaults terminal_id to 0 when missing', async () => {
     const { POST } = await importSyncRoute();
     const res = await POST(mockRequest({ account_id: 'abc' }));
-    const json = await res.json();
-    expect(res.status).toBe(400);
-    expect(json.error).toContain('terminal_id');
+    // Route defaults terminal_id to 0 (allows initial sync on empty device)
+    expect(res.status).not.toBe(400);
   });
 
   it('rejects unknown account with 404', async () => {
