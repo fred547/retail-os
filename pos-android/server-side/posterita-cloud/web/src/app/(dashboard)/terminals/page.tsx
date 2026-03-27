@@ -18,6 +18,9 @@ import {
   ChefHat,
   Smartphone,
   ScreenShare,
+  Plus,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -34,6 +37,9 @@ interface Terminal {
   sequence: number;
   terminal_type: string;
   zone: string | null;
+  locked_device_id: string | null;
+  locked_device_name: string | null;
+  locked_at: string | null;
 }
 
 interface Store {
@@ -63,15 +69,25 @@ export default function TerminalsPage() {
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
 
+  // Create state
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newStoreId, setNewStoreId] = useState(0);
+  const [newType, setNewType] = useState("pos_retail");
+  const [creating, setCreating] = useState(false);
+
   // QR modal
   const [qrTerminal, setQrTerminal] = useState<Terminal | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Unlock
+  const [unlocking, setUnlocking] = useState<number | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     const [tRes, sRes] = await Promise.all([
       dataQuery<Terminal>("terminal", {
-        select: "terminal_id, account_id, store_id, name, prefix, floatamt, areacode, isactive, sequence, terminal_type, zone",
+        select: "terminal_id, account_id, store_id, name, prefix, floatamt, areacode, isactive, sequence, terminal_type, zone, locked_device_id, locked_device_name, locked_at",
         order: { column: "name" },
       }),
       dataQuery<Store>("store", {
@@ -122,6 +138,39 @@ export default function TerminalsPage() {
     await fetchData();
   };
 
+  const createTerminal = async () => {
+    if (!newName.trim() || !newStoreId) return;
+    setCreating(true);
+    await fetch("/api/data/insert", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        table: "terminal",
+        data: {
+          name: newName.trim(),
+          store_id: newStoreId,
+          terminal_type: newType,
+          isactive: "Y",
+          sequence: 0,
+          prefix: null,
+          floatamt: 0,
+        },
+      }),
+    });
+    setCreating(false);
+    setShowCreate(false);
+    setNewName("");
+    await fetchData();
+  };
+
+  const handleUnlock = async (terminalId: number) => {
+    if (!confirm("Unlock this terminal? Any device will be able to enroll on it.")) return;
+    setUnlocking(terminalId);
+    await fetch(`/api/terminals/${terminalId}/unlock`, { method: "POST" });
+    setUnlocking(null);
+    await fetchData();
+  };
+
   return (
     <div className="space-y-6">
       <Breadcrumb items={[{ label: "Terminals" }]} />
@@ -130,14 +179,59 @@ export default function TerminalsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Terminals</h1>
           <p className="text-gray-500 mt-1">Configure devices for deployment</p>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
-        >
-          <RefreshCw size={18} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowCreate(true); setNewStoreId(stores[0]?.store_id || 0); }}
+            className="flex items-center gap-2 bg-posterita-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+          >
+            <Plus size={16} />
+            Add Terminal
+          </button>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+          >
+            <RefreshCw size={18} />
+          </button>
+        </div>
       </div>
+
+      {/* Create panel */}
+      {showCreate && (
+        <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-lg">New Terminal</h3>
+            <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Terminal Name</label>
+              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Register 1"
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Store</label>
+              <select value={newStoreId} onChange={(e) => setNewStoreId(Number(e.target.value))}
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue outline-none">
+                {stores.map((s) => <option key={s.store_id} value={s.store_id}>{s.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Type</label>
+              <select value={newType} onChange={(e) => setNewType(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue outline-none">
+                {TERMINAL_TYPES.map((tt) => <option key={tt.value} value={tt.value}>{tt.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <button onClick={createTerminal} disabled={creating || !newName.trim()}
+              className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50">
+              <Plus size={16} /> {creating ? "Creating..." : "Create Terminal"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit panel */}
       {editId && (
@@ -261,6 +355,39 @@ export default function TerminalsPage() {
             </div>
           </div>
 
+          {/* Device Lock */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wider">Device Lock</p>
+            {form.locked_device_id ? (
+              <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Lock size={16} className="text-amber-600" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">
+                      Locked to: {form.locked_device_name || form.locked_device_id}
+                    </p>
+                    <p className="text-xs text-amber-600">
+                      Since {form.locked_at ? new Date(form.locked_at).toLocaleDateString() : "—"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleUnlock(editId!)}
+                  disabled={unlocking === editId}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-50 transition disabled:opacity-50"
+                >
+                  <Unlock size={14} />
+                  {unlocking === editId ? "Unlocking..." : "Unlock"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Unlock size={14} className="text-green-500" />
+                <span>No device lock — any device can enroll on this terminal</span>
+              </div>
+            )}
+          </div>
+
           {/* System Info */}
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wider">System</p>
@@ -307,7 +434,15 @@ export default function TerminalsPage() {
                         <div className={`p-1.5 rounded-lg ${ti.color.split(" ")[0]}`}>
                           <Icon size={16} className={ti.color.split(" ")[1]} />
                         </div>
-                        <span className="font-medium">{t.name}</span>
+                        <div>
+                          <span className="font-medium">{t.name}</span>
+                          {t.locked_device_id && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Lock size={10} className="text-amber-500" />
+                              <span className="text-[10px] text-amber-600">{t.locked_device_name || t.locked_device_id}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td>
