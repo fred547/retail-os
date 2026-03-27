@@ -61,6 +61,8 @@ interface SyncRequest {
   serial_items?: any[];
   // Push: deliveries created at POS
   deliveries?: any[];
+  // Push: shifts (clock in/out) created offline
+  shifts?: any[];
   // Integrity: SHA-256 hash of critical push data
   payload_checksum?: string;
   // Pull pagination (Phase B)
@@ -1180,6 +1182,59 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sync shifts (POS → cloud) — clock in/out created offline
+    let shiftsSynced = 0;
+    if (body.shifts?.length) {
+      for (const s of body.shifts) {
+        try {
+          const dbShift: any = {
+            account_id: body.account_id,
+            store_id: s.store_id ?? s.storeId ?? body.store_id ?? 0,
+            terminal_id: s.terminal_id ?? s.terminalId ?? body.terminal_id ?? 0,
+            user_id: s.user_id ?? s.userId ?? 0,
+            user_name: s.user_name ?? s.userName ?? null,
+            clock_in: s.clock_in ?? s.clockIn ?? null,
+            clock_out: s.clock_out ?? s.clockOut ?? null,
+            break_minutes: s.break_minutes ?? s.breakMinutes ?? 0,
+            hours_worked: s.hours_worked ?? s.hoursWorked ?? null,
+            notes: s.notes ?? null,
+            status: s.status ?? "active",
+            uuid: s.uuid ?? null,
+          };
+
+          if (dbShift.uuid) {
+            // Upsert by UUID — handles both clock_in (insert) and clock_out (update)
+            const { data: existing } = await getDb()
+              .from("shift")
+              .select("id")
+              .eq("uuid", dbShift.uuid)
+              .eq("account_id", body.account_id)
+              .maybeSingle();
+
+            if (existing) {
+              const { error } = await getDb()
+                .from("shift")
+                .update(dbShift)
+                .eq("id", existing.id)
+                .eq("account_id", body.account_id);
+              if (error) errors.push(`Shift ${dbShift.uuid}: ${error.message}`);
+              else shiftsSynced++;
+            } else {
+              const { error } = await getDb().from("shift").insert(dbShift);
+              if (error) errors.push(`Shift ${dbShift.uuid}: ${error.message}`);
+              else shiftsSynced++;
+            }
+          } else {
+            const { error } = await getDb().from("shift").insert(dbShift);
+            if (error) errors.push(`Shift: ${error.message}`);
+            else shiftsSynced++;
+          }
+        } catch (e: any) {
+          errors.push(`Shift: ${e.message}`);
+        }
+      }
+    }
+
     // ========================================
     // MRA: Trigger async e-invoice submission for newly synced orders
     // Non-blocking — fire and forget. Cron retries failures every 15 min.
@@ -1434,6 +1489,7 @@ export async function POST(req: NextRequest) {
       inventory_entries_synced: inventoryEntriesSynced,
       serial_items_synced: serialItemsSynced,
       deliveries_synced: deliveriesSynced,
+      shifts_synced: shiftsSynced,
       conflicts_detected: conflictsDetected,
       errors,
     });

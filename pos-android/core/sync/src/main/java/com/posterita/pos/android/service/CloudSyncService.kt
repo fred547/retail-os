@@ -183,6 +183,9 @@ class CloudSyncService @Inject constructor(
             // Collect locally-created deliveries (id=0 means not yet on server)
             val unsyncedDeliveries = db.deliveryDao().getUnsyncedDeliveries(accountId)
 
+            // Collect unsynced shifts (clock in/out created offline)
+            val unsyncedShifts = db.shiftDao().getUnsyncedShifts(accountId)
+
             // Build sync request with device registration
             val syncDeviceId = prefsManager.getString("device_id", "").ifEmpty {
                 val id = "dev_${System.currentTimeMillis()}_${terminalId}"
@@ -223,6 +226,7 @@ class CloudSyncService @Inject constructor(
                 errorLogs = if (unsyncedErrorLogs.isNotEmpty()) unsyncedErrorLogs.map { it.toSyncErrorLog() } else null,
                 serialItems = if (unsyncedSerialItems.isNotEmpty()) unsyncedSerialItems.map { it.toSyncSerialItem() } else null,
                 deliveries = if (unsyncedDeliveries.isNotEmpty()) unsyncedDeliveries.map { it.toSyncDelivery() } else null,
+                shifts = if (unsyncedShifts.isNotEmpty()) unsyncedShifts.map { it.toSyncShift() } else null,
                 payloadChecksum = payloadChecksum,
             )
 
@@ -309,6 +313,12 @@ class CloudSyncService @Inject constructor(
             if (unsyncedDeliveries.isNotEmpty()) {
                 db.deliveryDao().deleteUnsyncedByAccount(accountId)
                 Log.d(TAG, "Pushed ${unsyncedDeliveries.size} deliveries, cleared local stubs")
+            }
+
+            // Delete locally-created shifts after push — server versions pulled back with real IDs
+            if (unsyncedShifts.isNotEmpty()) {
+                db.shiftDao().deleteUnsyncedByAccount(accountId)
+                Log.d(TAG, "Pushed ${unsyncedShifts.size} shifts, cleared local stubs")
             }
 
             // Update local Account with BRN/TAN from tax config (for receipt printing)
@@ -1599,6 +1609,8 @@ class CloudSyncService @Inject constructor(
                 notes = map["notes"] as? String,
                 status = map["status"] as? String ?: "active",
                 created_at = map["created_at"] as? String,
+                uuid = map["uuid"] as? String,
+                is_synced = true, // pulled from server = already synced
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map shift: ${e.message}")
@@ -1753,5 +1765,20 @@ class CloudSyncService @Inject constructor(
         deliveryCity = delivery_city,
         deliveryNotes = delivery_notes,
         status = status,
+    )
+
+    private fun com.posterita.pos.android.data.local.entity.Shift.toSyncShift(): SyncShift = SyncShift(
+        uuid = uuid ?: "",
+        storeId = store_id,
+        terminalId = terminal_id,
+        userId = user_id,
+        userName = user_name,
+        clockIn = clock_in,
+        clockOut = clock_out,
+        breakMinutes = break_minutes,
+        hoursWorked = hours_worked,
+        notes = notes,
+        status = status,
+        createdAt = created_at,
     )
 }

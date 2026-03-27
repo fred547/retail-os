@@ -47,6 +47,8 @@ data class CloudSyncRequest(
     @SerializedName("serial_items") val serialItems: List<SyncSerialItem>? = null,
     // Push: deliveries created at POS
     @SerializedName("deliveries") val deliveries: List<SyncDelivery>? = null,
+    // Push: shifts (clock in/out) created offline
+    @SerializedName("shifts") val shifts: List<SyncShift>? = null,
     // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
     @SerializedName("payload_checksum") val payloadChecksum: String? = null,
     // Pull pagination — request a specific page of products/customers
@@ -303,4 +305,19 @@ data class SyncDelivery(
     @SerializedName("delivery_city") val deliveryCity: String? = null,
     @SerializedName("delivery_notes") val deliveryNotes: String? = null,
     @SerializedName("status") val status: String = "pending",
+)
+
+data class SyncShift(
+    @SerializedName("uuid") val uuid: String,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("terminal_id") val terminalId: Int = 0,
+    @SerializedName("user_id") val userId: Int = 0,
+    @SerializedName("user_name") val userName: String? = null,
+    @SerializedName("clock_in") val clockIn: String? = null,
+    @SerializedName("clock_out") val clockOut: String? = null,
+    @SerializedName("break_minutes") val breakMinutes: Int = 0,
+    @SerializedName("hours_worked") val hoursWorked: Double? = null,
+    @SerializedName("notes") val notes: String? = null,
+    @SerializedName("status") val status: String = "active",
+    @SerializedName("created_at") val createdAt: String? = null,
 )

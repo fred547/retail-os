@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "shift")
 data class Shift(
-    @PrimaryKey val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val account_id: String = "",
     val store_id: Int = 0,
     val terminal_id: Int = 0,
@@ -17,7 +17,9 @@ data class Shift(
     val hours_worked: Double? = null,
     val notes: String? = null,
     val status: String = "active",
-    val created_at: String? = null
+    val created_at: String? = null,
+    val uuid: String? = null,
+    val is_synced: Boolean = false
 ) {
     companion object {
         const val STATUS_ACTIVE = "active"

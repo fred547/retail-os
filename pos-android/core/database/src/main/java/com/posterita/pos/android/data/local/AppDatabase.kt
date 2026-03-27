@@ -38,7 +38,7 @@ import com.posterita.pos.android.data.local.entity.*
         Tag::class,
         ProductTag::class
     ],
-    version = 35,
+    version = 36,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -131,7 +131,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_31_32,
                         MIGRATION_32_33,
                         MIGRATION_33_34,
-                        MIGRATION_34_35
+                        MIGRATION_34_35,
+                        MIGRATION_35_36
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -182,7 +183,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_31_32,
                     MIGRATION_32_33,
                     MIGRATION_33_34,
-                    MIGRATION_34_35
+                    MIGRATION_34_35,
+                    MIGRATION_35_36
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -657,6 +659,14 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Store type: retail or warehouse
                 db.execSQL("ALTER TABLE store ADD COLUMN store_type TEXT NOT NULL DEFAULT 'retail'")
+            }
+        }
+
+        private val MIGRATION_35_36 = object : Migration(35, 36) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Shift offline sync: UUID for de-duplication + sync tracking
+                db.execSQL("ALTER TABLE shift ADD COLUMN uuid TEXT")
+                db.execSQL("ALTER TABLE shift ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0")
             }
         }
 
