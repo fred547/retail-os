@@ -62,6 +62,9 @@ class ProductAdapter(
                 .error(R.drawable.ic_product_placeholder)
                 .into(binding.imageViewProduct)
 
+            // Stock indicator bar + qty text
+            updateStockDisplay(product)
+
             // Update quantity badge
             updateBadge(product)
 
@@ -342,6 +345,34 @@ class ProductAdapter(
             }
 
             dialog.show()
+        }
+
+        private fun updateStockDisplay(product: Product) {
+            val stockBar = binding.stockBar ?: return
+            val qtyText = binding.textViewProductNameX
+            if (!product.tracksStock) {
+                stockBar.setBackgroundResource(R.drawable.stock_bar_untracked)
+                qtyText.text = ""
+                return
+            }
+            val qty = product.quantity_on_hand
+            when {
+                qty <= 0 -> {
+                    stockBar.setBackgroundResource(R.drawable.stock_bar_out)
+                    qtyText.text = "Out of stock"
+                    qtyText.setTextColor(itemView.context.getColor(R.color.posterita_danger))
+                }
+                product.isLowStock -> {
+                    stockBar.setBackgroundResource(R.drawable.stock_bar_low)
+                    qtyText.text = "${NumberUtils.formatQuantity(qty)} left"
+                    qtyText.setTextColor(itemView.context.getColor(R.color.posterita_orange))
+                }
+                else -> {
+                    stockBar.setBackgroundResource(R.drawable.stock_bar_in)
+                    qtyText.text = "${NumberUtils.formatQuantity(qty)} in stock"
+                    qtyText.setTextColor(itemView.context.getColor(R.color.posterita_muted))
+                }
+            }
         }
 
         private fun updateBadge(product: Product) {

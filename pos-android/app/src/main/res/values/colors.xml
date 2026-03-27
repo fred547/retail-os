@@ -44,6 +44,7 @@
     <color name="bg">#00FFFFFF</color>
     <color name="blue">#0000FF</color>
     <color name="red">#FF0000</color>
+    <color name="posterita_danger">#EF4444</color>
 
     <!-- Category colors -->
     <color name="category_bg">#5ac8fa96</color>
