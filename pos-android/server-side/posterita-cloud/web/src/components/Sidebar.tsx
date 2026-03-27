@@ -412,16 +412,26 @@ export default function Sidebar({
         )}
       </nav>
 
-      {/* Download + Sign Out */}
+      {/* POS + Download + Sign Out */}
       <div className="border-t border-white/10">
-        {/* Download Android App */}
+        {/* Open Web POS */}
         <a
-          href="/api/download/android"
-          className="sidebar-link mx-2 mt-2 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+          href="/pos"
+          className="sidebar-link mx-2 mt-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
         >
-          <Smartphone size={18} />
-          Download POS App
-          <Download size={14} className="ml-auto" />
+          <Monitor size={18} />
+          Open Web POS
+          <ChevronRight size={14} className="ml-auto" />
+        </a>
+
+        {/* Downloads */}
+        <a
+          href="/download"
+          className="sidebar-link mx-2 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+        >
+          <Download size={18} />
+          Download Apps
+          <ChevronRight size={14} className="ml-auto" />
         </a>
 
         <div className="p-4 pt-2">
