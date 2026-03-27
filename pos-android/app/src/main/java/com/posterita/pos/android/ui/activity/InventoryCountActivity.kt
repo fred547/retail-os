@@ -21,6 +21,10 @@ import com.posterita.pos.android.databinding.ActivityInventoryCountBinding
 import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import android.media.ToneGenerator
+import android.media.AudioManager
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
@@ -69,6 +73,12 @@ class InventoryCountActivity : BaseActivity() {
         }
         binding.buttonDone.setOnClickListener { showFinishDialog() }
         binding.buttonAdjust.setOnClickListener { showStockAdjustDialog() }
+
+        // Long-press Done to export CSV
+        binding.buttonDone.setOnLongClickListener {
+            exportSessionToCsv()
+            true
+        }
 
         adapter = EntryAdapter(entries,
             onIncrement = { entry -> updateQuantity(entry, 1) },
@@ -139,6 +149,7 @@ class InventoryCountActivity : BaseActivity() {
             }
 
             if (product == null) {
+                playErrorFeedback()
                 Toast.makeText(this@InventoryCountActivity, "Product not found: $barcode", Toast.LENGTH_SHORT).show()
                 return@launch
             }
@@ -175,6 +186,8 @@ class InventoryCountActivity : BaseActivity() {
                 }
             }
 
+            // Audio + haptic feedback on successful scan
+            playScanFeedback()
             Toast.makeText(this@InventoryCountActivity, "${product.name} scanned", Toast.LENGTH_SHORT).show()
             loadEntries()
         }
@@ -330,6 +343,70 @@ class InventoryCountActivity : BaseActivity() {
         binding.recyclerEntries.visibility = if (entries.isEmpty()) View.GONE else View.VISIBLE
     }
 
+    // --- CSV Export ---
+
+    private fun exportSessionToCsv() {
+        if (entries.isEmpty()) {
+            Toast.makeText(this, "No entries to export", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val csv = buildString {
+                    appendLine("Product Name,UPC,Counted Qty,System Qty,Variance")
+                    for (entry in entries) {
+                        val name = (entry.product_name ?: "").replace(",", " ")
+                        val upc = entry.upc ?: ""
+                        appendLine("$name,$upc,${entry.quantity},${entry.system_qty.toInt()},${entry.variance.toInt()}")
+                    }
+                }
+
+                val fileName = "inventory_count_${sessionId}_${System.currentTimeMillis()}.csv"
+                val file = java.io.File(getExternalFilesDir(null), fileName)
+                file.writeText(csv)
+
+                // Share via intent
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    this@InventoryCountActivity,
+                    "${packageName}.fileprovider",
+                    file
+                )
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, "Inventory Count #$sessionId")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(Intent.createChooser(shareIntent, "Export Count"))
+            } catch (e: Exception) {
+                Toast.makeText(this@InventoryCountActivity, "Export failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // --- Audio/Haptic Feedback ---
+
+    private fun playScanFeedback() {
+        try {
+            // Short beep
+            val toneGen = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80)
+            toneGen.startTone(ToneGenerator.TONE_PROP_ACK, 100)
+            // Haptic vibration
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as? Vibrator
+            vibrator?.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+        } catch (_: Exception) { /* audio/vibrate not critical */ }
+    }
+
+    private fun playErrorFeedback() {
+        try {
+            val toneGen = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80)
+            toneGen.startTone(ToneGenerator.TONE_PROP_NACK, 200)
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as? Vibrator
+            vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 100, 50, 100), -1))
+        } catch (_: Exception) { /* audio/vibrate not critical */ }
+    }
+
     // --- Adapter ---
 
     private class EntryAdapter(
@@ -343,6 +420,7 @@ class InventoryCountActivity : BaseActivity() {
             val textProductName: TextView = view.findViewById(R.id.textProductName)
             val textUpc: TextView = view.findViewById(R.id.textUpc)
             val textQuantity: TextView = view.findViewById(R.id.textQuantity)
+            val textVariance: TextView = view.findViewById(R.id.textVariance)
             val buttonPlus: ImageView = view.findViewById(R.id.buttonPlus)
             val buttonMinus: ImageView = view.findViewById(R.id.buttonMinus)
         }
@@ -358,6 +436,24 @@ class InventoryCountActivity : BaseActivity() {
             holder.textProductName.text = entry.product_name ?: "Product #${entry.product_id}"
             holder.textUpc.text = entry.upc ?: "No barcode"
             holder.textQuantity.text = entry.quantity.toString()
+
+            // Show variance: system qty vs counted
+            val sysQty = entry.system_qty
+            val diff = entry.variance
+            if (sysQty > 0 || diff != 0.0) {
+                val diffSign = if (diff > 0) "+" else ""
+                holder.textVariance.text = "System: ${sysQty.toInt()} | Diff: $diffSign${diff.toInt()}"
+                holder.textVariance.visibility = View.VISIBLE
+                // Color: green if match/positive, red if negative
+                val color = when {
+                    diff == 0.0 -> android.graphics.Color.parseColor("#10B981") // match
+                    diff > 0 -> android.graphics.Color.parseColor("#3B82F6")     // surplus
+                    else -> android.graphics.Color.parseColor("#EF4444")          // shortage
+                }
+                holder.textVariance.setTextColor(color)
+            } else {
+                holder.textVariance.visibility = View.GONE
+            }
 
             holder.buttonPlus.setOnClickListener { onIncrement(entry) }
             holder.buttonMinus.setOnClickListener { onDecrement(entry) }

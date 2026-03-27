@@ -42,6 +42,15 @@
                 android:textSize="12sp"
                 android:textColor="@color/posterita_muted"
                 android:layout_marginTop="2dp" />
+
+            <!-- Variance: system qty vs counted -->
+            <TextView
+                android:id="@+id/textVariance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Quantity controls -->
