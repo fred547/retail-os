@@ -280,6 +280,9 @@
             android:name=".ui.activity.StockTransferActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.MultiStoreStockActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 

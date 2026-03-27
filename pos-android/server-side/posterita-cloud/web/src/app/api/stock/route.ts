@@ -17,6 +17,67 @@ async function logToErrorDb(accountId: string, tag: string, message: string, sta
 }
 
 /**
+ * GET /api/stock — Multi-store stock overview
+ * Query: ?product_id=123 (optional — if omitted, returns all products with stock)
+ * Returns: products with quantity_on_hand, shelf_location, expiry_date, batch_number
+ */
+export async function GET(req: NextRequest) {
+  const accountId = await getSessionAccountId();
+  if (!accountId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const productId = searchParams.get("product_id");
+    const storeId = searchParams.get("store_id");
+    const filter = searchParams.get("filter"); // "low_stock", "out_of_stock", "expiring"
+
+    let query = getDb()
+      .from("product")
+      .select("product_id, name, upc, quantity_on_hand, reorder_point, track_stock, shelf_location, batch_number, expiry_date, image")
+      .eq("account_id", accountId)
+      .eq("is_deleted", false)
+      .eq("product_status", "live");
+
+    if (productId) {
+      query = query.eq("product_id", parseInt(productId));
+    }
+    if (filter === "low_stock") {
+      query = query.gt("quantity_on_hand", 0).filter("quantity_on_hand", "lte", "reorder_point");
+    } else if (filter === "out_of_stock") {
+      query = query.eq("track_stock", 1).lte("quantity_on_hand", 0);
+    } else if (filter === "expiring") {
+      const in30days = new Date();
+      in30days.setDate(in30days.getDate() + 30);
+      query = query.not("expiry_date", "is", null).lte("expiry_date", in30days.toISOString());
+    }
+
+    query = query.order("name").limit(200);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    // If store_id requested, also get stock journal for that store
+    let storeStock: any[] | null = null;
+    if (storeId) {
+      const { data: journal } = await getDb()
+        .from("stock_journal")
+        .select("product_id, quantity_after")
+        .eq("account_id", accountId)
+        .eq("store_id", parseInt(storeId))
+        .order("created_at", { ascending: false });
+      storeStock = journal;
+    }
+
+    return NextResponse.json({ products: data ?? [], store_stock: storeStock });
+  } catch (e: any) {
+    await logToErrorDb(accountId, "STOCK", `Stock query error: ${e.message}`, e.stack);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}
+
+/**
  * POST /api/stock — Manual stock adjustment
  * Body: { product_id, store_id, new_quantity, reason, notes }
  */

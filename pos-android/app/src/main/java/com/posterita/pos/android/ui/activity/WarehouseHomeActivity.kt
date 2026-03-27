@@ -108,6 +108,10 @@ class WarehouseHomeActivity : BaseActivity() {
     private var outOfStockProducts: List<com.posterita.pos.android.data.local.entity.Product> = emptyList()
 
     private fun setupStockAlertClicks() {
+        // Clicking total products opens multi-store stock view
+        binding.textTotalProducts.setOnClickListener {
+            startActivity(Intent(this, MultiStoreStockActivity::class.java))
+        }
         // Clicking low stock card shows list of low stock products
         binding.textLowStock.setOnClickListener { showStockAlertDialog("Low Stock", lowStockProducts) }
         binding.textOutOfStock.setOnClickListener { showStockAlertDialog("Out of Stock", outOfStockProducts) }
