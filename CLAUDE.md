@@ -200,6 +200,7 @@ When refactoring or rewriting a file, diff against the original to ensure no exi
 | Suppliers / POs / deliveries | — | Native | CRUD + Sync |
 | Tags (product/customer/order) | — | Native (`/tags`) | CRUD + Sync |
 | Store layout / shelf labels | Shelf browser | Native (`/store-layout`) | CRUD |
+| Quotations (create/send/convert/PDF) | PWA Quote button | Native (`/quotations`) | CRUD + PDF |
 | Warehouse (picking/put-away/transfer) | Native | — | Stock API |
 | Account management | — | Native (`/platform`) | CRUD |
 
@@ -222,6 +223,7 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **store-layout** | GET/POST/DELETE zones (shelf ranges + height labels) | Warehouse shelf configuration |
 | **stock** | GET (multi-store overview), POST (manual adjustment + journal) | Warehouse stock management |
 | **platform** | create-account, delete-test-brands, super-admin/*, account-manager/* | Admin portal |
+| **quotations** | GET/POST (list/create), [id] (GET/PATCH/DELETE), [id]/send, [id]/convert, [id]/pdf, templates | Quote lifecycle + 5 PDF templates |
 | **print** | POST (TCP relay: base64 ESC/POS bytes → printer IP) | PWA receipt printing (SSRF-protected: private IPs only) |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
