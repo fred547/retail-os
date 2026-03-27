@@ -21,6 +21,9 @@ import com.posterita.pos.android.databinding.ActivityInventoryCountBinding
 import com.posterita.pos.android.util.AppErrorLogger
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,6 +40,7 @@ class InventoryCountActivity : BaseActivity() {
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
+    @Inject lateinit var stockAdjustmentService: com.posterita.pos.android.service.StockAdjustmentService
 
     private var sessionId: Int = 0
     private val entries = mutableListOf<InventoryCountEntry>()
@@ -63,7 +67,8 @@ class InventoryCountActivity : BaseActivity() {
         binding.buttonScan.setOnClickListener {
             barcodeLauncher.launch(Intent(this, ScanBarcodeActivity::class.java))
         }
-        binding.buttonDone.setOnClickListener { finishSession() }
+        binding.buttonDone.setOnClickListener { showFinishDialog() }
+        binding.buttonAdjust.setOnClickListener { showStockAdjustDialog() }
 
         adapter = EntryAdapter(entries,
             onIncrement = { entry -> updateQuantity(entry, 1) },
@@ -176,6 +181,49 @@ class InventoryCountActivity : BaseActivity() {
         }
     }
 
+    /**
+     * Show finish dialog with option to apply counted quantities to stock.
+     */
+    private fun showFinishDialog() {
+        if (entries.isEmpty()) {
+            finishSession()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Complete Count")
+            .setMessage("Apply counted quantities to stock levels?\n\nThis will set product quantities to the counted values.")
+            .setPositiveButton("Apply & Complete") { _, _ ->
+                applyCountAndFinish()
+            }
+            .setNeutralButton("Complete Only") { _, _ ->
+                finishSession()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun applyCountAndFinish() {
+        lifecycleScope.launch {
+            val storeId = prefsManager.storeId
+            val userId = sessionManager.user?.user_id ?: 0
+            val sessionName = binding.textTitle.text.toString()
+
+            val entryPairs = entries.map { it.product_id to it.quantity }
+
+            val reconciled = withContext(Dispatchers.IO) {
+                stockAdjustmentService.reconcileCount(entryPairs, storeId, userId, sessionName)
+            }
+
+            Toast.makeText(
+                this@InventoryCountActivity,
+                "Reconciled $reconciled/${entryPairs.size} products",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            finishSession()
+        }
+    }
+
     private fun finishSession() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -185,6 +233,76 @@ class InventoryCountActivity : BaseActivity() {
             Toast.makeText(this@InventoryCountActivity, "Session completed — entries will sync to cloud", Toast.LENGTH_LONG).show()
             finish()
         }
+    }
+
+    /**
+     * Manual stock adjustment dialog: search product → set new quantity.
+     */
+    private fun showStockAdjustDialog() {
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 24)
+        }
+
+        val barcodeInput = EditText(this).apply {
+            hint = "Product barcode (UPC)"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+        }
+        container.addView(barcodeInput)
+
+        val qtyInput = EditText(this).apply {
+            hint = "New quantity"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        container.addView(qtyInput)
+
+        val notesInput = EditText(this).apply {
+            hint = "Reason (optional)"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+        }
+        container.addView(notesInput)
+
+        AlertDialog.Builder(this)
+            .setTitle("Adjust Stock")
+            .setView(container)
+            .setPositiveButton("Adjust") { _, _ ->
+                val barcode = barcodeInput.text.toString().trim()
+                val qty = qtyInput.text.toString().toDoubleOrNull() ?: return@setPositiveButton
+                val notes = notesInput.text.toString().trim().ifBlank { null }
+
+                lifecycleScope.launch {
+                    val product = withContext(Dispatchers.IO) {
+                        db.productDao().getProductByUpc(barcode)
+                    }
+                    if (product == null) {
+                        Toast.makeText(this@InventoryCountActivity, "Product not found: $barcode", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+
+                    val result = withContext(Dispatchers.IO) {
+                        stockAdjustmentService.adjustStock(
+                            productId = product.product_id,
+                            storeId = prefsManager.storeId,
+                            newQuantity = qty,
+                            reason = "adjustment",
+                            notes = notes,
+                            userId = sessionManager.user?.user_id ?: 0
+                        )
+                    }
+
+                    if (result.success) {
+                        // Update local product quantity
+                        withContext(Dispatchers.IO) {
+                            db.productDao().updateStockQuantity(product.product_id, qty)
+                        }
+                        Toast.makeText(this@InventoryCountActivity, "${product.name}: stock set to ${qty.toInt()}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@InventoryCountActivity, "Failed: ${result.error}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateUI() {

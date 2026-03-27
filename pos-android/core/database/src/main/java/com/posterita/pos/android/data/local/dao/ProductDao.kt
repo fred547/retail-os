@@ -64,4 +64,8 @@ interface ProductDao {
     /** Clear all review flags at once */
     @Query("UPDATE product SET needs_price_review = NULL WHERE needs_price_review = 'Y'")
     suspend fun clearAllPriceReviewFlags()
+
+    /** Update stock quantity locally (after server-side adjustment) */
+    @Query("UPDATE product SET quantity_on_hand = :qty WHERE product_id = :productId")
+    suspend fun updateStockQuantity(productId: Int, qty: Double)
 }
