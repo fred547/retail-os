@@ -89,25 +89,16 @@ class ProductAdapter(
                 } else if (isEditable) {
                     showVariablePriceDialog(product)
                 } else {
-                    // Check for modifiers before adding
-                    if (onModifierCheck != null) {
-                        onModifierCheck.invoke(product) { modifiers ->
-                            if (modifiers.isNotEmpty()) {
-                                // Has modifiers — let the activity handle the walkthrough
-                                // The activity will add the product with selected modifiers
-                            } else {
-                                // No modifiers — add directly
-                                shoppingCartViewModel.addProduct(product)
-                                onProductAdded?.invoke(product)
-                                updateBadge(product)
-                                notifyItemChanged(adapterPosition)
-                            }
-                        }
+                    // Warn on out-of-stock (but allow override)
+                    if (product.tracksStock && product.quantity_on_hand <= 0) {
+                        AlertDialog.Builder(itemView.context)
+                            .setTitle("Out of Stock")
+                            .setMessage("${product.name} is out of stock. Add anyway?")
+                            .setPositiveButton("Add") { _, _ -> addProductToCart(product) }
+                            .setNegativeButton("Cancel", null)
+                            .show()
                     } else {
-                        shoppingCartViewModel.addProduct(product)
-                        onProductAdded?.invoke(product)
-                        updateBadge(product)
-                        notifyItemChanged(adapterPosition)
+                        addProductToCart(product)
                     }
                 }
             }
@@ -345,6 +336,26 @@ class ProductAdapter(
             }
 
             dialog.show()
+        }
+
+        private fun addProductToCart(product: Product) {
+            if (onModifierCheck != null) {
+                onModifierCheck.invoke(product) { modifiers ->
+                    if (modifiers.isNotEmpty()) {
+                        // Has modifiers — let the activity handle the walkthrough
+                    } else {
+                        shoppingCartViewModel.addProduct(product)
+                        onProductAdded?.invoke(product)
+                        updateBadge(product)
+                        notifyItemChanged(adapterPosition)
+                    }
+                }
+            } else {
+                shoppingCartViewModel.addProduct(product)
+                onProductAdded?.invoke(product)
+                updateBadge(product)
+                notifyItemChanged(adapterPosition)
+            }
         }
 
         private fun updateStockDisplay(product: Product) {
