@@ -4,6 +4,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const maxDuration = 60;
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "SYNC",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * Sync API version — increment when making breaking changes to the sync protocol.
  * Android checks this against its expected version and warns/blocks if mismatched.
@@ -54,6 +63,9 @@ interface SyncRequest {
   deliveries?: any[];
   // Integrity: SHA-256 hash of critical push data
   payload_checksum?: string;
+  // Pull pagination (Phase B)
+  pull_page?: number;      // 0-based page number (default 0)
+  pull_page_size?: number;  // items per page (default 1000, max 5000)
 }
 
 /**
@@ -102,7 +114,8 @@ async function insertOrUpdate(
     const updateResult = await getDb()
       .from(table)
       .update(record)
-      .eq("uuid", uuidValue);
+      .eq("uuid", uuidValue)
+      .eq("account_id", record.account_id);
     return { error: updateResult.error };
   }
 
@@ -118,7 +131,8 @@ async function insertOrUpdate(
       const updateResult = await getDb()
         .from(table)
         .update(record)
-        .eq("uuid", uuidValue);
+        .eq("uuid", uuidValue)
+        .eq("account_id", record.account_id);
       return { error: updateResult.error };
     }
     return { error: insertResult.error };
@@ -553,48 +567,45 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Sync order lines
+    // Sync order lines (bulk upsert — single DB call instead of N)
     if (body.order_lines?.length) {
-      for (const line of body.order_lines) {
-        try {
-          const dbLine = {
-            orderline_id: line.orderline_id ?? line.orderLineId,
-            order_id: line.order_id ?? line.orderId,
-            product_id: line.product_id ?? line.productId,
-            productcategory_id: line.productcategory_id ?? line.productCategoryId ?? 0,
-            tax_id: line.tax_id ?? line.taxId ?? 0,
-            qtyentered: line.qtyentered ?? line.qtyEntered ?? 0,
-            lineamt: line.lineamt ?? line.lineAmt ?? 0,
-            linenetamt: line.linenetamt ?? line.lineNetAmt ?? 0,
-            priceentered: line.priceentered ?? line.priceEntered ?? 0,
-            costamt: line.costamt ?? line.costAmt ?? 0,
-            productname: line.productname || line.productName,
-            productdescription: line.productdescription || line.productDescription,
-          };
+      try {
+        const dbLines = body.order_lines.map((line: any) => ({
+          orderline_id: line.orderline_id ?? line.orderLineId,
+          order_id: line.order_id ?? line.orderId,
+          product_id: line.product_id ?? line.productId,
+          productcategory_id: line.productcategory_id ?? line.productCategoryId ?? 0,
+          tax_id: line.tax_id ?? line.taxId ?? 0,
+          qtyentered: line.qtyentered ?? line.qtyEntered ?? 0,
+          lineamt: line.lineamt ?? line.lineAmt ?? 0,
+          linenetamt: line.linenetamt ?? line.lineNetAmt ?? 0,
+          priceentered: line.priceentered ?? line.priceEntered ?? 0,
+          costamt: line.costamt ?? line.costAmt ?? 0,
+          productname: line.productname || line.productName,
+          productdescription: line.productdescription || line.productDescription,
+          serial_item_id: line.serial_item_id ?? line.serialItemId ?? null,
+        }));
 
-          const { error } = await getDb()
-            .from("orderline")
-            .upsert(dbLine, { onConflict: "orderline_id" });
+        const { error } = await getDb()
+          .from("orderline")
+          .upsert(dbLines, { onConflict: "orderline_id" });
 
-          if (error) {
-            errors.push(`OrderLine ${dbLine.orderline_id}: ${error.message}`);
-          } else {
-            orderLinesSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`OrderLine: ${e.message}`);
+        if (error) {
+          errors.push(`OrderLines bulk: ${error.message}`);
+        } else {
+          orderLinesSynced = dbLines.length;
         }
+      } catch (e: any) {
+        errors.push(`OrderLines: ${e.message}`);
       }
 
-      // Stock deduction: decrement quantity_on_hand for each NEW order line
-      // Only deducts for products with track_stock=true
-      // Only deducts for lines from newly-synced orders (not duplicate/conflict re-pushes)
+      // Stock deduction: batch decrement via RPC (replaces N+1 per-product queries)
       try {
         // Group lines by product_id — only for lines from orders that were new (not conflicts)
+        const deductions: { product_id: number; qty: number; order_uuid: string }[] = [];
         const qtyByProduct: Record<number, number> = {};
         for (const line of body.order_lines) {
           const orderId = line.order_id ?? line.orderId;
-          // Skip lines from orders that were conflicts/duplicates (already existed)
           if (!newOrderIds.has(orderId)) continue;
 
           const productId = line.product_id ?? line.productId;
@@ -604,43 +615,24 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const productIds = Object.keys(qtyByProduct).map(Number);
-        if (productIds.length > 0) {
-          // Fetch current stock for tracked products
-          const { data: stockProducts } = await getDb()
-            .from("product")
-            .select("product_id, quantity_on_hand, track_stock")
-            .eq("account_id", body.account_id)
-            .eq("track_stock", true)
-            .in("product_id", productIds);
+        // Build deductions array with one entry per product
+        for (const [pid, qty] of Object.entries(qtyByProduct)) {
+          // Find the first order UUID that contains this product (for journal reference)
+          const orderUuid = body.orders?.find((o: any) => {
+            const oid = o.orderId ?? o.order_id;
+            return newOrderIds.has(oid);
+          })?.uuid ?? null;
+          deductions.push({ product_id: Number(pid), qty, order_uuid: orderUuid });
+        }
 
-          for (const prod of stockProducts ?? []) {
-            const deductQty = qtyByProduct[prod.product_id];
-            if (!deductQty) continue;
-
-            const newQty = (prod.quantity_on_hand ?? 0) - deductQty;
-
-            // Update product quantity
-            await getDb()
-              .from("product")
-              .update({ quantity_on_hand: newQty, updated_at: new Date().toISOString() })
-              .eq("product_id", prod.product_id)
-              .eq("account_id", body.account_id);
-
-            // Journal entry
-            await getDb()
-              .from("stock_journal")
-              .insert({
-                account_id: body.account_id,
-                product_id: prod.product_id,
-                store_id: body.store_id ?? 0,
-                quantity_change: -deductQty,
-                quantity_after: newQty,
-                reason: "sale",
-                reference_type: "order",
-                reference_id: body.orders?.[0]?.uuid ?? null,
-                user_id: null,
-              });
+        if (deductions.length > 0) {
+          const { error: rpcError } = await getDb().rpc("batch_deduct_stock", {
+            p_account_id: body.account_id,
+            p_store_id: body.store_id ?? 0,
+            p_deductions: deductions,
+          });
+          if (rpcError) {
+            errors.push(`Stock deduction RPC: ${rpcError.message}`);
           }
         }
       } catch (e: any) {
@@ -660,7 +652,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Loyalty auto-earn: award points for new orders with a customer
+    // Loyalty auto-earn: batch award points via RPC (replaces N+1 per-order queries)
     if (newOrderIds.size > 0) {
       try {
         // Check if loyalty is active for this account
@@ -682,42 +674,21 @@ export async function POST(req: NextRequest) {
             .gt("customer_id", 0);
 
           if (newOrders?.length) {
-            for (const order of newOrders) {
-              const earnedPoints = Math.floor((order.grand_total ?? 0) * (loyaltyConfig.points_per_currency ?? 1));
-              if (earnedPoints <= 0) continue;
+            const earns = newOrders.map((o: any) => ({
+              customer_id: o.customer_id,
+              grand_total: o.grand_total ?? 0,
+              order_id: o.order_id,
+            }));
 
-              // Get current balance
-              const { data: cust } = await getDb()
-                .from("customer")
-                .select("loyaltypoints")
-                .eq("customer_id", order.customer_id)
-                .eq("account_id", body.account_id)
-                .single();
-
-              const currentBalance = cust?.loyaltypoints ?? 0;
-              const newBalance = currentBalance + earnedPoints;
-
-              // Update customer points
-              await getDb()
-                .from("customer")
-                .update({ loyaltypoints: newBalance, updated: new Date().toISOString() })
-                .eq("customer_id", order.customer_id)
-                .eq("account_id", body.account_id);
-
-              // Log loyalty transaction
-              await getDb()
-                .from("loyalty_transaction")
-                .insert({
-                  account_id: body.account_id,
-                  customer_id: order.customer_id,
-                  order_id: order.order_id,
-                  type: "earn",
-                  points: earnedPoints,
-                  balance_after: newBalance,
-                  description: `Earned ${earnedPoints} pts on order #${order.order_id}`,
-                  store_id: body.store_id ?? null,
-                  terminal_id: body.terminal_id ?? null,
-                });
+            const { error: rpcError } = await getDb().rpc("batch_loyalty_earn", {
+              p_account_id: body.account_id,
+              p_store_id: body.store_id ?? 0,
+              p_terminal_id: body.terminal_id ?? 0,
+              p_points_per_currency: loyaltyConfig.points_per_currency ?? 1,
+              p_earns: earns,
+            });
+            if (rpcError) {
+              errors.push(`Loyalty earn RPC: ${rpcError.message}`);
             }
           }
         }
@@ -771,37 +742,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Sync payments
+    // Sync payments (bulk upsert — single DB call instead of N)
     if (body.payments?.length) {
-      for (const payment of body.payments) {
-        try {
-          const dbPayment = {
-            payment_id: payment.paymentId ?? payment.payment_id,
-            order_id: payment.orderId ?? payment.order_id,
-            document_no: payment.documentNo || payment.document_no,
-            tendered: payment.tendered ?? 0,
-            amount: payment.amount ?? 0,
-            change: payment.change ?? 0,
-            payment_type: payment.paymentType || payment.payment_type,
-            date_paid: payment.datePaid || payment.date_paid,
-            pay_amt: payment.payAmt ?? payment.pay_amt ?? 0,
-            status: payment.status,
-            checknumber: payment.checknumber,
-            extra_info: payment.extraInfo || payment.extra_info,
-          };
+      try {
+        const dbPayments = body.payments.map((payment: any) => ({
+          payment_id: payment.paymentId ?? payment.payment_id,
+          order_id: payment.orderId ?? payment.order_id,
+          document_no: payment.documentNo || payment.document_no,
+          tendered: payment.tendered ?? 0,
+          amount: payment.amount ?? 0,
+          change: payment.change ?? 0,
+          payment_type: payment.paymentType || payment.payment_type,
+          date_paid: payment.datePaid || payment.date_paid,
+          pay_amt: payment.payAmt ?? payment.pay_amt ?? 0,
+          status: payment.status,
+          checknumber: payment.checknumber,
+          extra_info: payment.extraInfo || payment.extra_info,
+        }));
 
-          const { error } = await getDb()
-            .from("payment")
-            .upsert(dbPayment, { onConflict: "payment_id" });
+        const { error } = await getDb()
+          .from("payment")
+          .upsert(dbPayments, { onConflict: "payment_id" });
 
-          if (error) {
-            errors.push(`Payment ${dbPayment.payment_id}: ${error.message}`);
-          } else {
-            paymentsSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Payment: ${e.message}`);
+        if (error) {
+          errors.push(`Payments bulk: ${error.message}`);
+        } else {
+          paymentsSynced = dbPayments.length;
         }
+      } catch (e: any) {
+        errors.push(`Payments: ${e.message}`);
       }
     }
 
@@ -963,6 +932,8 @@ export async function POST(req: NextRequest) {
             display: cat.display,
             position: cat.position ?? 0,
             tax_id: cat.tax_id ?? cat.taxId,
+            parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
+            level: cat.level ?? 0,
           };
           const { error } = await tenantUpsert("productcategory", dbCat, "productcategory_id", dbCat.productcategory_id, body.account_id);
           if (error) {
@@ -1069,8 +1040,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Sync inventory count entries
+    // Sync inventory count entries (session check moved out of loop)
     if (body.inventory_count_entries?.length) {
+      // Pre-fetch session statuses to avoid N+1 queries
+      const sessionIds = [...new Set(body.inventory_count_entries.map(
+        (e: any) => e.session_id ?? e.sessionId
+      ))];
+      const sessionStatusMap: Record<number, string> = {};
+      try {
+        const { data: sessions } = await getDb()
+          .from("inventory_count_session")
+          .select("session_id, status")
+          .in("session_id", sessionIds);
+        for (const s of sessions ?? []) {
+          sessionStatusMap[s.session_id] = s.status;
+        }
+      } catch (_) { /* will handle per-entry */ }
+
       for (const entry of body.inventory_count_entries) {
         try {
           const sessionId = entry.session_id ?? entry.sessionId;
@@ -1085,7 +1071,6 @@ export async function POST(req: NextRequest) {
             .maybeSingle();
 
           if (existing) {
-            // Increment quantity
             const newQty = existing.quantity + (entry.quantity ?? 1);
             await getDb()
               .from("inventory_count_entry")
@@ -1108,33 +1093,28 @@ export async function POST(req: NextRequest) {
             });
           }
 
-          // Auto-transition session created → active
-          const { data: session } = await getDb()
-            .from("inventory_count_session")
-            .select("status")
-            .eq("session_id", sessionId)
-            .single();
-
-          if (session?.status === "created") {
-            await getDb()
-              .from("inventory_count_session")
-              .update({
-                status: "active",
-                started_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .eq("session_id", sessionId);
-          } else {
-            await getDb()
-              .from("inventory_count_session")
-              .update({ updated_at: new Date().toISOString() })
-              .eq("session_id", sessionId);
-          }
-
           inventoryEntriesSynced++;
         } catch (e: any) {
           errors.push(`InventoryEntry: ${e.message}`);
         }
+      }
+
+      // Batch-update session statuses (once per session, not per entry)
+      const now = new Date().toISOString();
+      for (const sid of sessionIds) {
+        try {
+          if (sessionStatusMap[sid] === "created") {
+            await getDb()
+              .from("inventory_count_session")
+              .update({ status: "active", started_at: now, updated_at: now })
+              .eq("session_id", sid);
+          } else {
+            await getDb()
+              .from("inventory_count_session")
+              .update({ updated_at: now })
+              .eq("session_id", sid);
+          }
+        } catch (_) { /* non-blocking */ }
       }
     }
 
@@ -1241,14 +1221,23 @@ export async function POST(req: NextRequest) {
     // ========================================
     const lastSync = body.last_sync_at || "1970-01-01T00:00:00Z";
 
-    // Get updated products (exclude soft-deleted)
-    const { data: products } = await getDb()
+    // Pull pagination — products and customers are paginated, others have safety limits
+    const pullPage = body.pull_page ?? 0;
+    const pullPageSize = Math.min(body.pull_page_size ?? 1000, 5000);
+    const pullOffset = pullPage * pullPageSize;
+
+    // Get updated products (paginated, exclude soft-deleted)
+    const { data: products, count: productsTotalCount } = await getDb()
       .from("product")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("account_id", body.account_id)
       .eq("product_status", "live")
       .eq("is_deleted", false)
-      .gte("updated_at", lastSync);
+      .gte("updated_at", lastSync)
+      .order("product_id", { ascending: true })
+      .range(pullOffset, pullOffset + pullPageSize - 1);
+
+    const hasMoreProducts = (productsTotalCount ?? 0) > pullOffset + pullPageSize;
 
     // Get updated categories (exclude soft-deleted)
     const { data: categories } = await getDb()
@@ -1263,7 +1252,7 @@ export async function POST(req: NextRequest) {
     const [
       { data: taxes },
       { data: modifiers },
-      { data: customers },
+      { data: customers, count: customersTotalCount },
       { data: preferences },
       { data: users },
       { data: discountCodes },
@@ -1284,9 +1273,9 @@ export async function POST(req: NextRequest) {
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
-      db.from("customer").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("customer").select("*", { count: "exact" }).eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync).order("customer_id", { ascending: true }).range(pullOffset, pullOffset + pullPageSize - 1),
       db.from("preference").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
-      db.from("pos_user").select("user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("pos_user").select("user_id, username, firstname, lastname, pin, role, isadmin, issalesrep, permissions, discountlimit, isactive, is_deleted, email, account_id").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
       db.from("discountcode").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       // Store-scoped queries: if store_id is 0 (first sync), pull all stores' data
       body.store_id > 0
@@ -1407,8 +1396,18 @@ export async function POST(req: NextRequest) {
       terminals: terminals ?? [],
       inventory_sessions: inventorySessions ?? [],
       serial_items: serialItems ?? [],
+      loyalty_configs: loyaltyConfigs ?? [],
+      promotions: promotions ?? [],
+      menu_schedules: menuSchedules ?? [],
+      shifts: shifts ?? [],
+      deliveries: deliveries ?? [],
       sibling_brands: siblingBrands,
       tax_config: taxConfig,
+      // Pagination — tells client if there are more pages to fetch
+      has_more_products: hasMoreProducts,
+      has_more_customers: (customersTotalCount ?? 0) > pullOffset + pullPageSize,
+      pull_page: pullPage,
+      pull_page_size: pullPageSize,
       // Stats
       error_logs_synced: errorLogsSynced,
       orders_synced: ordersSynced,
@@ -1430,6 +1429,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("Sync error:", error);
+    await logToErrorDb("system", `Sync failed: ${error.message}`, error.stack);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
       { status: 500 }

@@ -48,7 +48,7 @@ function createChain(table: string) {
   }
 
   const chain: any = {};
-  const passthrough = ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const;
+  const passthrough = ['select', 'eq', 'gte', 'order', 'limit', 'range', 'in', 'neq', 'is', 'not', 'or', 'gt', 'ilike', 'contains'] as const;
   for (const m of passthrough) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
@@ -87,7 +87,13 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
-    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
+    rpc: (..._args: any[]) => {
+      const result = { data: null, error: null };
+      const obj: any = { ...result, throwOnError: () => Promise.resolve(result) };
+      obj.then = (onFulfilled: Function, onRejected?: Function) =>
+        Promise.resolve(result).then(onFulfilled as any, onRejected as any);
+      return obj;
+    },
   }),
 }));
 

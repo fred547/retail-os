@@ -31,7 +31,7 @@ function createChain(table: string) {
   }
 
   const chain: any = {};
-  for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const) {
+  for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'range', 'in', 'neq', 'is', 'not', 'or', 'gt', 'ilike', 'contains'] as const) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
       if (m === 'eq') state.filters[args[0]] = args[1];
@@ -64,7 +64,13 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
-    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
+    rpc: (..._args: any[]) => {
+      const result = { data: null, error: null };
+      const obj: any = { ...result, throwOnError: () => Promise.resolve(result) };
+      obj.then = (onFulfilled: Function, onRejected?: Function) =>
+        Promise.resolve(result).then(onFulfilled as any, onRejected as any);
+      return obj;
+    },
   }),
 }));
 
@@ -277,12 +283,13 @@ describe('/api/sync POST – mixed success/failure in batch', () => {
     })));
     const json = await res.json();
 
-    // Orders succeeded, but order lines failed
+    // Orders succeeded, but order lines failed (bulk upsert = single error)
     expect(json.orders_synced).toBe(2);
     expect(json.order_lines_synced).toBe(0);
     expect(json.payments_synced).toBe(1);
     expect(json.success).toBe(false);
-    expect(json.errors.length).toBe(2); // 2 failed order lines
+    expect(json.errors.length).toBeGreaterThanOrEqual(1);
+    expect(json.errors.some((e: string) => e.includes('OrderLine'))).toBe(true);
   });
 });
 
@@ -423,7 +430,8 @@ describe('/api/sync POST – payment with zero change', () => {
 
     const paymentUpsert = supabaseOps.find(op => op.table === 'payment' && op.op === 'upsert');
     expect(paymentUpsert).toBeDefined();
-    expect(paymentUpsert!.data.change).toBe(0);
+    const payData = Array.isArray(paymentUpsert!.data) ? paymentUpsert!.data[0] : paymentUpsert!.data;
+    expect(payData.change).toBe(0);
   });
 });
 
@@ -452,9 +460,10 @@ describe('/api/sync POST – negative quantities (refund lines)', () => {
 
     const lineUpsert = supabaseOps.find(op => op.table === 'orderline' && op.op === 'upsert');
     expect(lineUpsert).toBeDefined();
-    expect(lineUpsert!.data.qtyentered).toBe(-2);
-    expect(lineUpsert!.data.lineamt).toBe(-400);
-    expect(lineUpsert!.data.linenetamt).toBe(-460);
+    const lineData = Array.isArray(lineUpsert!.data) ? lineUpsert!.data[0] : lineUpsert!.data;
+    expect(lineData.qtyentered).toBe(-2);
+    expect(lineData.lineamt).toBe(-400);
+    expect(lineData.linenetamt).toBe(-460);
   });
 });
 

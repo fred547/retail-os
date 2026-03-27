@@ -38,6 +38,12 @@ data class CloudSyncResponse(
     @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
     @SerializedName("tax_config") val taxConfig: Map<String, Any?>? = null,
 
+    // Pagination — indicates whether more pages are available
+    @SerializedName("has_more_products") val hasMoreProducts: Boolean = false,
+    @SerializedName("has_more_customers") val hasMoreCustomers: Boolean = false,
+    @SerializedName("pull_page") val pullPage: Int = 0,
+    @SerializedName("pull_page_size") val pullPageSize: Int = 1000,
+
     // Stats
     @SerializedName("orders_synced") val ordersSynced: Int = 0,
     @SerializedName("order_lines_synced") val orderLinesSynced: Int = 0,

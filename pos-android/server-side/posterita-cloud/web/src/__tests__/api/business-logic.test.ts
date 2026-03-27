@@ -31,7 +31,7 @@ function createChain(table: string) {
   }
 
   const chain: any = {};
-  for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'in', 'neq', 'is', 'not', 'or', 'ilike', 'contains'] as const) {
+  for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'range', 'in', 'neq', 'is', 'not', 'or', 'gt', 'ilike', 'contains'] as const) {
     chain[m] = (...args: any[]) => {
       if (m === 'select') state.op = 'select';
       if (m === 'eq') state.filters[args[0]] = args[1];
@@ -64,7 +64,13 @@ function createChain(table: string) {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: (table: string) => createChain(table),
-    rpc: (..._args: any[]) => ({ throwOnError: () => Promise.resolve({ data: null, error: null }) }),
+    rpc: (..._args: any[]) => {
+      const result = { data: null, error: null };
+      const obj: any = { ...result, throwOnError: () => Promise.resolve(result) };
+      obj.then = (onFulfilled: Function, onRejected?: Function) =>
+        Promise.resolve(result).then(onFulfilled as any, onRejected as any);
+      return obj;
+    },
   }),
 }));
 
@@ -224,17 +230,19 @@ describe('/api/sync POST – financial precision', () => {
     expect(orderInsert!.data.tax_total).toBe(13.04);
     expect(orderInsert!.data.tips).toBe(5.50);
 
-    // Verify order line financial values
+    // Verify order line financial values (bulk upsert — data is an array)
     const lineUpsert = supabaseOps.find(op => op.table === 'orderline' && op.op === 'upsert');
-    expect(lineUpsert!.data.qtyentered).toBe(1.5);
-    expect(lineUpsert!.data.lineamt).toBe(86.95);
-    expect(lineUpsert!.data.priceentered).toBe(57.97);
-    expect(lineUpsert!.data.costamt).toBe(42.33);
+    const lineData = Array.isArray(lineUpsert!.data) ? lineUpsert!.data[0] : lineUpsert!.data;
+    expect(lineData.qtyentered).toBe(1.5);
+    expect(lineData.lineamt).toBe(86.95);
+    expect(lineData.priceentered).toBe(57.97);
+    expect(lineData.costamt).toBe(42.33);
 
-    // Verify payment financial values
+    // Verify payment financial values (bulk upsert — data is an array)
     const paymentUpsert = supabaseOps.find(op => op.table === 'payment' && op.op === 'upsert');
-    expect(paymentUpsert!.data.tendered).toBe(105.49);
-    expect(paymentUpsert!.data.change).toBe(5.50);
+    const paymentData = Array.isArray(paymentUpsert!.data) ? paymentUpsert!.data[0] : paymentUpsert!.data;
+    expect(paymentData.tendered).toBe(105.49);
+    expect(paymentData.change).toBe(5.50);
   });
 });
 

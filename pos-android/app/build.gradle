@@ -103,6 +103,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
 
+    // Paging 3
+    implementation 'androidx.paging:paging-runtime-ktx:3.3.6'
+
     // Core modules
     implementation project(':core:database')
     implementation project(':core:common')

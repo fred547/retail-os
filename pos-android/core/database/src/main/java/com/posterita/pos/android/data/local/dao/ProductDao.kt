@@ -1,6 +1,7 @@
 package com.posterita.pos.android.data.local.dao
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.*
 import com.posterita.pos.android.data.local.entity.Product
 
@@ -68,4 +69,28 @@ interface ProductDao {
     /** Update stock quantity locally (after server-side adjustment) */
     @Query("UPDATE product SET quantity_on_hand = :qty WHERE product_id = :productId")
     suspend fun updateStockQuantity(productId: Int, qty: Double)
+
+    /** Get all products with a shelf location assigned, sorted by location */
+    @Query("SELECT * FROM product WHERE shelf_location IS NOT NULL AND isactive = 'Y' ORDER BY shelf_location, name")
+    suspend fun getProductsWithLocation(): List<Product>
+
+    /** Get products by shelf number prefix (e.g., "15-" for shelf 15) */
+    @Query("SELECT * FROM product WHERE shelf_location LIKE :shelfPrefix || '%' AND isactive = 'Y' ORDER BY shelf_location, name")
+    suspend fun getProductsByShelf(shelfPrefix: String): List<Product>
+
+    // ========================================
+    // Paging queries — for large product catalogs (5000+ items)
+    // ========================================
+
+    /** Paged product list — all active products */
+    @Query("SELECT * FROM product WHERE isactive = 'Y' ORDER BY name")
+    fun getProductsPaged(): PagingSource<Int, Product>
+
+    /** Paged product list — filtered by category */
+    @Query("SELECT * FROM product WHERE isactive = 'Y' AND productcategory_id = :categoryId ORDER BY name")
+    fun getProductsByCategoryPaged(categoryId: Int): PagingSource<Int, Product>
+
+    /** Paged product search */
+    @Query("SELECT * FROM product WHERE (name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR upc LIKE '%' || :query || '%') AND isactive = 'Y' ORDER BY name")
+    fun searchProductsPaged(query: String): PagingSource<Int, Product>
 }

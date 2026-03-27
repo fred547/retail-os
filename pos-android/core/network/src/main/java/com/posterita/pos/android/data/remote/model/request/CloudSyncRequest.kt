@@ -49,6 +49,9 @@ data class CloudSyncRequest(
     @SerializedName("deliveries") val deliveries: List<SyncDelivery>? = null,
     // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
     @SerializedName("payload_checksum") val payloadChecksum: String? = null,
+    // Pull pagination — request a specific page of products/customers
+    @SerializedName("pull_page") val pullPage: Int = 0,
+    @SerializedName("pull_page_size") val pullPageSize: Int = 1000,
 )
 
 data class SyncOrder(
@@ -89,6 +92,7 @@ data class SyncOrderLine(
     @SerializedName("costamt") val costAmt: Double = 0.0,
     @SerializedName("productname") val productName: String? = null,
     @SerializedName("productdescription") val productDescription: String? = null,
+    @SerializedName("serial_item_id") val serialItemId: Int? = null,
 )
 
 data class SyncPayment(
@@ -149,6 +153,11 @@ data class SyncCustomer(
     @SerializedName("isactive") val isActive: String? = "Y",
     @SerializedName("loyalty_points") val loyaltyPoints: Int = 0,
     @SerializedName("discountcode_id") val discountCodeId: Int = 0,
+    @SerializedName("gender") val gender: String? = null,
+    @SerializedName("dob") val dob: String? = null,
+    @SerializedName("regno") val regno: String? = null,
+    @SerializedName("note") val note: String? = null,
+    @SerializedName("creditterm") val creditTerm: Int = 0,
 )
 
 data class SyncStore(
