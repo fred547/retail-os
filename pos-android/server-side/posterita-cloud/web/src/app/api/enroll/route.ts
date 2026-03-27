@@ -16,6 +16,8 @@ interface EnrollRequest {
   account_id: string;
   store_id: number;
   terminal_id: number;
+  device_id?: string;
+  device_name?: string;
 }
 
 /**
@@ -85,6 +87,32 @@ export async function POST(req: NextRequest) {
         { error: "Terminal not found or does not belong to this account" },
         { status: 404 }
       );
+    }
+
+    // ── Terminal device lock enforcement ──
+    // If terminal is already locked to a different device, reject enrollment.
+    // The owner/admin must unlock it from the web console first.
+    const deviceId = body.device_id;
+    if (terminal.locked_device_id && deviceId && terminal.locked_device_id !== deviceId) {
+      return NextResponse.json(
+        {
+          error: "Terminal is locked to another device",
+          locked_device_id: terminal.locked_device_id,
+          locked_device_name: terminal.locked_device_name,
+          locked_at: terminal.locked_at,
+          hint: "Ask the owner to unlock this terminal from the web console (Terminals page).",
+        },
+        { status: 409 }
+      );
+    }
+
+    // Lock the terminal to this device (first enrollment or same device re-enrolling)
+    if (deviceId) {
+      await db.from("terminal").update({
+        locked_device_id: deviceId,
+        locked_device_name: body.device_name || null,
+        locked_at: new Date().toISOString(),
+      }).eq("terminal_id", body.terminal_id).eq("account_id", body.account_id);
     }
 
     // Fetch all bootstrap data for this account

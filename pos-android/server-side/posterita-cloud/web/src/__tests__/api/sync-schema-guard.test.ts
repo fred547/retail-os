@@ -237,45 +237,86 @@ describe("Sync schema guard — quotation pull", () => {
   });
 });
 
-describe("Sync schema guard — concurrent terminal usage", () => {
-  it("handles same terminal_id from two sync requests without data loss", async () => {
+describe("Sync schema guard — terminal device lock", () => {
+  it("rejects sync from wrong device when terminal is locked", async () => {
     tableResults["account"] = { data: { account_id: "acc1" }, error: null };
     seedPullTables();
-    tableResults["orders"] = { data: null, error: null };
-    tableResults["till"] = { data: null, error: null };
+
+    // Terminal is locked to device-A
+    tableResults["terminal"] = {
+      data: { terminal_id: 5, locked_device_id: "device-A", locked_device_name: "POS Register 1" },
+      error: null,
+    };
 
     const { POST } = await importSyncRoute();
+    const res = await POST(mockRequest({
+      account_id: "acc1", terminal_id: 5, store_id: 1,
+      device_id: "device-B",
+      last_sync_at: "2024-01-01T00:00:00Z",
+    }));
+    const json = await res.json();
 
-    // Two "devices" sync with the same terminal_id
-    const [res1, res2] = await Promise.all([
-      POST(mockRequest({
-        account_id: "acc1", terminal_id: 5, store_id: 1,
-        last_sync_at: "2024-01-01T00:00:00Z",
-        orders: [{ orderId: 1, uuid: "order-from-device-A", grandTotal: 100, subtotal: 85, taxTotal: 15 }],
-      })),
-      POST(mockRequest({
-        account_id: "acc1", terminal_id: 5, store_id: 1,
-        last_sync_at: "2024-01-01T00:00:00Z",
-        orders: [{ orderId: 2, uuid: "order-from-device-B", grandTotal: 200, subtotal: 170, taxTotal: 30 }],
-      })),
-    ]);
+    expect(res.status).toBe(409);
+    expect(json.code).toBe("TERMINAL_LOCKED");
+    expect(json.locked_device_id).toBe("device-A");
+  });
 
-    const json1 = await res1.json();
-    const json2 = await res2.json();
+  it("allows sync from the correct locked device", async () => {
+    tableResults["account"] = { data: { account_id: "acc1" }, error: null };
+    seedPullTables();
 
-    // Both should succeed (not crash)
-    expect(res1.status).toBe(200);
-    expect(res2.status).toBe(200);
+    tableResults["terminal"] = {
+      data: { terminal_id: 5, locked_device_id: "device-A" },
+      error: null,
+    };
 
-    // Both orders should be attempted
-    expect(json1.orders_synced + json2.orders_synced).toBeGreaterThanOrEqual(1);
+    const { POST } = await importSyncRoute();
+    const res = await POST(mockRequest({
+      account_id: "acc1", terminal_id: 5, store_id: 1,
+      device_id: "device-A",
+      last_sync_at: "2024-01-01T00:00:00Z",
+    }));
+
+    expect(res.status).toBe(200);
+  });
+
+  it("allows sync when terminal has no device lock", async () => {
+    tableResults["account"] = { data: { account_id: "acc1" }, error: null };
+    seedPullTables();
+
+    tableResults["terminal"] = {
+      data: { terminal_id: 5, locked_device_id: null },
+      error: null,
+    };
+
+    const { POST } = await importSyncRoute();
+    const res = await POST(mockRequest({
+      account_id: "acc1", terminal_id: 5, store_id: 1,
+      device_id: "device-new",
+      last_sync_at: "2024-01-01T00:00:00Z",
+    }));
+
+    expect(res.status).toBe(200);
+  });
+
+  it("allows initial sync with terminal_id=0 (no terminal assigned)", async () => {
+    tableResults["account"] = { data: { account_id: "acc1" }, error: null };
+    seedPullTables();
+
+    const { POST } = await importSyncRoute();
+    const res = await POST(mockRequest({
+      account_id: "acc1", terminal_id: 0, store_id: 1,
+      device_id: "device-new",
+      last_sync_at: "2024-01-01T00:00:00Z",
+    }));
+
+    expect(res.status).toBe(200);
   });
 
   it("conflict detection skips stale overwrites from duplicate pushes", async () => {
     tableResults["account"] = { data: { account_id: "acc1" }, error: null };
     seedPullTables();
 
-    // Simulate existing order with newer timestamp
     tableResults["orders"] = {
       data: { uuid: "dup-order", updated_at: "2025-01-01T00:00:00Z", is_sync: true },
       error: null,
@@ -291,7 +332,6 @@ describe("Sync schema guard — concurrent terminal usage", () => {
     }));
     const json = await res.json();
 
-    // Order should be counted (as conflict handled), not fail
     expect(res.status).toBe(200);
     expect(json.conflicts_detected).toBeGreaterThanOrEqual(0);
   });

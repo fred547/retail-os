@@ -316,6 +316,39 @@ export async function POST(req: NextRequest) {
       }, { onConflict: "device_id,account_id" });
     }
 
+    // ── Terminal device lock enforcement ──
+    // If the terminal is locked to a specific device, reject syncs from other devices.
+    // terminal_id=0 is exempt (initial pull on new device, no terminal assigned yet).
+    if (body.terminal_id > 0 && body.device_id) {
+      try {
+        const { data: terminal } = await getDb()
+          .from("terminal")
+          .select("terminal_id, locked_device_id, locked_device_name")
+          .eq("terminal_id", body.terminal_id)
+          .eq("account_id", body.account_id)
+          .maybeSingle();
+
+        if (terminal?.locked_device_id && terminal.locked_device_id !== body.device_id) {
+          return NextResponse.json({
+            error: "Terminal is locked to another device",
+            code: "TERMINAL_LOCKED",
+            locked_device_id: terminal.locked_device_id,
+            locked_device_name: terminal.locked_device_name,
+            hint: "Ask the owner to unlock this terminal from the web console.",
+          }, { status: 409 });
+        }
+
+        // Auto-lock: if terminal has no lock yet, lock to this device on first sync
+        if (!terminal?.locked_device_id && terminal) {
+          await getDb().from("terminal").update({
+            locked_device_id: body.device_id,
+            locked_device_name: body.device_name || body.device_model || null,
+            locked_at: new Date().toISOString(),
+          }).eq("terminal_id", body.terminal_id).eq("account_id", body.account_id);
+        }
+      } catch (_) { /* non-blocking — don't fail sync for lock check errors */ }
+    }
+
     const requestStart = Date.now();
     const errors: string[] = [];
 
