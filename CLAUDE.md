@@ -57,7 +57,7 @@ These are the column names that get confused most often. **Always verify against
 
 | Table | Has | Does NOT have |
 |-------|-----|---------------|
-| `store` | name, address, city, state, zip, country, currency, isactive | ~~phone, email, tax_number~~ |
+| `store` | name, address, city, state, zip, country, currency, isactive, **store_type** (retail/warehouse) | ~~phone, email, tax_number~~ |
 | `productcategory` | name, position, isactive, display | ~~description~~ |
 | `pos_user` | user_id, username, firstname, pin, role, email | ~~store_id~~ |
 | `owner` | **id**, auth_uid, email, phone, name | ~~owner_id~~ (PK is `id`) |
@@ -72,27 +72,31 @@ These are the column names that get confused most often. **Always verify against
 - `account_id` is TEXT everywhere
 - `serial_item.warranty_expiry` is auto-computed (`delivered_date + warranty_months`)
 - `till.status` exists only in Supabase — Android derives open/closed from `dateClosed`
-- Full column listings for all 30+ tables: check migration files in `supabase/migrations/`
+- `store.store_type` is `'retail'` (default) or `'warehouse'` — determines available features
+- Full column listings for all 45+ tables: check migration files in `supabase/migrations/`
 
 ## Repository Map
 
 | Directory | Purpose |
 |-----------|---------|
 | `pos-android/` | Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
-| `pos-android/core/database/` | **`:core:database`** — Room DB: 37 entities, 37 DAOs, AppDatabase, converters, 27 migrations |
+| `pos-android/core/database/` | **`:core:database`** — Room DB: 42 entities, 40 DAOs, AppDatabase, converters, 31 migrations |
 | `pos-android/core/common/` | **`:core:common`** — SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants |
 | `pos-android/core/network/` | **`:core:network`** — Retrofit APIs, request/response models, NetworkInterceptor |
 | `pos-android/core/sync/` | **`:core:sync`** — CloudSyncService, CloudSyncWorker, SyncStatusManager |
 | `pos-android/server-side/posterita-cloud/web/` | **Web console** (Next.js on Vercel) — admin CRUD |
-| `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (30 domains — see filesystem for full list) |
+| `pos-android/server-side/posterita-cloud/web/src/app/api/` | API routes (32 domains — see filesystem for full list) |
 | `pos-android/server-side/posterita-cloud/backend/` | **Render backend** (Express/Node.js) — webhooks, workers, cron |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00039) |
+| `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
+| `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
+| `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00045) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
-| `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support) |
+| `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
 ## Stack & URLs
 
-- **Android:** Kotlin, Room (v30, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
+- **Android:** Kotlin, Room (v35, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
 - **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
 - **DB:** Supabase Postgres — `account_id` is TEXT. **RLS enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` = `https://web.posterita.com`.
@@ -109,7 +113,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 37 entities, 37 DAOs, AppDatabase, converters, schema v31 (27 migrations)
+:core:database      → Room DB: 42 entities, 40 DAOs, AppDatabase, converters, schema v35 (31 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -181,18 +185,22 @@ When refactoring or rewriting a file, diff against the original to ensure no exi
 
 | Task | Android | Web Console | API |
 |------|---------|-------------|-----|
-| POS/cart/payments/receipts | Native | — | Sync |
+| POS/cart/payments/receipts | Native | PWA (`/pos`) | Sync |
 | Products/stores/terminals/users/categories/taxes | WebView | Native | CRUD |
 | Brands | Native | Native | CRUD |
 | Product intake | WebView (`/intake`) | Native | AI + matching |
 | Orders / Till management | Native | Native (view) | Query/Sync |
 | Printers/barcode scanning | Native | — | — |
+| QR scan actions (staff badge, coupon, table, etc.) | Native (ScanActionRouter) | Badge mgmt | Sync |
 | Reports/errors | WebView | Native | Query |
 | Inventory count | Native | Native | CRUD + Sync |
 | Kitchen/restaurant (KDS, stations, sections) | Native | Native (`/stations`) | Sync |
 | Loyalty / promotions / menus | POS integration | Native | CRUD + Sync |
 | Shifts (clock in/out) | Settings card | Native | CRUD + Sync |
 | Suppliers / POs / deliveries | — | Native | CRUD + Sync |
+| Tags (product/customer/order) | — | Native (`/tags`) | CRUD + Sync |
+| Store layout / shelf labels | Shelf browser | Native (`/store-layout`) | CRUD |
+| Warehouse (picking/put-away/transfer) | Native | — | Stock API |
 | Account management | — | Native (`/platform`) | CRUD |
 
 ## API Routes (by domain)
@@ -210,7 +218,11 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **loyalty** | earn/redeem/adjust, config, wallets, transactions | Points system |
 | **suppliers** | CRUD, purchase-orders/*, purchase-orders/[id]/receive (GRN) | Supply chain |
 | **operations** | promotions/*, deliveries/*, shifts, menu-schedules/*, reports/z-report | Daily ops |
+| **tags** | groups (CRUD), tags (CRUD), assign (bulk), report (sales by tag) | Product/customer/order classification |
+| **store-layout** | GET/POST/DELETE zones (shelf ranges + height labels) | Warehouse shelf configuration |
+| **stock** | GET (multi-store overview), POST (manual adjustment + journal) | Warehouse stock management |
 | **platform** | create-account, delete-test-brands, super-admin/*, account-manager/* | Admin portal |
+| **print** | POST (TCP relay: base64 ESC/POS bytes → printer IP) | PWA receipt printing (SSRF-protected: private IPs only) |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
 **Render Backend** (`posterita-backend.onrender.com`): `/health`, `/webhook/whatsapp`, `/monitor/errors`, `/monitor/sync`, `/monitor/accounts`
@@ -300,6 +312,19 @@ Each brand has: currency, stores, terminals, users. Demo brand seeded with 15 pr
 
 **Order operations:** Table transfer (long-press), order merge (long-press), delivery type (address/phone capture).
 
+## Store Types
+
+**The store determines the context.** Each store has a `store_type` that controls which features are available.
+
+| Type | Purpose | Features |
+|------|---------|----------|
+| `retail` | Standard retail store (default) | POS, customers, orders, promotions |
+| `warehouse` | Warehouse/distribution center | Layout zones, shelf browser, picking, put-away, stock transfer, label printing |
+
+Store type is set in the web console (Stores page) and syncs to Android. On Android, `store.isWarehouse` gates warehouse-specific features in the Warehouse hub.
+
+**Store layout zones:** Warehouse stores define shelf zones (e.g., "Main Floor: shelves 1-20, heights A-G" and "Back Room: shelves 30-35, heights A-C"). Location format: `15-C` = Shelf 15, Height C. Managed via `/store-layout` web page.
+
 ## Printer Types
 
 Printers are **output-only devices**. KDS is NOT a printer (it's an interactive terminal type).
@@ -375,9 +400,11 @@ All errors go to the **same `error_logs` table** in Supabase.
 
 ## Android Navigation
 
-- **Home dashboard:** greeting + `Brand › Store › Terminal ▾` context switcher + summary card + **4 app launchers** (POS, Warehouse, Admin, Synchronizer) + bottom nav
+- **Home dashboard:** greeting + `Brand › Store › Terminal ▾` context switcher + summary card + **6 app launchers** (POS, Warehouse, CRM, Logistics, Admin, Synchronizer) + bottom nav
 - **POS app:** TillActivity. Side drawer: Home, Orders, Customers, Till History, Cash Drawer, Terminal Info, Printers, Kitchen Orders
-- **Warehouse app:** InventoryCountActivity
+- **Warehouse app:** WarehouseHomeActivity → stock alerts, inventory count sessions, picking, put-away, stock view, shelf browser, stock transfer
+- **CRM app:** CrmHomeActivity → customer list, loyalty config, loyalty points summary
+- **Logistics app:** LogisticsHomeActivity → delivery dashboard (pending/transit/delivered), status tabs
 - **Admin app:** SettingsActivity. WebView links to web console + Sync + Printers + Brands (owner only)
 - **Synchronizer:** DatabaseSynchonizerActivity
 - **KDS:** KdsSetupActivity (mDNS discovery + manual IP) → KdsDisplayActivity (full-screen grid, landscape)
@@ -396,9 +423,9 @@ All errors go to the **same `error_logs` table** in Supabase.
 
 ## Web Platform Portal (`/platform`)
 
-Account manager / super admin view. 12 tabs: brands, owners, errors, sync, mra, tests, benchmark, changelog, roadmap, infra, legacy, claude.
+Account manager / super admin view. 14 tabs: brands, owners, errors, sync, mra, tests, benchmark, changelog, roadmap, specs, infra, legacy, claude, docs.
 
-Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Tests** (~1180+ tests across Android/web/scenario/E2E), **Infra** (live service status + DB row counts).
+Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Tests** (~1,362 tests across Android/web/scenario/E2E/Firebase), **Infra** (live service status + DB row counts).
 
 ## Current Phase
 
@@ -418,7 +445,55 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification), Peach Payments.
 
-**Phase 4+ roadmap:** Shelf labels, self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In.
+**Phase 4 in progress:** Product tagging system (groups + many-to-many + reports + web assignment UI), store layout zones (shelf ranges + height labels), store types (retail/warehouse), shelf browser (Android), shelf label printing, 7-app Android dashboard (POS/Warehouse/CRM/Logistics/Staff/Admin/Sync), large data volume handling (batch sync, paginated pull, Room Paging 3), QR scan actions (55 actions across 8 domains — spec complete), **PWA offline POS for Windows/Mac** (IndexedDB, sync engine, network printing, PIN lock — 40 stores).
+
+**Phase 4+ roadmap:** Self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In, Peach Payments.
+
+## Product Tags
+
+Flexible cross-cutting classification beyond categories. Tags are grouped (e.g., "Season" → Summer/Winter, "Margin" → High/Low) and many-to-many with products, customers, and orders.
+
+**Tables:** `tag_group`, `tag`, `product_tag`, `customer_tag`, `order_tag`
+**API:** `/api/tags/groups` (CRUD), `/api/tags` (CRUD), `/api/tags/assign` (bulk), `/api/tags/report` (sales by tag)
+**Web:** `/tags` page — accordion groups with colored chips, inline add
+**Android:** `TagGroup`, `Tag`, `ProductTag` Room entities — pull-only via sync
+**Reports:** Tag-based revenue/qty/order breakdown with date range filtering
+
+## QR Scan Actions
+
+55 scan-to-action mappings across 8 domains. One barcode/QR scan = one action. Full spec: `specs/modules/23-qr-scan-actions.md`.
+
+**URI scheme:** All QR codes use `posterita://{type}/{id}` format. Product barcodes use standard EAN-13/UPC-A.
+
+**Security tiers:**
+- **Low-risk** (scan only): clock in/out, break, table claim, inventory count, loyalty link
+- **High-risk** (scan + PIN): cash drawer, void/refund auth, switch cashier, discount override, price override
+
+**Architecture:** `ScanActionRouter` in `:app` — central dispatcher that receives all scan results and routes by URI prefix to typed handlers. Context-aware disambiguation (e.g., customer card at checkout = link to order; at CRM = open profile).
+
+**Key tables:** `pos_user.badge_uuid` (staff badge), `scan_action_log` (audit trail with WiFi SSID for location proof)
+
+**Domains:** Staff (10), POS (11), Restaurant (6), Warehouse (12), Logistics (4), CRM (3), Admin (5), Customer-facing (4)
+
+**Anti-fraud:** Rate limiting (60s cooldown), WiFi SSID geo-check, dual-store alert, badge revocation via user deactivation
+
+## PWA Offline POS (Windows/Mac/Linux)
+
+Full offline-first POS for desktop — same architecture as Android, targeting 40 Windows stores. Installable as a standalone app from Chrome/Edge.
+
+**Stack:** Next.js + Dexie.js (IndexedDB) + Service Worker + same `/api/sync` endpoint as Android
+
+**Data layer:** `lib/offline/` — Dexie DB with 21 tables mirroring Room schema. `sync-engine.ts` performs bidirectional push/pull (identical JSON as Android). `sync-worker.ts` runs every 5 min with exponential retry backoff. `integrity.ts` validates on startup.
+
+**POS UI:** `app/pos/` — dark full-screen checkout. Product grid + cart + payment dialog. All data from IndexedDB — zero network calls during checkout. USB barcode scanner via keyboard event listener. Keyboard shortcuts: F1 search, F2 pay, F3 till.
+
+**Printing:** ESC/POS command builder (`lib/pos/escpos.ts`) → base64 → `POST /api/print` → Node TCP socket → network thermal printer. SSRF-protected (private IPs only).
+
+**Security:** PIN lock screen (4-digit, from IndexedDB `pos_user.pin`). 30-min idle timeout → auto-lock. Session stored in localStorage.
+
+**Pages:** `/pos` (checkout), `/pos/setup` (first-run wizard), `/download` (APK + PWA install guide), `/offline` (fallback)
+
+**Where to Build table:** PWA POS = checkout, barcode, receipts, till. Web console = admin CRUD. Android = mobile POS + warehouse + KDS.
 
 ## Specs
 

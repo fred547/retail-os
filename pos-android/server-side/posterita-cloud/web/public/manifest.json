@@ -1,0 +1,27 @@
+{
+  "name": "Posterita Retail OS",
+  "short_name": "Posterita",
+  "description": "Offline-first POS for retail, restaurant & warehouse",
+  "start_url": "/pos",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1976D2",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "shopping"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
