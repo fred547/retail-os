@@ -15,5 +15,7 @@ data class InventoryCountEntry(
     val scanned_by: Int = 0,
     val terminal_id: Int = 0,
     val scanned_at: Long = System.currentTimeMillis(),
-    val is_synced: String = "N"
+    val is_synced: String = "N",
+    val system_qty: Double = 0.0,
+    val variance: Double = 0.0
 )

@@ -16,5 +16,7 @@ data class InventoryCountSession(
     val created_by: Int = 0,
     val created_at: String? = null,
     val updated_at: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val assigned_to: Int? = null,
+    val variance_count: Int = 0
 )

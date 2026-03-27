@@ -146,8 +146,18 @@ class InventoryCountActivity : BaseActivity() {
             withContext(Dispatchers.IO) {
                 // Check if already scanned in this session
                 val existing = db.inventoryCountEntryDao().getEntryBySessionAndProduct(sessionId, product.product_id)
+                val systemQty = product.quantity_on_hand
                 if (existing != null) {
                     db.inventoryCountEntryDao().incrementQuantity(existing.entry_id)
+                    // Update variance: new counted qty - system qty
+                    val newQty = existing.quantity + 1
+                    val updatedEntry = existing.copy(
+                        quantity = newQty,
+                        variance = newQty.toDouble() - systemQty,
+                        is_synced = "N",
+                        scanned_at = System.currentTimeMillis()
+                    )
+                    db.inventoryCountEntryDao().insert(updatedEntry)
                 } else {
                     val entry = InventoryCountEntry(
                         session_id = sessionId,
@@ -158,6 +168,8 @@ class InventoryCountActivity : BaseActivity() {
                         quantity = 1,
                         scanned_by = sessionManager.user?.user_id ?: 0,
                         terminal_id = prefsManager.terminalId,
+                        system_qty = systemQty,
+                        variance = 1.0 - systemQty
                     )
                     db.inventoryCountEntryDao().insert(entry)
                 }

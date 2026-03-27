@@ -35,7 +35,7 @@ import com.posterita.pos.android.data.local.entity.*
         Shift::class,
         Delivery::class
     ],
-    version = 31,
+    version = 32,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -121,7 +121,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_27_28,
                         MIGRATION_28_29,
                         MIGRATION_29_30,
-                        MIGRATION_30_31
+                        MIGRATION_30_31,
+                        MIGRATION_31_32
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -614,6 +615,16 @@ abstract class AppDatabase : RoomDatabase() {
                         updated_at TEXT
                     )
                 """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_31_32 = object : Migration(31, 32) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Warehouse enhancements: variance tracking + staff assignment
+                db.execSQL("ALTER TABLE inventory_count_session ADD COLUMN assigned_to INTEGER")
+                db.execSQL("ALTER TABLE inventory_count_session ADD COLUMN variance_count INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE inventory_count_entry ADD COLUMN system_qty REAL NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE inventory_count_entry ADD COLUMN variance REAL NOT NULL DEFAULT 0")
             }
         }
     }
