@@ -625,6 +625,10 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE inventory_count_session ADD COLUMN variance_count INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE inventory_count_entry ADD COLUMN system_qty REAL NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE inventory_count_entry ADD COLUMN variance REAL NOT NULL DEFAULT 0")
+                // Product: shelf location, batch, expiry
+                db.execSQL("ALTER TABLE product ADD COLUMN shelf_location TEXT")
+                db.execSQL("ALTER TABLE product ADD COLUMN batch_number TEXT")
+                db.execSQL("ALTER TABLE product ADD COLUMN expiry_date TEXT")
             }
         }
     }

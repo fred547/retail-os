@@ -197,7 +197,7 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
-            android:text="Adjust"
+            android:text="Transfer"
             android:textAllCaps="false"
             android:textSize="13sp"
             app:cornerRadius="10dp" />

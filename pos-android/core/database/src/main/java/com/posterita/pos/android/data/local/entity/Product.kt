@@ -58,10 +58,30 @@ data class Product(
     /** Low stock alert threshold */
     val reorder_point: Double = 0.0,
     /** Whether this product tracks stock (1=yes, 0=no) */
-    val track_stock: Int = 1
+    val track_stock: Int = 1,
+    /** Shelf/bin location (e.g., "A-3-2", "Aisle 5") */
+    val shelf_location: String? = null,
+    /** Batch/lot number for FIFO tracking */
+    val batch_number: String? = null,
+    /** Expiry date (ISO 8601 string) */
+    val expiry_date: String? = null
 ) : Serializable {
     val isSerialized: Boolean get() = is_serialized == "Y"
     val tracksStock: Boolean get() = track_stock == 1
     val isLowStock: Boolean get() = tracksStock && quantity_on_hand > 0 && quantity_on_hand <= reorder_point
     val isOutOfStock: Boolean get() = tracksStock && quantity_on_hand <= 0
+    val isExpired: Boolean get() {
+        val exp = expiry_date ?: return false
+        return try { exp.substring(0, 10) < java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date()) } catch (_: Exception) { false }
+    }
+    val isExpiringSoon: Boolean get() {
+        val exp = expiry_date ?: return false
+        return try {
+            val cal = java.util.Calendar.getInstance()
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 30)
+            val in30days = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(cal.time)
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+            exp.substring(0, 10) in today..in30days
+        } catch (_: Exception) { false }
+    }
 }

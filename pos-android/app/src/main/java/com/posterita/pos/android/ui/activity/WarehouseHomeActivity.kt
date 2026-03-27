@@ -53,9 +53,10 @@ class WarehouseHomeActivity : BaseActivity() {
             showFullCountDialog()
         }
         binding.buttonAdjustStock.setOnClickListener {
-            // Open inventory count activity which has the adjust stock dialog
-            startActivity(Intent(this, InventoryCountActivity::class.java))
+            startActivity(Intent(this, StockTransferActivity::class.java))
         }
+
+        setupStockAlertClicks()
 
         // Session list
         sessionAdapter = SessionAdapter(sessions) { session ->
@@ -96,7 +97,38 @@ class WarehouseHomeActivity : BaseActivity() {
             binding.textTotalProducts.text = products.size.toString()
             binding.textLowStock.text = lowStock.toString()
             binding.textOutOfStock.text = outOfStock.toString()
+
+            // Store for click handlers
+            lowStockProducts = tracked.filter { it.isLowStock }.sortedBy { it.quantity_on_hand }
+            outOfStockProducts = tracked.filter { it.isOutOfStock }.sortedBy { it.name }
         }
+    }
+
+    private var lowStockProducts: List<com.posterita.pos.android.data.local.entity.Product> = emptyList()
+    private var outOfStockProducts: List<com.posterita.pos.android.data.local.entity.Product> = emptyList()
+
+    private fun setupStockAlertClicks() {
+        // Clicking low stock card shows list of low stock products
+        binding.textLowStock.setOnClickListener { showStockAlertDialog("Low Stock", lowStockProducts) }
+        binding.textOutOfStock.setOnClickListener { showStockAlertDialog("Out of Stock", outOfStockProducts) }
+    }
+
+    private fun showStockAlertDialog(title: String, products: List<com.posterita.pos.android.data.local.entity.Product>) {
+        if (products.isEmpty()) {
+            Toast.makeText(this, "No $title products", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val items = products.map { p ->
+            val qty = p.quantity_on_hand.toInt()
+            val reorder = p.reorder_point.toInt()
+            "${p.name ?: "?"}\n   Stock: $qty | Reorder at: $reorder"
+        }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("$title (${products.size} products)")
+            .setItems(items) { _, _ -> }
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun showFullCountDialog() {

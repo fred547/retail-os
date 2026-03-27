@@ -277,6 +277,9 @@
             android:name=".ui.activity.WarehouseHomeActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.StockTransferActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 

@@ -20,5 +20,15 @@ CREATE INDEX IF NOT EXISTS idx_inventory_session_account_status
 CREATE INDEX IF NOT EXISTS idx_inventory_entry_session
   ON inventory_count_entry(session_id, product_id);
 
+-- Product: shelf location, batch tracking, expiry dates
+ALTER TABLE product ADD COLUMN IF NOT EXISTS shelf_location TEXT;
+ALTER TABLE product ADD COLUMN IF NOT EXISTS batch_number TEXT;
+ALTER TABLE product ADD COLUMN IF NOT EXISTS expiry_date TIMESTAMPTZ;
+
+-- Index for expiry tracking
+CREATE INDEX IF NOT EXISTS idx_product_expiry
+  ON product(account_id, expiry_date)
+  WHERE expiry_date IS NOT NULL AND is_deleted = false;
+
 -- Notify PostgREST to reload schema
 NOTIFY pgrst, 'reload schema';
