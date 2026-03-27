@@ -283,6 +283,12 @@
             android:name=".ui.activity.MultiStoreStockActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.PickingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.PutAwayActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 

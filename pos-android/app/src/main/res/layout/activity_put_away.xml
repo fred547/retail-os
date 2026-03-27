@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/posterita_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Put Away"
+            android:textSize="20sp"
+            android:fontFamily="@font/lexend_semibold"
+            android:textColor="@color/posterita_ink"
+            android:layout_marginStart="8dp" />
+
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_internet_dot" />
+    </LinearLayout>
+
+    <!-- Status -->
+    <TextView
+        android:id="@+id/textItemsProcessed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 items assigned"
+        android:textSize="13sp"
+        android:textColor="@color/posterita_muted"
+        android:paddingStart="16dp"
+        android:paddingBottom="8dp" />
+
+    <!-- Scan button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonScan"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Scan Product or Shelf"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        app:icon="@drawable/ic_search"
+        app:iconGravity="textStart"
+        app:backgroundTint="@color/posterita_primary"
+        app:cornerRadius="12dp" />
+
+    <!-- Product card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/posterita_line"
+        app:cardBackgroundColor="@color/posterita_paper">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/textProductName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scan a product barcode"
+                android:textSize="18sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_ink" />
+
+            <TextView
+                android:id="@+id/textProductUpc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/textCurrentLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/textProductStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Location input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:hint="Shelf / Location (scan or type)"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapCharacters" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Assign button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonAssign"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_margin="12dp"
+        android:text="Assign Location"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:enabled="false"
+        app:backgroundTint="@color/posterita_secondary"
+        app:cornerRadius="12dp" />
+</LinearLayout>

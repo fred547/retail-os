@@ -56,6 +56,17 @@ class WarehouseHomeActivity : BaseActivity() {
             startActivity(Intent(this, StockTransferActivity::class.java))
         }
 
+        // Workflow buttons
+        binding.buttonPicking.setOnClickListener {
+            startActivity(Intent(this, PickingActivity::class.java))
+        }
+        binding.buttonPutAway.setOnClickListener {
+            startActivity(Intent(this, PutAwayActivity::class.java))
+        }
+        binding.buttonStockView.setOnClickListener {
+            startActivity(Intent(this, MultiStoreStockActivity::class.java))
+        }
+
         setupStockAlertClicks()
 
         // Session list
