@@ -26,11 +26,8 @@ interface ShiftDao {
     @Query("SELECT * FROM shift WHERE account_id = :accountId AND is_synced = 0")
     suspend fun getUnsyncedShifts(accountId: String): List<Shift>
 
-    @Query("UPDATE shift SET is_synced = 1 WHERE id IN (:ids)")
-    suspend fun markSynced(ids: List<Int>)
-
-    @Query("DELETE FROM shift WHERE account_id = :accountId AND is_synced = 0 AND uuid IS NOT NULL")
-    suspend fun deleteUnsyncedByAccount(accountId: String)
+    @Query("DELETE FROM shift WHERE id = :id")
+    suspend fun deleteById(id: Int)
 
     @Query("DELETE FROM shift WHERE account_id = :accountId")
     suspend fun deleteByAccount(accountId: String)

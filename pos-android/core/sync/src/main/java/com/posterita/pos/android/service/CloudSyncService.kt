@@ -315,10 +315,13 @@ class CloudSyncService @Inject constructor(
                 Log.d(TAG, "Pushed ${unsyncedDeliveries.size} deliveries, cleared local stubs")
             }
 
-            // Delete locally-created shifts after push — server versions pulled back with real IDs
+            // Delete only the specific shifts that were pushed (not all unsynced — avoids race with concurrent clockIn)
             if (unsyncedShifts.isNotEmpty()) {
-                db.shiftDao().deleteUnsyncedByAccount(accountId)
-                Log.d(TAG, "Pushed ${unsyncedShifts.size} shifts, cleared local stubs")
+                val pushedIds = unsyncedShifts.map { it.id }
+                for (id in pushedIds) {
+                    try { db.shiftDao().deleteById(id) } catch (_: Exception) {}
+                }
+                Log.d(TAG, "Pushed ${unsyncedShifts.size} shifts, cleared pushed stubs")
             }
 
             // Update local Account with BRN/TAN from tax config (for receipt printing)
@@ -863,6 +866,28 @@ class CloudSyncService @Inject constructor(
                     if (productTags.isNotEmpty()) {
                         db.productTagDao().insertAll(productTags)
                         Log.d(TAG, "Pulled ${productTags.size} product tags")
+                    }
+                }
+            }
+
+            // Quotations
+            response.quotations?.let { list ->
+                if (list.isNotEmpty()) {
+                    val quotations = list.mapNotNull { mapToQuotation(it) }
+                    if (quotations.isNotEmpty()) {
+                        db.quotationDao().insertAll(quotations)
+                        Log.d(TAG, "Pulled ${quotations.size} quotations")
+                    }
+                }
+            }
+
+            // Quotation lines
+            response.quotationLines?.let { list ->
+                if (list.isNotEmpty()) {
+                    val lines = list.mapNotNull { mapToQuotationLine(it) }
+                    if (lines.isNotEmpty()) {
+                        db.quotationLineDao().insertAll(lines)
+                        Log.d(TAG, "Pulled ${lines.size} quotation lines")
                     }
                 }
             }
@@ -1698,6 +1723,65 @@ class CloudSyncService @Inject constructor(
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map product tag: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToQuotation(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.Quotation? {
+        return try {
+            com.posterita.pos.android.data.local.entity.Quotation(
+                quotation_id = (map["quotation_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                terminal_id = (map["terminal_id"] as? Number)?.toInt() ?: 0,
+                customer_id = (map["customer_id"] as? Number)?.toInt(),
+                customer_name = map["customer_name"] as? String,
+                customer_email = map["customer_email"] as? String,
+                customer_phone = map["customer_phone"] as? String,
+                customer_address = map["customer_address"] as? String,
+                document_no = map["document_no"] as? String,
+                status = map["status"] as? String ?: "draft",
+                uuid = map["uuid"] as? String,
+                subtotal = (map["subtotal"] as? Number)?.toDouble() ?: 0.0,
+                tax_total = (map["tax_total"] as? Number)?.toDouble() ?: 0.0,
+                grand_total = (map["grand_total"] as? Number)?.toDouble() ?: 0.0,
+                currency = map["currency"] as? String,
+                notes = map["notes"] as? String,
+                terms = map["terms"] as? String,
+                valid_until = map["valid_until"] as? String,
+                template_id = map["template_id"] as? String ?: "classic",
+                converted_order_id = (map["converted_order_id"] as? Number)?.toInt(),
+                created_by = (map["created_by"] as? Number)?.toInt() ?: 0,
+                sent_at = map["sent_at"] as? String,
+                accepted_at = map["accepted_at"] as? String,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map quotation: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToQuotationLine(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.QuotationLine? {
+        return try {
+            com.posterita.pos.android.data.local.entity.QuotationLine(
+                line_id = (map["line_id"] as? Number)?.toInt() ?: return null,
+                quotation_id = (map["quotation_id"] as? Number)?.toInt() ?: 0,
+                product_id = (map["product_id"] as? Number)?.toInt(),
+                product_name = map["product_name"] as? String ?: "",
+                description = map["description"] as? String,
+                quantity = (map["quantity"] as? Number)?.toDouble() ?: 1.0,
+                unit_price = (map["unit_price"] as? Number)?.toDouble() ?: 0.0,
+                discount_percent = (map["discount_percent"] as? Number)?.toDouble() ?: 0.0,
+                tax_id = (map["tax_id"] as? Number)?.toInt() ?: 0,
+                tax_rate = (map["tax_rate"] as? Number)?.toDouble() ?: 0.0,
+                line_total = (map["line_total"] as? Number)?.toDouble() ?: 0.0,
+                position = (map["position"] as? Number)?.toInt() ?: 0,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map quotation line: ${e.message}")
             null
         }
     }

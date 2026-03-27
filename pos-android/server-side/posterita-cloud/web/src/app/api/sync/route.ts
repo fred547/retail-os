@@ -1200,30 +1200,15 @@ export async function POST(req: NextRequest) {
             notes: s.notes ?? null,
             status: s.status ?? "active",
             uuid: s.uuid ?? null,
+            created_at: s.created_at ?? s.createdAt ?? null,
           };
 
-          if (dbShift.uuid) {
-            // Upsert by UUID — handles both clock_in (insert) and clock_out (update)
-            const { data: existing } = await getDb()
-              .from("shift")
-              .select("id")
-              .eq("uuid", dbShift.uuid)
-              .eq("account_id", body.account_id)
-              .maybeSingle();
-
-            if (existing) {
-              const { error } = await getDb()
-                .from("shift")
-                .update(dbShift)
-                .eq("id", existing.id)
-                .eq("account_id", body.account_id);
-              if (error) errors.push(`Shift ${dbShift.uuid}: ${error.message}`);
-              else shiftsSynced++;
-            } else {
-              const { error } = await getDb().from("shift").insert(dbShift);
-              if (error) errors.push(`Shift ${dbShift.uuid}: ${error.message}`);
-              else shiftsSynced++;
-            }
+          // Reuse insertOrUpdate — handles race conditions and duplicate pushes via UUID
+          const shiftUuid = dbShift.uuid;
+          if (shiftUuid) {
+            const { error } = await insertOrUpdate("shift", dbShift, shiftUuid);
+            if (error) errors.push(`Shift ${shiftUuid}: ${error.message}`);
+            else shiftsSynced++;
           } else {
             const { error } = await getDb().from("shift").insert(dbShift);
             if (error) errors.push(`Shift: ${error.message}`);
@@ -1328,6 +1313,8 @@ export async function POST(req: NextRequest) {
       { data: pullTagGroups },
       { data: pullTags },
       { data: pullProductTags },
+      { data: pullQuotations },
+      { data: pullQuotationLines },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1369,6 +1356,13 @@ export async function POST(req: NextRequest) {
       db.from("tag_group").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
       db.from("tag").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
       db.from("product_tag").select("*").eq("account_id", body.account_id),
+      // Quotations: pull active quotes for this store (not deleted, not expired)
+      body.store_id > 0
+        ? db.from("quotation").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
+        : db.from("quotation").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("quotation_line").select("*").in("quotation_id",
+        (await db.from("quotation").select("quotation_id").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync)).data?.map((q: any) => q.quotation_id) ?? []
+      ),
     ]);
 
     // Sibling brands (depends on owner_id from above)
@@ -1468,6 +1462,8 @@ export async function POST(req: NextRequest) {
       tag_groups: pullTagGroups ?? [],
       tags: pullTags ?? [],
       product_tags: pullProductTags ?? [],
+      quotations: pullQuotations ?? [],
+      quotation_lines: pullQuotationLines ?? [],
       // Pagination — tells client if there are more pages to fetch
       has_more_products: hasMoreProducts,
       has_more_customers: (customersTotalCount ?? 0) > pullOffset + pullPageSize,

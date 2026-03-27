@@ -36,9 +36,11 @@ import com.posterita.pos.android.data.local.entity.*
         Delivery::class,
         TagGroup::class,
         Tag::class,
-        ProductTag::class
+        ProductTag::class,
+        Quotation::class,
+        QuotationLine::class
     ],
-    version = 36,
+    version = 37,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -84,6 +86,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tagGroupDao(): TagGroupDao
     abstract fun tagDao(): TagDao
     abstract fun productTagDao(): ProductTagDao
+    abstract fun quotationDao(): QuotationDao
+    abstract fun quotationLineDao(): QuotationLineDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -132,7 +136,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_32_33,
                         MIGRATION_33_34,
                         MIGRATION_34_35,
-                        MIGRATION_35_36
+                        MIGRATION_35_36,
+                        MIGRATION_36_37
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -667,6 +672,13 @@ abstract class AppDatabase : RoomDatabase() {
                 // Shift offline sync: UUID for de-duplication + sync tracking
                 db.execSQL("ALTER TABLE shift ADD COLUMN uuid TEXT")
                 db.execSQL("ALTER TABLE shift ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_36_37 = object : Migration(36, 37) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `quotation` (`quotation_id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `store_id` INTEGER NOT NULL DEFAULT 0, `terminal_id` INTEGER NOT NULL DEFAULT 0, `customer_id` INTEGER, `customer_name` TEXT, `customer_email` TEXT, `customer_phone` TEXT, `customer_address` TEXT, `document_no` TEXT, `status` TEXT NOT NULL DEFAULT 'draft', `uuid` TEXT, `subtotal` REAL NOT NULL DEFAULT 0, `tax_total` REAL NOT NULL DEFAULT 0, `grand_total` REAL NOT NULL DEFAULT 0, `currency` TEXT, `notes` TEXT, `terms` TEXT, `valid_until` TEXT, `template_id` TEXT NOT NULL DEFAULT 'classic', `converted_order_id` INTEGER, `created_by` INTEGER NOT NULL DEFAULT 0, `sent_at` TEXT, `accepted_at` TEXT, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `quotation_line` (`line_id` INTEGER NOT NULL PRIMARY KEY, `quotation_id` INTEGER NOT NULL DEFAULT 0, `product_id` INTEGER, `product_name` TEXT NOT NULL, `description` TEXT, `quantity` REAL NOT NULL DEFAULT 1, `unit_price` REAL NOT NULL DEFAULT 0, `discount_percent` REAL NOT NULL DEFAULT 0, `tax_id` INTEGER NOT NULL DEFAULT 0, `tax_rate` REAL NOT NULL DEFAULT 0, `line_total` REAL NOT NULL DEFAULT 0, `position` INTEGER NOT NULL DEFAULT 0)")
             }
         }
 

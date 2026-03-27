@@ -29,11 +29,29 @@ gcloud firebase test android run \
   --timeout 5m --no-record-video
 ```
 
+### Version bump
+9. Read current version from `pos-android/app/build.gradle` (grep for `versionCode` and `versionName`)
+10. Increment `versionCode` by 1 and bump `versionName` patch version (e.g., 4.0.0 → 4.0.1)
+11. Update `build.gradle` with the new values
+
 ### Deploy
-9. Web: `cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --prod --yes`
-10. Android: `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
+12. Web: `cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --prod --yes --archive=tgz`
+13. Android: `cd pos-android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk`
+
+### Publish APK to GitHub Releases
+14. Create a new GitHub Release with the APK attached. The download link auto-updates:
+```bash
+cd pos-android
+VERSION=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*"\(.*\)".*/\1/')
+gh release create "v${VERSION}" \
+  app/build/outputs/apk/debug/app-debug.apk \
+  --title "Posterita Retail OS v${VERSION}" \
+  --notes "Auto-release from deploy workflow" \
+  --latest
+```
+The sidebar "Download POS App" link (`/api/download/android`) always points to the latest release automatically.
 
 ### Verify
-11. Check system health: `curl -s https://web.posterita.com/api/monitor | python3 -m json.tool`
-12. Check Render backend: `curl -s https://posterita-backend.onrender.com/health`
-13. Report deployment URLs, test results, and any errors
+15. Check system health: `curl -s https://web.posterita.com/api/monitor | python3 -m json.tool`
+16. Check Render backend: `curl -s https://posterita-backend.onrender.com/health`
+17. Report deployment URLs, version number, test results, and any errors

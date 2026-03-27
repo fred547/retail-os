@@ -3,9 +3,9 @@ package com.posterita.pos.android.service
 import android.util.Log
 import com.posterita.pos.android.data.local.dao.ShiftDao
 import com.posterita.pos.android.data.local.entity.Shift
+import com.posterita.pos.android.util.DateUtils
 import com.posterita.pos.android.util.SharedPreferencesManager
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
@@ -27,11 +27,7 @@ class ShiftService @Inject constructor(
         private const val TAG = "ShiftService"
     }
 
-    private fun nowIso(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        return sdf.format(Date())
-    }
+    private fun nowIso(): String = DateUtils.formatIso(System.currentTimeMillis())
 
     /**
      * Get active shift for current user from local Room DB.

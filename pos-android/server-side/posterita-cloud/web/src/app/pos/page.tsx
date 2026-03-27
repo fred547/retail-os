@@ -13,6 +13,7 @@ import { startBarcodeListener, stopBarcodeListener } from "@/lib/pos/barcode-lis
 import { getActiveTill } from "@/lib/pos/till-service";
 import { buildReceipt } from "@/lib/pos/escpos";
 import { printReceipt, getPrinterConfig } from "@/lib/pos/network-print";
+import { saveCartAsQuote } from "@/lib/pos/save-quote";
 import { checkIntegrity } from "@/lib/offline/integrity";
 import { restoreSession, createSession, lockSession, unlockSession, onLock, resetIdleTimer, isLocked, getSession } from "@/lib/pos/session";
 import type { Product, ProductCategory, PosUser } from "@/lib/offline/schema";
@@ -42,6 +43,7 @@ export default function PosPage() {
   const [locked, setLocked] = useState(false);
   const [sessionUser, setSessionUser] = useState<string | undefined>(undefined);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
+  const [quoteComplete, setQuoteComplete] = useState<{ documentNo: string } | null>(null);
 
   const cart = useCart();
   const sync = useSyncStatus();
@@ -322,6 +324,13 @@ export default function PosPage() {
           <Cart
             onPay={() => setShowPayment(true)}
             onHold={() => { /* TODO: hold order */ }}
+            onQuote={async () => {
+              const result = await saveCartAsQuote();
+              if (result) {
+                setQuoteComplete({ documentNo: result.documentNo });
+                setTimeout(() => setQuoteComplete(null), 4000);
+              }
+            }}
           />
         </div>
       </div>
@@ -356,6 +365,14 @@ export default function PosPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
           Order complete
+        </div>
+      )}
+
+      {/* Quote saved toast */}
+      {quoteComplete && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-amber-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 z-50">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+          Quote {quoteComplete.documentNo} saved
         </div>
       )}
     </div>

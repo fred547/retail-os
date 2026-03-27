@@ -28,6 +28,7 @@ import {
   ClipboardList,
   Building2,
   ChevronRight,
+  ChevronDown,
   ChefHat,
   RefreshCw,
   Wallet,
@@ -37,15 +38,18 @@ import {
   Clock,
   MapPin,
   Link2,
+  Download,
+  Smartphone,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface NavItem { name: string; href: string; icon: any }
-interface NavSection { label: string; items: NavItem[] }
+interface NavSection { label: string; items: NavItem[]; defaultOpen?: boolean }
 
 const sections: NavSection[] = [
   {
     label: "",
+    defaultOpen: true,
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard },
     ],
@@ -66,6 +70,7 @@ const sections: NavSection[] = [
     label: "Sales",
     items: [
       { name: "Orders", href: "/orders", icon: ShoppingCart },
+      { name: "Quotations", href: "/quotations", icon: FileText },
       { name: "Tills", href: "/tills", icon: Wallet },
       { name: "Customers", href: "/customers", icon: Users },
       { name: "Loyalty", href: "/loyalty", icon: Heart },
@@ -129,6 +134,44 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [brandContext, setBrandContext] = useState<{ brand: string; store: string; terminal: string } | null>(null);
+
+  // Collapsible sections — open the section that contains the current page
+  const [openSections, setOpenSections] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    // Always open the top (no-label) section
+    initial.add("");
+    return initial;
+  });
+
+  // Auto-open the section containing the current page
+  useEffect(() => {
+    const portalPrefix = portal === "customer" ? "/customer" : "";
+    for (const section of sections) {
+      const match = section.items.some(item => {
+        const href = portalPrefix ? (item.href === "/" ? portalPrefix : `${portalPrefix}${item.href}`) : item.href;
+        return href === "/" || href === "/customer"
+          ? pathname === href
+          : pathname.startsWith(href);
+      });
+      if (match) {
+        setOpenSections(prev => {
+          const next = new Set(prev);
+          next.add(section.label);
+          return next;
+        });
+      }
+    }
+  }, [pathname, portal]);
+
+  const toggleSection = (label: string) => {
+    if (!label) return; // Don't collapse the top section
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
 
   useEffect(() => {
     checkSuperAdmin().finally(() => setAuthChecked(true));
@@ -290,7 +333,7 @@ export default function Sidebar({
         </div>
       )}
 
-      <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto">
         {/* Super Admin: Platform link */}
         {superAdmin && (
           <>
@@ -311,37 +354,48 @@ export default function Sidebar({
           </>
         )}
 
-        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalSections.map((section) => (
-          <div key={section.label || "top"}>
-            {section.label && (
-              <div className="px-4 pt-4 pb-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                  {section.label}
-                </span>
-              </div>
-            )}
-            {section.items.map((item) => {
-              const isActive =
-                item.href === "/customer"
-                  ? pathname === "/customer"
-                  : item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  prefetch={true}
-                  className={`sidebar-link ${isActive ? "active" : ""}`}
+        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalSections.map((section) => {
+          const isOpen = openSections.has(section.label);
+          const hasLabel = !!section.label;
+
+          return (
+            <div key={section.label || "top"}>
+              {hasLabel ? (
+                <button
+                  onClick={() => toggleSection(section.label)}
+                  className="w-full flex items-center justify-between px-4 pt-3 pb-1 group"
                 >
-                  <Icon size={18} />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 group-hover:text-gray-300 transition-colors">
+                    {section.label}
+                  </span>
+                  {isOpen
+                    ? <ChevronDown size={12} className="text-gray-600 group-hover:text-gray-400" />
+                    : <ChevronRight size={12} className="text-gray-600 group-hover:text-gray-400" />}
+                </button>
+              ) : null}
+              {(isOpen || !hasLabel) && section.items.map((item) => {
+                const isActive =
+                  item.href === "/customer"
+                    ? pathname === "/customer"
+                    : item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    prefetch={true}
+                    className={`sidebar-link ${isActive ? "active" : ""}`}
+                  >
+                    <Icon size={18} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
 
         {authChecked && superAdmin && !impersonating && portal !== "manager" && (
           <div className="px-4 py-6 text-center">
@@ -358,19 +412,32 @@ export default function Sidebar({
         )}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
-        {superAdmin && (
-          <div className="text-xs text-gray-500 px-4 pb-2">
-            {superAdmin.email}
-          </div>
-        )}
-        <button
-          onClick={handleSignOut}
-          className="sidebar-link w-full text-red-300 hover:text-red-200 hover:bg-red-500/10"
+      {/* Download + Sign Out */}
+      <div className="border-t border-white/10">
+        {/* Download Android App */}
+        <a
+          href="/api/download/android"
+          className="sidebar-link mx-2 mt-2 text-green-400 hover:text-green-300 hover:bg-green-500/10"
         >
-          <LogOut size={20} />
-          Sign Out
-        </button>
+          <Smartphone size={18} />
+          Download POS App
+          <Download size={14} className="ml-auto" />
+        </a>
+
+        <div className="p-4 pt-2">
+          {superAdmin && (
+            <div className="text-xs text-gray-500 px-4 pb-2">
+              {superAdmin.email}
+            </div>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="sidebar-link w-full text-red-300 hover:text-red-200 hover:bg-red-500/10"
+          >
+            <LogOut size={20} />
+            Sign Out
+          </button>
+        </div>
       </div>
     </>
   );

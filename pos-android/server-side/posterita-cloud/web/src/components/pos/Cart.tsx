@@ -1,15 +1,17 @@
 "use client";
 
-import { Minus, Plus, Trash2, User } from "lucide-react";
+import { Minus, Plus, Trash2, User, FileText } from "lucide-react";
 import { useCart } from "@/lib/pos/use-cart";
 import { updateItemQty, removeItem, clearCart } from "@/lib/pos/cart-store";
 
 export default function Cart({
   onPay,
   onHold,
+  onQuote,
 }: {
   onPay: () => void;
   onHold: () => void;
+  onQuote?: () => void;
 }) {
   const cart = useCart();
 
@@ -120,6 +122,14 @@ export default function Cart({
             >
               Hold
             </button>
+            {onQuote && (
+              <button
+                onClick={onQuote}
+                className="flex-1 py-3 bg-amber-700 text-amber-100 rounded-xl text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
+              >
+                <FileText size={14} /> Quote
+              </button>
+            )}
             <button
               onClick={onPay}
               className="flex-[2] py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition"
