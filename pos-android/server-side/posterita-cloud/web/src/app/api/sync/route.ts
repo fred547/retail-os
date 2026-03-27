@@ -1314,7 +1314,6 @@ export async function POST(req: NextRequest) {
       { data: pullTags },
       { data: pullProductTags },
       { data: pullQuotations },
-      { data: pullQuotationLines },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1356,14 +1355,21 @@ export async function POST(req: NextRequest) {
       db.from("tag_group").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
       db.from("tag").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
       db.from("product_tag").select("*").eq("account_id", body.account_id),
-      // Quotations: pull active quotes for this store (not deleted, not expired)
+      // Quotations: pull active quotes for this store
       body.store_id > 0
         ? db.from("quotation").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
         : db.from("quotation").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
-      db.from("quotation_line").select("*").in("quotation_id",
-        (await db.from("quotation").select("quotation_id").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync)).data?.map((q: any) => q.quotation_id) ?? []
-      ),
     ]);
+
+    // Quotation lines: depends on quotation IDs from above (can't be in Promise.all)
+    let pullQuotationLines: any[] = [];
+    try {
+      const qIds = (pullQuotations ?? []).map((q: any) => q.quotation_id);
+      if (qIds.length > 0) {
+        const { data } = await db.from("quotation_line").select("*").in("quotation_id", qIds);
+        pullQuotationLines = data ?? [];
+      }
+    } catch (_) { /* quotation table may not exist yet */ }
 
     // Sibling brands (depends on owner_id from above)
     let siblingBrands: any[] = [];
