@@ -4,6 +4,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "SYNC",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/sync/replay
  * Replays a failed sync inbox entry by re-submitting its payload to /api/sync.
@@ -72,6 +81,7 @@ export async function POST(req: NextRequest) {
       errors: syncBody.errors || [],
     });
   } catch (e: any) {
+    await logToErrorDb("system", `Sync replay failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

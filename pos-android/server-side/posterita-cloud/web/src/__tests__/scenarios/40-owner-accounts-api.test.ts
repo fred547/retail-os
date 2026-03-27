@@ -18,7 +18,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Owner Accounts API (/api/owner/accoun
     ownerId = owner!.id;
 
     await db.from('account').insert({
-      account_id: ACCOUNT_ID, businessname: 'Owner Test Brand', type: 'live',
+      account_id: ACCOUNT_ID, businessname: 'Owner Test Brand', type: 'testing',
       status: 'active', currency: 'MUR', owner_id: ownerId,
     });
   }, 60000);
@@ -37,7 +37,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Owner Accounts API (/api/owner/accoun
         email: OWNER_EMAIL,
         phone: OWNER_PHONE,
         businessname: 'Renamed by Owner',
-        type: 'live',
+        type: 'testing',
         status: 'active',
       }),
     });
@@ -53,7 +53,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Owner Accounts API (/api/owner/accoun
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: OWNER_EMAIL,
-        type: 'live',
+        type: 'testing',
         status: 'active',
       }),
     });
@@ -67,7 +67,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Owner Accounts API (/api/owner/accoun
       body: JSON.stringify({
         email: 'wrong@email.com',
         businessname: 'Should Fail',
-        type: 'live',
+        type: 'testing',
         status: 'active',
       }),
     });

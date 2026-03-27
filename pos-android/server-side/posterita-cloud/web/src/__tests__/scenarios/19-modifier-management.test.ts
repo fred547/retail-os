@@ -9,7 +9,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Modifier Management', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({
-      account_id: ACCOUNT_ID, businessname: 'Modifier Test', type: 'live', status: 'active', currency: 'MUR',
+      account_id: ACCOUNT_ID, businessname: 'Modifier Test', type: 'testing', status: 'active', currency: 'MUR',
     });
     const { data: cat } = await db.from('productcategory').insert({
       account_id: ACCOUNT_ID, name: 'Food', isactive: 'Y', position: 1,

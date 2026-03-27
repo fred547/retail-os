@@ -16,6 +16,7 @@ import android.widget.PopupMenu
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -152,6 +153,7 @@ class ProductActivity : BaseDrawerActivity() {
 
         setupProductGrid()
         setupCategoryChips()
+        setupCategoryBackPress()
         setupBottomButtons()
         setupCartButton()
         setupProductDrawerNavigation()
@@ -336,7 +338,22 @@ class ProductActivity : BaseDrawerActivity() {
                             productAdapter.setProductList(it)
                         }
                     } else {
-                        productViewModel.getProductsByCategoryId(category.productcategory_id)
+                        // Show products in this category + all descendants
+                        val adapter = categoryAdapter ?: return
+                        val descendantIds = adapter.getDescendantIds(category.productcategory_id)
+                        val allIds = (listOf(category.productcategory_id) + descendantIds).toSet()
+                        productViewModel.allProducts.value?.let { products ->
+                            productAdapter.setProductList(
+                                products.filter { it.productcategory_id in allIds }
+                            )
+                        }
+                    }
+                }
+
+                override fun onCategoryDrillDown(category: ProductCategory) {
+                    // Recalculate overflow after drill-down changes visible items
+                    binding.recyclerViewCategories.post {
+                        measureAndSetCategoryOverflow()
                     }
                 }
             }
@@ -362,10 +379,35 @@ class ProductActivity : BaseDrawerActivity() {
         }
     }
 
+    /** Hardware back button: drill up category before closing activity */
+    private fun setupCategoryBackPress() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val adapter = categoryAdapter
+                if (adapter != null && adapter.isInSubLevel()) {
+                    // Drill up one level
+                    adapter.drillUp()
+                    // Show all products at current level
+                    productViewModel.allProducts.value?.let { allProducts ->
+                        if (!adapter.isInSubLevel()) {
+                            // Back at root — show all
+                            productAdapter.setProductList(allProducts)
+                        }
+                    }
+                    binding.recyclerViewCategories.post { measureAndSetCategoryOverflow() }
+                } else {
+                    // At root level — let default back behavior handle it
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+    }
+
     private fun measureAndSetCategoryOverflow(rows: Int = 2, columns: Int = 3) {
         val adapter = categoryAdapter ?: return
         val maxSlots = rows * columns
-        val totalCategories = categoryList.size + 1 // +1 for "All"
+        val totalCategories = adapter.itemCount // Use adapter's current visible count (respects drill-down)
         if (totalCategories > maxSlots) {
             adapter.setMaxVisible(maxSlots)
         }

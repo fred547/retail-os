@@ -35,6 +35,8 @@ import {
   Heart,
   Truck,
   Clock,
+  MapPin,
+  Link2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -53,6 +55,7 @@ const sections: NavSection[] = [
     items: [
       { name: "Products", href: "/products", icon: Package },
       { name: "Categories", href: "/categories", icon: FolderTree },
+      { name: "Tags", href: "/tags", icon: Tag },
       { name: "Price Review", href: "/price-review", icon: DollarSign },
       { name: "AI Import", href: "/ai-import", icon: Sparkles },
       { name: "Product Intake", href: "/intake", icon: Inbox },
@@ -87,6 +90,7 @@ const sections: NavSection[] = [
       { name: "Serial Items", href: "/serial-items", icon: Tag },
       { name: "Suppliers", href: "/suppliers", icon: Truck },
       { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
+      { name: "Store Layout", href: "/store-layout", icon: MapPin },
     ],
   },
   {
@@ -96,6 +100,7 @@ const sections: NavSection[] = [
       { name: "Terminals", href: "/terminals", icon: Monitor },
       { name: "Users", href: "/users", icon: UserCog },
       { name: "Brands", href: "/brands", icon: Building2 },
+      { name: "Integrations", href: "/integrations", icon: Link2 },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
   },

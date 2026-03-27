@@ -24,6 +24,16 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/catalogue",
   "/sync-inbox",
   "/serial-items",
+  "/deliveries",
+  "/loyalty",
+  "/shifts",
+  "/suppliers",
+  "/purchase-orders",
+  "/promotions",
+  "/menu-schedules",
+  "/tags",
+  "/store-layout",
+  "/integrations",
 ]);
 
 /** Also redirect sub-paths like /intake/new, /intake/123, /inventory/new, /inventory/123 */
@@ -141,7 +151,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/customer/login") &&
     !request.nextUrl.pathname.startsWith("/manager/login") &&
     !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api")
+    !request.nextUrl.pathname.startsWith("/api") &&
+    request.nextUrl.pathname !== "/docs"
   ) {
     const url = request.nextUrl.clone();
     url.pathname = request.nextUrl.pathname.startsWith("/manager")

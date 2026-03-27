@@ -6,7 +6,7 @@ const ACCOUNT_ID = testId('ai_save');
 describe.skipIf(SKIP_SCENARIOS)('Scenario: AI Import Save (/api/ai-import/save)', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'AI Import Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'AI Import Test', type: 'testing', status: 'active', currency: 'MUR' });
   }, 60000);
 
   afterAll(async () => {

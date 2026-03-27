@@ -20,8 +20,8 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Account & Owner CRUD', () => {
 
     // Create accounts under this owner
     await db.from('account').insert([
-      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'live', status: 'active', currency: 'MUR', owner_id: ownerId },
-      { account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'live', status: 'archived', currency: 'USD', owner_id: ownerId },
+      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'testing', status: 'active', currency: 'MUR', owner_id: ownerId },
+      { account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'testing', status: 'archived', currency: 'USD', owner_id: ownerId },
       { account_id: ACCOUNT_DELETE, businessname: 'Delete Me', type: 'demo', status: 'testing', currency: 'EUR', owner_id: ownerId },
     ]);
 

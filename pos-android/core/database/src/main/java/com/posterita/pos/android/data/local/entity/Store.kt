@@ -22,7 +22,10 @@ data class Store(
     val createdby: Int = 0,
     val name: String? = null,
     val state: String? = null,
-    val updated: String? = null
+    val updated: String? = null,
+    /** "retail" or "warehouse" — determines available features */
+    val store_type: String = "retail"
 ) : Serializable {
+    val isWarehouse: Boolean get() = store_type == "warehouse"
     override fun toString(): String = name ?: ""
 }

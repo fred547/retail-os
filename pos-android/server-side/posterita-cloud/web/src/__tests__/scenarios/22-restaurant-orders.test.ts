@@ -12,7 +12,7 @@ let tableId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Restaurant Orders & Tables', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Restaurant Orders', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Restaurant Orders', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Bistro', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'Restaurant POS', isactive: 'Y', terminal_type: 'pos_restaurant' });
 

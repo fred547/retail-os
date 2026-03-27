@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BlinkDynamicQRClient } from '@/lib/blink';
+import { getDb } from "@/lib/supabase/admin";
+
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "BLINK",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
 
 const mode = (process.env.BLINK_MODE as 'UAT' | 'PROD') || 'UAT';
 
@@ -79,8 +89,9 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Blink Dynamic QR API error:', error);
-
     const message = error instanceof Error ? error.message : 'Internal server error';
+    await logToErrorDb("system", `Blink Dynamic QR error: ${message}`, error instanceof Error ? error.stack : undefined);
+
     const isNetworkError = message.includes('fetch failed') || message.includes('ECONNREFUSED');
 
     return NextResponse.json(

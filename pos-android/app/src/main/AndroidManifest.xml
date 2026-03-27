@@ -280,6 +280,9 @@
             android:name=".ui.activity.StockTransferActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.ShelfBrowserActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.MultiStoreStockActivity"
             android:exported="false" />
         <activity
@@ -290,6 +293,9 @@
             android:exported="false" />
         <activity
             android:name=".ui.activity.CrmHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.StaffHomeActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activity.LogisticsHomeActivity"

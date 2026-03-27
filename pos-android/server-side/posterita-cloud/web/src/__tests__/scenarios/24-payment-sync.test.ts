@@ -10,7 +10,7 @@ const PAYMENT_BASE = STORE_ID * 100;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Payment Sync & Order Totals', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Payment Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Payment Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Payment Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
   }, 60000);

@@ -20,9 +20,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
 
+    const update: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.name !== undefined) update.name = body.name;
+    if (body.description !== undefined) update.description = body.description;
+    if (body.store_id !== undefined) update.store_id = body.store_id;
+    if (body.category_ids !== undefined) update.category_ids = body.category_ids;
+    if (body.start_time !== undefined) update.start_time = body.start_time;
+    if (body.end_time !== undefined) update.end_time = body.end_time;
+    if (body.days_of_week !== undefined) update.days_of_week = body.days_of_week;
+    if (body.priority !== undefined) update.priority = body.priority;
+    if (body.is_active !== undefined) update.is_active = body.is_active;
+
     const { data, error } = await getDb()
       .from("menu_schedule")
-      .update({ ...body, updated_at: new Date().toISOString() })
+      .update(update)
       .eq("id", parseInt(id))
       .eq("account_id", accountId)
       .select()
@@ -48,7 +59,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const { error } = await getDb()
       .from("menu_schedule")
-      .delete()
+      .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq("id", parseInt(id))
       .eq("account_id", accountId);
 

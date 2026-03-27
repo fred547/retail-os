@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/supabase/admin";
 import { getSessionAccountId } from "@/lib/account-context";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AI_IMPORT",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/ai-import/save
  * Saves AI-discovered products to Supabase for an existing account.
@@ -113,6 +122,7 @@ export async function POST(req: NextRequest) {
       products_created: totalProducts,
     });
   } catch (e: any) {
+    await logToErrorDb("system", `AI import save failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

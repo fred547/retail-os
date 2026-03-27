@@ -19,9 +19,9 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Owner Accounts Lookup', () => {
     ownerId = owner!.id;
 
     await db.from('account').insert([
-      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'live', status: 'active', currency: 'MUR', owner_id: ownerId },
+      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'testing', status: 'active', currency: 'MUR', owner_id: ownerId },
       { account_id: ACCOUNT_DEMO, businessname: 'Demo Brand', type: 'demo', status: 'active', currency: 'MUR', owner_id: ownerId },
-      { account_id: ACCOUNT_ARCHIVED, businessname: 'Old Brand', type: 'live', status: 'archived', currency: 'MUR', owner_id: ownerId },
+      { account_id: ACCOUNT_ARCHIVED, businessname: 'Old Brand', type: 'testing', status: 'archived', currency: 'MUR', owner_id: ownerId },
     ]);
   }, 30000);
 

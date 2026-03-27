@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
+import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "CHANGELOG",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
 
 const GITHUB_HEADERS = {
   Accept: "application/vnd.github+json",
@@ -68,6 +78,7 @@ export async function GET() {
       },
     });
   } catch (e: any) {
+    await logToErrorDb("system", `Changelog fetch failed: ${e.message}`, e.stack);
     return NextResponse.json({ commits: [], error: e.message });
   }
 }

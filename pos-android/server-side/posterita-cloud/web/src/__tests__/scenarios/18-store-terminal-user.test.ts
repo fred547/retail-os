@@ -9,7 +9,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Store → Terminal → User Hierarchy
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert({
-      account_id: ACCOUNT_ID, businessname: 'Hierarchy Test', type: 'live', status: 'active', currency: 'USD',
+      account_id: ACCOUNT_ID, businessname: 'Hierarchy Test', type: 'testing', status: 'active', currency: 'USD',
     });
   }, 30000);
 

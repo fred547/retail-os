@@ -37,6 +37,15 @@
             android:textColor="@color/posterita_ink"
             android:layout_marginStart="8dp" />
 
+        <ImageButton
+            android:id="@+id/buttonHelp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_help_outline"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Help"
+            android:layout_marginEnd="4dp" />
+
         <View android:id="@+id/connectivity_dot" android:layout_width="8dp" android:layout_height="8dp" android:layout_marginEnd="8dp" android:background="@drawable/bg_internet_dot" />
     </LinearLayout>
 
@@ -203,53 +212,84 @@
             app:cornerRadius="10dp" />
     </LinearLayout>
 
-    <!-- Workflow buttons row 2 -->
+    <!-- Workflow buttons: 2 rows x 3 columns -->
     <LinearLayout
         android:id="@+id/workflowButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="6dp"
         app:layout_constraintTop_toBottomOf="@id/actionButtons">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonPicking"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Picking"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            app:cornerRadius="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonPutAway"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:text="Put Away"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            app:cornerRadius="10dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPicking"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Picking"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonStockView"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:text="Stock View"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            app:cornerRadius="10dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPutAway"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="Put Away"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonStockView"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Stock View"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonShelfBrowser"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Shelves"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="2"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Section header -->

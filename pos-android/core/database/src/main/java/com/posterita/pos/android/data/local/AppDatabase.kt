@@ -33,9 +33,12 @@ import com.posterita.pos.android.data.local.entity.*
         Promotion::class,
         MenuSchedule::class,
         Shift::class,
-        Delivery::class
+        Delivery::class,
+        TagGroup::class,
+        Tag::class,
+        ProductTag::class
     ],
-    version = 32,
+    version = 35,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -78,6 +81,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun menuScheduleDao(): MenuScheduleDao
     abstract fun shiftDao(): ShiftDao
     abstract fun deliveryDao(): DeliveryDao
+    abstract fun tagGroupDao(): TagGroupDao
+    abstract fun tagDao(): TagDao
+    abstract fun productTagDao(): ProductTagDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -122,7 +128,10 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_28_29,
                         MIGRATION_29_30,
                         MIGRATION_30_31,
-                        MIGRATION_31_32
+                        MIGRATION_31_32,
+                        MIGRATION_32_33,
+                        MIGRATION_33_34,
+                        MIGRATION_34_35
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -169,7 +178,11 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_27_28,
                     MIGRATION_28_29,
                     MIGRATION_29_30,
-                    MIGRATION_30_31
+                    MIGRATION_30_31,
+                    MIGRATION_31_32,
+                    MIGRATION_32_33,
+                    MIGRATION_33_34,
+                    MIGRATION_34_35
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -629,6 +642,30 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE product ADD COLUMN shelf_location TEXT")
                 db.execSQL("ALTER TABLE product ADD COLUMN batch_number TEXT")
                 db.execSQL("ALTER TABLE product ADD COLUMN expiry_date TEXT")
+            }
+        }
+
+        private val MIGRATION_32_33 = object : Migration(32, 33) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Nested categories: parent reference + level
+                db.execSQL("ALTER TABLE productcategory ADD COLUMN parent_category_id INTEGER")
+                db.execSQL("ALTER TABLE productcategory ADD COLUMN level INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_34_35 = object : Migration(34, 35) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Store type: retail or warehouse
+                db.execSQL("ALTER TABLE store ADD COLUMN store_type TEXT NOT NULL DEFAULT 'retail'")
+            }
+        }
+
+        private val MIGRATION_33_34 = object : Migration(33, 34) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Tags: grouped product/customer/order classification for reporting
+                db.execSQL("CREATE TABLE IF NOT EXISTS `tag_group` (`tag_group_id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `color` TEXT NOT NULL DEFAULT '#6B7280', `is_active` INTEGER NOT NULL DEFAULT 1, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `tag` (`tag_id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `tag_group_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `color` TEXT, `position` INTEGER NOT NULL DEFAULT 0, `is_active` INTEGER NOT NULL DEFAULT 1, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `product_tag` (`product_id` INTEGER NOT NULL, `tag_id` INTEGER NOT NULL, `account_id` TEXT NOT NULL, PRIMARY KEY(`product_id`, `tag_id`))")
             }
         }
     }

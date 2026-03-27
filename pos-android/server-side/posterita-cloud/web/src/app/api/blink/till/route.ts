@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BlinkTillClient } from '@/lib/blink';
+import { getDb } from "@/lib/supabase/admin";
+
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "BLINK",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
 
 const mode = (process.env.BLINK_MODE as 'UAT' | 'PROD') || 'UAT';
 
@@ -75,6 +85,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     console.error('Blink Till API error:', message);
+    await logToErrorDb("system", `Blink Till API error: ${message}`, error instanceof Error ? error.stack : undefined);
 
     const isNetworkError = message.includes('fetch failed') || message.includes('ECONNREFUSED');
     const isAuthError = message.includes('Authentication failed') || message.includes('non-JSON response');

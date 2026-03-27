@@ -26,7 +26,10 @@ export async function GET(req: NextRequest) {
       .eq("account_id", accountId)
       .order("priority", { ascending: false });
 
-    if (storeId) query = query.or(`store_id.eq.0,store_id.eq.${storeId}`);
+    if (storeId) {
+      const parsedStoreId = parseInt(storeId);
+      if (!isNaN(parsedStoreId)) query = query.or(`store_id.eq.0,store_id.eq.${parsedStoreId}`);
+    }
 
     const { data, error } = await query;
     if (error) {

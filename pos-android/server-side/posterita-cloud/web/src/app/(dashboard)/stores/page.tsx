@@ -23,6 +23,7 @@ interface StoreInfo {
   country: string | null;
   currency: string | null;
   isactive: string;
+  store_type: string;
 }
 
 interface StoreStats {
@@ -42,7 +43,7 @@ export default function StoresPage() {
   const fetchStores = async () => {
     setLoading(true);
     const { data: storeData } = await dataQuery<StoreInfo>("store", {
-      select: "store_id, name, address, city, country, currency, isactive",
+      select: "store_id, name, address, city, country, currency, isactive, store_type",
       order: { column: "name" },
     });
 
@@ -86,6 +87,7 @@ export default function StoresPage() {
       country: store.country,
       currency: store.currency,
       isactive: store.isactive,
+      store_type: store.store_type,
     });
   };
 
@@ -96,7 +98,7 @@ export default function StoresPage() {
 
   const openCreate = () => {
     setCreatingStore(true);
-    setForm({ isactive: "Y" });
+    setForm({ isactive: "Y", store_type: "retail" });
   };
 
   const closeCreate = () => {
@@ -114,6 +116,7 @@ export default function StoresPage() {
       country: form.country || null,
       currency: form.currency || null,
       isactive: "Y",
+      store_type: form.store_type || "retail",
     });
     setSaving(false);
     closeCreate();
@@ -149,6 +152,7 @@ export default function StoresPage() {
         country: form.country || null,
         currency: form.currency || null,
         isactive: form.isactive,
+        store_type: form.store_type || "retail",
       }
     );
     setSaving(false);
@@ -219,15 +223,22 @@ export default function StoresPage() {
                       )}
                     </div>
                   </div>
-                  <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                      store.isactive === "Y"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {store.isactive === "Y" ? "Active" : "Inactive"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      store.store_type === "warehouse" ? "bg-teal-100 text-teal-700" : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {store.store_type === "warehouse" ? "Warehouse" : "Retail"}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                        store.isactive === "Y"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {store.isactive === "Y" ? "Active" : "Inactive"}
+                    </span>
+                  </div>
                 </div>
 
                 {store.address && (
@@ -348,6 +359,19 @@ export default function StoresPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Store Type
+                </label>
+                <select
+                  value={form.store_type ?? "retail"}
+                  onChange={(e) => updateField("store_type", e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                >
+                  <option value="retail">Retail</option>
+                  <option value="warehouse">Warehouse</option>
+                </select>
+              </div>
             </div>
 
             {/* Footer */}
@@ -470,6 +494,19 @@ export default function StoresPage() {
                   >
                     <option value="Y">Active</option>
                     <option value="N">Inactive</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Store Type
+                  </label>
+                  <select
+                    value={form.store_type ?? "retail"}
+                    onChange={(e) => updateField("store_type", e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none"
+                  >
+                    <option value="retail">Retail</option>
+                    <option value="warehouse">Warehouse</option>
                   </select>
                 </div>
               </div>

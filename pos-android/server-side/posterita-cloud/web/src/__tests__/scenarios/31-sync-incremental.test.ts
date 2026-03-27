@@ -9,7 +9,7 @@ let firstSyncTime: string;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Incremental Sync & Request Logging', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'IncSync Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'IncSync Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Sync Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
 

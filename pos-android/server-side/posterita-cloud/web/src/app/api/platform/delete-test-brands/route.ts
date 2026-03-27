@@ -3,6 +3,15 @@ import { isAccountManager } from "@/lib/super-admin";
 import { getDb } from "@/lib/supabase/admin";
 import { cascadeDeleteAccount } from "@/lib/cascade-delete-account";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "PLATFORM",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/platform/delete-test-brands
  * Deletes ALL accounts with status "testing".
@@ -16,6 +25,7 @@ export async function POST() {
     isManager = await isAccountManager();
   } catch (e: any) {
     console.error("[delete-test-brands] isAccountManager check failed:", e.message);
+    await logToErrorDb("system", `delete-test-brands auth check failed: ${e.message}`, e.stack);
   }
   if (!isManager) {
     return NextResponse.json(
@@ -59,6 +69,7 @@ export async function POST() {
         businessname: account.businessname,
       });
     } catch (e: any) {
+      await logToErrorDb(account.account_id, `Delete test brand failed: ${e.message}`, e.stack);
       errors.push({
         account_id: account.account_id,
         error: e.message || "Unknown error",

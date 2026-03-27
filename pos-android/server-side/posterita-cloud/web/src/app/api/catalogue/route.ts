@@ -8,6 +8,15 @@ import QRCode from "qrcode";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "CATALOGUE",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 // ════════════════════════════════════════════════════════
 // Page sizes (in points: 1pt = 1/72 inch)
 // ════════════════════════════════════════════════════════
@@ -480,6 +489,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error("Catalogue generation error:", e);
+    await logToErrorDb("system", `Catalogue generation failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message || "Failed to generate catalogue" }, { status: 500 });
   }
 }

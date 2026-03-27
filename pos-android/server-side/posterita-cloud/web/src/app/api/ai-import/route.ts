@@ -6,6 +6,15 @@ import { getDb } from "@/lib/supabase/admin";
 // Pro plan: allow up to 5 minutes for AI processing with web search
 export const maxDuration = 300;
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AI_IMPORT",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * Server-side AI Store Setup & Product Import (v2 — Streaming)
  *
@@ -273,6 +282,7 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
       console.error("AI Import error:", error);
       const accountId = await getAuthenticatedAccountId();
+      await logToErrorDb(accountId || "system", `AI Import failed: ${error.message}`, error.stack);
       if (accountId) {
         await setAccountStatus(accountId, "failed");
       }
@@ -341,6 +351,7 @@ If you cannot find any relevant websites, return an empty array: []`;
     return Response.json({ success: true, candidates });
   } catch (error: any) {
     console.error("Discover error:", error);
+    await logToErrorDb("system", `AI discover failed: ${error.message}`, error.stack);
     return Response.json(
       { error: error.message || "Failed to discover business websites" },
       { status: 500 }
@@ -378,6 +389,7 @@ async function handleDeviceSetup(body: any) {
     });
   } catch (error: any) {
     console.error("[ai-import] device_setup error:", error.message || error);
+    await logToErrorDb("system", `AI device_setup failed: ${error.message}`, error.stack);
     return Response.json(
       { error: `AI import failed: ${error.message || "Unknown error"}` },
       { status: 500 }

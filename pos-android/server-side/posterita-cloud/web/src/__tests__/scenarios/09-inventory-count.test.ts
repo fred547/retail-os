@@ -11,7 +11,7 @@ let productBId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Inventory Count', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Inventory Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Inventory Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Warehouse', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'Scanner 1', isactive: 'Y' });
 

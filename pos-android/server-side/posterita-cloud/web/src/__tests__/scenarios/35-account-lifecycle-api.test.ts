@@ -6,7 +6,7 @@ const ACCOUNT_ID = testId('lc_api');
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Account Lifecycle API (/api/account/lifecycle)', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Lifecycle API', type: 'live', status: 'draft', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Lifecycle API', type: 'testing', status: 'draft', currency: 'MUR' });
   }, 60000);
 
   afterAll(async () => {

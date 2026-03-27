@@ -10,7 +10,7 @@ let stationId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Printer Configuration', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Printer Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Printer Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Print Store', isactive: 'Y' });
 
     // Create a preparation station for linking

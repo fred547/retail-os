@@ -44,6 +44,7 @@ class WarehouseHomeActivity : BaseActivity() {
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }
+        setupHelpButton("warehouse_home")
 
         // New count buttons
         binding.buttonSpotCheck.setOnClickListener {
@@ -65,6 +66,9 @@ class WarehouseHomeActivity : BaseActivity() {
         }
         binding.buttonStockView.setOnClickListener {
             startActivity(Intent(this, MultiStoreStockActivity::class.java))
+        }
+        binding.buttonShelfBrowser.setOnClickListener {
+            startActivity(Intent(this, ShelfBrowserActivity::class.java))
         }
 
         setupStockAlertClicks()

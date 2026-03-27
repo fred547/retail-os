@@ -41,6 +41,7 @@ class MultiStoreStockActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMultiStoreStockBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("stock_view")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }

@@ -10,7 +10,7 @@ const DEVICE_ID_2 = `test-device2-${Date.now()}`;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Device Registration via Sync', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Device Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Device Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Device Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: TERMINAL_ID, account_id: ACCOUNT_ID, store_id: STORE_ID, name: 'POS 1', isactive: 'Y' });
   }, 60000);
@@ -108,7 +108,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Device Registration via Sync', () => 
   it('sync without device_id does not create device record', async () => {
     const otherAccount = testId('no_dev');
     const db = getSupabase();
-    await db.from('account').insert({ account_id: otherAccount, businessname: 'No Device', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: otherAccount, businessname: 'No Device', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID + 1, account_id: otherAccount, name: 'S', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: STORE_ID + 1, account_id: otherAccount, store_id: STORE_ID + 1, name: 'T', isactive: 'Y' });
 

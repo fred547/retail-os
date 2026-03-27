@@ -99,6 +99,8 @@ data class CartItem(
         put("isKitchenItem", product.iskitchenitem ?: "N")
         stationId?.let { put("station_id", it) }
         stationName?.let { put("station_name", it) }
+        serialItemId?.let { put("serial_item_id", it) }
+        serialNumber?.let { put("serial_number", it) }
         put("item_status", "new")
     }
 }

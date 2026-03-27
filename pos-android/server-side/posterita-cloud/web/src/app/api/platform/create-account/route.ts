@@ -12,6 +12,15 @@ import {
 } from "@/lib/owner-lifecycle";
 import { ensureAccountManager, ensureDefaultAccountManager } from "@/lib/account-manager";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "PLATFORM",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 export async function POST(req: NextRequest) {
   const isAdmin = await isSuperAdmin();
   if (!isAdmin) {
@@ -234,6 +243,7 @@ export async function POST(req: NextRequest) {
         : `Attached a new account to existing owner ${normalizedPhone || normalizedEmail}.`,
     });
   } catch (error: any) {
+    await logToErrorDb("system", `Platform create-account failed: ${error.message}`, error.stack);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
       { status: 500 }

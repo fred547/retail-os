@@ -53,12 +53,21 @@ export default async function ProductsPage({
   }
 
   if (params.search) {
-    query = query.or(
-      `name.ilike.%${params.search}%,upc.ilike.%${params.search}%,description.ilike.%${params.search}%`
-    );
+    // Sanitize: strip PostgREST filter metacharacters to prevent injection into .or() string
+    const safeSearch = params.search.replace(/[,.()"'\\]/g, "");
+    if (safeSearch) {
+      query = query.or(
+        `name.ilike.%${safeSearch}%,upc.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`
+      );
+    }
   }
   if (params.category) {
-    query = query.eq("productcategory_id", params.category);
+    const catIds = params.category.split(",").map(Number).filter(Boolean);
+    if (catIds.length === 1) {
+      query = query.eq("productcategory_id", catIds[0]);
+    } else if (catIds.length > 1) {
+      query = query.in("productcategory_id", catIds);
+    }
   }
 
   // Run all queries in parallel for speed
@@ -67,14 +76,23 @@ export default async function ProductsPage({
     { count: reviewCount },
     { count: draftCount },
     { data: categories },
+    { data: tagGroups },
+    { data: allTags },
+    { data: productTags },
   ] = await Promise.all([
     query,
     supabase.from("product").select("product_id", { count: "exact", head: true })
       .eq("account_id", accountId).eq("isactive", "Y").eq("product_status", "review"),
     supabase.from("product").select("product_id", { count: "exact", head: true })
       .eq("account_id", accountId).eq("isactive", "Y").eq("product_status", "draft"),
-    supabase.from("productcategory").select("productcategory_id, name")
+    supabase.from("productcategory").select("productcategory_id, name, parent_category_id, level")
       .eq("account_id", accountId).eq("isactive", "Y").order("name"),
+    supabase.from("tag_group").select("tag_group_id, name, color")
+      .eq("account_id", accountId).eq("is_deleted", false).order("name"),
+    supabase.from("tag").select("tag_id, tag_group_id, name, color")
+      .eq("account_id", accountId).eq("is_deleted", false).order("position"),
+    supabase.from("product_tag").select("product_id, tag_id")
+      .eq("account_id", accountId),
   ]);
   if (queryError) console.error("[products] query error:", queryError.message);
 
@@ -96,6 +114,16 @@ export default async function ProductsPage({
     if (params.category) p.set("category", params.category);
     return `/customer/products?${p.toString()}`;
   };
+
+  // Build per-product tag ID set
+  function buildProductTagMap(pts: any[]): Record<number, number[]> {
+    const m: Record<number, number[]> = {};
+    for (const pt of pts) {
+      if (!m[pt.product_id]) m[pt.product_id] = [];
+      m[pt.product_id].push(pt.tag_id);
+    }
+    return m;
+  }
 
   // Collect product IDs for bulk approve (review tab only)
   const reviewProductIds = statusTab === "review" ? enrichedProducts.map((p: any) => p.product_id) : [];
@@ -199,7 +227,14 @@ export default async function ProductsPage({
       </div>
 
       {/* Product Table */}
-      <ProductTable products={enrichedProducts} categories={categories ?? []} showStatusColumn={statusTab === "review" || statusTab === "draft"} />
+      <ProductTable
+        products={enrichedProducts}
+        categories={categories ?? []}
+        showStatusColumn={statusTab === "review" || statusTab === "draft"}
+        tagGroups={tagGroups ?? []}
+        allTags={allTags ?? []}
+        productTagMap={buildProductTagMap(productTags ?? [])}
+      />
 
       {/* Pagination */}
       {totalPages > 1 && (

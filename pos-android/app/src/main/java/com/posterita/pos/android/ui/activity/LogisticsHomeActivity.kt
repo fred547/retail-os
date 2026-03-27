@@ -45,6 +45,7 @@ class LogisticsHomeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLogisticsHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("logistics_home")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }
@@ -53,6 +54,8 @@ class LogisticsHomeActivity : BaseActivity() {
         binding.buttonManageDeliveries.setOnClickListener {
             openWebConsole("/deliveries", "Deliveries")
         }
+
+        // Driver mode is accessible via the web console deliveries page
 
         // Delivery list
         deliveryAdapter = DeliveryListAdapter(displayDeliveries)

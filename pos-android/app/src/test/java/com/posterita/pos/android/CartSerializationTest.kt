@@ -411,5 +411,10 @@ class CartSerializationTest {
         override suspend fun clearPriceReviewFlag(productId: Int) {}
         override suspend fun clearAllPriceReviewFlags() {}
         override suspend fun updateStockQuantity(productId: Int, qty: Double) {}
+        override suspend fun getProductsWithLocation(): List<Product> = products.filter { it.shelf_location != null }
+        override suspend fun getProductsByShelf(shelfPrefix: String): List<Product> = products.filter { it.shelf_location?.startsWith(shelfPrefix) == true }
+        override fun getProductsPaged() = throw UnsupportedOperationException()
+        override fun getProductsByCategoryPaged(categoryId: Int) = throw UnsupportedOperationException()
+        override fun searchProductsPaged(query: String) = throw UnsupportedOperationException()
     }
 }

@@ -80,6 +80,16 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Wire a ? help button (if present in layout) to show the contextual help bottom sheet.
+     * Call in onCreate after setContentView. Does nothing if buttonHelp is not in the layout.
+     */
+    protected fun setupHelpButton(screen: String) {
+        findViewById<View>(com.posterita.pos.android.R.id.buttonHelp)?.setOnClickListener {
+            com.posterita.pos.android.util.HelpSheet.show(this, screen)
+        }
+    }
+
     protected fun expandTouchArea(target: View, extraPaddingDp: Int = 16) {
         val parent = target.parent as? View ?: return
         val extra = (extraPaddingDp * resources.displayMetrics.density).toInt()

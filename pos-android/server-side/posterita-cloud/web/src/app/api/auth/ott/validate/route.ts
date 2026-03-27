@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/supabase/admin";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AUTH",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getDb();
 
@@ -35,6 +44,7 @@ export async function POST(req: NextRequest) {
       terminal_id: data.terminal_id,
     });
   } catch (e: any) {
+    await logToErrorDb("system", `OTT validation failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

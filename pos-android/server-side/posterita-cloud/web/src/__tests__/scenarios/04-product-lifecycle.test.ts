@@ -7,7 +7,7 @@ let createdProductId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Product Lifecycle', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Product Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Product Test', type: 'testing', status: 'active', currency: 'MUR' });
   }, 30000);
 
   afterAll(async () => {

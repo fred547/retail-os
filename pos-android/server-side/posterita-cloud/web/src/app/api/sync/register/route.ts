@@ -20,6 +20,15 @@ import { getDb } from "@/lib/supabase/admin";
  * the account_id stays the same forever.
  */
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "SYNC",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 async function linkAccountOwner(
   accountId: string,
   identity: { email?: unknown; phone?: unknown },
@@ -302,6 +311,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("Register error:", error);
+    await logToErrorDb("system", `Sync register failed: ${error.message}`, error.stack);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
       { status: 500 }

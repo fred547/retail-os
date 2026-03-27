@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-/** PATCH /api/deliveries/[id] — update delivery status, assign driver, etc. */
+/** PATCH /api/deliveries/[id] — update status, proof, COD, driver */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const accountId = await getSessionAccountId();
   if (!accountId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -59,10 +59,62 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (body.driver_id) update.assigned_at = new Date().toISOString();
     }
 
-    // Other fields
+    // Basic fields
     if (body.delivery_notes !== undefined) update.delivery_notes = body.delivery_notes;
+    if (body.driver_notes !== undefined) update.driver_notes = body.driver_notes;
     if (body.estimated_time !== undefined) update.estimated_time = body.estimated_time;
     if (body.delivery_fee !== undefined) update.delivery_fee = body.delivery_fee;
+    if (body.special_instructions !== undefined) update.special_instructions = body.special_instructions;
+    if (body.vehicle_type !== undefined) update.vehicle_type = body.vehicle_type;
+    if (body.vehicle_plate !== undefined) update.vehicle_plate = body.vehicle_plate;
+
+    // Proof of delivery — photos (array of Cloudinary URLs)
+    if (body.proof_photos !== undefined) {
+      // Merge with existing photos or replace
+      if (body.append_photos) {
+        const { data: existing } = await getDb()
+          .from("delivery")
+          .select("proof_photos")
+          .eq("id", parseInt(id))
+          .eq("account_id", accountId)
+          .single();
+        const current = (existing?.proof_photos as string[]) || [];
+        update.proof_photos = [...current, ...(body.proof_photos || [])];
+      } else {
+        update.proof_photos = body.proof_photos;
+      }
+    }
+
+    // Proof of delivery — signature (base64 data URL)
+    if (body.proof_signature !== undefined) {
+      update.proof_signature = body.proof_signature;
+      update.proof_verified = true;
+    }
+
+    // Proof of delivery — PIN verification
+    if (body.verify_pin !== undefined) {
+      const { data: delivery } = await getDb()
+        .from("delivery")
+        .select("proof_pin")
+        .eq("id", parseInt(id))
+        .eq("account_id", accountId)
+        .single();
+      if (delivery?.proof_pin && delivery.proof_pin === body.verify_pin) {
+        update.proof_verified = true;
+      } else {
+        return NextResponse.json({ error: "Invalid PIN" }, { status: 400 });
+      }
+    }
+
+    // COD collection
+    if (body.cod_collected !== undefined) {
+      update.cod_collected = body.cod_collected;
+    }
+
+    // Mark proof as verified
+    if (body.proof_verified !== undefined) {
+      update.proof_verified = body.proof_verified;
+    }
 
     const { data, error } = await getDb()
       .from("delivery")

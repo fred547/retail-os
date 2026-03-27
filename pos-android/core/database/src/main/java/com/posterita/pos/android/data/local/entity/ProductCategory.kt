@@ -15,7 +15,9 @@ data class ProductCategory(
     val name: String? = null,
     val position: Int = 0,
     val updated: String? = null,
-    val tax_id: String? = null
+    val tax_id: String? = null,
+    val parent_category_id: Int? = null,
+    val level: Int = 0
 ) {
     override fun toString(): String = name ?: ""
 }

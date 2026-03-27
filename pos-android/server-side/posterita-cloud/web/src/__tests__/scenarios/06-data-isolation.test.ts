@@ -8,8 +8,8 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Multi-Brand Data Isolation', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert([
-      { account_id: BRAND_A, businessname: 'Brand A Coffee', type: 'live', status: 'active', currency: 'MUR' },
-      { account_id: BRAND_B, businessname: 'Brand B Pizza', type: 'live', status: 'active', currency: 'USD' },
+      { account_id: BRAND_A, businessname: 'Brand A Coffee', type: 'testing', status: 'active', currency: 'MUR' },
+      { account_id: BRAND_B, businessname: 'Brand B Pizza', type: 'testing', status: 'active', currency: 'USD' },
     ]);
     await db.from('product').insert([
       { account_id: BRAND_A, name: 'Latte', sellingprice: 100, isactive: 'Y' },

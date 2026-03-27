@@ -4,6 +4,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "DATA",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * Data proxy API — allows client-side pages to query Supabase
  * through the service role key (bypassing RLS).
@@ -159,6 +168,7 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json(results);
   } catch (e: any) {
+    await logToErrorDb("system", `Data proxy failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

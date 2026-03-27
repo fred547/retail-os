@@ -4,6 +4,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "DATA",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 const ALLOWED_TABLES = new Set([
   "productcategory", "customer", "restaurant_table",
   "product", "store", "terminal", "pos_user", "orders",
@@ -52,6 +61,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: error?.message ?? null });
   } catch (e: any) {
+    await logToErrorDb("system", `Data delete failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

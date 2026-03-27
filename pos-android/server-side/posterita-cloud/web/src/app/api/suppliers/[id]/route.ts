@@ -42,9 +42,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
 
+    const update: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.name !== undefined) update.name = body.name;
+    if (body.contact_name !== undefined) update.contact_name = body.contact_name;
+    if (body.phone !== undefined) update.phone = body.phone;
+    if (body.email !== undefined) update.email = body.email;
+    if (body.address !== undefined) update.address = body.address;
+    if (body.city !== undefined) update.city = body.city;
+    if (body.country !== undefined) update.country = body.country;
+    if (body.tax_id !== undefined) update.tax_id = body.tax_id;
+    if (body.payment_terms !== undefined) update.payment_terms = body.payment_terms;
+    if (body.notes !== undefined) update.notes = body.notes;
+    if (body.is_active !== undefined) update.is_active = body.is_active;
+
     const { data, error } = await getDb()
       .from("supplier")
-      .update({ ...body, updated_at: new Date().toISOString() })
+      .update(update)
       .eq("supplier_id", parseInt(id))
       .eq("account_id", accountId)
       .select()

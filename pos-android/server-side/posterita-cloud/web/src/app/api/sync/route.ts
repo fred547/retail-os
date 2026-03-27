@@ -1270,6 +1270,9 @@ export async function POST(req: NextRequest) {
       { data: menuSchedules },
       { data: shifts },
       { data: deliveries },
+      { data: pullTagGroups },
+      { data: pullTags },
+      { data: pullProductTags },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1307,6 +1310,10 @@ export async function POST(req: NextRequest) {
       body.store_id > 0
         ? db.from("delivery").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
         : db.from("delivery").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      // Tags: groups, tags, product_tags (full replace each sync for consistency)
+      db.from("tag_group").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
+      db.from("tag").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
+      db.from("product_tag").select("*").eq("account_id", body.account_id),
     ]);
 
     // Sibling brands (depends on owner_id from above)
@@ -1403,6 +1410,9 @@ export async function POST(req: NextRequest) {
       deliveries: deliveries ?? [],
       sibling_brands: siblingBrands,
       tax_config: taxConfig,
+      tag_groups: pullTagGroups ?? [],
+      tags: pullTags ?? [],
+      product_tags: pullProductTags ?? [],
       // Pagination — tells client if there are more pages to fetch
       has_more_products: hasMoreProducts,
       has_more_customers: (customersTotalCount ?? 0) > pullOffset + pullPageSize,

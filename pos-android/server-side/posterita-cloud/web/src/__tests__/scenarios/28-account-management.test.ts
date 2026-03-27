@@ -9,9 +9,9 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Account Management', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert([
-      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'live', status: 'active', currency: 'MUR' },
+      { account_id: ACCOUNT_LIVE, businessname: 'Live Brand', type: 'testing', status: 'active', currency: 'MUR' },
       { account_id: ACCOUNT_DEMO, businessname: 'Demo Brand', type: 'demo', status: 'active', currency: 'MUR' },
-      { account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'live', status: 'archived', currency: 'EUR' },
+      { account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'testing', status: 'archived', currency: 'EUR' },
     ]);
   }, 30000);
 
@@ -84,6 +84,6 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Account Management', () => {
     expect(data?.length).toBe(0);
 
     // Re-insert for cleanup consistency
-    await db.from('account').insert({ account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'live', status: 'archived', currency: 'EUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ARCHIVE, businessname: 'Archive Brand', type: 'testing', status: 'archived', currency: 'EUR' });
   });
 });

@@ -51,6 +51,7 @@ class PutAwayActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPutAwayBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("put_away")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }

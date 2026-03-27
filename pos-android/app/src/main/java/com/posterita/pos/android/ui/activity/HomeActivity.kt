@@ -448,6 +448,7 @@ class HomeActivity : BaseActivity() {
             AppTile("warehouse", "Warehouse", R.drawable.ic_search, 0xFFF57F17.toInt(), true, WarehouseHomeActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("crm", "CRM", R.drawable.ic_check_circle, 0xFF8B5CF6.toInt(), true, CrmHomeActivity::class.java, TileVisibility.ALL),
             AppTile("logistics", "Logistics", R.drawable.ic_check_circle, 0xFF0891B2.toInt(), true, LogisticsHomeActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
+            AppTile("staff", "Staff", R.drawable.ic_check_circle, 0xFF10B981.toInt(), true, StaffHomeActivity::class.java, TileVisibility.ALL),
             AppTile("admin", "Admin", R.drawable.settings, 0xFF6C6F76.toInt(), true, SettingsActivity::class.java, TileVisibility.ALL),
             AppTile("sync", "Synchronizer", R.drawable.ic_check_circle, 0xFF00838F.toInt(), true, DatabaseSynchonizerActivity::class.java, TileVisibility.ALL),
         )

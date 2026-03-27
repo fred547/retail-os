@@ -9,9 +9,9 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Account Lifecycle', () => {
   beforeAll(async () => {
     const db = getSupabase();
     await db.from('account').insert([
-      { account_id: ACCOUNT_DRAFT, businessname: 'Draft Co', type: 'live', status: 'draft', currency: 'MUR' },
-      { account_id: ACCOUNT_ACTIVE, businessname: 'Active Co', type: 'live', status: 'active', currency: 'USD' },
-      { account_id: ACCOUNT_SUSPENDED, businessname: 'Suspended Co', type: 'live', status: 'suspended', currency: 'EUR' },
+      { account_id: ACCOUNT_DRAFT, businessname: 'Draft Co', type: 'testing', status: 'draft', currency: 'MUR' },
+      { account_id: ACCOUNT_ACTIVE, businessname: 'Active Co', type: 'testing', status: 'active', currency: 'USD' },
+      { account_id: ACCOUNT_SUSPENDED, businessname: 'Suspended Co', type: 'testing', status: 'suspended', currency: 'EUR' },
     ]);
   }, 30000);
 

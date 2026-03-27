@@ -10,7 +10,7 @@ const OTT_BODY = { account_id: ACCOUNT_ID, user_id: 1, store_id: OTT_STORE_ID, t
 describe.skipIf(SKIP_SCENARIOS)('Scenario: OTT Token Security', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'OTT Test', type: 'live', status: 'active', currency: 'MUR', sync_secret: SYNC_SECRET });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'OTT Test', type: 'testing', status: 'active', currency: 'MUR', sync_secret: SYNC_SECRET });
     await db.from('store').insert({ store_id: OTT_STORE_ID, account_id: ACCOUNT_ID, name: 'OTT Store', isactive: 'Y' });
     await db.from('terminal').insert({ terminal_id: OTT_TERMINAL_ID, account_id: ACCOUNT_ID, store_id: OTT_STORE_ID, name: 'POS 1', isactive: 'Y' });
   }, 30000);

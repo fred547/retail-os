@@ -4,6 +4,15 @@ import { RENDER_BACKEND_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "INFRA",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * GET /api/infrastructure — collects billing, usage, and status from all services.
  * Used by the platform Infrastructure tab.
@@ -36,6 +45,7 @@ export async function GET() {
       limits: "8GB DB, 100GB file storage, 250GB bandwidth, unlimited MAU",
     };
   } catch (e: any) {
+    await logToErrorDb("system", `Infrastructure: Supabase check failed: ${e.message}`, e.stack);
     services.supabase = { status: "error", error: e.message };
   }
 
@@ -67,6 +77,7 @@ export async function GET() {
       cost: "$19/month",
     };
   } catch (e: any) {
+    await logToErrorDb("system", `Infrastructure: Render check failed: ${e.message}`, e.stack);
     services.render = { status: "down", error: e.message, cost: "$19/month" };
   }
 

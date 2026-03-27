@@ -53,6 +53,7 @@ class StockTransferActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityStockTransferBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("stock_transfer")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }

@@ -3,6 +3,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const maxDuration = 300;
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "INTAKE",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 const MODEL = "claude-sonnet-4-6";
 
 // ════════════════════════════════════════════════════════
@@ -542,6 +551,7 @@ export async function POST(
       });
     } catch (e: any) {
       console.error("Intake processing error:", e);
+      await logToErrorDb("system", `Intake processing failed for batch ${batchId}: ${e.message}`, e.stack);
       await getDb().from("intake_batch").update({ status: "failed" }).eq("batch_id", batchId);
       writer.sendError(e.message || "Processing failed");
     } finally {

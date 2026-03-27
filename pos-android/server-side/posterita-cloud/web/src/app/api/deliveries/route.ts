@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionAccountId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
+import crypto from "crypto";
 
 async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
   try {
@@ -11,6 +12,20 @@ async function logToErrorDb(accountId: string, message: string, stackTrace?: str
   } catch (_) { /* swallow */ }
 }
 
+// Delivery type templates — pre-fill defaults when creating
+const DELIVERY_TEMPLATES: Record<string, {
+  direction: string; vehicle_type: string; proof_type: string; payment_method: string;
+}> = {
+  food:             { direction: "outbound", vehicle_type: "scooter", proof_type: "photo", payment_method: "cod_cash" },
+  package:          { direction: "outbound", vehicle_type: "car", proof_type: "signature", payment_method: "prepaid" },
+  heavy:            { direction: "outbound", vehicle_type: "truck", proof_type: "signature", payment_method: "prepaid" },
+  transfer:         { direction: "transfer", vehicle_type: "van", proof_type: "barcode_scan", payment_method: "none" },
+  supplier_pickup:  { direction: "inbound", vehicle_type: "van", proof_type: "photo", payment_method: "none" },
+  return_pickup:    { direction: "inbound", vehicle_type: "car", proof_type: "signature", payment_method: "none" },
+  document:         { direction: "outbound", vehicle_type: "scooter", proof_type: "signature", payment_method: "none" },
+  cash_collection:  { direction: "inbound", vehicle_type: "car", proof_type: "photo", payment_method: "cod_cash" },
+};
+
 /** GET /api/deliveries — list deliveries with filters */
 export async function GET(req: NextRequest) {
   const accountId = await getSessionAccountId();
@@ -19,6 +34,8 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
+    const direction = url.searchParams.get("direction");
+    const deliveryType = url.searchParams.get("delivery_type");
     const driverId = url.searchParams.get("driver_id");
     const from = url.searchParams.get("from");
     const to = url.searchParams.get("to");
@@ -35,6 +52,8 @@ export async function GET(req: NextRequest) {
       .range(offset, offset + limit - 1);
 
     if (status) query = query.eq("status", status);
+    if (direction) query = query.eq("direction", direction);
+    if (deliveryType) query = query.eq("delivery_type", deliveryType);
     if (driverId) query = query.eq("driver_id", parseInt(driverId));
     if (from) query = query.gte("created_at", `${from}T00:00:00`);
     if (to) query = query.lte("created_at", `${to}T23:59:59`);
@@ -45,17 +64,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Summary
     const all = data || [];
     const pending = all.filter((d: any) => d.status === "pending").length;
-    const inTransit = all.filter((d: any) => d.status === "in_transit" || d.status === "picked_up").length;
+    const inTransit = all.filter((d: any) => ["in_transit", "picked_up", "assigned"].includes(d.status)).length;
     const delivered = all.filter((d: any) => d.status === "delivered").length;
+    const outbound = all.filter((d: any) => d.direction === "outbound").length;
+    const inbound = all.filter((d: any) => d.direction === "inbound").length;
+    const transfers = all.filter((d: any) => d.direction === "transfer").length;
 
     return NextResponse.json({
       deliveries: all,
       total: count || 0,
       page,
-      summary: { pending, in_transit: inTransit, delivered },
+      summary: { pending, in_transit: inTransit, delivered, outbound, inbound, transfers },
+      templates: DELIVERY_TEMPLATES,
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Deliveries list error: ${e.message}`, e.stack);
@@ -70,35 +92,87 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const {
-      order_id, store_id, customer_id, customer_name, customer_phone,
-      delivery_address, delivery_city, delivery_notes,
-      driver_id, driver_name, estimated_time, delivery_fee,
-    } = body;
+    const deliveryType = body.delivery_type || "package";
+    const template = DELIVERY_TEMPLATES[deliveryType] ?? DELIVERY_TEMPLATES.package;
 
-    if (!delivery_address) {
-      return NextResponse.json({ error: "delivery_address is required" }, { status: 400 });
+    // For store transfers and pickups, destination_address can be derived from store
+    const needsAddress = body.destination_type !== "store";
+    if (needsAddress && !body.delivery_address && !body.destination_address) {
+      return NextResponse.json({ error: "delivery_address is required for non-store destinations" }, { status: 400 });
+    }
+
+    // If destination is a store, load store address
+    let destAddress = body.delivery_address || body.destination_address || "";
+    let destCity = body.delivery_city || "";
+    let destContact = body.customer_name || "";
+    let destPhone = body.customer_phone || "";
+
+    if (body.destination_type === "store" && body.destination_store_id) {
+      const { data: store } = await getDb()
+        .from("store")
+        .select("name, address, city")
+        .eq("store_id", body.destination_store_id)
+        .eq("account_id", accountId)
+        .single();
+      if (store) {
+        destAddress = store.address || `Store: ${store.name}`;
+        destCity = store.city || "";
+        destContact = store.name;
+      }
+    }
+
+    // If origin is a store (for pickups), load origin info
+    let originAddress = body.origin_address || "";
+    if (body.origin_type === "store" && body.origin_store_id) {
+      const { data: store } = await getDb()
+        .from("store")
+        .select("name, address, city")
+        .eq("store_id", body.origin_store_id)
+        .eq("account_id", accountId)
+        .single();
+      if (store) {
+        originAddress = store.address || `Store: ${store.name}`;
+      }
     }
 
     const payload: any = {
       account_id: accountId,
-      order_id: order_id || null,
-      store_id: store_id || 0,
-      customer_id: customer_id || null,
-      customer_name: customer_name || null,
-      customer_phone: customer_phone || null,
-      delivery_address,
-      delivery_city: delivery_city || null,
-      delivery_notes: delivery_notes || null,
-      estimated_time: estimated_time || null,
-      delivery_fee: delivery_fee || 0,
+      delivery_type: deliveryType,
+      direction: body.direction || template.direction,
+      origin_type: body.origin_type || "store",
+      origin_store_id: body.origin_store_id || body.store_id || null,
+      origin_address: originAddress || null,
+      origin_contact: body.origin_contact || null,
+      destination_type: body.destination_type || "customer",
+      destination_store_id: body.destination_store_id || null,
+      delivery_address: destAddress,
+      delivery_city: destCity || null,
+      customer_name: destContact || null,
+      customer_phone: destPhone || null,
+      delivery_notes: body.delivery_notes || null,
+      special_instructions: body.special_instructions || null,
+      vehicle_type: body.vehicle_type || template.vehicle_type,
+      vehicle_plate: body.vehicle_plate || null,
+      proof_type: body.proof_type || template.proof_type,
+      payment_method: body.payment_method || template.payment_method,
+      cod_amount: body.cod_amount || 0,
+      delivery_fee: body.delivery_fee || 0,
+      estimated_time: body.estimated_time || null,
+      scheduled_at: body.scheduled_at || null,
+      items: body.items || null,
+      order_id: body.order_id || null,
+      po_id: body.po_id || null,
+      store_id: body.store_id || 0,
+      customer_id: body.customer_id || null,
       status: "pending",
+      tracking_token: crypto.randomBytes(16).toString("hex"),
+      driver_shift_id: body.driver_shift_id || null,
     };
 
     // If driver assigned at creation
-    if (driver_id) {
-      payload.driver_id = driver_id;
-      payload.driver_name = driver_name || null;
+    if (body.driver_id) {
+      payload.driver_id = body.driver_id;
+      payload.driver_name = body.driver_name || null;
       payload.status = "assigned";
       payload.assigned_at = new Date().toISOString();
     }

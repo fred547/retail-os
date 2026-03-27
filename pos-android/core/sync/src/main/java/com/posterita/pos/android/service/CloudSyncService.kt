@@ -821,6 +821,42 @@ class CloudSyncService @Inject constructor(
                 }
             }
 
+            // Tag groups (full replace per account)
+            response.tagGroups?.let { list ->
+                db.tagGroupDao().deleteByAccount(prefsManager.accountId)
+                if (list.isNotEmpty()) {
+                    val groups = list.mapNotNull { mapToTagGroup(it) }
+                    if (groups.isNotEmpty()) {
+                        db.tagGroupDao().insertAll(groups)
+                        Log.d(TAG, "Pulled ${groups.size} tag groups")
+                    }
+                }
+            }
+
+            // Tags (full replace per account)
+            response.tags?.let { list ->
+                db.tagDao().deleteByAccount(prefsManager.accountId)
+                if (list.isNotEmpty()) {
+                    val tags = list.mapNotNull { mapToTag(it) }
+                    if (tags.isNotEmpty()) {
+                        db.tagDao().insertAll(tags)
+                        Log.d(TAG, "Pulled ${tags.size} tags")
+                    }
+                }
+            }
+
+            // Product tags (full replace per account)
+            response.productTags?.let { list ->
+                db.productTagDao().deleteByAccount(prefsManager.accountId)
+                if (list.isNotEmpty()) {
+                    val productTags = list.mapNotNull { mapToProductTag(it) }
+                    if (productTags.isNotEmpty()) {
+                        db.productTagDao().insertAll(productTags)
+                        Log.d(TAG, "Pulled ${productTags.size} product tags")
+                    }
+                }
+            }
+
         }
     }
 
@@ -1598,6 +1634,58 @@ class CloudSyncService @Inject constructor(
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map delivery: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToTagGroup(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.TagGroup? {
+        return try {
+            com.posterita.pos.android.data.local.entity.TagGroup(
+                tag_group_id = (map["tag_group_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                name = map["name"] as? String ?: "",
+                description = map["description"] as? String,
+                color = map["color"] as? String ?: "#6B7280",
+                is_active = map["is_active"] != false,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map tag group: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToTag(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.Tag? {
+        return try {
+            com.posterita.pos.android.data.local.entity.Tag(
+                tag_id = (map["tag_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                tag_group_id = (map["tag_group_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String ?: "",
+                color = map["color"] as? String,
+                position = (map["position"] as? Number)?.toInt() ?: 0,
+                is_active = map["is_active"] != false,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map tag: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToProductTag(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.ProductTag? {
+        return try {
+            com.posterita.pos.android.data.local.entity.ProductTag(
+                product_id = (map["product_id"] as? Number)?.toInt() ?: return null,
+                tag_id = (map["tag_id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: "",
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map product tag: ${e.message}")
             null
         }
     }

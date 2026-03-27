@@ -71,6 +71,7 @@ class PickingActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPickingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("picking")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }

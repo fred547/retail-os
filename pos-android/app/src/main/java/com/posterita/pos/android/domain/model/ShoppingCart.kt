@@ -354,6 +354,8 @@ class ShoppingCart(val type: CartType = CartType.SALES) {
                 )
                 cartItem.modifiers = itemJson.optString("modifiers").ifEmpty { null }
                 cartItem.note = itemJson.optString("note").ifEmpty { null }
+                if (itemJson.has("serial_item_id")) cartItem.serialItemId = itemJson.optInt("serial_item_id")
+                if (itemJson.has("serial_number")) cartItem.serialNumber = itemJson.optString("serial_number")
                 cartItem.updateTotals()
                 addOrUpdateLine(cartItem)
             }

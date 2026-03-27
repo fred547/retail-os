@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/supabase/admin";
 import { createHmac, timingSafeEqual } from "crypto";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AUTH",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/auth/reset
  *
@@ -165,6 +174,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error("[reset] Error:", e.message);
+    await logToErrorDb("system", `Account reset failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

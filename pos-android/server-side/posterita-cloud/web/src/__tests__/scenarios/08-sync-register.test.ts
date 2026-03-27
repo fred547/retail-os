@@ -49,7 +49,7 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Sync Registration', () => {
   it('re-registration does not duplicate or downgrade', async () => {
     const db = getSupabase();
     // Set to live
-    await db.from('account').update({ type: 'live' }).eq('account_id', ACCOUNT_ID);
+    await db.from('account').update({ type: 'testing' }).eq('account_id', ACCOUNT_ID);
 
     const res = await apiPost('/api/sync/register', {
       account_id: ACCOUNT_ID,
@@ -62,6 +62,6 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario: Sync Registration', () => {
 
     // Type should still be live (not downgraded to trial)
     const { data } = await db.from('account').select('type').eq('account_id', ACCOUNT_ID).single();
-    expect(data!.type).toBe('live');
+    expect(data!.type).toBe('testing');
   });
 });

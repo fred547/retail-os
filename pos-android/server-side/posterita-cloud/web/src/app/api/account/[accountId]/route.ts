@@ -3,6 +3,15 @@ import { isAccountManager } from "@/lib/super-admin";
 import { getDb } from "@/lib/supabase/admin";
 import { cascadeDeleteAccount } from "@/lib/cascade-delete-account";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "ADMIN",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * DELETE /api/account/[accountId]
  * Deletes a brand (account) and all its data. Does NOT delete the owner.
@@ -17,6 +26,7 @@ export async function DELETE(
     isManager = await isAccountManager();
   } catch (e: any) {
     console.error("[delete-account] isAccountManager check failed:", e.message);
+    await logToErrorDb("system", `Delete account auth check failed: ${e.message}`, e.stack);
   }
   if (!isManager) {
     return NextResponse.json({ error: "Account manager access required. Please ensure you are logged in as a super admin." }, { status: 403 });

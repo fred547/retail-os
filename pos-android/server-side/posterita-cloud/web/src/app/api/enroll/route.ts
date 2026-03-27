@@ -3,6 +3,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const maxDuration = 30;
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "ENROLL",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 interface EnrollRequest {
   account_id: string;
   store_id: number;
@@ -161,6 +170,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("Enrollment error:", error);
+    await logToErrorDb("system", `Enrollment failed: ${error.message}`, error.stack);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
       { status: 500 }

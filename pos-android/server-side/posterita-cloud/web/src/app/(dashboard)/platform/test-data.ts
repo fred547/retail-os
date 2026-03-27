@@ -1,10 +1,10 @@
 export const TEST_SUITES = {
   android: {
-    totalTests: 419,
-    totalFiles: 21,
+    totalTests: 583,
+    totalFiles: 29,
     allPassed: true,
-    lastVerified: "2026-03-24",
-    version: "Room v29, Kotlin, multi-module",
+    lastVerified: "2026-03-27",
+    version: "Room v30, Kotlin, multi-module",
     files: [
       { name: "CartItemTest", tests: 12, area: "Tax calc, discount, clone" },
       { name: "CartRecalculationTest", tests: 24, area: "Totals, discount on total, qty tracking" },
@@ -12,21 +12,29 @@ export const TEST_SUITES = {
       { name: "CloudSyncFieldMappingTest", tests: 17, area: "Camel→snake field mapping" },
       { name: "CloudSyncIntegrationTest", tests: 6, area: "Full sync round-trip" },
       { name: "DateUtilsTest", tests: 7, area: "Date formatting, parsing" },
+      { name: "DeliveryEntityTest", tests: 15, area: "Status lifecycle, customer/driver fields, cart JSON" },
       { name: "DiscountCalculationTest", tests: 11, area: "Percentage, fixed, stacking" },
       { name: "HoldOrderFlowTest", tests: 19, area: "Hold/recall/delete, table assignment" },
+      { name: "InventoryCountTest", tests: 24, area: "Session/entry lifecycle, variance, scan accumulation" },
       { name: "KitchenOrderFlowTest", tests: 27, area: "Status cycle, split, merge, stations" },
       { name: "LoyaltyRepositoryTest", tests: 34, area: "Points, cache, offline queue, tiers" },
+      { name: "MenuScheduleFilterTest", tests: 22, area: "Time range, day-of-week, category ID parsing" },
       { name: "NumberUtilsTest", tests: 16, area: "Price/qty formatting, parsing" },
       { name: "OrderDetailsTest", tests: 15, area: "OrderDetails build, JSON round-trip" },
       { name: "OrderFormattingTest", tests: 44, area: "Receipt, kitchen copy, till receipt" },
       { name: "PaymentCalculationTest", tests: 25, area: "Cash/card/split, change, rounding" },
+      { name: "PosOrderJourneyTest", tests: 17, area: "Full order, serialized products, stock validation, refund, split, inventory" },
+      { name: "PromotionServiceTest", tests: 16, area: "Percentage/fixed/BOGO, max cap, product targeting, promo code" },
       { name: "SecurityTest", tests: 10, area: "PIN validation, session timeout" },
+      { name: "ShiftEntityTest", tests: 16, area: "Clock in/out, break tracking, hours worked" },
       { name: "ShoppingCartTest", tests: 31, area: "Add/remove/clear, qty update" },
+      { name: "StockPropertiesTest", tests: 31, area: "Low/out-of-stock, expiry, shelf/batch, cart integration" },
       { name: "SyncContractTest", tests: 12, area: "Request/response schema" },
       { name: "SyncRegressionTest", tests: 16, area: "Field mapping bugs, null handling" },
       { name: "SyncStatusManagerTest", tests: 24, area: "State transitions, summary" },
       { name: "TableManagementTest", tests: 19, area: "Table CRUD, occupancy, sections" },
       { name: "TaxCalculationTest", tests: 26, area: "Inclusive/exclusive, fixed, multi-rate" },
+      { name: "WarehouseWorkflowTest", tests: 23, area: "Picking, put-away, transfer, multi-store stock, reconciliation" },
     ],
   },
   smoke: {
@@ -62,8 +70,8 @@ export const TEST_SUITES = {
   firebase: {
     totalTests: 42,
     totalFiles: 4,
-    allPassed: false,
-    lastVerified: "2026-03-24",
+    allPassed: true,
+    lastVerified: "2026-03-27",
     version: "Firebase Test Lab, MediumPhone.arm Android 14",
     videoUrl: "https://console.firebase.google.com/project/posterita-retail-os/testlab/histories/bh.a6c51873ad5e7aff/matrices/7872229024844517716",
     files: [
@@ -74,8 +82,8 @@ export const TEST_SUITES = {
     ],
   },
   web: {
-    totalTests: 280,
-    totalFiles: 26,
+    totalTests: 303,
+    totalFiles: 27,
     allPassed: true,
     lastVerified: "2026-03-27",
     version: "Vitest 4.1, Next.js 16",
@@ -104,13 +112,14 @@ export const TEST_SUITES = {
       { name: "shifts.test.ts", tests: 7, area: "Shift clock in/out, hours computation, validation" },
       { name: "deliveries.test.ts", tests: 7, area: "Delivery CRUD, status workflow, driver assignment" },
       { name: "promotions.test.ts", tests: 11, area: "Promotion CRUD, validate, promo codes, min order, usage counts" },
+      { name: "warehouse.test.ts", tests: 12, area: "Stock GET/POST, auth, filters, journal, transfer, reconciliation" },
     ],
   },
   scenarios: {
-    totalTests: 319,
-    totalFiles: 47,
+    totalTests: 413,
+    totalFiles: 53,
     allPassed: true,
-    lastVerified: "2026-03-26",
+    lastVerified: "2026-03-27",
     version: "Vitest 4.1, hits production API + Supabase",
     files: [
       { name: "01-signup-flow", tests: 5, area: "Full signup → owner + live + demo brand creation" },
@@ -159,6 +168,12 @@ export const TEST_SUITES = {
       { name: "45-stock-deduction", tests: 7, area: "Stock columns, adjustment, journal CRUD, filter by reason" },
       { name: "46-customer-loyalty", tests: 6, area: "Loyalty config, earn, redeem, insufficient points, adjust, wallets" },
       { name: "47-supplier-purchase-orders", tests: 5, area: "Supplier create, PO create, send, GRN receive, cancelled PO" },
+      { name: "48-warehouse-workflows", tests: 7, area: "Stock adjustment, journal, low/out/expiring filters, shelf/batch" },
+      { name: "49-promotion-delivery-shift", tests: 13, area: "Promotion CRUD, delivery lifecycle, shift clock in/out, menu schedules" },
+      { name: "50-table-existence", tests: 29, area: "All 11 feature tables exist, all GET/POST endpoints return 200, zero schema errors" },
+      { name: "51-nested-categories", tests: 16, area: "3-level hierarchy, parent/child queries, leaf detection, subtree filtering, soft delete, account isolation" },
+      { name: "51-tags", tests: 15, area: "Tag groups, product tagging, bulk assign, soft-delete cascade" },
+      { name: "52-sync-field-mapping", tests: 14, area: "Sync pull field completeness: tax, store, terminal, product, customer, user, modifier, Phase 3 entities" },
     ],
   },
 };
@@ -268,6 +283,56 @@ export const API_ROUTE_COVERAGE: ApiRoute[] = [
 
   { path: "/api/debug/session", method: "GET", purpose: "Debug session info", status: "tested", testedBy: "scenario-20" },
   { path: "/api/changelog", method: "GET", purpose: "Changelog commits", status: "tested", testedBy: "scenario-20" },
+
+  // Deliveries
+  { path: "/api/deliveries", method: "GET", purpose: "List deliveries", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/deliveries", method: "POST", purpose: "Create delivery", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/deliveries/[id]", method: "PATCH", purpose: "Update delivery status", status: "tested", testedBy: "scenario-49, stress" },
+
+  // Shifts
+  { path: "/api/shifts", method: "GET", purpose: "List shifts", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/shifts", method: "POST", purpose: "Clock in/out", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+
+  // Suppliers
+  { path: "/api/suppliers", method: "GET", purpose: "List suppliers", status: "tested", testedBy: "scenario-50, stress" },
+  { path: "/api/suppliers", method: "POST", purpose: "Create supplier", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/suppliers/[id]", method: "PATCH", purpose: "Update supplier", status: "tested", testedBy: "stress" },
+  { path: "/api/suppliers/[id]", method: "DELETE", purpose: "Soft delete supplier", status: "tested", testedBy: "stress" },
+
+  // Purchase Orders
+  { path: "/api/purchase-orders", method: "GET", purpose: "List POs", status: "tested", testedBy: "scenario-50, stress" },
+  { path: "/api/purchase-orders", method: "POST", purpose: "Create PO with lines", status: "tested", testedBy: "stress" },
+  { path: "/api/purchase-orders/[id]", method: "PATCH", purpose: "Update PO status", status: "tested", testedBy: "stress" },
+  { path: "/api/purchase-orders/[id]/receive", method: "POST", purpose: "GRN receive", status: "tested", testedBy: "scenario-47" },
+
+  // Promotions
+  { path: "/api/promotions", method: "GET", purpose: "List promotions", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/promotions", method: "POST", purpose: "Create promotion", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { path: "/api/promotions/[id]", method: "PATCH", purpose: "Update promotion", status: "tested", testedBy: "stress" },
+  { path: "/api/promotions/[id]", method: "DELETE", purpose: "Soft delete promotion", status: "tested", testedBy: "stress" },
+
+  // Menu Schedules
+  { path: "/api/menu-schedules", method: "GET", purpose: "List schedules", status: "tested", testedBy: "scenario-49, scenario-50" },
+  { path: "/api/menu-schedules", method: "POST", purpose: "Create schedule", status: "tested", testedBy: "scenario-49, scenario-50" },
+  { path: "/api/menu-schedules/[id]", method: "PATCH", purpose: "Update schedule", status: "tested", testedBy: "scenario-49" },
+
+  // Loyalty
+  { path: "/api/loyalty/config", method: "GET", purpose: "Get loyalty config", status: "tested", testedBy: "scenario-50, stress" },
+  { path: "/api/loyalty/config", method: "POST", purpose: "Save loyalty config", status: "tested", testedBy: "scenario-50, stress" },
+  { path: "/api/loyalty/wallets", method: "GET", purpose: "List wallets", status: "tested", testedBy: "scenario-50, stress" },
+  { path: "/api/loyalty/transactions", method: "GET", purpose: "List transactions", status: "tested", testedBy: "scenario-50, stress" },
+
+  // Stock
+  { path: "/api/stock", method: "GET", purpose: "Multi-store stock overview", status: "tested", testedBy: "warehouse.test, scenario-50" },
+  { path: "/api/stock", method: "POST", purpose: "Manual stock adjustment", status: "tested", testedBy: "warehouse.test, scenario-48" },
+
+  // Tags
+  { path: "/api/tags/groups", method: "GET", purpose: "List tag groups", status: "tested", testedBy: "scenario-51-tags" },
+  { path: "/api/tags/groups", method: "POST", purpose: "Create tag group", status: "tested", testedBy: "scenario-51-tags" },
+  { path: "/api/tags/groups/[id]", method: "PATCH", purpose: "Update tag group", status: "tested", testedBy: "scenario-51-tags" },
+  { path: "/api/tags", method: "GET", purpose: "List tags", status: "tested", testedBy: "scenario-51-tags" },
+  { path: "/api/tags", method: "POST", purpose: "Create tag", status: "tested", testedBy: "scenario-51-tags" },
+  { path: "/api/tags/assign", method: "POST", purpose: "Assign tags to products", status: "tested", testedBy: "scenario-51-tags" },
 ];
 
 // ── DB Table Coverage ──────────────────────────────────
@@ -311,7 +376,21 @@ export const DB_TABLE_COVERAGE: DbTable[] = [
   { name: "serial_item", status: "tested", testedBy: "serial-items.test" },
   { name: "account_tax_config", status: "tested", testedBy: "mra-ebs.test" },
   { name: "mra_counter", status: "tested", testedBy: "mra-ebs.test" },
+  { name: "delivery", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { name: "shift", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { name: "supplier", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { name: "promotion", status: "tested", testedBy: "scenario-49, scenario-50, stress" },
+  { name: "promotion_usage", status: "tested", testedBy: "scenario-50" },
+  { name: "purchase_order", status: "tested", testedBy: "scenario-50, stress" },
+  { name: "purchase_order_line", status: "tested", testedBy: "stress" },
+  { name: "menu_schedule", status: "tested", testedBy: "scenario-49, scenario-50" },
+  { name: "loyalty_config", status: "tested", testedBy: "scenario-50, stress" },
+  { name: "loyalty_transaction", status: "tested", testedBy: "scenario-50" },
+  { name: "stock_journal", status: "tested", testedBy: "scenario-48, warehouse.test" },
   { name: "account_manager", status: "not-tested", testedBy: "" },
+  { name: "tag_group", status: "tested", testedBy: "scenario-51-tags" },
+  { name: "tag", status: "tested", testedBy: "scenario-51-tags" },
+  { name: "product_tag", status: "tested", testedBy: "scenario-51-tags" },
   { name: "intake_batch", status: "tested", testedBy: "scenario-41" },
   { name: "intake_item", status: "tested", testedBy: "scenario-41" },
   { name: "ott_token", status: "tested", testedBy: "scenario-07" },

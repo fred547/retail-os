@@ -37,6 +37,9 @@ data class CloudSyncResponse(
     @SerializedName("deliveries") val deliveries: List<Map<String, Any?>>? = null,
     @SerializedName("sibling_brands") val siblingBrands: List<Map<String, Any?>>? = null,
     @SerializedName("tax_config") val taxConfig: Map<String, Any?>? = null,
+    @SerializedName("tag_groups") val tagGroups: List<Map<String, Any?>>? = null,
+    @SerializedName("tags") val tags: List<Map<String, Any?>>? = null,
+    @SerializedName("product_tags") val productTags: List<Map<String, Any?>>? = null,
 
     // Pagination — indicates whether more pages are available
     @SerializedName("has_more_products") val hasMoreProducts: Boolean = false,

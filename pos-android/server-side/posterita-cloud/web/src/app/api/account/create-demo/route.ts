@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/supabase/admin";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AUTH",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/account/create-demo
  * Creates a demo brand on the server with seeded products + images.
@@ -149,6 +158,7 @@ export async function POST(req: NextRequest) {
       product_count: products.length,
     });
   } catch (e: any) {
+    await logToErrorDb("system", `Create demo brand failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

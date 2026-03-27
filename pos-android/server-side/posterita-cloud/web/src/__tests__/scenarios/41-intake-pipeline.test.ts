@@ -11,7 +11,7 @@ let gadgetItemId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Product Intake Pipeline', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Intake Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Intake Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'Intake Store', isactive: 'Y' });
 
     const { data: cat } = await db.from('productcategory').insert({

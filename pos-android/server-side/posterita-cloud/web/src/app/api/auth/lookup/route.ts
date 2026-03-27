@@ -3,6 +3,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AUTH",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/auth/lookup
  *
@@ -60,6 +69,7 @@ export async function POST(req: NextRequest) {
       demo_account_id: demoAccount?.account_id || null,
     });
   } catch (e: any) {
+    await logToErrorDb("system", `Auth lookup failed: ${e.message}`, e.stack);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

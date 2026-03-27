@@ -20,9 +20,31 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
 
+    const update: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.name !== undefined) update.name = body.name;
+    if (body.description !== undefined) update.description = body.description;
+    if (body.type !== undefined) update.type = body.type;
+    if (body.discount_value !== undefined) update.discount_value = body.discount_value;
+    if (body.buy_quantity !== undefined) update.buy_quantity = body.buy_quantity;
+    if (body.get_quantity !== undefined) update.get_quantity = body.get_quantity;
+    if (body.applies_to !== undefined) update.applies_to = body.applies_to;
+    if (body.product_ids !== undefined) update.product_ids = body.product_ids;
+    if (body.category_ids !== undefined) update.category_ids = body.category_ids;
+    if (body.min_order_amount !== undefined) update.min_order_amount = body.min_order_amount;
+    if (body.max_discount_amount !== undefined) update.max_discount_amount = body.max_discount_amount;
+    if (body.promo_code !== undefined) update.promo_code = body.promo_code;
+    if (body.max_uses !== undefined) update.max_uses = body.max_uses;
+    if (body.start_date !== undefined) update.start_date = body.start_date;
+    if (body.end_date !== undefined) update.end_date = body.end_date;
+    if (body.start_time !== undefined) update.start_time = body.start_time;
+    if (body.end_time !== undefined) update.end_time = body.end_time;
+    if (body.is_active !== undefined) update.is_active = body.is_active;
+    if (body.priority !== undefined) update.priority = body.priority;
+    if (body.store_id !== undefined) update.store_id = body.store_id;
+
     const { data, error } = await getDb()
       .from("promotion")
-      .update({ ...body, updated_at: new Date().toISOString() })
+      .update(update)
       .eq("id", parseInt(id))
       .eq("account_id", accountId)
       .select()

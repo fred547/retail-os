@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Package, Pencil, X, Save, Trash2, CheckCircle } from "lucide-react";
+import { Package, Pencil, X, Save, Trash2, CheckCircle, Tag } from "lucide-react";
 import { dataUpdate } from "@/lib/supabase/data-client";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SortableHeader from "@/components/SortableHeader";
+import CategoryPicker from "@/components/CategoryPicker";
 
 interface Product {
   product_id: number;
@@ -31,16 +32,37 @@ interface Product {
 interface Category {
   productcategory_id: number;
   name: string;
+  parent_category_id?: number | null;
+  level?: number;
+}
+
+interface TagInfo {
+  tag_id: number;
+  tag_group_id: number;
+  name: string;
+  color: string | null;
+}
+
+interface TagGroupInfo {
+  tag_group_id: number;
+  name: string;
+  color: string | null;
 }
 
 export default function ProductTable({
   products,
   categories,
   showStatusColumn = false,
+  tagGroups = [],
+  allTags = [],
+  productTagMap = {},
 }: {
   products: Product[];
   categories: Category[];
   showStatusColumn?: boolean;
+  tagGroups?: TagGroupInfo[];
+  allTags?: TagInfo[];
+  productTagMap?: Record<number, number[]>;
 }) {
   const router = useRouter();
   const [sort, setSort] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -48,6 +70,8 @@ export default function ProductTable({
   const [form, setForm] = useState<Partial<Product>>({});
   const [saving, setSaving] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  const [editTagIds, setEditTagIds] = useState<Set<number>>(new Set());
+  const [savingTags, setSavingTags] = useState(false);
 
   // Escape key to close edit modal
   const handleKeyDown = useCallback(
@@ -75,16 +99,19 @@ export default function ProductTable({
       productcategory_id: p.productcategory_id,
       isactive: p.isactive,
     });
+    setEditTagIds(new Set(productTagMap[p.product_id] ?? []));
   };
 
   const closeEdit = () => {
     setEditingProduct(null);
     setForm({});
+    setEditTagIds(new Set());
   };
 
   const handleSave = async () => {
     if (!editingProduct) return;
     setSaving(true);
+    // Save product fields
     await dataUpdate(
       "product",
       { column: "product_id", value: editingProduct.product_id },
@@ -100,6 +127,24 @@ export default function ProductTable({
         isactive: form.isactive,
       }
     );
+
+    // Save tag changes
+    const originalTagIds = new Set(productTagMap[editingProduct.product_id] ?? []);
+    const addTagIds = [...editTagIds].filter(id => !originalTagIds.has(id));
+    const removeTagIds = [...originalTagIds].filter(id => !editTagIds.has(id));
+    if (addTagIds.length > 0 || removeTagIds.length > 0) {
+      await fetch("/api/tags/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entity_type: "product",
+          entity_ids: [editingProduct.product_id],
+          add_tag_ids: addTagIds.length > 0 ? addTagIds : undefined,
+          remove_tag_ids: removeTagIds.length > 0 ? removeTagIds : undefined,
+        }),
+      });
+    }
+
     setSaving(false);
     closeEdit();
     router.refresh();
@@ -231,6 +276,23 @@ export default function ProductTable({
                       {p.description}
                     </div>
                   )}
+                  {(productTagMap[p.product_id]?.length ?? 0) > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {productTagMap[p.product_id]?.slice(0, 3).map((tagId: number) => {
+                        const tag = allTags.find((t: any) => t.tag_id === tagId);
+                        if (!tag) return null;
+                        return (
+                          <span key={tagId} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{ backgroundColor: `${tag.color ?? "#6B7280"}20`, color: tag.color ?? "#6B7280" }}>
+                            {tag.name}
+                          </span>
+                        );
+                      })}
+                      {(productTagMap[p.product_id]?.length ?? 0) > 3 && (
+                        <span className="text-[10px] text-gray-400">+{(productTagMap[p.product_id]?.length ?? 0) - 3}</span>
+                      )}
+                    </div>
+                  )}
                 </td>
                 <td className="text-gray-500">
                   {p.productcategory?.name ?? "—"}
@@ -349,8 +411,8 @@ export default function ProductTable({
             <div className="px-5 py-4 space-y-3">
 
               {/* Section: Basic Info */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">Basic Info</div>
+              <div className="border border-gray-200 rounded-xl">
+                <div className="px-4 py-2 bg-gray-50 rounded-t-xl text-xs font-semibold text-gray-500 uppercase tracking-wide">Basic Info</div>
                 <div className="p-4 space-y-3">
                   <div>
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Name</label>
@@ -365,11 +427,17 @@ export default function ProductTable({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
-                      <select value={form.productcategory_id ?? ""} onChange={(e) => updateField("productcategory_id", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-posterita-blue focus:ring-2 focus:ring-posterita-blue/20 outline-none text-sm">
-                        <option value="">None</option>
-                        {categories.map((c) => (<option key={c.productcategory_id} value={c.productcategory_id}>{c.name}</option>))}
-                      </select>
+                      <CategoryPicker
+                        categories={categories.map((c) => ({
+                          productcategory_id: c.productcategory_id,
+                          name: c.name,
+                          parent_category_id: c.parent_category_id ?? null,
+                          level: c.level ?? 0,
+                        }))}
+                        value={form.productcategory_id ? Number(form.productcategory_id) : null}
+                        onChange={(id) => updateField("productcategory_id", id ?? "")}
+                        placeholder="Select category..."
+                      />
                     </div>
                     <div>
                       <label className="text-xs font-medium text-gray-500 mb-1 block">UPC / Barcode</label>
@@ -412,6 +480,55 @@ export default function ProductTable({
                   </div>
                 </div>
               </div>
+
+              {/* Section: Tags */}
+              {tagGroups.length > 0 && (
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
+                    <Tag size={12} /> Tags
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {tagGroups.map((group: any) => {
+                      const groupTags = allTags.filter((t: any) => t.tag_group_id === group.tag_group_id);
+                      if (groupTags.length === 0) return null;
+                      return (
+                        <div key={group.tag_group_id}>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">{group.name}</label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {groupTags.map((tag: any) => {
+                              const selected = editTagIds.has(tag.tag_id);
+                              const color = tag.color ?? group.color ?? "#6B7280";
+                              return (
+                                <button
+                                  key={tag.tag_id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditTagIds(prev => {
+                                      const next = new Set(prev);
+                                      if (next.has(tag.tag_id)) next.delete(tag.tag_id);
+                                      else next.add(tag.tag_id);
+                                      return next;
+                                    });
+                                  }}
+                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
+                                    selected
+                                      ? "border-transparent shadow-sm"
+                                      : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+                                  }`}
+                                  style={selected ? { backgroundColor: `${color}20`, color, borderColor: `${color}40` } : undefined}
+                                >
+                                  {selected && <span className="mr-1">&#10003;</span>}
+                                  {tag.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}

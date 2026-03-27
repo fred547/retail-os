@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
     const lineInserts = lines.map((l: any) => ({
       po_id: po.po_id,
       account_id: accountId,
-      product_id: l.product_id,
+      product_id: l.product_id ?? 0,
       product_name: l.product_name || null,
       quantity_ordered: l.quantity_ordered || 0,
       unit_cost: l.unit_cost || 0,
@@ -131,6 +131,7 @@ export async function POST(req: NextRequest) {
 
     if (lineErr) {
       await logToErrorDb(accountId, `Failed to insert PO lines for ${poNumber}: ${lineErr.message}`);
+      return NextResponse.json({ error: `PO created but line items failed: ${lineErr.message}`, order: po }, { status: 500 });
     }
 
     return NextResponse.json({ order: po, po_number: poNumber }, { status: 201 });

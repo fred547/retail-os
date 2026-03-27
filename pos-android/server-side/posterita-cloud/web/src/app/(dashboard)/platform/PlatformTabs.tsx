@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Building2, Users, AlertTriangle, RefreshCw, FlaskConical,
-  Gauge, Server, GitCommit, Map, Shield, Archive, Bot, ChevronDown,
+  Gauge, Server, GitCommit, Map, Shield, Archive, Bot, ChevronDown, FileText,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -20,6 +20,7 @@ const ALL_TABS: Tab[] = [
   { key: "benchmark", label: "Bench", icon: Gauge },
   { key: "changelog", label: "Log", icon: GitCommit },
   { key: "roadmap", label: "Roadmap", icon: Map },
+  { key: "specs", label: "Specs", icon: FileText },
   { key: "infra", label: "Infra", icon: Server },
   { key: "legacy", label: "Legacy", icon: Archive },
   { key: "claude", label: "Claude", icon: Bot },

@@ -9,7 +9,7 @@ let productId: number;
 describe.skipIf(SKIP_SCENARIOS)('Scenario: Data CRUD API (/api/data/*)', () => {
   beforeAll(async () => {
     const db = getSupabase();
-    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Data API Test', type: 'live', status: 'active', currency: 'MUR' });
+    await db.from('account').insert({ account_id: ACCOUNT_ID, businessname: 'Data API Test', type: 'testing', status: 'active', currency: 'MUR' });
     await db.from('store').insert({ store_id: STORE_ID, account_id: ACCOUNT_ID, name: 'API Store', isactive: 'Y' });
   }, 60000);
 

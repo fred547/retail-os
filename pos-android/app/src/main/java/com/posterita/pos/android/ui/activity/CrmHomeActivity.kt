@@ -49,6 +49,7 @@ class CrmHomeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCrmHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupHelpButton("crm_home")
         com.posterita.pos.android.util.setupConnectivityDot(this, connectivityMonitor)
 
         binding.buttonBack.setOnClickListener { finish() }

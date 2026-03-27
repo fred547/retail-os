@@ -14,6 +14,7 @@ import Benchmark from "./Benchmark";
 import Infrastructure from "./Infrastructure";
 import Changelog from "./Changelog";
 import Roadmap from "./Roadmap";
+import Specs from "./Specs";
 import MraDashboard from "./MraDashboard";
 import LegacyReview from "./LegacyReview";
 import ClaudeConfig from "./ClaudeConfig";
@@ -74,6 +75,9 @@ export default async function PlatformPage({
       )}
       {tab === "roadmap" && (
         <Roadmap />
+      )}
+      {tab === "specs" && (
+        <Specs />
       )}
       {tab === "mra" && (
         <MraDashboard />

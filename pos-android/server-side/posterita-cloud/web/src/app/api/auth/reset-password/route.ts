@@ -3,6 +3,15 @@ import { getDb } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
+  try {
+    await getDb().from("error_logs").insert({
+      account_id: accountId, severity: "ERROR", tag: "AUTH",
+      message, stack_trace: stackTrace ?? null, device_info: "web-api", app_version: "web",
+    });
+  } catch (_) { /* swallow */ }
+}
+
 /**
  * POST /api/auth/reset-password
  *
@@ -40,6 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (e: any) {
     console.error("Password reset exception:", e.message);
+    await logToErrorDb("system", `Password reset failed: ${e.message}`, e.stack);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
