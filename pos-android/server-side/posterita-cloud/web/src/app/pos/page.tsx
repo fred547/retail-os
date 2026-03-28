@@ -33,6 +33,7 @@ import OrderHistory from "@/components/pos/OrderHistory";
 import TillHistory from "@/components/pos/TillHistory";
 import ConnectivityDot from "@/components/pos/ConnectivityDot";
 import { findBestPromotion, type AppliedPromotion } from "@/lib/pos/promotions";
+import { logError } from "@/lib/error-logger";
 
 /**
  * POS Checkout — mirrors Android TillActivity.
@@ -89,16 +90,15 @@ export default function PosPage() {
   // Load data from IndexedDB on mount
   useEffect(() => {
     async function init() {
+      try {
       const accountId = await getSyncMeta("account_id");
       if (!accountId) {
-        // Not configured — show setup link, never auto-redirect
         setReady(true);
         return;
       }
 
       const seeded = await isSeeded(accountId);
       if (!seeded) {
-        // Has account but no data — show setup link, never auto-redirect
         setReady(true);
         return;
       }
@@ -106,13 +106,14 @@ export default function PosPage() {
       const db = getOfflineDb();
 
       // Load products and categories from IndexedDB
-      const [prods, cats, taxes, mods, promos] = await Promise.all([
-        db.product.where("isactive").equals("Y").toArray(),
-        db.productcategory.where("isactive").equals("Y").toArray(),
+      const [prods, cats, taxes, allMods, promos] = await Promise.all([
+        db.product.toArray().then(p => p.filter(x => x.isactive === "Y")),
+        db.productcategory.toArray().then(c => c.filter(x => x.isactive === "Y")),
         db.tax.toArray(),
-        db.modifier.where("isactive").equals("Y").toArray(),
-        db.promotion.where("is_active").equals(1).toArray(),
+        db.modifier.toArray().then(m => m.filter(x => x.isactive === "Y")),
+        db.promotion.toArray().then(p => p.filter(x => x.is_active)),
       ]);
+      const mods = allMods;
       setAllModifiers(mods);
       setAllPromotions(promos);
 
@@ -150,6 +151,16 @@ export default function PosPage() {
       startSyncWorker();
 
       setReady(true);
+      } catch (e: any) {
+        console.error("[POS] init failed:", e);
+        // Log to server
+        fetch("/api/errors/log", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: "POS_INIT", message: `POS init crash: ${e.message}`, stack_trace: e.stack, severity: "ERROR" }),
+        }).catch(() => {});
+        // Show the POS anyway so user isn't stuck on spinner
+        setReady(true);
+      }
     }
     init();
 
@@ -283,9 +294,22 @@ export default function PosPage() {
           >
             Set Up POS
           </a>
+          <button
+            onClick={async () => {
+              const dbs = await indexedDB.databases?.() || [];
+              for (const db of dbs) {
+                if (db.name) indexedDB.deleteDatabase(db.name);
+              }
+              sessionStorage.clear();
+              window.location.reload();
+            }}
+            className="block text-red-400 text-sm mt-6 hover:text-red-300 transition mx-auto"
+          >
+            Reset POS Data
+          </button>
           <a
             href="/customer/products"
-            className="block text-gray-500 text-sm mt-4 hover:text-gray-300 transition"
+            className="block text-gray-500 text-sm mt-2 hover:text-gray-300 transition"
           >
             Back to Console
           </a>
