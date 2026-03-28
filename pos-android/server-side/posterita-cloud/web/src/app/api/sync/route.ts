@@ -279,8 +279,9 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     } else if (!syncTimestamp && !syncSignature) {
-      // No auth headers — log warning but allow through
-      console.warn(`[sync] Unauthenticated sync request from account ${body.account_id}`);
+      // No auth headers — log warning to DB for monitoring, allow through
+      // TODO: Set REQUIRE_SYNC_AUTH=true in Vercel env vars to enforce
+      await logToErrorDb(body.account_id, `Unauthenticated sync request from account ${body.account_id} (device: ${body.device_model || "unknown"})`, "WARN");
     }
 
     // Verify account exists — auto-create if missing (defensive: handles
@@ -866,185 +867,21 @@ export async function POST(req: NextRequest) {
     }
 
     // ========================================
-    // PUSH: Master data (stores, terminals, users, categories, products, taxes)
-    // These are upserted by their primary key so the cloud stays in sync
-    // with any changes made on the POS terminal.
+    // SECURITY: Master data is SERVER-AUTHORITATIVE (Rule 2).
+    // stores, terminals, users, categories, products, taxes are pull-only.
+    // Android never sends them (CloudSyncService lines 168-172), but if
+    // a rogue client does, we silently ignore them and log a warning.
     // ========================================
-
-    // Sync stores
-    if (body.stores?.length) {
-      for (const store of body.stores) {
-        try {
-          const dbStore = {
-            store_id: store.store_id ?? store.storeId,
-            account_id: body.account_id,
-            name: store.name,
-            address: store.address,
-            city: store.city,
-            state: store.state,
-            zip: store.zip,
-            country: store.country,
-            currency: store.currency,
-            isactive: store.isactive ?? store.isActive ?? "Y",
-          };
-          const { error } = await tenantUpsert("store", dbStore, "store_id", dbStore.store_id, body.account_id);
-          if (error) {
-            errors.push(`Store ${dbStore.store_id}: ${error.message}`);
-          } else {
-            storesSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Store: ${e.message}`);
-        }
-      }
-    }
-
-    // Sync terminals
-    if (body.terminals?.length) {
-      for (const terminal of body.terminals) {
-        try {
-          const dbTerminal = {
-            terminal_id: terminal.terminal_id ?? terminal.terminalId,
-            account_id: body.account_id,
-            store_id: terminal.store_id ?? terminal.storeId ?? body.store_id,
-            name: terminal.name,
-            prefix: terminal.prefix,
-            sequence: terminal.sequence ?? 0,
-            cash_up_sequence: terminal.cash_up_sequence ?? terminal.cashUpSequence ?? 0,
-            isactive: terminal.isactive ?? terminal.isActive ?? "Y",
-          };
-          const { error } = await tenantUpsert("terminal", dbTerminal, "terminal_id", dbTerminal.terminal_id, body.account_id);
-          if (error) {
-            errors.push(`Terminal ${dbTerminal.terminal_id}: ${error.message}`);
-          } else {
-            terminalsSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Terminal: ${e.message}`);
-        }
-      }
-    }
-
-    // Sync users
-    if (body.users?.length) {
-      for (const user of body.users) {
-        try {
-          const dbUser = {
-            user_id: user.user_id ?? user.userId,
-            account_id: body.account_id,
-            username: user.username,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            pin: user.pin,
-            role: user.role,
-            isadmin: user.isadmin ?? user.isAdmin,
-            issalesrep: user.issalesrep ?? user.isSalesRep,
-            permissions: user.permissions,
-            discountlimit: user.discountlimit ?? user.discountLimit ?? 0,
-            isactive: user.isactive ?? user.isActive ?? "Y",
-          };
-          const { error } = await tenantUpsert("pos_user", dbUser, "user_id", dbUser.user_id, body.account_id);
-          if (error) {
-            errors.push(`User ${dbUser.user_id}: ${error.message}`);
-          } else {
-            usersSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`User: ${e.message}`);
-        }
-      }
-    }
-
-    // Sync categories
-    if (body.categories?.length) {
-      for (const cat of body.categories) {
-        try {
-          const dbCat = {
-            productcategory_id: cat.productcategory_id ?? cat.productCategoryId,
-            account_id: body.account_id,
-            name: cat.name,
-            isactive: cat.isactive ?? cat.isActive ?? "Y",
-            display: cat.display,
-            position: cat.position ?? 0,
-            tax_id: cat.tax_id ?? cat.taxId,
-            parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
-            level: cat.level ?? 0,
-          };
-          const { error } = await tenantUpsert("productcategory", dbCat, "productcategory_id", dbCat.productcategory_id, body.account_id);
-          if (error) {
-            errors.push(`Category ${dbCat.productcategory_id}: ${error.message}`);
-          } else {
-            categoriesSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Category: ${e.message}`);
-        }
-      }
-    }
-
-    // Sync products
-    if (body.products?.length) {
-      for (const prod of body.products) {
-        try {
-          const dbProduct = {
-            product_id: prod.product_id ?? prod.productId,
-            account_id: body.account_id,
-            name: prod.name,
-            description: prod.description,
-            sellingprice: prod.sellingprice ?? prod.sellingPrice ?? 0,
-            costprice: prod.costprice ?? prod.costPrice ?? 0,
-            taxamount: prod.taxamount ?? prod.taxAmount ?? 0,
-            tax_id: prod.tax_id ?? prod.taxId ?? 0,
-            productcategory_id: prod.productcategory_id ?? prod.productCategoryId ?? 0,
-            image: prod.image,
-            upc: prod.upc,
-            itemcode: prod.itemcode ?? prod.itemCode,
-            barcodetype: prod.barcodetype ?? prod.barcodeType,
-            isactive: prod.isactive ?? prod.isActive ?? "Y",
-            istaxincluded: prod.istaxincluded ?? prod.isTaxIncluded,
-            isstock: prod.isstock ?? prod.isStock,
-            isvariableitem: prod.isvariableitem ?? prod.isVariableItem,
-            iskitchenitem: prod.iskitchenitem ?? prod.isKitchenItem,
-            ismodifier: prod.ismodifier ?? prod.isModifier,
-            isfavourite: prod.isfavourite ?? prod.isFavourite,
-            wholesaleprice: prod.wholesaleprice ?? prod.wholesalePrice ?? 0,
-            needs_price_review: prod.needs_price_review ?? prod.needsPriceReview,
-            price_set_by: prod.price_set_by ?? prod.priceSetBy ?? 0,
-          };
-          const { error } = await tenantUpsert("product", dbProduct, "product_id", dbProduct.product_id, body.account_id);
-          if (error) {
-            errors.push(`Product ${dbProduct.product_id}: ${error.message}`);
-          } else {
-            productsSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Product: ${e.message}`);
-        }
-      }
-    }
-
-    // Sync taxes
-    if (body.taxes?.length) {
-      for (const tax of body.taxes) {
-        try {
-          const dbTax = {
-            tax_id: tax.tax_id ?? tax.taxId,
-            account_id: body.account_id,
-            name: tax.name,
-            rate: tax.rate ?? 0,
-            taxcode: tax.taxcode ?? tax.taxCode,
-            isactive: tax.isactive ?? tax.isActive ?? "Y",
-          };
-          const { error } = await tenantUpsert("tax", dbTax, "tax_id", dbTax.tax_id, body.account_id);
-          if (error) {
-            errors.push(`Tax ${dbTax.tax_id}: ${error.message}`);
-          } else {
-            taxesSynced++;
-          }
-        } catch (e: any) {
-          errors.push(`Tax: ${e.message}`);
-        }
-      }
+    const masterDataAttempt = [
+      body.stores?.length && "stores",
+      body.terminals?.length && "terminals",
+      body.users?.length && "users",
+      body.categories?.length && "categories",
+      body.products?.length && "products",
+      body.taxes?.length && "taxes",
+    ].filter(Boolean);
+    if (masterDataAttempt.length > 0) {
+      console.warn(`[sync] Ignoring master data push from ${body.account_id}: ${masterDataAttempt.join(", ")}`);
     }
 
     // Sync restaurant tables
