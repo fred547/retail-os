@@ -5,7 +5,7 @@ import { Search, Home, RefreshCw, DollarSign, Printer } from "lucide-react";
 import { getOfflineDb, getSyncMeta } from "@/lib/offline/db";
 import { isSeeded } from "@/lib/offline/seed";
 import { startSyncWorker } from "@/lib/offline/sync-worker";
-import { setTaxMap, addProduct, restoreCart } from "@/lib/pos/cart-store";
+import { setTaxMap, addProduct, restoreCart, holdCurrentCart } from "@/lib/pos/cart-store";
 import { useCart } from "@/lib/pos/use-cart";
 import { useSyncStatus } from "@/lib/offline/use-sync";
 import { completeOrder } from "@/lib/pos/complete-order";
@@ -24,6 +24,8 @@ import PaymentDialog from "@/components/pos/PaymentDialog";
 import TillDialog from "@/components/pos/TillDialog";
 import PrinterSetup from "@/components/pos/PrinterSetup";
 import LockScreen from "@/components/pos/LockScreen";
+import HoldOrdersDialog from "@/components/pos/HoldOrdersDialog";
+import CustomerPicker from "@/components/pos/CustomerPicker";
 import ConnectivityDot from "@/components/pos/ConnectivityDot";
 
 /**
@@ -42,7 +44,10 @@ export default function PosPage() {
   const [tillOpen, setTillOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const [sessionUser, setSessionUser] = useState<string | undefined>(undefined);
+  const [showHoldOrders, setShowHoldOrders] = useState(false);
+  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
+  const [holdComplete, setHoldComplete] = useState(false);
   const [quoteComplete, setQuoteComplete] = useState<{ documentNo: string } | null>(null);
 
   const cart = useCart();
@@ -161,8 +166,15 @@ export default function PosPage() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === "F2" && cart.items.length > 0) { e.preventDefault(); setShowPayment(true); }
       if (e.key === "F3") { e.preventDefault(); setShowTill(true); }
-      if (e.key === "Escape" && showPayment) { e.preventDefault(); setShowPayment(false); }
-      if (e.key === "Escape" && showTill) { e.preventDefault(); setShowTill(false); }
+      if (e.key === "F4") { e.preventDefault(); setShowHoldOrders(true); }
+      if (e.key === "F5") { e.preventDefault(); setShowCustomerPicker(true); }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (showPayment) setShowPayment(false);
+        else if (showTill) setShowTill(false);
+        else if (showHoldOrders) setShowHoldOrders(false);
+        else if (showCustomerPicker) setShowCustomerPicker(false);
+      }
       if (e.key === "F1") { e.preventDefault(); document.getElementById("pos-search")?.focus(); }
     }
     document.addEventListener("keydown", handleKey);
@@ -284,7 +296,7 @@ export default function PosPage() {
         </button>
 
         {/* Keyboard shortcuts hint */}
-        <span className="text-xs text-gray-600 hidden md:block">F1 Search | F2 Pay | F3 Till | Esc Cancel</span>
+        <span className="text-xs text-gray-600 hidden md:block">F1 Search | F2 Pay | F3 Till | F4 Hold | F5 Customer</span>
 
         <ConnectivityDot />
       </div>
@@ -323,7 +335,12 @@ export default function PosPage() {
         <div className="w-80 lg:w-96 border-l border-gray-800 flex flex-col">
           <Cart
             onPay={() => setShowPayment(true)}
-            onHold={() => { /* TODO: hold order */ }}
+            onCustomerClick={() => setShowCustomerPicker(true)}
+            onHold={() => {
+              holdCurrentCart();
+              setHoldComplete(true);
+              setTimeout(() => setHoldComplete(false), 2000);
+            }}
             onQuote={async () => {
               const result = await saveCartAsQuote();
               if (result) {
@@ -334,6 +351,19 @@ export default function PosPage() {
           />
         </div>
       </div>
+
+      {/* Customer picker */}
+      {showCustomerPicker && (
+        <CustomerPicker onClose={() => setShowCustomerPicker(false)} />
+      )}
+
+      {/* Hold orders dialog */}
+      {showHoldOrders && (
+        <HoldOrdersDialog
+          onClose={() => setShowHoldOrders(false)}
+          onRecalled={() => { /* cart already updated by recallHeldOrder */ }}
+        />
+      )}
 
       {/* Printer setup dialog */}
       {showPrinter && (
@@ -365,6 +395,14 @@ export default function PosPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
           Order complete
+        </div>
+      )}
+
+      {/* Hold toast */}
+      {holdComplete && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-700 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 z-50">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          Order parked — press F4 to recall
         </div>
       )}
 

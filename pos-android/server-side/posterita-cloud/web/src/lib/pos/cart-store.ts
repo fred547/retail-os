@@ -14,12 +14,24 @@ export interface CartItem {
   tax_id: number;
   tax_rate: number;     // from tax table
   tax_amount: number;   // computed per-line
-  line_total: number;   // qty * price
+  line_total: number;   // qty * price * (1 - discount)
   line_net: number;     // line_total + tax
+  discount_percent: number; // per-line discount (0-100)
   image: string | null;
   upc: string | null;
   productcategory_id: number;
   serial_item_id?: number | null;
+}
+
+export interface HeldOrder {
+  id: string;           // UUID
+  items: CartItem[];
+  customer_id: number;
+  customer_name: string | null;
+  order_type: string | null;
+  note: string | null;
+  tips: number;
+  held_at: string;      // ISO timestamp
 }
 
 export interface CartState {
@@ -74,7 +86,9 @@ function recalcTotals() {
 
   for (const item of state.items) {
     const rate = taxMap[item.tax_id] ?? item.tax_rate ?? 0;
-    item.line_total = round2(item.qty * item.price);
+    const gross = round2(item.qty * item.price);
+    const discountAmt = round2(gross * (item.discount_percent || 0) / 100);
+    item.line_total = round2(gross - discountAmt);
     item.tax_amount = round2(item.line_total * rate / 100);
     item.line_net = round2(item.line_total + item.tax_amount);
     item.tax_rate = rate;
@@ -132,6 +146,7 @@ export function addProduct(product: Product, qty: number = 1, priceOverride?: nu
       tax_amount: 0,
       line_total: 0,
       line_net: 0,
+      discount_percent: 0,
       image: product.image,
       upc: product.upc,
       productcategory_id: product.productcategory_id,
@@ -184,6 +199,90 @@ export function setTips(tips: number) {
 export function clearCart() {
   state = emptyCart();
   notify();
+}
+
+/** Set per-line discount (0-100 percent) */
+export function setLineDiscount(productId: number, percent: number) {
+  const item = state.items.find((i) => i.product_id === productId);
+  if (!item) return;
+  item.discount_percent = Math.max(0, Math.min(100, percent));
+  recalcTotals();
+  notify();
+}
+
+/** Set price override for a specific item */
+export function setItemPrice(productId: number, price: number) {
+  const item = state.items.find((i) => i.product_id === productId);
+  if (!item) return;
+  item.price = Math.max(0, price);
+  recalcTotals();
+  notify();
+}
+
+// ── Hold Orders (park/recall) ──
+
+const HOLD_KEY = "posterita_hold_orders";
+
+function getHeldOrders(): HeldOrder[] {
+  try {
+    return JSON.parse(localStorage.getItem(HOLD_KEY) || "[]");
+  } catch { return []; }
+}
+
+function saveHeldOrders(orders: HeldOrder[]) {
+  localStorage.setItem(HOLD_KEY, JSON.stringify(orders));
+}
+
+/** Park the current cart as a held order. Clears the cart. */
+export function holdCurrentCart(): HeldOrder | null {
+  if (state.items.length === 0) return null;
+  const held: HeldOrder = {
+    id: crypto.randomUUID(),
+    items: [...state.items],
+    customer_id: state.customer_id,
+    customer_name: state.customer_name,
+    order_type: state.order_type,
+    note: state.note,
+    tips: state.tips,
+    held_at: new Date().toISOString(),
+  };
+  const orders = getHeldOrders();
+  orders.unshift(held);
+  saveHeldOrders(orders);
+  state = emptyCart();
+  notify();
+  return held;
+}
+
+/** Recall a held order back into the active cart. Removes from hold list. */
+export function recallHeldOrder(holdId: string): boolean {
+  const orders = getHeldOrders();
+  const idx = orders.findIndex((o) => o.id === holdId);
+  if (idx === -1) return false;
+  const held = orders[idx];
+  orders.splice(idx, 1);
+  saveHeldOrders(orders);
+
+  state.items = held.items;
+  state.customer_id = held.customer_id;
+  state.customer_name = held.customer_name;
+  state.order_type = held.order_type;
+  state.note = held.note;
+  state.tips = held.tips;
+  recalcTotals();
+  notify();
+  return true;
+}
+
+/** Delete a held order without recalling it. */
+export function deleteHeldOrder(holdId: string) {
+  const orders = getHeldOrders();
+  saveHeldOrders(orders.filter((o) => o.id !== holdId));
+}
+
+/** Get all held orders. */
+export function listHeldOrders(): HeldOrder[] {
+  return getHeldOrders();
 }
 
 /** Restore cart from localStorage (call on page load) */
