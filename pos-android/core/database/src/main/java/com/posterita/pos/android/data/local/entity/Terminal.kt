@@ -31,8 +31,13 @@ data class Terminal(
     val last_crn_invoice_no: Int = 0,
     val isselected: String? = null,
     val terminal_type: String = TYPE_POS_RETAIL,
-    val zone: String? = null
+    val zone: String? = null,
+    /** Lock mode: "exploration" (auto-release on switch) or "production" (permanent) */
+    val lock_mode: String = LOCK_EXPLORATION,
+    val locked_device_id: String? = null
 ) : Serializable {
+    val isProductionLocked: Boolean get() = lock_mode == LOCK_PRODUCTION && locked_device_id != null
+
     companion object {
         const val TYPE_POS_RETAIL = "pos_retail"
         const val TYPE_POS_RESTAURANT = "pos_restaurant"
@@ -40,6 +45,9 @@ data class Terminal(
         const val TYPE_MOBILE_STAFF = "mobile_staff"
         const val TYPE_CUSTOMER_DISPLAY = "customer_display"
         const val TYPE_SELF_SERVICE = "self_service"
+
+        const val LOCK_EXPLORATION = "exploration"
+        const val LOCK_PRODUCTION = "production"
     }
     override fun toString(): String = name ?: ""
 }

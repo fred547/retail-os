@@ -45,7 +45,7 @@ import com.posterita.pos.android.data.local.entity.*
         LeaveRequest::class,
         LeaveBalance::class
     ],
-    version = 38,
+    version = 39,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -148,7 +148,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_34_35,
                         MIGRATION_35_36,
                         MIGRATION_36_37,
-                        MIGRATION_37_38
+                        MIGRATION_37_38,
+                        MIGRATION_38_39
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -775,6 +776,14 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE shift ADD COLUMN is_late INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE shift ADD COLUMN late_minutes INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE shift ADD COLUMN total_break_minutes INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_38_39 = object : Migration(38, 39) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Terminal lock modes
+                db.execSQL("ALTER TABLE terminal ADD COLUMN lock_mode TEXT NOT NULL DEFAULT 'exploration'")
+                db.execSQL("ALTER TABLE terminal ADD COLUMN locked_device_id TEXT")
             }
         }
     }

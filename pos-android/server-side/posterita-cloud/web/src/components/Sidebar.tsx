@@ -125,6 +125,7 @@ const sections: NavSection[] = [
   {
     label: "System",
     items: [
+      { name: "Tower Control", href: "/tower", icon: Monitor },
       { name: "Errors", href: "/errors", icon: AlertTriangle },
       { name: "Sync Inbox", href: "/sync-inbox", icon: RefreshCw },
     ],

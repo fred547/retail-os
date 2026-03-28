@@ -34,6 +34,7 @@ const LEGACY_CUSTOMER_PATHS = new Set([
   "/tags",
   "/store-layout",
   "/integrations",
+  "/tower",
 ]);
 
 /** Also redirect sub-paths like /intake/new, /intake/123, /inventory/new, /inventory/123 */

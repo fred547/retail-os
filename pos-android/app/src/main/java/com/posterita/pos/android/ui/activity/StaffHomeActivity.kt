@@ -120,7 +120,10 @@ class StaffHomeActivity : BaseActivity() {
             // If active shift, add elapsed time
             val activeHours = if (activeShift?.clock_in != null) {
                 try {
-                    val clockIn = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(activeShift!!.clock_in!!)
+                    val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                        timeZone = TimeZone.getTimeZone("UTC")
+                    }
+                    val clockIn = fmt.parse(activeShift!!.clock_in!!.replace(".000Z", "").replace("Z", ""))
                     if (clockIn != null) (System.currentTimeMillis() - clockIn.time) / 3600000.0 else 0.0
                 } catch (_: Exception) { 0.0 }
             } else 0.0
@@ -160,7 +163,10 @@ class StaffHomeActivity : BaseActivity() {
                     }.format(Date()),
                     status = Shift.STATUS_COMPLETED,
                     hours_worked = try {
-                        val clockIn = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(activeShift!!.clock_in!!)
+                        val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                            timeZone = TimeZone.getTimeZone("UTC")
+                        }
+                        val clockIn = fmt.parse(activeShift!!.clock_in!!.replace(".000Z", "").replace("Z", ""))
                         if (clockIn != null) (System.currentTimeMillis() - clockIn.time) / 3600000.0 else 0.0
                     } catch (_: Exception) { 0.0 }
                 )
@@ -209,7 +215,9 @@ class StaffHomeActivity : BaseActivity() {
 
         private val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)
         private val timeFormat = SimpleDateFormat("HH:mm", Locale.US)
-        private val parseFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+        private val parseFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
 
         class VH(view: View) : RecyclerView.ViewHolder(view) {
             val card: MaterialCardView = view as MaterialCardView
@@ -229,15 +237,17 @@ class StaffHomeActivity : BaseActivity() {
         override fun onBindViewHolder(holder: VH, position: Int) {
             val shift = shifts[position]
 
-            // Date
-            val clockIn = try { parseFormat.parse(shift.clock_in ?: "") } catch (_: Exception) { null }
+            // Date — strip milliseconds + Z suffix for parsing
+            val clockInStr = (shift.clock_in ?: "").replace(Regex("\\.[0-9]+Z$"), "").replace("Z", "")
+            val clockIn = try { parseFormat.parse(clockInStr) } catch (_: Exception) { null }
             holder.textDate.text = if (clockIn != null) dateFormat.format(clockIn) else shift.clock_in?.take(10) ?: "—"
 
             // Time range
             val inTime = if (clockIn != null) timeFormat.format(clockIn) else "—"
             val outTime = if (shift.clock_out != null) {
                 try {
-                    val co = parseFormat.parse(shift.clock_out!!)
+                    val coStr = shift.clock_out!!.replace(Regex("\\.[0-9]+Z$"), "").replace("Z", "")
+                    val co = parseFormat.parse(coStr)
                     if (co != null) timeFormat.format(co) else "—"
                 } catch (_: Exception) { "—" }
             } else "now"
