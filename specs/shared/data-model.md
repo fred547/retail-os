@@ -1,6 +1,12 @@
 # Data Model
 
 > Extracted from Posterita Master Plan v3.9 — Section 9 (Source-of-Truth Data Model)
+>
+> **NOTE:** This file contains the ASPIRATIONAL data model from the master plan.
+> For the ACTUAL production schema, see `specs/shared/current-state.md` which
+> lists all 45+ tables with their real column names and types.
+> Key differences: actual uses TEXT account_id (not UUID), SERIAL PKs (not UUIDv7),
+> no billing tables, no consent records. Migrations are in `supabase/migrations/00001-00049`.
 
 ---
 

@@ -1,6 +1,21 @@
 # Implementation Sequence
 
 > Extracted from Posterita Master Plan v3.9 — Section 21
+>
+> **STATUS as of 2026-03-28:**
+> - Phase 0 (Foundations): ✅ Complete
+> - Phase 1 (Web console + API + auth + sync): ✅ Complete
+> - Phase 1.5 (Product Intake + Lifecycle): ✅ Complete
+> - Phase 2 (Inventory, loyalty, catalogue, logistics): ✅ Complete
+> - Phase 2.5 (Kitchen & restaurant): ✅ Complete
+> - Phase 2.6 (Serialized inventory): ✅ Complete
+> - Phase 2.7 (Multi-module architecture): ✅ Complete
+> - Phase 2.8 (Sync hardening): ✅ Complete
+> - Phase 3 (Compliance, loyalty, suppliers, promotions, delivery, shifts): ✅ Complete
+> - Phase 3.5 (Android POS integration): ✅ Complete
+> - Phase 4 (Tags, store layout, Xero, PWA POS, UI polish, help system, CI/CD): ✅ IN PROGRESS
+>
+> See `specs/shared/current-state.md` for the actual production inventory.
 
 ---
 

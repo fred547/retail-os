@@ -1,6 +1,9 @@
 # Architecture
 
 > Extracted from Posterita Master Plan v3.9 — Sections 1, 3, 4, 5
+>
+> **NOTE:** This file contains the ORIGINAL architecture vision.
+> For the ACTUAL current state, see `specs/shared/current-state.md`.
 
 ---
 
