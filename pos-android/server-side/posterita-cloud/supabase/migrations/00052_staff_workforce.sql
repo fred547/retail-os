@@ -112,7 +112,7 @@ ALTER TABLE leave_balance ENABLE ROW LEVEL SECURITY;
 -- 5. Staff performance view
 CREATE OR REPLACE VIEW v_staff_performance AS
 SELECT
-  o.account_id,
+  p.account_id,
   p.user_id,
   p.firstname || ' ' || COALESCE(p.lastname, '') as staff_name,
   p.role,
@@ -123,12 +123,12 @@ SELECT
   COALESCE(SUM(o.grand_total) / NULLIF(COUNT(DISTINCT DATE(o.date_ordered)), 0), 0) as revenue_per_day,
   MAX(o.date_ordered) as last_sale
 FROM pos_user p
-LEFT JOIN orders o ON o.created_by = p.user_id
+LEFT JOIN orders o ON o.sales_rep_id = p.user_id
   AND o.account_id = p.account_id
   AND o.is_deleted = false
   AND o.is_paid = true
 WHERE p.isactive = 'Y'
-GROUP BY o.account_id, p.user_id, p.firstname, p.lastname, p.role;
+GROUP BY p.account_id, p.user_id, p.firstname, p.lastname, p.role;
 
 -- 6. Add tables to data proxy allowlist via comment (reminder for code update)
 -- Tables: staff_schedule, staff_break, leave_type, leave_request, leave_balance, v_staff_performance
