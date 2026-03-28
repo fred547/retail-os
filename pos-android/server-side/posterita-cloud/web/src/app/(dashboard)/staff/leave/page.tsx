@@ -278,7 +278,7 @@ export default function LeavePage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-posterita-blue mt-0.5">
-                        {req.user_name.charAt(0).toUpperCase()}
+                        {(req.user_name || "?").charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900">{req.user_name}</h4>
@@ -356,7 +356,7 @@ export default function LeavePage() {
                 <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-posterita-blue">
-                      {group.name.charAt(0).toUpperCase()}
+                      {(group.name || "?").charAt(0).toUpperCase()}
                     </div>
                     <h4 className="font-semibold text-gray-900">{group.name}</h4>
                   </div>

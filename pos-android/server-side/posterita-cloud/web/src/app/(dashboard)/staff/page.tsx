@@ -12,10 +12,9 @@ import { logError } from "@/lib/error-logger";
 
 interface StaffPerformance {
   user_id: number;
-  username: string;
-  firstname: string | null;
+  staff_name: string;
   role: string;
-  order_count: number;
+  total_orders: number;
   total_revenue: number;
   avg_order_value: number;
 }
@@ -48,7 +47,7 @@ export default function StaffHubPage() {
         fetch("/api/data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ table: "v_staff_performance", select: "user_id, username, firstname, role, order_count, total_revenue, avg_order_value", order: [{ column: "total_revenue", ascending: false }], limit: 10 }),
+          body: JSON.stringify({ table: "v_staff_performance", select: "user_id, staff_name, role, total_orders, total_revenue, avg_order_value", order: [{ column: "total_revenue", ascending: false }], limit: 10 }),
         }),
         fetch("/api/data", {
           method: "POST",
@@ -195,14 +194,14 @@ export default function StaffHubPage() {
                     </span>
                   </td>
                   <td className="font-medium text-gray-900">
-                    {staff.firstname || staff.username}
+                    {staff.staff_name || "Staff"}
                   </td>
                   <td>
                     <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 capitalize">
                       {staff.role}
                     </span>
                   </td>
-                  <td className="text-right tabular-nums">{staff.order_count}</td>
+                  <td className="text-right tabular-nums">{staff.total_orders}</td>
                   <td className="text-right tabular-nums font-medium">{formatCurrency(staff.total_revenue)}</td>
                   <td className="text-right tabular-nums">{formatCurrency(staff.avg_order_value)}</td>
                 </tr>

@@ -215,7 +215,7 @@ export default function TimesheetsPage() {
                   <td>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-posterita-blue">
-                        {row.user_name.charAt(0).toUpperCase()}
+                        {(row.user_name || "?").charAt(0).toUpperCase()}
                       </div>
                       <span className="font-medium text-gray-900">{row.user_name}</span>
                     </div>
