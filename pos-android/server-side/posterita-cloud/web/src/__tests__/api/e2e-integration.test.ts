@@ -6,8 +6,9 @@
  *
  * Run with: npx vitest run src/__tests__/api/e2e-integration.test.ts --timeout 30000
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createHmac } from "crypto";
+import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://web.posterita.com";
 
@@ -25,6 +26,22 @@ let ownerId: number | null = null;
 let syncSecret: string | null = null;
 let storeId: number | null = null;
 let terminalId: number | null = null;
+
+// Mark test accounts as testing type after all tests complete
+afterAll(async () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  try {
+    const db = createClient(url, key);
+    const accountIds = [liveAccountId, demoAccountId].filter(Boolean) as string[];
+    if (accountIds.length > 0) {
+      await db.from("account")
+        .update({ type: "testing", status: "testing" })
+        .in("account_id", accountIds);
+    }
+  } catch (_) { /* best-effort cleanup */ }
+});
 
 // Helper to make API calls
 async function api(path: string, body: any, headers?: Record<string, string>) {

@@ -80,7 +80,7 @@ These are the column names that get confused most often. **Always verify against
 | Directory | Purpose |
 |-----------|---------|
 | `pos-android/` | Android POS app (Kotlin, Gradle, Hilt, Room) — offline-first |
-| `pos-android/core/database/` | **`:core:database`** — Room DB: 42 entities, 40 DAOs, AppDatabase, converters, 31 migrations |
+| `pos-android/core/database/` | **`:core:database`** — Room DB: 48 entities, 46 DAOs, AppDatabase, converters, 32 migrations |
 | `pos-android/core/common/` | **`:core:common`** — SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants |
 | `pos-android/core/network/` | **`:core:network`** — Retrofit APIs, request/response models, NetworkInterceptor |
 | `pos-android/core/sync/` | **`:core:sync`** — CloudSyncService, CloudSyncWorker, SyncStatusManager |
@@ -90,7 +90,7 @@ These are the column names that get confused most often. **Always verify against
 | `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
 | `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
 | `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00051) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00058) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
@@ -113,7 +113,7 @@ Multi-module Gradle monolith — single APK, modular codebase. No feature module
 
 ```
 :app                → Application shell, UI, Activities, Hilt DI, remaining services
-:core:database      → Room DB: 42 entities, 40 DAOs, AppDatabase, converters, schema v35 (31 migrations)
+:core:database      → Room DB: 48 entities, 46 DAOs, AppDatabase, converters, schema v42 (32 migrations)
 :core:common        → SharedPreferencesManager, LocalAccountRegistry, DateUtils, NumberUtils, Constants, OrderDetails
 :core:network       → Retrofit APIs (CloudSyncApi, ApiService, BlinkApiService, LoyaltyApiService), request/response models, NetworkInterceptor
 :core:sync          → CloudSyncService, CloudSyncWorker, SyncStatusManager
@@ -156,7 +156,7 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Verify field names and enum cases match the actual schema/API response BEFORE writing test assertions.
 - After any fix, keep running and fixing until ALL tests pass with zero failures. Do not stop at partial success.
 
-**Test counts (1,569 total):** 583 Android unit + 522 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
+**Test counts (1,617 total):** 583 Android unit + 570 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
 
 **Android instrumented tests MUST run on Firebase Test Lab** — never locally. Use `gcloud firebase test android run` with project `posterita-retail-os`. Unit tests (`testDebugUnitTest`) can still run locally. Firebase has 10 test classes (2 DAO + 8 UI).
 
@@ -201,6 +201,7 @@ When refactoring or rewriting a file, diff against the original to ensure no exi
 | Kitchen/restaurant (KDS, stations, sections) | Native | Native (`/stations`) | Sync |
 | Loyalty / promotions / menus | POS integration | Native | CRUD + Sync |
 | Shifts (clock in/out) | Settings card | Native | CRUD + Sync |
+| Shift Roster (picking/templates/periods) | WebView (`/staff/roster/pick`) | Native (`/staff/roster`) | CRUD + Sync |
 | Suppliers / POs / deliveries | — | Native | CRUD + Sync |
 | Tags (product/customer/order) | — | Native (`/tags`) | CRUD + Sync |
 | Store layout / shelf labels | Shelf browser | Native (`/store-layout`) | CRUD |
@@ -231,6 +232,8 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **print** | POST (TCP relay: base64 ESC/POS bytes → printer IP) | PWA receipt printing (SSRF-protected: private IPs only) |
 | **integrations** | list, xero/connect, xero/callback, xero/disconnect, xero/settings, xero/push, xero/refresh | Xero OAuth + invoice/payment push |
 | **download** | GET /api/download/android → GitHub Releases latest APK | Sidebar download link |
+| **staff/roster** | holidays (CRUD+seed), labor-config, operating-hours (+overrides), roster-slots (+[id]), staffing-requirements, roster-periods (+[id]+coverage/hours/approve), picks (+[id]+bulk) | Shift roster lifecycle |
+| **billing** | checkout, status, plan, portal, cancel, change-plan, webhook | Paddle billing |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
 **Render Backend** (`posterita-backend.onrender.com`): `/health`, `/webhook/whatsapp`, `/monitor/errors`, `/monitor/sync`, `/monitor/accounts`
@@ -454,7 +457,7 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification).
 
-**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app, terminal device locking, large data volume handling (batch sync + paginated pull), 556+ automated tests, www.posterita.com redesign, web customer signup page.
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with plan-based feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app + shift roster (self-service picking, weighted hours, store hours, holidays, labor config), Paddle billing integration (plan tiers, trials, webhook lifecycle), terminal device locking, large data volume handling (batch sync + paginated pull), 640+ automated tests, www.posterita.com redesign, web customer signup page.
 
 **Phase 4.5 — Mauritius Market (CURRENT):**
 | # | Feature | Priority | Status | Notes |
@@ -533,6 +536,22 @@ Flexible cross-cutting classification beyond categories. Tags are grouped (e.g.,
 **Domains:** Staff (10), POS (11), Restaurant (6), Warehouse (12), Logistics (4), CRM (3), Admin (5), Customer-facing (4)
 
 **Anti-fraud:** Rate limiting (60s cooldown), WiFi SSID geo-check, dual-store alert, badge revocation via user deactivation
+
+## Shift Roster
+
+Self-service shift picking with weighted hours. Staff picks shifts from templates, supervisor reviews and approves, system generates staff_schedule rows.
+
+**Tables:** `store_operating_hours`, `store_hours_override`, `public_holiday`, `labor_config`, `roster_template_slot`, `staffing_requirement`, `roster_period`, `shift_pick`. Modified: `staff_schedule` (+slot_id, roster_period_id, pick_id, effective_hours, day_type, multiplier), `shift` (+effective_hours, day_type, multiplier), `account` (+country_code).
+
+**Effective hours:** real_hours x day_type multiplier. Weekday=1.0, Saturday=1.0, Sunday=1.5, Public Holiday=2.0 (Mauritius defaults). Computed on pick creation and shift clock-out.
+
+**API:** 16 routes under `/api/staff/` — holidays (CRUD + seed), labor-config, operating-hours (+ overrides), roster-slots (+ [id]), staffing-requirements, roster-periods (+ [id] + coverage/hours/approve), picks (+ [id] + bulk).
+
+**Web:** `/staff/roster` (3-tab hub: Templates weekly grid, Periods list, Labor Config), `/staff/roster/[periodId]` (supervisor dashboard: coverage matrix + hours matrix), `/staff/roster/pick` (self-service calendar), `/staff/holidays` (holiday calendar + seed), `/staff/operating-hours` (store hours + overrides).
+
+**Period lifecycle:** `open → picking → review → approved → locked`. Approve generates `staff_schedule` rows from approved picks.
+
+**Android:** 6 Room entities + DAOs (v42), CloudSync pull integration, StaffHomeActivity "Roster" button (WebView) + "My Upcoming Shifts" card.
 
 ## PWA Offline POS (Windows/Mac/Linux)
 

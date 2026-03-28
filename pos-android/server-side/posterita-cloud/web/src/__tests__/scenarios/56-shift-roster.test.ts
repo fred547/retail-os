@@ -40,8 +40,8 @@ describe.skipIf(SKIP_SCENARIOS)('Scenario 56: Shift Roster Lifecycle', () => {
     await db.from('account').insert({
       account_id: ACCOUNT_ID,
       businessname: `Test Roster ${TEST_PREFIX}`,
-      type: 'live',
-      status: 'active',
+      type: 'testing',
+      status: 'testing',
       currency: 'MUR',
       country_code: 'MU',
     });
