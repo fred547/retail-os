@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getDb } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { fireWebhook } from "@/lib/webhooks";
 
 export const maxDuration = 60;
 
@@ -515,6 +516,15 @@ export async function POST(req: NextRequest) {
             tillsSynced++; // still counts as handled (just skipped update)
           } else {
             tillsSynced++;
+            // Fire webhook (non-blocking)
+            const tillEvent = dbTill.date_closed ? "till.closed" : "till.opened";
+            fireWebhook(getDb(), body.account_id, tillEvent, {
+              till_id: dbTill.till_id,
+              documentno: dbTill.documentno,
+              opening_amt: dbTill.opening_amt,
+              closing_amt: dbTill.closing_amt,
+              uuid: till.uuid,
+            }).catch(() => {});
           }
         } catch (e: any) {
           errors.push(`Till: ${e.message}`);
@@ -606,6 +616,14 @@ export async function POST(req: NextRequest) {
           } else {
             ordersSynced++;
             newOrderIds.add(dbOrder.order_id);
+            // Fire webhook (non-blocking)
+            fireWebhook(getDb(), body.account_id, "order.created", {
+              order_id: dbOrder.order_id,
+              document_no: dbOrder.document_no,
+              grand_total: dbOrder.grand_total,
+              date_ordered: dbOrder.date_ordered,
+              uuid: order.uuid,
+            }).catch(() => {});
           }
         } catch (e: any) {
           errors.push(`Order ${order.uuid}: ${e.message}`);

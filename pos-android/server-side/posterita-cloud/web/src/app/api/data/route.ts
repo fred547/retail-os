@@ -55,6 +55,7 @@ const ALLOWED_TABLES = new Set([
   "serial_item", "supplier", "purchase_order", "purchase_order_line",
   "tag_group", "tag", "product_tag", "customer_tag", "order_tag",
   "quotation", "quotation_line",
+  "webhook_subscription", "webhook_log",
   // SECURITY: "owner" removed — contains all owners' emails/phones, must go through /api/owner/[id]
 ]);
 

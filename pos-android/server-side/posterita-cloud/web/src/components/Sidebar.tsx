@@ -107,6 +107,7 @@ const sections: NavSection[] = [
       { name: "Users", href: "/users", icon: UserCog },
       { name: "Brands", href: "/brands", icon: Building2 },
       { name: "Integrations", href: "/integrations", icon: Link2 },
+      { name: "Webhooks", href: "/webhooks", icon: Link2 },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
   },
