@@ -41,6 +41,8 @@ import {
   Download,
   Smartphone,
   Percent,
+  CalendarOff,
+  Calendar,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -97,6 +99,15 @@ const sections: NavSection[] = [
       { name: "Suppliers", href: "/suppliers", icon: Truck },
       { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
       { name: "Store Layout", href: "/store-layout", icon: MapPin },
+    ],
+  },
+  {
+    label: "Staff",
+    items: [
+      { name: "Staff Hub", href: "/staff", icon: Users },
+      { name: "Schedule", href: "/staff/schedule", icon: Calendar },
+      { name: "Timesheets", href: "/staff/timesheets", icon: Clock },
+      { name: "Leave", href: "/staff/leave", icon: CalendarOff },
     ],
   },
   {
@@ -224,7 +235,7 @@ export default function Sidebar({
         fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ table: "restaurant_table", select: "table_id", limit: 1 }) }).then(r => r.json()),
         fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ table: "serial_item", select: "id", limit: 1 }) }).then(r => r.json()),
+          body: JSON.stringify({ table: "serial_item", select: "serial_item_id", limit: 1 }) }).then(r => r.json()),
         fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ table: "supplier", select: "supplier_id", limit: 1 }) }).then(r => r.json()),
         fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },

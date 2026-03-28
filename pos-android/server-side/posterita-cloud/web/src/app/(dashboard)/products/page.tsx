@@ -70,7 +70,7 @@ export default async function ProductsPage({
     }
   }
 
-  // Run all queries in parallel for speed
+  // Run product query + metadata in parallel; product_tag runs after (needs product IDs)
   const [
     { data: products, count, error: queryError },
     { count: reviewCount },
@@ -78,7 +78,6 @@ export default async function ProductsPage({
     { data: categories },
     { data: tagGroups },
     { data: allTags },
-    { data: productTags },
   ] = await Promise.all([
     query,
     supabase.from("product").select("product_id", { count: "exact", head: true })
@@ -91,10 +90,14 @@ export default async function ProductsPage({
       .eq("account_id", accountId).eq("is_deleted", false).order("name"),
     supabase.from("tag").select("tag_id, tag_group_id, name, color")
       .eq("account_id", accountId).eq("is_deleted", false).order("position"),
-    supabase.from("product_tag").select("product_id, tag_id")
-      .eq("account_id", accountId),
   ]);
   if (queryError) console.error("[products] query error:", queryError.message);
+
+  // Only fetch tags for the current page of products (not the entire account)
+  const productIds = (products ?? []).map((p: any) => p.product_id);
+  const { data: productTags } = productIds.length > 0
+    ? await supabase.from("product_tag").select("product_id, tag_id").in("product_id", productIds)
+    : { data: [] };
 
   // Map category names onto products (since FK join was dropped)
   const catMap: Record<number, string> = {};

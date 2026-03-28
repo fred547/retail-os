@@ -146,6 +146,65 @@ async function insertOrUpdate(
 }
 
 /**
+ * Cached variant of insertOrUpdate: uses a pre-fetched map of existing records
+ * to avoid per-record SELECT queries (N+1 → 1 batch SELECT).
+ */
+async function insertOrUpdateWithCache(
+  table: string,
+  record: Record<string, any>,
+  uuidValue: string,
+  existingMap: Map<string, { uuid: string; updated_at: string | null; is_sync: boolean }>
+): Promise<UpsertResult> {
+  const existing = existingMap.get(uuidValue);
+
+  if (existing) {
+    // Record exists — check for conflicts before updating
+    const existingUpdatedAt = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
+    const incomingUpdatedAt = record.updated_at ? new Date(record.updated_at).getTime() : Date.now();
+
+    // Stale overwrite detection: if server has a NEWER version, skip the update
+    if (existingUpdatedAt > 0 && incomingUpdatedAt > 0 && existingUpdatedAt > incomingUpdatedAt) {
+      return { error: null, conflict: "stale_overwrite" };
+    }
+
+    // Duplicate push detection: exact same timestamp = idempotent, just skip
+    if (existingUpdatedAt > 0 && existingUpdatedAt === incomingUpdatedAt && existing.is_sync) {
+      return { error: null, conflict: "duplicate_push" };
+    }
+
+    // Safe to update — incoming is newer or same
+    record.updated_at = new Date().toISOString();
+    const updateResult = await getDb()
+      .from(table)
+      .update(record)
+      .eq("uuid", uuidValue)
+      .eq("account_id", record.account_id);
+    return { error: updateResult.error };
+  }
+
+  // Doesn't exist → insert
+  record.updated_at = new Date().toISOString();
+  const insertResult = await getDb().from(table).insert(record);
+
+  if (insertResult.error) {
+    const code = (insertResult.error as any).code;
+    const msg = insertResult.error.message || "";
+    // Race condition: another sync inserted between batch-check and insert
+    if (code === "23505" || msg.includes("duplicate")) {
+      const updateResult = await getDb()
+        .from(table)
+        .update(record)
+        .eq("uuid", uuidValue)
+        .eq("account_id", record.account_id);
+      return { error: updateResult.error };
+    }
+    return { error: insertResult.error };
+  }
+
+  return { error: null };
+}
+
+/**
  * Multi-tenant safe upsert: checks if the PK exists for THIS account.
  * - If it exists and belongs to this account → UPDATE
  * - If it exists but belongs to another account → skip (log error)
@@ -476,6 +535,13 @@ export async function POST(req: NextRequest) {
 
     // Sync tills FIRST (orders reference till_id via FK)
     if (body.tills?.length) {
+      // Batch-fetch existing tills by UUID to avoid N+1 SELECT queries
+      const tillUuids = body.tills.map((t: any) => t.uuid).filter(Boolean);
+      const { data: existingTills } = tillUuids.length > 0
+        ? await getDb().from("till").select("uuid, updated_at, is_sync").eq("account_id", body.account_id).in("uuid", tillUuids)
+        : { data: [] };
+      const existingTillMap = new Map<string, { uuid: string; updated_at: string | null; is_sync: boolean }>(Array.isArray(existingTills) ? existingTills.map((t: any) => [t.uuid, t]) : []);
+
       for (const till of body.tills) {
         try {
           // NOTE: Use ?? (nullish coalescing) for ALL numeric fields.
@@ -507,7 +573,7 @@ export async function POST(req: NextRequest) {
             status: till.status || (till.dateClosed || till.date_closed ? "closed" : "open"),
           };
 
-          const result = await insertOrUpdate("till", dbTill, till.uuid);
+          const result = await insertOrUpdateWithCache("till", dbTill, till.uuid, existingTillMap);
 
           if (result.error) {
             errors.push(`Till ${till.uuid}: ${result.error.message}`);
@@ -544,6 +610,13 @@ export async function POST(req: NextRequest) {
     // Sync orders (after tills, since orders.till_id references till)
     const newOrderIds = new Set<number>(); // Track newly-inserted order IDs for stock deduction
     if (body.orders?.length) {
+      // Batch-fetch existing orders by UUID to avoid N+1 SELECT queries
+      const orderUuids = body.orders.map((o: any) => o.uuid).filter(Boolean);
+      const { data: existingOrders } = orderUuids.length > 0
+        ? await getDb().from("orders").select("uuid, updated_at, is_sync").eq("account_id", body.account_id).in("uuid", orderUuids)
+        : { data: [] };
+      const existingOrderMap = new Map<string, { uuid: string; updated_at: string | null; is_sync: boolean }>(Array.isArray(existingOrders) ? existingOrders.map((o: any) => [o.uuid, o]) : []);
+
       for (const order of body.orders) {
         try {
           // Map Android field names to Supabase column names
@@ -606,7 +679,7 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          const result = await insertOrUpdate("orders", dbOrder, order.uuid);
+          const result = await insertOrUpdateWithCache("orders", dbOrder, order.uuid, existingOrderMap);
 
           if (result.error) {
             errors.push(`Order ${order.uuid}: ${result.error.message}`);
