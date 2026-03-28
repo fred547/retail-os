@@ -10,7 +10,7 @@
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ldyoiexyqvklujvwcaqq.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://db.posterita.com';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const BASE_URL = process.env.SCENARIO_BASE_URL || 'https://web.posterita.com';
 const SKIP = !SUPABASE_KEY;

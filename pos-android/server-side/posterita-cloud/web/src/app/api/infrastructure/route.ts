@@ -35,7 +35,7 @@ export async function GET() {
     services.supabase = {
       status: "active",
       project: "ldyoiexyqvklujvwcaqq",
-      url: "https://ldyoiexyqvklujvwcaqq.supabase.co",
+      url: "https://db.posterita.com",
       plan: "Pro ($25/month)",
       compute: "Small (2 vCPUs, 2GB RAM)",
       region: "AWS ap-south-1 (Mumbai)",

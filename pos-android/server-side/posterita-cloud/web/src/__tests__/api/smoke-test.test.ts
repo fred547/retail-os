@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 
 const BASE = process.env.SMOKE_TEST_URL || "https://web.posterita.com";
-const SUPABASE_URL = "https://ldyoiexyqvklujvwcaqq.supabase.co";
+const SUPABASE_URL = "https://db.posterita.com";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 // Skip if no service key (local dev without credentials)

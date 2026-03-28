@@ -98,7 +98,7 @@ These are the column names that get confused most often. **Always verify against
 
 - **Android:** Kotlin, Room (v35, multi-module), Hilt, Coroutines, Retrofit, WorkManager, ZXing, Blink
 - **Web:** Next.js 16 (App Router) on Vercel — responsive design, `prefetch={true}` on sidebar links
-- **DB:** Supabase Postgres — `account_id` is TEXT. **RLS enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
+- **DB:** Supabase Postgres at `https://db.posterita.com` (custom domain). `account_id` is TEXT. **RLS enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` = `https://web.posterita.com`.
 - **AI:** Claude Haiku 4.5 + Sonnet 4.6 via Anthropic API — Haiku for AI import/discovery, Sonnet for intake processing
 - **Production Web:** `https://web.posterita.com` (Vercel)
