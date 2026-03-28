@@ -49,11 +49,16 @@ data class CloudSyncResponse(
     @SerializedName("pull_page") val pullPage: Int = 0,
     @SerializedName("pull_page_size") val pullPageSize: Int = 1000,
 
-    // Stats
+    // Stats — push counts
     @SerializedName("orders_synced") val ordersSynced: Int = 0,
     @SerializedName("order_lines_synced") val orderLinesSynced: Int = 0,
     @SerializedName("payments_synced") val paymentsSynced: Int = 0,
     @SerializedName("tills_synced") val tillsSynced: Int = 0,
+    @SerializedName("error_logs_synced") val errorLogsSynced: Int = 0,
+    @SerializedName("inventory_entries_synced") val inventoryEntriesSynced: Int = 0,
+    @SerializedName("serial_items_synced") val serialItemsSynced: Int = 0,
+    @SerializedName("deliveries_synced") val deliveriesSynced: Int = 0,
+    @SerializedName("conflicts_detected") val conflictsDetected: Int = 0,
     @SerializedName("errors") val errors: List<String>? = null,
 
     // Error (for non-200 responses)
