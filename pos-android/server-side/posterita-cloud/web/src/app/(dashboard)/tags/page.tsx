@@ -161,12 +161,20 @@ export default function TagsPage() {
             {groups.length} group{groups.length !== 1 ? "s" : ""}, {groups.reduce((s, g) => s + g.tags.length, 0)} tags
           </p>
         </div>
-        <button
-          onClick={() => setShowGroupForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
-        >
-          <Plus size={16} /> New Group
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/customer/tags/auto-rules"
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
+          >
+            Auto-Tag Rules
+          </a>
+          <button
+            onClick={() => setShowGroupForm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
+          >
+            <Plus size={16} /> New Group
+          </button>
+        </div>
       </div>
 
       {/* Tag Groups */}
