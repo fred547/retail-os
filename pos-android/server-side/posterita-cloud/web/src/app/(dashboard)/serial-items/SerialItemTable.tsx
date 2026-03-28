@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 
 interface SerialItem {
-  id: number;
+  serial_item_id: number;
   serial_number: string;
   serial_type: string;
   status: string;
@@ -97,7 +97,7 @@ export default function SerialItemTable({ items }: { items: SerialItem[] }) {
           {items.map((item) => {
             const warranty = warrantyStatus(item.purchase_date, item.warranty_months);
             return (
-              <tr key={item.id} className="hover:bg-blue-50/50 transition">
+              <tr key={item.serial_item_id} className="hover:bg-blue-50/50 transition">
                 <td>
                   <span className="font-mono text-sm font-medium">
                     {item.serial_number}
@@ -133,7 +133,7 @@ export default function SerialItemTable({ items }: { items: SerialItem[] }) {
                 </td>
                 <td>
                   <Link
-                    href={`/customer/serial-items/${item.id}`}
+                    href={`/customer/serial-items/${item.serial_item_id}`}
                     className="text-gray-400 hover:text-posterita-blue p-1 inline-block"
                     aria-label={`Edit ${item.serial_number}`}
                   >

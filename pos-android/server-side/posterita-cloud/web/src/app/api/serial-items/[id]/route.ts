@@ -19,7 +19,7 @@ export async function GET(
   const { data, error } = await getDb()
     .from("serial_item")
     .select("*")
-    .eq("id", parseInt(id))
+    .eq("serial_item_id", parseInt(id))
     .eq("account_id", accountId)
     .single();
 
@@ -77,7 +77,7 @@ export async function PATCH(
   const { data, error } = await getDb()
     .from("serial_item")
     .update(updates)
-    .eq("id", parseInt(id))
+    .eq("serial_item_id", parseInt(id))
     .eq("account_id", accountId)
     .select()
     .single();
