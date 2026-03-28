@@ -118,15 +118,7 @@ class StaffHomeActivity : BaseActivity() {
             }
             val hoursToday = todayShifts.sumOf { it.hours_worked ?: 0.0 }
             // If active shift, add elapsed time
-            val activeHours = if (activeShift?.clock_in != null) {
-                try {
-                    val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
-                        timeZone = TimeZone.getTimeZone("UTC")
-                    }
-                    val clockIn = fmt.parse(activeShift!!.clock_in!!.replace(".000Z", "").replace("Z", ""))
-                    if (clockIn != null) (System.currentTimeMillis() - clockIn.time) / 3600000.0 else 0.0
-                } catch (_: Exception) { 0.0 }
-            } else 0.0
+            val activeHours = com.posterita.pos.android.util.DateUtils.hoursElapsedSinceUtc(activeShift?.clock_in)
             binding.textHoursToday.text = String.format("%.1f", hoursToday + activeHours)
 
             // Orders today
@@ -162,13 +154,7 @@ class StaffHomeActivity : BaseActivity() {
                         timeZone = TimeZone.getTimeZone("UTC")
                     }.format(Date()),
                     status = Shift.STATUS_COMPLETED,
-                    hours_worked = try {
-                        val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
-                            timeZone = TimeZone.getTimeZone("UTC")
-                        }
-                        val clockIn = fmt.parse(activeShift!!.clock_in!!.replace(".000Z", "").replace("Z", ""))
-                        if (clockIn != null) (System.currentTimeMillis() - clockIn.time) / 3600000.0 else 0.0
-                    } catch (_: Exception) { 0.0 }
+                    hours_worked = com.posterita.pos.android.util.DateUtils.hoursElapsedSinceUtc(activeShift!!.clock_in)
                 )
                 withContext(Dispatchers.IO) {
                     db.shiftDao().insertAll(listOf(updatedShift))
