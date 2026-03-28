@@ -43,11 +43,40 @@ import {
   Percent,
   CalendarOff,
   Calendar,
+  CreditCard,
+  Lock,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-interface NavItem { name: string; href: string; icon: any }
+interface NavItem {
+  name: string;
+  href: string;
+  icon: any;
+  /** If set, item requires this plan constraint to be 'true'. Key without 'feature_' prefix. */
+  feature?: string;
+}
 interface NavSection { label: string; items: NavItem[]; defaultOpen?: boolean }
+
+/** Maps a feature key to the minimum plan that includes it */
+const FEATURE_MIN_PLAN: Record<string, string> = {
+  loyalty: "Growth",
+  promotions: "Growth",
+  restaurant: "Growth",
+  ai_import: "Growth",
+  suppliers: "Growth",
+  quotations: "Growth",
+  tags: "Growth",
+  delivery: "Growth",
+  analytics: "Growth",
+  inventory_counts: "Growth",
+  serialized_items: "Business",
+  warehouse: "Business",
+  xero: "Business",
+  webhooks: "Business",
+  tower_control: "Business",
+  staff_scheduling: "Business",
+  qr_actions: "Business",
+};
 
 const sections: NavSection[] = [
   {
@@ -62,10 +91,10 @@ const sections: NavSection[] = [
     items: [
       { name: "Products", href: "/products", icon: Package },
       { name: "Categories", href: "/categories", icon: FolderTree },
-      { name: "Tags", href: "/tags", icon: Tag },
+      { name: "Tags", href: "/tags", icon: Tag, feature: "tags" },
       { name: "Price Review", href: "/price-review", icon: DollarSign },
-      { name: "AI Import", href: "/ai-import", icon: Sparkles },
-      { name: "Product Intake", href: "/intake", icon: Inbox },
+      { name: "AI Import", href: "/ai-import", icon: Sparkles, feature: "ai_import" },
+      { name: "Product Intake", href: "/intake", icon: Inbox, feature: "ai_import" },
       { name: "PDF Catalogue", href: "/catalogue", icon: FileText },
     ],
   },
@@ -73,42 +102,45 @@ const sections: NavSection[] = [
     label: "Sales",
     items: [
       { name: "Orders", href: "/orders", icon: ShoppingCart },
-      { name: "Quotations", href: "/quotations", icon: FileText },
+      { name: "Quotations", href: "/quotations", icon: FileText, feature: "quotations" },
       { name: "Tills", href: "/tills", icon: Wallet },
       { name: "Customers", href: "/customers", icon: Users },
-      { name: "Loyalty", href: "/loyalty", icon: Heart },
+      { name: "Loyalty", href: "/loyalty", icon: Heart, feature: "loyalty" },
       { name: "Shifts", href: "/shifts", icon: Clock },
-      { name: "Deliveries", href: "/deliveries", icon: Truck },
-      { name: "Promotions", href: "/promotions", icon: Percent },
+      { name: "Deliveries", href: "/deliveries", icon: Truck, feature: "delivery" },
+      { name: "Promotions", href: "/promotions", icon: Percent, feature: "promotions" },
       { name: "Reports", href: "/reports", icon: BarChart3 },
     ],
   },
   {
     label: "Restaurant",
     items: [
-      { name: "Tables", href: "/tables", icon: UtensilsCrossed },
-      { name: "Stations", href: "/stations", icon: ChefHat },
-      { name: "Menu Schedules", href: "/menu-schedules", icon: Clock },
+      { name: "Tables", href: "/tables", icon: UtensilsCrossed, feature: "restaurant" },
+      { name: "Stations", href: "/stations", icon: ChefHat, feature: "restaurant" },
+      { name: "Menu Schedules", href: "/menu-schedules", icon: Clock, feature: "restaurant" },
     ],
   },
   {
     label: "Inventory",
     items: [
-      { name: "Spot Checks", href: "/inventory", icon: ClipboardList },
-      { name: "Full Count", href: "/stock-count", icon: ClipboardList },
-      { name: "Serial Items", href: "/serial-items", icon: Tag },
-      { name: "Suppliers", href: "/suppliers", icon: Truck },
-      { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
-      { name: "Store Layout", href: "/store-layout", icon: MapPin },
+      { name: "Spot Checks", href: "/inventory", icon: ClipboardList, feature: "inventory_counts" },
+      { name: "Full Count", href: "/stock-count", icon: ClipboardList, feature: "inventory_counts" },
+      { name: "Serial Items", href: "/serial-items", icon: Tag, feature: "serialized_items" },
+      { name: "Suppliers", href: "/suppliers", icon: Truck, feature: "suppliers" },
+      { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList, feature: "suppliers" },
+      { name: "Store Layout", href: "/store-layout", icon: MapPin, feature: "warehouse" },
     ],
   },
   {
     label: "Staff",
     items: [
-      { name: "Staff Hub", href: "/staff", icon: Users },
-      { name: "Schedule", href: "/staff/schedule", icon: Calendar },
-      { name: "Timesheets", href: "/staff/timesheets", icon: Clock },
-      { name: "Leave", href: "/staff/leave", icon: CalendarOff },
+      { name: "Staff Hub", href: "/staff", icon: Users, feature: "staff_scheduling" },
+      { name: "Schedule", href: "/staff/schedule", icon: Calendar, feature: "staff_scheduling" },
+      { name: "Roster", href: "/staff/roster", icon: ClipboardList, feature: "staff_scheduling" },
+      { name: "Timesheets", href: "/staff/timesheets", icon: Clock, feature: "staff_scheduling" },
+      { name: "Leave", href: "/staff/leave", icon: CalendarOff, feature: "staff_scheduling" },
+      { name: "Holidays", href: "/staff/holidays", icon: Calendar, feature: "staff_scheduling" },
+      { name: "Operating Hours", href: "/staff/operating-hours", icon: Clock, feature: "staff_scheduling" },
     ],
   },
   {
@@ -118,15 +150,16 @@ const sections: NavSection[] = [
       { name: "Terminals", href: "/terminals", icon: Monitor },
       { name: "Users", href: "/users", icon: UserCog },
       { name: "Brands", href: "/brands", icon: Building2 },
-      { name: "Integrations", href: "/integrations", icon: Link2 },
-      { name: "Webhooks", href: "/webhooks", icon: Link2 },
+      { name: "Integrations", href: "/integrations", icon: Link2, feature: "xero" },
+      { name: "Webhooks", href: "/webhooks", icon: Link2, feature: "webhooks" },
       { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Billing", href: "/billing", icon: CreditCard },
     ],
   },
   {
     label: "System",
     items: [
-      { name: "Tower Control", href: "/tower", icon: Monitor },
+      { name: "Tower Control", href: "/tower", icon: Monitor, feature: "tower_control" },
       { name: "Errors", href: "/errors", icon: AlertTriangle },
       { name: "Sync Inbox", href: "/sync-inbox", icon: RefreshCw },
     ],
@@ -135,6 +168,17 @@ const sections: NavSection[] = [
 
 // Flat list for portal mapping
 const navigation = sections.flatMap(s => s.items);
+
+// Plan billing info cache key
+const PLAN_CACHE_KEY = "posterita_plan_cache";
+const PLAN_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface PlanInfo {
+  plan: string;
+  isTrial: boolean;
+  trialEndsAt: string | null;
+  constraints: Record<string, string>;
+}
 
 export default function Sidebar({
   portal = "root",
@@ -156,6 +200,8 @@ export default function Sidebar({
     deliveries: true,
   });
   const [showAll, setShowAll] = useState(false);
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [upgradePrompt, setUpgradePrompt] = useState<{ feature: string; minPlan: string } | null>(null);
 
   // Collapsible sections — open the section that contains the current page
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
@@ -199,7 +245,40 @@ export default function Sidebar({
     checkSuperAdmin().finally(() => setAuthChecked(true));
     fetchBrandContext();
     fetchFeatureFlags();
+    fetchPlanInfo();
   }, []);
+
+  const fetchPlanInfo = async () => {
+    try {
+      // Check sessionStorage cache
+      const cached = sessionStorage.getItem(PLAN_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.ts < PLAN_CACHE_TTL) {
+          setPlanInfo(parsed.data);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    try {
+      const res = await fetch("/api/billing/plan");
+      if (!res.ok) return;
+      const data = await res.json();
+      const info: PlanInfo = {
+        plan: data.plan,
+        isTrial: data.isTrial,
+        trialEndsAt: data.trialEndsAt,
+        constraints: data.constraints ?? {},
+      };
+      setPlanInfo(info);
+      try {
+        sessionStorage.setItem(PLAN_CACHE_KEY, JSON.stringify({ data: info, ts: Date.now() }));
+      } catch (_) {}
+    } catch (_) {
+      // If fetch fails, leave planInfo null (all items visible)
+    }
+  };
 
   const fetchBrandContext = async () => {
     try {
@@ -314,6 +393,19 @@ export default function Sidebar({
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
+  /**
+   * Check if a feature is accessible on the current plan.
+   * Returns true if no plan info loaded yet (permissive fallback).
+   */
+  const isFeatureAccessible = (featureKey: string): boolean => {
+    if (!planInfo) return true; // No plan info = show everything (loading or error)
+    if (superAdmin) return true; // Super admins see everything
+    const constraintKey = `feature_${featureKey}`;
+    const val = planInfo.constraints[constraintKey];
+    if (val === undefined) return true; // Unknown constraint = don't gate
+    return val === "true";
+  };
+
   const portalSections =
     portal === "customer"
       ? sections.map((section) => ({
@@ -330,13 +422,13 @@ export default function Sidebar({
     : portalSections.map(section => ({
         ...section,
         items: section.items.filter(item => {
-          // Hide Restaurant section items if no tables configured
+          // Hide Restaurant section items if no tables configured (data-based)
           if (!features.restaurant && (item.name === "Tables" || item.name === "Stations" || item.name === "Menu Schedules")) return false;
-          // Hide Serial Items if none exist
+          // Hide Serial Items if none exist (data-based)
           if (!features.serialItems && item.name === "Serial Items") return false;
-          // Hide Deliveries if none exist
+          // Hide Deliveries if none exist (data-based)
           if (!features.deliveries && item.name === "Deliveries") return false;
-          // Hide Suppliers if none exist
+          // Hide Suppliers if none exist (data-based)
           if (!features.suppliers && (item.name === "Suppliers" || item.name === "Purchase Orders")) return false;
           // Always show everything else
           return true;
@@ -371,10 +463,22 @@ export default function Sidebar({
           {(brandContext.store || brandContext.terminal) && (
             <div className="flex items-center gap-1 mt-0.5 text-[11px] text-gray-400">
               {brandContext.store && <span className="truncate">{brandContext.store}</span>}
-              {brandContext.store && brandContext.terminal && <span className="text-gray-600">›</span>}
+              {brandContext.store && brandContext.terminal && <span className="text-gray-600">&rsaquo;</span>}
               {brandContext.terminal && <span className="truncate text-gray-500">{brandContext.terminal}</span>}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Trial banner */}
+      {planInfo?.isTrial && planInfo.trialEndsAt && (
+        <div className="mx-3 mt-2 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <div className="text-[11px] text-blue-300 font-medium">
+            {planInfo.plan.charAt(0).toUpperCase() + planInfo.plan.slice(1)} Trial
+          </div>
+          <div className="text-[10px] text-blue-400/70 mt-0.5">
+            Ends {new Date(planInfo.trialEndsAt).toLocaleDateString()}
+          </div>
         </div>
       )}
 
@@ -451,6 +555,29 @@ export default function Sidebar({
                     ? pathname === "/"
                     : pathname.startsWith(item.href);
                 const Icon = item.icon;
+                const featureKey = item.feature;
+                const locked = featureKey ? !isFeatureAccessible(featureKey) : false;
+                const minPlan = featureKey ? FEATURE_MIN_PLAN[featureKey] : undefined;
+
+                if (locked) {
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => setUpgradePrompt({ feature: item.name, minPlan: minPlan ?? "Growth" })}
+                      className="sidebar-link w-full text-gray-500 opacity-60 hover:opacity-80 cursor-pointer"
+                    >
+                      <Icon size={18} />
+                      <span>{item.name}</span>
+                      <span className="ml-auto flex items-center gap-1">
+                        <Lock size={12} className="text-gray-600" />
+                        <span className="text-[9px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded-full font-medium">
+                          {minPlan}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.name}
@@ -531,6 +658,43 @@ export default function Sidebar({
           </button>
         </div>
       </div>
+
+      {/* Upgrade prompt modal */}
+      {upgradePrompt && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setUpgradePrompt(null)} />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-slate-800 border border-slate-600 rounded-xl p-6 max-w-sm w-[90%] shadow-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Lock size={20} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">Upgrade Required</h3>
+                <p className="text-gray-400 text-xs">{upgradePrompt.feature} needs {upgradePrompt.minPlan} plan</p>
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              This feature is available on the <span className="font-semibold text-white">{upgradePrompt.minPlan}</span> plan and above.
+              Upgrade to unlock it for your team.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setUpgradePrompt(null)}
+                className="flex-1 px-3 py-2 text-sm text-gray-400 hover:text-white border border-slate-600 rounded-lg transition"
+              >
+                Maybe later
+              </button>
+              <Link
+                href="/billing"
+                onClick={() => setUpgradePrompt(null)}
+                className="flex-1 px-3 py-2 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg text-center transition"
+              >
+                View Plans
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 

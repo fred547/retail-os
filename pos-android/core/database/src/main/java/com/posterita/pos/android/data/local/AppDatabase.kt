@@ -45,9 +45,15 @@ import com.posterita.pos.android.data.local.entity.*
         LeaveRequest::class,
         LeaveBalance::class,
         CountPlan::class,
-        CountScan::class
+        CountScan::class,
+        RosterTemplateSlot::class,
+        RosterPeriod::class,
+        ShiftPick::class,
+        PublicHoliday::class,
+        LaborConfig::class,
+        StoreOperatingHours::class
     ],
-    version = 40,
+    version = 43,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -102,6 +108,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun leaveBalanceDao(): LeaveBalanceDao
     abstract fun countPlanDao(): CountPlanDao
     abstract fun countScanDao(): CountScanDao
+    abstract fun rosterTemplateSlotDao(): RosterTemplateSlotDao
+    abstract fun rosterPeriodDao(): RosterPeriodDao
+    abstract fun shiftPickDao(): ShiftPickDao
+    abstract fun publicHolidayDao(): PublicHolidayDao
+    abstract fun laborConfigDao(): LaborConfigDao
+    abstract fun storeOperatingHoursDao(): StoreOperatingHoursDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -154,7 +166,10 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_36_37,
                         MIGRATION_37_38,
                         MIGRATION_38_39,
-                        MIGRATION_39_40
+                        MIGRATION_39_40,
+                        MIGRATION_40_41,
+                        MIGRATION_41_42,
+                        MIGRATION_42_43
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -210,7 +225,10 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_36_37,
                     MIGRATION_37_38,
                     MIGRATION_38_39,
-                    MIGRATION_39_40
+                    MIGRATION_39_40,
+                    MIGRATION_40_41,
+                    MIGRATION_41_42,
+                    MIGRATION_42_43
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -798,6 +816,127 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `count_plan` (`id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `store_id` INTEGER NOT NULL DEFAULT 0, `name` TEXT NOT NULL, `status` TEXT NOT NULL DEFAULT 'draft', `notes` TEXT, `started_at` TEXT, `completed_at` TEXT, `created_by` INTEGER NOT NULL DEFAULT 0, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `count_scan` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `plan_id` INTEGER NOT NULL DEFAULT 0, `account_id` TEXT NOT NULL, `user_id` INTEGER NOT NULL DEFAULT 0, `user_name` TEXT, `shelf` INTEGER NOT NULL DEFAULT 0, `height` TEXT NOT NULL DEFAULT 'A', `product_id` INTEGER, `barcode` TEXT, `product_name` TEXT, `quantity` INTEGER NOT NULL DEFAULT 1, `is_unknown` INTEGER NOT NULL DEFAULT 0, `is_synced` INTEGER NOT NULL DEFAULT 0, `notes` TEXT, `scanned_at` TEXT)")
+            }
+        }
+
+        private val MIGRATION_40_41 = object : Migration(40, 41) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE account ADD COLUMN plan TEXT DEFAULT 'free'")
+                db.execSQL("ALTER TABLE account ADD COLUMN billing_region TEXT DEFAULT 'developing'")
+            }
+        }
+
+        private val MIGRATION_41_42 = object : Migration(41, 42) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS roster_template_slot (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        name TEXT NOT NULL DEFAULT '',
+                        day_of_week INTEGER NOT NULL DEFAULT 1,
+                        start_time TEXT NOT NULL DEFAULT '',
+                        end_time TEXT NOT NULL DEFAULT '',
+                        break_minutes INTEGER NOT NULL DEFAULT 30,
+                        required_role TEXT,
+                        color TEXT,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS roster_period (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        name TEXT,
+                        start_date TEXT NOT NULL DEFAULT '',
+                        end_date TEXT NOT NULL DEFAULT '',
+                        status TEXT NOT NULL DEFAULT 'open',
+                        picking_deadline TEXT,
+                        approved_by INTEGER,
+                        approved_at TEXT,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS shift_pick (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        roster_period_id INTEGER NOT NULL DEFAULT 0,
+                        slot_id INTEGER NOT NULL DEFAULT 0,
+                        user_id INTEGER NOT NULL DEFAULT 0,
+                        date TEXT NOT NULL DEFAULT '',
+                        status TEXT NOT NULL DEFAULT 'picked',
+                        effective_hours REAL,
+                        day_type TEXT,
+                        multiplier REAL,
+                        notes TEXT,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS public_holiday (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        country_code TEXT NOT NULL DEFAULT 'MU',
+                        date TEXT NOT NULL DEFAULT '',
+                        name TEXT NOT NULL DEFAULT '',
+                        is_recurring INTEGER NOT NULL DEFAULT 0,
+                        is_deleted INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS labor_config (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        country_code TEXT NOT NULL DEFAULT 'MU',
+                        standard_weekly_hours REAL NOT NULL DEFAULT 45.0,
+                        standard_daily_hours REAL NOT NULL DEFAULT 9.0,
+                        weekday_multiplier REAL NOT NULL DEFAULT 1.0,
+                        saturday_multiplier REAL NOT NULL DEFAULT 1.0,
+                        sunday_multiplier REAL NOT NULL DEFAULT 1.5,
+                        public_holiday_multiplier REAL NOT NULL DEFAULT 2.0,
+                        overtime_multiplier REAL NOT NULL DEFAULT 1.5,
+                        min_break_minutes INTEGER NOT NULL DEFAULT 30,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS store_operating_hours (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 0,
+                        account_id TEXT NOT NULL DEFAULT '',
+                        store_id INTEGER NOT NULL DEFAULT 0,
+                        day_type TEXT NOT NULL DEFAULT 'weekday',
+                        open_time TEXT,
+                        close_time TEXT,
+                        is_closed INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT,
+                        updated_at TEXT
+                    )
+                """.trimIndent())
+                // Add roster columns to staff_schedule
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN slot_id INTEGER")
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN roster_period_id INTEGER")
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN pick_id INTEGER")
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN effective_hours REAL")
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN day_type TEXT")
+                db.execSQL("ALTER TABLE staff_schedule ADD COLUMN multiplier REAL")
+            }
+        }
+
+        private val MIGRATION_42_43 = object : Migration(42, 43) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Plan gating: trial columns on account
+                db.execSQL("ALTER TABLE account ADD COLUMN trial_plan TEXT")
+                db.execSQL("ALTER TABLE account ADD COLUMN trial_ends_at TEXT")
             }
         }
     }

@@ -13,6 +13,8 @@ import com.google.android.material.card.MaterialCardView
 import com.posterita.pos.android.R
 import com.posterita.pos.android.data.local.AppDatabase
 import com.posterita.pos.android.data.local.entity.Shift
+import com.posterita.pos.android.data.local.entity.ShiftPick
+import com.posterita.pos.android.data.local.entity.RosterTemplateSlot
 import com.posterita.pos.android.databinding.ActivityStaffHomeBinding
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
@@ -67,6 +69,9 @@ class StaffHomeActivity : BaseActivity() {
         }
         binding.buttonViewOrders.setOnClickListener {
             openWebConsole("/orders", "Orders")
+        }
+        binding.buttonRoster.setOnClickListener {
+            openWebConsole("/staff/roster/pick", "Pick Shifts")
         }
 
         // Shifts list
@@ -136,6 +141,52 @@ class StaffHomeActivity : BaseActivity() {
 
             binding.layoutEmptyShifts.visibility = if (shifts.isEmpty()) View.VISIBLE else View.GONE
             binding.recyclerShifts.visibility = if (shifts.isEmpty()) View.GONE else View.VISIBLE
+
+            // Load upcoming approved picks for this user
+            loadUpcomingPicks(accountId, userId)
+        }
+    }
+
+    private fun loadUpcomingPicks(accountId: String, userId: Int) {
+        lifecycleScope.launch {
+            try {
+                val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val picks = withContext(Dispatchers.IO) {
+                    db.shiftPickDao().getByUser(accountId, userId)
+                        .filter { it.status == "approved" && it.date >= todayStr }
+                        .sortedBy { it.date }
+                        .take(5)
+                }
+                // Get slot names for display
+                val slots = withContext(Dispatchers.IO) {
+                    db.rosterTemplateSlotDao().getAll(accountId)
+                }
+                val slotMap = slots.associateBy { it.id }
+
+                binding.cardUpcomingShifts.visibility = if (picks.isNotEmpty()) View.VISIBLE else View.GONE
+                binding.layoutUpcomingList.removeAllViews()
+
+                val dateFormat = SimpleDateFormat("EEE, MMM d", Locale.US)
+                val parseDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+                for (pick in picks) {
+                    val slot = slotMap[pick.slot_id]
+                    val dateDisplay = try {
+                        val d = parseDateFormat.parse(pick.date)
+                        if (d != null) dateFormat.format(d) else pick.date
+                    } catch (_: Exception) { pick.date }
+
+                    val row = android.widget.TextView(this@StaffHomeActivity).apply {
+                        text = "$dateDisplay  •  ${slot?.name ?: "Shift"}  ${slot?.start_time?.take(5) ?: ""}–${slot?.end_time?.take(5) ?: ""}"
+                        textSize = 12f
+                        setTextColor(getColor(R.color.posterita_ink))
+                        setPadding(0, 4, 0, 4)
+                    }
+                    binding.layoutUpcomingList.addView(row)
+                }
+            } catch (_: Exception) {
+                binding.cardUpcomingShifts.visibility = View.GONE
+            }
         }
     }
 

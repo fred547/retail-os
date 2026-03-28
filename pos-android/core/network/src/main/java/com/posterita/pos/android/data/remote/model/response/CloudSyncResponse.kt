@@ -47,6 +47,12 @@ data class CloudSyncResponse(
     @SerializedName("leave_types") val leaveTypes: List<Map<String, Any?>>? = null,
     @SerializedName("leave_requests") val leaveRequests: List<Map<String, Any?>>? = null,
     @SerializedName("leave_balances") val leaveBalances: List<Map<String, Any?>>? = null,
+    @SerializedName("roster_template_slots") val rosterTemplateSlots: List<Map<String, Any?>>? = null,
+    @SerializedName("roster_periods") val rosterPeriods: List<Map<String, Any?>>? = null,
+    @SerializedName("shift_picks") val shiftPicks: List<Map<String, Any?>>? = null,
+    @SerializedName("public_holidays") val publicHolidays: List<Map<String, Any?>>? = null,
+    @SerializedName("labor_configs") val laborConfigs: List<Map<String, Any?>>? = null,
+    @SerializedName("store_operating_hours") val storeOperatingHours: List<Map<String, Any?>>? = null,
 
     // Pagination — indicates whether more pages are available
     @SerializedName("has_more_products") val hasMoreProducts: Boolean = false,

@@ -140,12 +140,50 @@ export async function POST(req: NextRequest) {
       const breakMins = break_minutes || 0;
       const hoursWorked = Math.max(0, (clockOut.getTime() - clockIn.getTime()) / 3600000 - breakMins / 60);
 
+      // Compute effective hours: check if this date is a public holiday, then apply multiplier
+      const clockOutDate = clockOut.toISOString().slice(0, 10);
+      let dayType = "weekday";
+      let multiplier = 1.0;
+      try {
+        const { data: holiday } = await getDb()
+          .from("public_holiday")
+          .select("id")
+          .eq("account_id", accountId)
+          .eq("date", clockOutDate)
+          .eq("is_deleted", false)
+          .maybeSingle();
+        if (holiday) {
+          dayType = "public_holiday";
+        } else {
+          const dow = clockOut.getDay();
+          if (dow === 0) dayType = "sunday";
+          else if (dow === 6) dayType = "saturday";
+        }
+        const { data: config } = await getDb()
+          .from("labor_config")
+          .select("*")
+          .eq("account_id", accountId)
+          .maybeSingle();
+        if (config) {
+          const key = `${dayType}_multiplier`;
+          multiplier = config[key] ?? 1.0;
+        } else {
+          if (dayType === "sunday") multiplier = 1.5;
+          else if (dayType === "public_holiday") multiplier = 2.0;
+        }
+      } catch (_) { /* non-fatal: default to 1.0 multiplier */ }
+
+      const effectiveHours = Math.round(hoursWorked * multiplier * 100) / 100;
+
       const { data, error } = await getDb()
         .from("shift")
         .update({
           clock_out: clockOut.toISOString(),
           break_minutes: breakMins,
           hours_worked: Math.round(hoursWorked * 100) / 100,
+          effective_hours: effectiveHours,
+          day_type: dayType,
+          multiplier,
           notes: notes || null,
           status: "completed",
         })
@@ -159,7 +197,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Operation failed" }, { status: 500 });
       }
 
-      return NextResponse.json({ shift: data, action: "clocked_out", hours_worked: Math.round(hoursWorked * 100) / 100 });
+      return NextResponse.json({
+        shift: data, action: "clocked_out",
+        hours_worked: Math.round(hoursWorked * 100) / 100,
+        effective_hours: effectiveHours,
+        day_type: dayType,
+        multiplier,
+      });
     }
 
     return NextResponse.json({ error: "action must be clock_in or clock_out" }, { status: 400 });

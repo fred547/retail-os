@@ -17,6 +17,12 @@ data class StaffSchedule(
     val notes: String? = null,
     val status: String = "scheduled",
     val created_by: Int? = null,
+    val slot_id: Int? = null,
+    val roster_period_id: Int? = null,
+    val pick_id: Int? = null,
+    val effective_hours: Double? = null,
+    val day_type: String? = null,
+    val multiplier: Double? = null,
     val created_at: String? = null,
     val updated_at: String? = null,
 )

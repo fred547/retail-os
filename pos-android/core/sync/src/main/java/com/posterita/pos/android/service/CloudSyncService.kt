@@ -937,6 +937,60 @@ class CloudSyncService @Inject constructor(
                 }
             }
 
+            // Roster template slots (full replace per account)
+            response.rosterTemplateSlots?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.rosterTemplateSlotDao().deleteByAccount(prefsManager.accountId)
+                    db.rosterTemplateSlotDao().insertAll(items.mapNotNull { mapToRosterTemplateSlot(it) })
+                    Log.d(TAG, "Pulled ${items.size} roster template slots")
+                }
+            }
+
+            // Roster periods (full replace per account)
+            response.rosterPeriods?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.rosterPeriodDao().deleteByAccount(prefsManager.accountId)
+                    db.rosterPeriodDao().insertAll(items.mapNotNull { mapToRosterPeriod(it) })
+                    Log.d(TAG, "Pulled ${items.size} roster periods")
+                }
+            }
+
+            // Shift picks (full replace per account)
+            response.shiftPicks?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.shiftPickDao().deleteByAccount(prefsManager.accountId)
+                    db.shiftPickDao().insertAll(items.mapNotNull { mapToShiftPick(it) })
+                    Log.d(TAG, "Pulled ${items.size} shift picks")
+                }
+            }
+
+            // Public holidays (full replace per account)
+            response.publicHolidays?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.publicHolidayDao().deleteByAccount(prefsManager.accountId)
+                    db.publicHolidayDao().insertAll(items.mapNotNull { mapToPublicHoliday(it) })
+                    Log.d(TAG, "Pulled ${items.size} public holidays")
+                }
+            }
+
+            // Labor config (full replace per account)
+            response.laborConfigs?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.laborConfigDao().deleteByAccount(prefsManager.accountId)
+                    db.laborConfigDao().insertAll(items.mapNotNull { mapToLaborConfig(it) })
+                    Log.d(TAG, "Pulled ${items.size} labor configs")
+                }
+            }
+
+            // Store operating hours (full replace per account)
+            response.storeOperatingHours?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.storeOperatingHoursDao().deleteByAccount(prefsManager.accountId)
+                    db.storeOperatingHoursDao().insertAll(items.mapNotNull { mapToStoreOperatingHours(it) })
+                    Log.d(TAG, "Pulled ${items.size} store operating hours")
+                }
+            }
+
         }
     }
 
@@ -1852,6 +1906,12 @@ class CloudSyncService @Inject constructor(
                 notes = map["notes"] as? String,
                 status = map["status"] as? String ?: "scheduled",
                 created_by = (map["created_by"] as? Number)?.toInt(),
+                slot_id = (map["slot_id"] as? Number)?.toInt(),
+                roster_period_id = (map["roster_period_id"] as? Number)?.toInt(),
+                pick_id = (map["pick_id"] as? Number)?.toInt(),
+                effective_hours = (map["effective_hours"] as? Number)?.toDouble(),
+                day_type = map["day_type"] as? String,
+                multiplier = (map["multiplier"] as? Number)?.toDouble(),
                 created_at = map["created_at"] as? String,
                 updated_at = map["updated_at"] as? String,
             )
@@ -1935,6 +1995,136 @@ class CloudSyncService @Inject constructor(
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map leave balance: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToRosterTemplateSlot(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.RosterTemplateSlot? {
+        return try {
+            com.posterita.pos.android.data.local.entity.RosterTemplateSlot(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String ?: "",
+                day_of_week = (map["day_of_week"] as? Number)?.toInt() ?: 1,
+                start_time = map["start_time"] as? String ?: "",
+                end_time = map["end_time"] as? String ?: "",
+                break_minutes = (map["break_minutes"] as? Number)?.toInt() ?: 30,
+                required_role = map["required_role"] as? String,
+                color = map["color"] as? String,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map roster template slot: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToRosterPeriod(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.RosterPeriod? {
+        return try {
+            com.posterita.pos.android.data.local.entity.RosterPeriod(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                name = map["name"] as? String,
+                start_date = map["start_date"] as? String ?: "",
+                end_date = map["end_date"] as? String ?: "",
+                status = map["status"] as? String ?: "open",
+                picking_deadline = map["picking_deadline"] as? String,
+                approved_by = (map["approved_by"] as? Number)?.toInt(),
+                approved_at = map["approved_at"] as? String,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map roster period: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToShiftPick(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.ShiftPick? {
+        return try {
+            com.posterita.pos.android.data.local.entity.ShiftPick(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                roster_period_id = (map["roster_period_id"] as? Number)?.toInt() ?: 0,
+                slot_id = (map["slot_id"] as? Number)?.toInt() ?: 0,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                date = map["date"] as? String ?: "",
+                status = map["status"] as? String ?: "picked",
+                effective_hours = (map["effective_hours"] as? Number)?.toDouble(),
+                day_type = map["day_type"] as? String,
+                multiplier = (map["multiplier"] as? Number)?.toDouble(),
+                notes = map["notes"] as? String,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map shift pick: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToPublicHoliday(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.PublicHoliday? {
+        return try {
+            com.posterita.pos.android.data.local.entity.PublicHoliday(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                country_code = map["country_code"] as? String ?: "MU",
+                date = map["date"] as? String ?: "",
+                name = map["name"] as? String ?: "",
+                is_recurring = map["is_recurring"] == true,
+                is_deleted = map["is_deleted"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map public holiday: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToLaborConfig(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.LaborConfig? {
+        return try {
+            com.posterita.pos.android.data.local.entity.LaborConfig(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                country_code = map["country_code"] as? String ?: "MU",
+                standard_weekly_hours = (map["standard_weekly_hours"] as? Number)?.toDouble() ?: 45.0,
+                standard_daily_hours = (map["standard_daily_hours"] as? Number)?.toDouble() ?: 9.0,
+                weekday_multiplier = (map["weekday_multiplier"] as? Number)?.toDouble() ?: 1.0,
+                saturday_multiplier = (map["saturday_multiplier"] as? Number)?.toDouble() ?: 1.0,
+                sunday_multiplier = (map["sunday_multiplier"] as? Number)?.toDouble() ?: 1.5,
+                public_holiday_multiplier = (map["public_holiday_multiplier"] as? Number)?.toDouble() ?: 2.0,
+                overtime_multiplier = (map["overtime_multiplier"] as? Number)?.toDouble() ?: 1.5,
+                min_break_minutes = (map["min_break_minutes"] as? Number)?.toInt() ?: 30,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map labor config: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToStoreOperatingHours(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.StoreOperatingHours? {
+        return try {
+            com.posterita.pos.android.data.local.entity.StoreOperatingHours(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                day_type = map["day_type"] as? String ?: "weekday",
+                open_time = map["open_time"] as? String,
+                close_time = map["close_time"] as? String,
+                is_closed = map["is_closed"] == true,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map store operating hours: ${e.message}")
             null
         }
     }

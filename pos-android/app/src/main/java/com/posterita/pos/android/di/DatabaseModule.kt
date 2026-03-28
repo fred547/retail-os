@@ -72,4 +72,10 @@ object DatabaseModule {
     @Provides fun provideLeaveTypeDao(db: AppDatabase): LeaveTypeDao = db.leaveTypeDao()
     @Provides fun provideLeaveRequestDao(db: AppDatabase): LeaveRequestDao = db.leaveRequestDao()
     @Provides fun provideLeaveBalanceDao(db: AppDatabase): LeaveBalanceDao = db.leaveBalanceDao()
+    @Provides fun provideRosterTemplateSlotDao(db: AppDatabase): RosterTemplateSlotDao = db.rosterTemplateSlotDao()
+    @Provides fun provideRosterPeriodDao(db: AppDatabase): RosterPeriodDao = db.rosterPeriodDao()
+    @Provides fun provideShiftPickDao(db: AppDatabase): ShiftPickDao = db.shiftPickDao()
+    @Provides fun providePublicHolidayDao(db: AppDatabase): PublicHolidayDao = db.publicHolidayDao()
+    @Provides fun provideLaborConfigDao(db: AppDatabase): LaborConfigDao = db.laborConfigDao()
+    @Provides fun provideStoreOperatingHoursDao(db: AppDatabase): StoreOperatingHoursDao = db.storeOperatingHoursDao()
 }

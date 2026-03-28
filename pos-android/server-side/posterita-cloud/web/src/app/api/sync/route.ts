@@ -1290,6 +1290,12 @@ export async function POST(req: NextRequest) {
       { data: leaveTypes },
       { data: leaveRequests },
       { data: leaveBalances },
+      { data: rosterTemplateSlots },
+      { data: rosterPeriods },
+      { data: shiftPicks },
+      { data: publicHolidays },
+      { data: laborConfigs },
+      { data: pullStoreOperatingHours },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1341,6 +1347,13 @@ export async function POST(req: NextRequest) {
       db.from("leave_type").select("*").eq("account_id", body.account_id),
       db.from("leave_request").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("leave_balance").select("*").eq("account_id", body.account_id),
+      // Roster: template slots, periods, picks, holidays, labor config, store hours (full replace each sync)
+      db.from("roster_template_slot").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
+      db.from("roster_period").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
+      db.from("shift_pick").select("*").eq("account_id", body.account_id).neq("status", "cancelled"),
+      db.from("public_holiday").select("*").eq("account_id", body.account_id).eq("is_deleted", false),
+      db.from("labor_config").select("*").eq("account_id", body.account_id),
+      db.from("store_operating_hours").select("*").eq("account_id", body.account_id),
     ]);
 
     // Quotation lines: depends on quotation IDs from above (can't be in Promise.all)
@@ -1457,6 +1470,12 @@ export async function POST(req: NextRequest) {
       leave_types: leaveTypes ?? [],
       leave_requests: leaveRequests ?? [],
       leave_balances: leaveBalances ?? [],
+      roster_template_slots: rosterTemplateSlots ?? [],
+      roster_periods: rosterPeriods ?? [],
+      shift_picks: shiftPicks ?? [],
+      public_holidays: publicHolidays ?? [],
+      labor_configs: laborConfigs ?? [],
+      store_operating_hours: pullStoreOperatingHours ?? [],
       // Pagination — tells client if there are more pages to fetch
       has_more_products: hasMoreProducts,
       has_more_customers: (customersTotalCount ?? 0) > pullOffset + pullPageSize,
