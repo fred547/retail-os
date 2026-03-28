@@ -22,6 +22,8 @@ import com.posterita.pos.android.data.local.entity.CountScan
 import com.posterita.pos.android.databinding.ActivityFullCountBinding
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -238,8 +240,7 @@ class FullCountActivity : BaseActivity() {
             binding.buttonSync.text = "Syncing..."
 
             try {
-                val syncApi = com.posterita.pos.android.data.remote.RetrofitClient.getCloudSyncApi(prefsManager)
-                val body = mapOf("scans" to unsynced.map { scan ->
+                val jsonBody = com.google.gson.Gson().toJson(mapOf("scans" to unsynced.map { scan ->
                     mapOf(
                         "shelf" to scan.shelf,
                         "height" to scan.height,
@@ -252,16 +253,15 @@ class FullCountActivity : BaseActivity() {
                         "user_name" to scan.user_name,
                         "scanned_at" to scan.scanned_at,
                     )
-                })
+                }))
 
                 val response = withContext(Dispatchers.IO) {
-                    val url = "${prefsManager.cloudBaseUrl}/api/stock-count/$planId/scans"
+                    val baseUrl = "https://web.posterita.com"
+                    val url = "$baseUrl/api/stock-count/$planId/scans"
+                    val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
                     val request = okhttp3.Request.Builder()
                         .url(url)
-                        .post(okhttp3.RequestBody.create(
-                            okhttp3.MediaType.parse("application/json"),
-                            com.google.gson.Gson().toJson(body)
-                        ))
+                        .post(jsonBody.toRequestBody(mediaType))
                         .build()
                     okhttp3.OkHttpClient().newCall(request).execute()
                 }
@@ -272,7 +272,7 @@ class FullCountActivity : BaseActivity() {
                     }
                     Toast.makeText(this@FullCountActivity, "${unsynced.size} scans synced", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@FullCountActivity, "Sync failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@FullCountActivity, "Sync failed: ${response.code}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@FullCountActivity, "Sync error: ${e.message}", Toast.LENGTH_SHORT).show()
