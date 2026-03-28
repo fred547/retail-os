@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Search, Home, RefreshCw, DollarSign, Printer } from "lucide-react";
+import { Search, Home, RefreshCw, DollarSign, Printer, Menu } from "lucide-react";
 import { getOfflineDb, getSyncMeta } from "@/lib/offline/db";
 import { isSeeded } from "@/lib/offline/seed";
 import { startSyncWorker } from "@/lib/offline/sync-worker";
@@ -27,6 +27,8 @@ import LockScreen from "@/components/pos/LockScreen";
 import HoldOrdersDialog from "@/components/pos/HoldOrdersDialog";
 import CustomerPicker from "@/components/pos/CustomerPicker";
 import ModifierDialog from "@/components/pos/ModifierDialog";
+import RefundDialog from "@/components/pos/RefundDialog";
+import PosDrawer from "@/components/pos/PosDrawer";
 import ConnectivityDot from "@/components/pos/ConnectivityDot";
 
 /**
@@ -50,6 +52,9 @@ export default function PosPage() {
   const [modifierProduct, setModifierProduct] = useState<Product | null>(null);
   const [modifierList, setModifierList] = useState<any[]>([]);
   const [allModifiers, setAllModifiers] = useState<any[]>([]);
+  const [showRefund, setShowRefund] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [refundComplete, setRefundComplete] = useState(false);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
   const [holdComplete, setHoldComplete] = useState(false);
   const [quoteComplete, setQuoteComplete] = useState<{ documentNo: string } | null>(null);
@@ -174,12 +179,16 @@ export default function PosPage() {
       if (e.key === "F3") { e.preventDefault(); setShowTill(true); }
       if (e.key === "F4") { e.preventDefault(); setShowHoldOrders(true); }
       if (e.key === "F5") { e.preventDefault(); setShowCustomerPicker(true); }
+      if (e.key === "F6") { e.preventDefault(); setShowRefund(true); }
+      if (e.key === "F7") { e.preventDefault(); setShowDrawer(!showDrawer); }
       if (e.key === "Escape") {
         e.preventDefault();
         if (showPayment) setShowPayment(false);
         else if (showTill) setShowTill(false);
         else if (showHoldOrders) setShowHoldOrders(false);
         else if (showCustomerPicker) setShowCustomerPicker(false);
+        else if (showRefund) setShowRefund(false);
+        else if (showDrawer) setShowDrawer(false);
       }
       if (e.key === "F1") { e.preventDefault(); document.getElementById("pos-search")?.focus(); }
     }
@@ -255,9 +264,9 @@ export default function PosPage() {
       )}
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-2 bg-gray-900 border-b border-gray-800">
-        <a href="/" className="text-gray-400 hover:text-gray-200 p-1">
-          <Home size={18} />
-        </a>
+        <button onClick={() => setShowDrawer(true)} className="text-gray-400 hover:text-gray-200 p-1.5 hover:bg-gray-800 rounded-lg transition">
+          <Menu size={18} />
+        </button>
         <span className="text-sm font-semibold text-white">POS</span>
 
         {/* Sync indicator */}
@@ -375,6 +384,27 @@ export default function PosPage() {
         </div>
       </div>
 
+      {/* POS side drawer */}
+      <PosDrawer
+        open={showDrawer}
+        onClose={() => setShowDrawer(false)}
+        onRefund={() => setShowRefund(true)}
+        onTill={() => setShowTill(true)}
+        onPrinter={() => setShowPrinter(true)}
+        onHoldOrders={() => setShowHoldOrders(true)}
+      />
+
+      {/* Refund dialog */}
+      {showRefund && (
+        <RefundDialog
+          onClose={() => setShowRefund(false)}
+          onRefunded={() => {
+            setRefundComplete(true);
+            setTimeout(() => setRefundComplete(false), 3000);
+          }}
+        />
+      )}
+
       {/* Modifier walkthrough */}
       {modifierProduct && (
         <ModifierDialog
@@ -432,6 +462,14 @@ export default function PosPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
           Order complete
+        </div>
+      )}
+
+      {/* Refund toast */}
+      {refundComplete && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 z-50">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Refund processed
         </div>
       )}
 
