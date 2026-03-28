@@ -6,12 +6,21 @@ import { BarChart3, Calendar, Download, TrendingUp, FileText } from "lucide-reac
 import Link from "next/link";
 import { SkeletonStat, SkeletonTable } from "@/components/Skeleton";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell, PieChart, Pie,
+} from "recharts";
+
+const COLORS = ["#1976D2", "#2E7D32", "#5E35B1", "#F57F17", "#00838F", "#E53935", "#FF6F00", "#AD1457"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function ReportsPage() {
   const [dateRange, setDateRange] = useState({ start: getLast30Days(), end: getToday() });
   const [salesData, setSalesData] = useState<any[]>([]);
   const [paymentData, setPaymentData] = useState<any[]>([]);
   const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [hourlyData, setHourlyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,33 +29,40 @@ export default function ReportsPage() {
 
   const fetchReports = async () => {
     setLoading(true);
+    try {
+      const [sales, payments, products, hourly] = await dataQueryMulti([
+        {
+          table: "v_daily_sales",
+          filters: [
+            { column: "sale_date", op: "gte", value: dateRange.start },
+            { column: "sale_date", op: "lte", value: dateRange.end },
+          ],
+          order: { column: "sale_date" },
+        },
+        {
+          table: "v_payment_methods",
+          filters: [
+            { column: "payment_date", op: "gte", value: dateRange.start },
+            { column: "payment_date", op: "lte", value: dateRange.end },
+          ],
+        },
+        {
+          table: "v_top_products",
+          order: { column: "total_revenue", ascending: false },
+          limit: 20,
+        },
+        {
+          table: "v_hourly_sales",
+        },
+      ]);
 
-    const [sales, payments, products] = await dataQueryMulti([
-      {
-        table: "v_daily_sales",
-        filters: [
-          { column: "sale_date", op: "gte", value: dateRange.start },
-          { column: "sale_date", op: "lte", value: dateRange.end },
-        ],
-        order: { column: "sale_date" },
-      },
-      {
-        table: "v_payment_methods",
-        filters: [
-          { column: "payment_date", op: "gte", value: dateRange.start },
-          { column: "payment_date", op: "lte", value: dateRange.end },
-        ],
-      },
-      {
-        table: "v_top_products",
-        order: { column: "total_revenue", ascending: false },
-        limit: 20,
-      },
-    ]);
-
-    setSalesData(sales.data ?? []);
-    setPaymentData(payments.data ?? []);
-    setTopProducts(products.data ?? []);
+      setSalesData(sales.data ?? []);
+      setPaymentData(payments.data ?? []);
+      setTopProducts(products.data ?? []);
+      setHourlyData(hourly.data ?? []);
+    } catch (e: any) {
+      logError("Reports", `Failed to load reports: ${e.message}`);
+    }
     setLoading(false);
   };
 
@@ -154,76 +170,92 @@ export default function ReportsPage() {
         <SummaryCard title="Avg Order Value" value={formatCurrency(avgOrder)} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Daily Sales */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      {/* Revenue Chart (full width) */}
+      {salesData.length >= 2 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={18} className="text-posterita-blue" />
-            <h2 className="font-semibold">Daily Sales</h2>
+            <h2 className="font-semibold">Daily Revenue</h2>
           </div>
-          <div className="p-0 max-h-96 overflow-y-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th className="text-right">Orders</th>
-                  <th className="text-right">Revenue</th>
-                  <th className="text-right">Avg</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesData.map((d: any, i: number) => (
-                  <tr key={i}>
-                    <td>{d.sale_date}</td>
-                    <td className="text-right text-gray-500">{d.total_orders}</td>
-                    <td className="text-right font-medium">{formatCurrency(d.total_revenue)}</td>
-                    <td className="text-right text-gray-500">{formatCurrency(d.avg_order_value)}</td>
-                  </tr>
-                ))}
-                {salesData.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="text-center text-gray-500 py-8">
-                      No data for selected period
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={salesData.map((d: any) => ({
+              date: fmtDate(d.sale_date),
+              revenue: d.total_revenue,
+              orders: d.total_orders,
+            }))} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="reportRevGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#1976D2" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#1976D2" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E6E2DA" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6C6F76" }} tickLine={false} axisLine={false}
+                interval={Math.max(0, Math.floor(salesData.length / 8) - 1)} />
+              <YAxis tick={{ fontSize: 11, fill: "#6C6F76" }} tickLine={false} axisLine={false}
+                tickFormatter={fmtNum} width={50} />
+              <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #E6E2DA", fontSize: 13 }}
+                formatter={(v: number, name: string) => [formatCurrency(v), name === "revenue" ? "Revenue" : "Orders"]} />
+              <Area type="monotone" dataKey="revenue" stroke="#1976D2" strokeWidth={2.5}
+                fill="url(#reportRevGrad)" dot={false}
+                activeDot={{ r: 5, strokeWidth: 2, fill: "#fff", stroke: "#1976D2" }} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
+      )}
 
-        {/* Payment Methods */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Payment Methods — Donut Chart */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
             <BarChart3 size={18} className="text-posterita-blue" />
             <h2 className="font-semibold">Payment Methods</h2>
           </div>
-          <div className="p-6 space-y-4">
-            {Object.entries(paymentSummary).map(([type, amount]) => {
-              const pct = totalRevenue > 0 ? (amount / totalRevenue) * 100 : 0;
-              return (
-                <div key={type}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium">{type}</span>
-                    <span className="text-gray-500">
-                      {formatCurrency(amount)} ({pct.toFixed(1)}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div
-                      className="bg-posterita-blue rounded-full h-2 transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-            {Object.keys(paymentSummary).length === 0 && (
-              <p className="text-center text-gray-500 py-8">
-                No payment data for selected period
-              </p>
-            )}
+          {Object.keys(paymentSummary).length > 0 ? (
+            <div className="flex items-center gap-6">
+              <ResponsiveContainer width={180} height={180}>
+                <PieChart>
+                  <Pie data={Object.entries(paymentSummary).map(([name, value]) => ({ name, value }))}
+                    cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}
+                    dataKey="value" stroke="none">
+                    {Object.keys(paymentSummary).map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #E6E2DA", fontSize: 13 }}
+                    formatter={(v: number) => [formatCurrency(v), "Amount"]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex-1 space-y-2">
+                {Object.entries(paymentSummary).map(([type, amount], i) => {
+                  const pct = totalRevenue > 0 ? (amount / totalRevenue) * 100 : 0;
+                  return (
+                    <div key={type} className="flex items-center gap-2 text-sm">
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <span className="font-medium flex-1">{type}</span>
+                      <span className="text-gray-500">{pct.toFixed(0)}%</span>
+                      <span className="text-gray-400 w-24 text-right">{formatCurrency(amount)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 py-12">No payment data for selected period</p>
+          )}
+        </div>
+
+        {/* Hourly Heatmap */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar size={18} className="text-posterita-blue" />
+            <h2 className="font-semibold">Busiest Hours</h2>
           </div>
+          {hourlyData.length > 0 ? (
+            <HourlyHeatmap data={hourlyData} />
+          ) : (
+            <p className="text-center text-gray-500 py-12">No hourly data yet</p>
+          )}
         </div>
       </div>
 
@@ -284,4 +316,81 @@ function getToday(): string {
 
 function getLast30Days(): string {
   return new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+}
+
+function fmtDate(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function fmtNum(n: number) {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return n.toFixed(0);
+}
+
+/**
+ * 7×24 heatmap grid showing order volume by day-of-week × hour.
+ * Darker blue = more orders. Hover shows exact count + revenue.
+ */
+function HourlyHeatmap({ data }: { data: any[] }) {
+  // Build lookup: [day][hour] → { orders, revenue }
+  const grid: Record<number, Record<number, { orders: number; revenue: number }>> = {};
+  let maxOrders = 1;
+  data.forEach((d: any) => {
+    const day = d.day_of_week ?? 0;
+    const hour = d.hour_of_day ?? 0;
+    if (!grid[day]) grid[day] = {};
+    grid[day][hour] = { orders: d.order_count ?? 0, revenue: d.total_revenue ?? 0 };
+    if ((d.order_count ?? 0) > maxOrders) maxOrders = d.order_count;
+  });
+
+  // Show hours 6-23 (business hours)
+  const hours = Array.from({ length: 18 }, (_, i) => i + 6);
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[400px]">
+        {/* Hour labels */}
+        <div className="flex ml-10 mb-1">
+          {hours.map((h) => (
+            <div key={h} className="flex-1 text-center text-[10px] text-gray-400">
+              {h === 6 ? "6a" : h === 12 ? "12p" : h === 18 ? "6p" : h % 3 === 0 ? `${h > 12 ? h - 12 : h}` : ""}
+            </div>
+          ))}
+        </div>
+        {/* Rows */}
+        {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+          <div key={day} className="flex items-center gap-1 mb-1">
+            <div className="w-9 text-right text-[11px] text-gray-500 font-medium pr-1">{DAYS[day]}</div>
+            {hours.map((hour) => {
+              const cell = grid[day]?.[hour];
+              const orders = cell?.orders ?? 0;
+              const intensity = orders / maxOrders;
+              const bg = orders === 0
+                ? "#F5F2EA"
+                : `rgba(25, 118, 210, ${0.15 + intensity * 0.75})`;
+              return (
+                <div
+                  key={hour}
+                  className="flex-1 aspect-square rounded-sm cursor-default"
+                  style={{ backgroundColor: bg, minWidth: 14, maxWidth: 22 }}
+                  title={`${DAYS[day]} ${hour}:00 — ${orders} orders${cell ? `, ${formatCurrency(cell.revenue)}` : ""}`}
+                />
+              );
+            })}
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="flex items-center justify-end gap-1 mt-2 text-[10px] text-gray-400">
+          <span>Less</span>
+          {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
+            <div key={i} className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: v === 0 ? "#F5F2EA" : `rgba(25, 118, 210, ${0.15 + v * 0.75})` }} />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+    </div>
+  );
 }
