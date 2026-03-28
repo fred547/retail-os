@@ -67,4 +67,9 @@ object DatabaseModule {
     @Provides fun provideMenuScheduleDao(db: AppDatabase): MenuScheduleDao = db.menuScheduleDao()
     @Provides fun provideShiftDao(db: AppDatabase): ShiftDao = db.shiftDao()
     @Provides fun provideDeliveryDao(db: AppDatabase): DeliveryDao = db.deliveryDao()
+    @Provides fun provideStaffScheduleDao(db: AppDatabase): StaffScheduleDao = db.staffScheduleDao()
+    @Provides fun provideStaffBreakDao(db: AppDatabase): StaffBreakDao = db.staffBreakDao()
+    @Provides fun provideLeaveTypeDao(db: AppDatabase): LeaveTypeDao = db.leaveTypeDao()
+    @Provides fun provideLeaveRequestDao(db: AppDatabase): LeaveRequestDao = db.leaveRequestDao()
+    @Provides fun provideLeaveBalanceDao(db: AppDatabase): LeaveBalanceDao = db.leaveBalanceDao()
 }

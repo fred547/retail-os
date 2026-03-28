@@ -42,6 +42,11 @@ data class CloudSyncResponse(
     @SerializedName("product_tags") val productTags: List<Map<String, Any?>>? = null,
     @SerializedName("quotations") val quotations: List<Map<String, Any?>>? = null,
     @SerializedName("quotation_lines") val quotationLines: List<Map<String, Any?>>? = null,
+    @SerializedName("staff_schedules") val staffSchedules: List<Map<String, Any?>>? = null,
+    @SerializedName("staff_breaks") val staffBreaks: List<Map<String, Any?>>? = null,
+    @SerializedName("leave_types") val leaveTypes: List<Map<String, Any?>>? = null,
+    @SerializedName("leave_requests") val leaveRequests: List<Map<String, Any?>>? = null,
+    @SerializedName("leave_balances") val leaveBalances: List<Map<String, Any?>>? = null,
 
     // Pagination — indicates whether more pages are available
     @SerializedName("has_more_products") val hasMoreProducts: Boolean = false,

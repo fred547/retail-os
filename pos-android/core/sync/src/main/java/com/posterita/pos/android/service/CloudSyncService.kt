@@ -892,6 +892,51 @@ class CloudSyncService @Inject constructor(
                 }
             }
 
+            // Staff schedules (full replace per account)
+            response.staffSchedules?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.staffScheduleDao().deleteByAccount(prefsManager.accountId)
+                    db.staffScheduleDao().insertAll(items.mapNotNull { mapToStaffSchedule(it) })
+                    Log.d(TAG, "Pulled ${items.size} staff schedules")
+                }
+            }
+
+            // Staff breaks (full replace per account)
+            response.staffBreaks?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.staffBreakDao().deleteByAccount(prefsManager.accountId)
+                    db.staffBreakDao().insertAll(items.mapNotNull { mapToStaffBreak(it) })
+                    Log.d(TAG, "Pulled ${items.size} staff breaks")
+                }
+            }
+
+            // Leave types (full replace per account)
+            response.leaveTypes?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.leaveTypeDao().deleteByAccount(prefsManager.accountId)
+                    db.leaveTypeDao().insertAll(items.mapNotNull { mapToLeaveType(it) })
+                    Log.d(TAG, "Pulled ${items.size} leave types")
+                }
+            }
+
+            // Leave requests (full replace per account)
+            response.leaveRequests?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.leaveRequestDao().deleteByAccount(prefsManager.accountId)
+                    db.leaveRequestDao().insertAll(items.mapNotNull { mapToLeaveRequest(it) })
+                    Log.d(TAG, "Pulled ${items.size} leave requests")
+                }
+            }
+
+            // Leave balances (full replace per account)
+            response.leaveBalances?.let { items ->
+                if (items.isNotEmpty()) {
+                    db.leaveBalanceDao().deleteByAccount(prefsManager.accountId)
+                    db.leaveBalanceDao().insertAll(items.mapNotNull { mapToLeaveBalance(it) })
+                    Log.d(TAG, "Pulled ${items.size} leave balances")
+                }
+            }
+
         }
     }
 
@@ -1636,6 +1681,12 @@ class CloudSyncService @Inject constructor(
                 created_at = map["created_at"] as? String,
                 uuid = map["uuid"] as? String,
                 is_synced = true, // pulled from server = already synced
+                scheduled_start = map["scheduled_start"] as? String,
+                scheduled_end = map["scheduled_end"] as? String,
+                overtime_minutes = (map["overtime_minutes"] as? Number)?.toInt() ?: 0,
+                is_late = map["is_late"] == true,
+                late_minutes = (map["late_minutes"] as? Number)?.toInt() ?: 0,
+                total_break_minutes = (map["total_break_minutes"] as? Number)?.toInt() ?: 0,
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map shift: ${e.message}")
@@ -1782,6 +1833,108 @@ class CloudSyncService @Inject constructor(
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to map quotation line: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToStaffSchedule(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.StaffSchedule? {
+        return try {
+            com.posterita.pos.android.data.local.entity.StaffSchedule(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                store_id = (map["store_id"] as? Number)?.toInt() ?: 0,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                date = map["date"] as? String ?: "",
+                start_time = map["start_time"] as? String ?: "",
+                end_time = map["end_time"] as? String ?: "",
+                break_minutes = (map["break_minutes"] as? Number)?.toInt() ?: 0,
+                role_override = map["role_override"] as? String,
+                notes = map["notes"] as? String,
+                status = map["status"] as? String ?: "scheduled",
+                created_by = (map["created_by"] as? Number)?.toInt(),
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map staff schedule: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToStaffBreak(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.StaffBreak? {
+        return try {
+            com.posterita.pos.android.data.local.entity.StaffBreak(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                shift_id = (map["shift_id"] as? Number)?.toInt(),
+                account_id = map["account_id"]?.toString() ?: return null,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                break_type = map["break_type"] as? String ?: "unpaid",
+                start_time = map["start_time"] as? String,
+                end_time = map["end_time"] as? String,
+                duration_minutes = (map["duration_minutes"] as? Number)?.toInt(),
+                created_at = map["created_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map staff break: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToLeaveType(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.LeaveType? {
+        return try {
+            com.posterita.pos.android.data.local.entity.LeaveType(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                name = map["name"] as? String ?: "",
+                paid = map["paid"] != false,
+                default_days = (map["default_days"] as? Number)?.toInt() ?: 0,
+                color = map["color"] as? String ?: "#1976D2",
+                is_active = map["is_active"] != false,
+                created_at = map["created_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map leave type: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToLeaveRequest(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.LeaveRequest? {
+        return try {
+            com.posterita.pos.android.data.local.entity.LeaveRequest(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                leave_type_id = (map["leave_type_id"] as? Number)?.toInt() ?: 0,
+                start_date = map["start_date"] as? String ?: "",
+                end_date = map["end_date"] as? String ?: "",
+                days = (map["days"] as? Number)?.toDouble() ?: 0.0,
+                reason = map["reason"] as? String,
+                status = map["status"] as? String ?: "pending",
+                approved_by = (map["approved_by"] as? Number)?.toInt(),
+                approved_at = map["approved_at"] as? String,
+                rejection_reason = map["rejection_reason"] as? String,
+                created_at = map["created_at"] as? String,
+                updated_at = map["updated_at"] as? String,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map leave request: ${e.message}")
+            null
+        }
+    }
+
+    private fun mapToLeaveBalance(map: Map<String, Any?>): com.posterita.pos.android.data.local.entity.LeaveBalance? {
+        return try {
+            com.posterita.pos.android.data.local.entity.LeaveBalance(
+                id = (map["id"] as? Number)?.toInt() ?: return null,
+                account_id = map["account_id"]?.toString() ?: return null,
+                user_id = (map["user_id"] as? Number)?.toInt() ?: 0,
+                leave_type_id = (map["leave_type_id"] as? Number)?.toInt() ?: 0,
+                year = (map["year"] as? Number)?.toInt() ?: 0,
+                total_days = (map["total_days"] as? Number)?.toDouble() ?: 0.0,
+                used_days = (map["used_days"] as? Number)?.toDouble() ?: 0.0,
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to map leave balance: ${e.message}")
             null
         }
     }

@@ -1285,6 +1285,11 @@ export async function POST(req: NextRequest) {
       { data: pullTags },
       { data: pullProductTags },
       { data: pullQuotations },
+      { data: staffSchedules },
+      { data: staffBreaks },
+      { data: leaveTypes },
+      { data: leaveRequests },
+      { data: leaveBalances },
     ] = await Promise.all([
       db.from("tax").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("modifier").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
@@ -1330,6 +1335,12 @@ export async function POST(req: NextRequest) {
       body.store_id > 0
         ? db.from("quotation").select("*").eq("account_id", body.account_id).eq("store_id", body.store_id).eq("is_deleted", false).gte("updated_at", lastSync)
         : db.from("quotation").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      // Staff management entities
+      db.from("staff_schedule").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("staff_break").select("*").eq("account_id", body.account_id),
+      db.from("leave_type").select("*").eq("account_id", body.account_id),
+      db.from("leave_request").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
+      db.from("leave_balance").select("*").eq("account_id", body.account_id),
     ]);
 
     // Quotation lines: depends on quotation IDs from above (can't be in Promise.all)
@@ -1441,6 +1452,11 @@ export async function POST(req: NextRequest) {
       product_tags: pullProductTags ?? [],
       quotations: pullQuotations ?? [],
       quotation_lines: pullQuotationLines ?? [],
+      staff_schedules: staffSchedules ?? [],
+      staff_breaks: staffBreaks ?? [],
+      leave_types: leaveTypes ?? [],
+      leave_requests: leaveRequests ?? [],
+      leave_balances: leaveBalances ?? [],
       // Pagination — tells client if there are more pages to fetch
       has_more_products: hasMoreProducts,
       has_more_customers: (customersTotalCount ?? 0) > pullOffset + pullPageSize,

@@ -38,9 +38,14 @@ import com.posterita.pos.android.data.local.entity.*
         Tag::class,
         ProductTag::class,
         Quotation::class,
-        QuotationLine::class
+        QuotationLine::class,
+        StaffSchedule::class,
+        StaffBreak::class,
+        LeaveType::class,
+        LeaveRequest::class,
+        LeaveBalance::class
     ],
-    version = 37,
+    version = 38,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -88,6 +93,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun productTagDao(): ProductTagDao
     abstract fun quotationDao(): QuotationDao
     abstract fun quotationLineDao(): QuotationLineDao
+    abstract fun staffScheduleDao(): StaffScheduleDao
+    abstract fun staffBreakDao(): StaffBreakDao
+    abstract fun leaveTypeDao(): LeaveTypeDao
+    abstract fun leaveRequestDao(): LeaveRequestDao
+    abstract fun leaveBalanceDao(): LeaveBalanceDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -137,7 +147,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_33_34,
                         MIGRATION_34_35,
                         MIGRATION_35_36,
-                        MIGRATION_36_37
+                        MIGRATION_36_37,
+                        MIGRATION_37_38
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -189,7 +200,9 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_32_33,
                     MIGRATION_33_34,
                     MIGRATION_34_35,
-                    MIGRATION_35_36
+                    MIGRATION_35_36,
+                    MIGRATION_36_37,
+                    MIGRATION_37_38
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -688,6 +701,80 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `tag_group` (`tag_group_id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `color` TEXT NOT NULL DEFAULT '#6B7280', `is_active` INTEGER NOT NULL DEFAULT 1, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `tag` (`tag_id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `tag_group_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `color` TEXT, `position` INTEGER NOT NULL DEFAULT 0, `is_active` INTEGER NOT NULL DEFAULT 1, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `product_tag` (`product_id` INTEGER NOT NULL, `tag_id` INTEGER NOT NULL, `account_id` TEXT NOT NULL, PRIMARY KEY(`product_id`, `tag_id`))")
+            }
+        }
+
+        private val MIGRATION_37_38 = object : Migration(37, 38) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""CREATE TABLE IF NOT EXISTS staff_schedule (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    account_id TEXT NOT NULL DEFAULT '',
+                    store_id INTEGER NOT NULL DEFAULT 0,
+                    user_id INTEGER NOT NULL DEFAULT 0,
+                    date TEXT NOT NULL DEFAULT '',
+                    start_time TEXT NOT NULL DEFAULT '',
+                    end_time TEXT NOT NULL DEFAULT '',
+                    break_minutes INTEGER NOT NULL DEFAULT 0,
+                    role_override TEXT,
+                    notes TEXT,
+                    status TEXT NOT NULL DEFAULT 'scheduled',
+                    created_by INTEGER,
+                    created_at TEXT,
+                    updated_at TEXT
+                )""")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS staff_break (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    shift_id INTEGER,
+                    account_id TEXT NOT NULL DEFAULT '',
+                    user_id INTEGER NOT NULL DEFAULT 0,
+                    break_type TEXT NOT NULL DEFAULT 'unpaid',
+                    start_time TEXT,
+                    end_time TEXT,
+                    duration_minutes INTEGER,
+                    created_at TEXT
+                )""")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS leave_type (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    account_id TEXT NOT NULL DEFAULT '',
+                    name TEXT NOT NULL DEFAULT '',
+                    paid INTEGER NOT NULL DEFAULT 1,
+                    default_days INTEGER NOT NULL DEFAULT 0,
+                    color TEXT NOT NULL DEFAULT '#1976D2',
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    created_at TEXT
+                )""")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS leave_request (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    account_id TEXT NOT NULL DEFAULT '',
+                    user_id INTEGER NOT NULL DEFAULT 0,
+                    leave_type_id INTEGER NOT NULL DEFAULT 0,
+                    start_date TEXT NOT NULL DEFAULT '',
+                    end_date TEXT NOT NULL DEFAULT '',
+                    days REAL NOT NULL DEFAULT 0.0,
+                    reason TEXT,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    approved_by INTEGER,
+                    approved_at TEXT,
+                    rejection_reason TEXT,
+                    created_at TEXT,
+                    updated_at TEXT
+                )""")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS leave_balance (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    account_id TEXT NOT NULL DEFAULT '',
+                    user_id INTEGER NOT NULL DEFAULT 0,
+                    leave_type_id INTEGER NOT NULL DEFAULT 0,
+                    year INTEGER NOT NULL DEFAULT 0,
+                    total_days REAL NOT NULL DEFAULT 0.0,
+                    used_days REAL NOT NULL DEFAULT 0.0
+                )""")
+                // Extend shift table
+                db.execSQL("ALTER TABLE shift ADD COLUMN scheduled_start TEXT")
+                db.execSQL("ALTER TABLE shift ADD COLUMN scheduled_end TEXT")
+                db.execSQL("ALTER TABLE shift ADD COLUMN overtime_minutes INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE shift ADD COLUMN is_late INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE shift ADD COLUMN late_minutes INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE shift ADD COLUMN total_break_minutes INTEGER NOT NULL DEFAULT 0")
             }
         }
     }
