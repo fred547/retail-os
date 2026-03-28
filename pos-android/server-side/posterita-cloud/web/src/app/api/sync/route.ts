@@ -290,9 +290,8 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     } else if (!syncTimestamp && !syncSignature) {
-      // No auth headers — log warning to DB for monitoring, allow through
-      // TODO: Set REQUIRE_SYNC_AUTH=true in Vercel env vars to enforce
-      await logToErrorDb(body.account_id, `Unauthenticated sync request from account ${body.account_id} (device: ${body.device_model || "unknown"})`, "WARN");
+      // No auth headers — log but allow through (HMAC not yet enforced)
+      console.warn(`[sync] Unauthenticated sync from ${body.account_id}`);
     }
 
     // Verify account exists — auto-create if missing (defensive: handles
