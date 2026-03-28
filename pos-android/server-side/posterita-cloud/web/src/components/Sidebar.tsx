@@ -178,6 +178,8 @@ interface PlanInfo {
   isTrial: boolean;
   trialEndsAt: string | null;
   constraints: Record<string, string>;
+  countryCode: string | null;
+  countryModules: string[];
 }
 
 export default function Sidebar({
@@ -270,6 +272,8 @@ export default function Sidebar({
         isTrial: data.isTrial,
         trialEndsAt: data.trialEndsAt,
         constraints: data.constraints ?? {},
+        countryCode: data.country_code ?? null,
+        countryModules: data.country_modules ?? [],
       };
       setPlanInfo(info);
       try {

@@ -53,7 +53,7 @@ import com.posterita.pos.android.data.local.entity.*
         LaborConfig::class,
         StoreOperatingHours::class
     ],
-    version = 43,
+    version = 45,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -169,7 +169,9 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_39_40,
                         MIGRATION_40_41,
                         MIGRATION_41_42,
-                        MIGRATION_42_43
+                        MIGRATION_42_43,
+                        MIGRATION_43_44,
+                        MIGRATION_44_45
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -228,7 +230,9 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_39_40,
                     MIGRATION_40_41,
                     MIGRATION_41_42,
-                    MIGRATION_42_43
+                    MIGRATION_42_43,
+                    MIGRATION_43_44,
+                    MIGRATION_44_45
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -937,6 +941,20 @@ abstract class AppDatabase : RoomDatabase() {
                 // Plan gating: trial columns on account
                 db.execSQL("ALTER TABLE account ADD COLUMN trial_plan TEXT")
                 db.execSQL("ALTER TABLE account ADD COLUMN trial_ends_at TEXT")
+            }
+        }
+
+        private val MIGRATION_43_44 = object : Migration(43, 44) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Regional pricing: country code on account
+                db.execSQL("ALTER TABLE account ADD COLUMN country_code TEXT")
+            }
+        }
+
+        private val MIGRATION_44_45 = object : Migration(44, 45) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Fraud prevention: add amount field to audit_event
+                db.execSQL("ALTER TABLE audit_event ADD COLUMN amount REAL")
             }
         }
     }

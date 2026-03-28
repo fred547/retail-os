@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ hours: data ?? [] });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Operating hours GET error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ hours: data }, { status: 201 });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Operating hours POST error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

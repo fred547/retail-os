@@ -18,6 +18,8 @@ import Specs from "./Specs";
 import MraDashboard from "./MraDashboard";
 import LegacyReview from "./LegacyReview";
 import ClaudeConfig from "./ClaudeConfig";
+import PlanManagement from "./PlanManagement";
+import BillingDashboard from "./BillingDashboard";
 
 const PAGE_SIZE = 25;
 
@@ -78,6 +80,12 @@ export default async function PlatformPage({
       )}
       {tab === "specs" && (
         <Specs />
+      )}
+      {tab === "plans" && (
+        <PlanManagement />
+      )}
+      {tab === "billing" && (
+        <BillingDashboard />
       )}
       {tab === "mra" && (
         <MraDashboard />

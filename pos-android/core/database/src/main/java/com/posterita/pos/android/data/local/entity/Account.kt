@@ -25,5 +25,10 @@ data class Account(
     val whatsappNumber: String? = null,
     val headOfficeAddress: String? = null,
     val brn: String? = null,
-    val tan: String? = null
+    val tan: String? = null,
+    val plan: String? = "free",
+    val billing_region: String? = "developing",
+    val trial_plan: String? = null,
+    val trial_ends_at: String? = null,
+    val country_code: String? = null
 ) : Serializable

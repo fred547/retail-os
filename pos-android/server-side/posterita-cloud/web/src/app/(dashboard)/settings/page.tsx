@@ -51,9 +51,20 @@ export default function SettingsPage() {
   const [taxSaving, setTaxSaving] = useState(false);
   const [taxSaved, setTaxSaved] = useState(false);
   const [taxPasswordVisible, setTaxPasswordVisible] = useState(false);
+  const [countryModules, setCountryModules] = useState<string[]>([]);
 
   const fetchSettings = async () => {
     setLoading(true);
+
+    // Fetch country modules from billing plan (non-blocking)
+    try {
+      const planRes = await fetch("/api/billing/plan");
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        setCountryModules(planData.country_modules ?? []);
+      }
+    } catch (_) { /* non-blocking */ }
+
     const [storeRes, prefRes, taxRes] = await Promise.all([
       dataQuery<StoreInfo>("store", {
         select: "store_id, name, address, city, country, currency",
@@ -241,8 +252,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Tax Compliance (MRA) */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+      {/* Tax Compliance (MRA) — only visible for Mauritius accounts */}
+      {countryModules.includes("mra_einvoicing") && <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-red-50 rounded-lg">
             <Shield size={20} className="text-red-600" />
@@ -419,7 +430,7 @@ export default function SettingsPage() {
             </div>
           </>
         )}
-      </div>
+      </div>}
 
       {/* AI Configuration */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">

@@ -49,6 +49,8 @@ data class CloudSyncRequest(
     @SerializedName("deliveries") val deliveries: List<SyncDelivery>? = null,
     // Push: shifts (clock in/out) created offline
     @SerializedName("shifts") val shifts: List<SyncShift>? = null,
+    // Push: audit events for fraud prevention
+    @SerializedName("audit_events") val auditEvents: List<SyncAuditEvent>? = null,
     // Integrity: SHA-256 hash of critical push data (orders UUIDs + tills UUIDs + grand totals)
     @SerializedName("payload_checksum") val payloadChecksum: String? = null,
     // Pull pagination — request a specific page of products/customers
@@ -320,4 +322,19 @@ data class SyncShift(
     @SerializedName("notes") val notes: String? = null,
     @SerializedName("status") val status: String = "active",
     @SerializedName("created_at") val createdAt: String? = null,
+)
+
+data class SyncAuditEvent(
+    @SerializedName("id") val id: Long,
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("user_name") val userName: String? = null,
+    @SerializedName("action") val action: String,
+    @SerializedName("detail") val detail: String? = null,
+    @SerializedName("reason") val reason: String? = null,
+    @SerializedName("supervisor_id") val supervisorId: Int? = null,
+    @SerializedName("store_id") val storeId: Int = 0,
+    @SerializedName("terminal_id") val terminalId: Int = 0,
+    @SerializedName("order_id") val orderId: String? = null,
+    @SerializedName("amount") val amount: Double? = null,
 )

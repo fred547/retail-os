@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionAccountId } from "@/lib/account-context";
 import { getDb } from "@/lib/supabase/admin";
+import { getEffectivePlan, getRetentionDays } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,23 @@ const SOFT_DELETE_TABLES = new Set([
 // Sensitive tables where is_deleted=false is ALWAYS enforced (client cannot query deleted records)
 const FORCE_SOFT_DELETE_TABLES = new Set(["pos_user", "orders"]);
 
+// Historical/transactional tables subject to plan-based retention limits
+const RETENTION_TABLES = new Set([
+  "orders", "orderline", "payment", "till", "error_logs",
+  "sync_request_log", "billing_event",
+]);
+
+// Retention date column per table (defaults to created_at)
+const RETENTION_DATE_COLUMN: Record<string, string> = {
+  orders: "created_at",
+  orderline: "created_at",
+  payment: "created_at",
+  till: "created_at",
+  error_logs: "created_at",
+  sync_request_log: "request_at",
+  billing_event: "created_at",
+};
+
 export async function POST(req: NextRequest) {
   try {
     // Resolve session account_id for security scoping
@@ -92,6 +110,13 @@ export async function POST(req: NextRequest) {
     if (queryList.length > 20) {
       return NextResponse.json({ error: "Max 20 queries per batch" }, { status: 400 });
     }
+
+    // Resolve effective plan + retention days once for all queries in the batch
+    let retentionDays = 90; // default
+    try {
+      const effective = await getEffectivePlan(accountId);
+      retentionDays = await getRetentionDays(effective.plan);
+    } catch (_) { /* fallback to default */ }
 
     const results = await Promise.all(
       queryList.map(async (q) => {
@@ -132,6 +157,18 @@ export async function POST(req: NextRequest) {
             if (!hasDeletedFilter) {
               query = query.eq("is_deleted", false);
             }
+          }
+        }
+
+        // Plan-based retention filter for historical/transactional tables
+        if (RETENTION_TABLES.has(q.table)) {
+          const dateCol = RETENTION_DATE_COLUMN[q.table] ?? "created_at";
+          // Only apply if client hasn't already set a date filter on the retention column
+          const hasDateFilter = q.filters?.some((f) => f.column === dateCol && (f.op === "gte" || f.op === "gt"));
+          if (!hasDateFilter) {
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - retentionDays);
+            query = query.gte(dateCol, cutoff.toISOString());
           }
         }
 

@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     return NextResponse.json({ period: data });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Roster period GET error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -97,7 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json({ period: data });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Roster period update error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -123,7 +123,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({ deleted: true });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Roster period delete error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

@@ -16,5 +16,6 @@ data class AuditEvent(
     val storeId: Int = 0,
     val terminalId: Int = 0,
     val orderId: String? = null, // Order UUID if applicable
+    val amount: Double? = null,  // Monetary value of the action
     val isSynced: String = "N"   // For future backend sync
 )

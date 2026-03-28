@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ holidays: data ?? [] });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Holidays list error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ holiday: data }, { status: 201 });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Holiday create error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -100,7 +100,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Holiday delete error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

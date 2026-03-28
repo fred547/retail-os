@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ config: created });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Labor config GET error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ config: data });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Labor config update error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

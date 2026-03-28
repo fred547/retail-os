@@ -47,7 +47,7 @@ export default function StaffHubPage() {
         fetch("/api/data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ table: "v_staff_performance", select: "user_id, staff_name, role, total_orders, total_revenue, avg_order_value", order: [{ column: "total_revenue", ascending: false }], limit: 10 }),
+          body: JSON.stringify({ table: "v_staff_performance", select: "user_id, staff_name, role, total_orders, total_revenue, avg_order_value", order: { column: "total_revenue", ascending: false }, limit: 10 }),
         }),
         fetch("/api/data", {
           method: "POST",

@@ -186,6 +186,9 @@ class CloudSyncService @Inject constructor(
             // Collect unsynced shifts (clock in/out created offline)
             val unsyncedShifts = db.shiftDao().getUnsyncedShifts(accountId)
 
+            // Collect unsynced audit events for fraud prevention
+            val unsyncedAuditEvents = db.auditEventDao().getUnsyncedEvents()
+
             // Build sync request with device registration
             val syncDeviceId = prefsManager.getString("device_id", "").ifEmpty {
                 val id = "dev_${System.currentTimeMillis()}_${terminalId}"
@@ -227,6 +230,7 @@ class CloudSyncService @Inject constructor(
                 serialItems = if (unsyncedSerialItems.isNotEmpty()) unsyncedSerialItems.map { it.toSyncSerialItem() } else null,
                 deliveries = if (unsyncedDeliveries.isNotEmpty()) unsyncedDeliveries.map { it.toSyncDelivery() } else null,
                 shifts = if (unsyncedShifts.isNotEmpty()) unsyncedShifts.map { it.toSyncShift() } else null,
+                auditEvents = if (unsyncedAuditEvents.isNotEmpty()) unsyncedAuditEvents.map { it.toSyncAuditEvent() } else null,
                 payloadChecksum = payloadChecksum,
             )
 
@@ -347,6 +351,13 @@ class CloudSyncService @Inject constructor(
                 db.errorLogDao().markSynced(unsyncedErrorLogs.map { it.id })
                 val cutoff = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
                 db.errorLogDao().deleteOldSyncedLogs(cutoff)
+            }
+
+            // Mark audit events as synced and clean up old ones
+            if (unsyncedAuditEvents.isNotEmpty()) {
+                db.auditEventDao().markSynced(unsyncedAuditEvents.map { it.id })
+                val auditCutoff = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
+                db.auditEventDao().deleteOldSyncedEvents(auditCutoff)
             }
 
             // Update last sync timestamp
@@ -2165,6 +2176,21 @@ class CloudSyncService @Inject constructor(
         deviceId = deviceId,
         appVersion = appVersion,
         osVersion = osVersion
+    )
+
+    private fun AuditEvent.toSyncAuditEvent(): SyncAuditEvent = SyncAuditEvent(
+        id = id,
+        timestamp = timestamp,
+        userId = userId,
+        userName = userName,
+        action = action,
+        detail = detail,
+        reason = reason,
+        supervisorId = supervisorId,
+        storeId = storeId,
+        terminalId = terminalId,
+        orderId = orderId,
+        amount = amount,
     )
 
     private fun com.posterita.pos.android.data.local.entity.SerialItem.toSyncSerialItem(): SyncSerialItem = SyncSerialItem(

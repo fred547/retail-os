@@ -112,7 +112,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       generated_schedules: schedules?.length ?? 0,
     });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Approve error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

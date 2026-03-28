@@ -41,6 +41,11 @@ function createChain(table: string) {
     upsert: (data: any) => { state.op = 'upsert'; state.data = data; return chain; },
     delete: () => { state.op = 'delete'; return chain; },
     eq: (col: string, val: any) => { state.filters[col] = val; return chain; },
+    neq: () => chain,
+    ilike: (col: string, val: any) => { state.filters[col] = val; return chain; },
+    in: () => chain,
+    gte: () => chain,
+    lte: () => chain,
     single: () => resolve(),
     maybeSingle: () => resolve(),
     then: (fn: any) => Promise.resolve(resolve()).then(fn),
@@ -88,9 +93,9 @@ beforeEach(async () => {
   // Store insert returns store_id
   tableResults['store'] = { data: { store_id: 1 }, error: null };
   // Terminal insert succeeds
-  tableResults['terminal'] = { data: null, error: null };
+  tableResults['terminal'] = { data: { terminal_id: 1 }, error: null };
   // User insert succeeds
-  tableResults['pos_user'] = { data: null, error: null };
+  tableResults['pos_user'] = { data: { user_id: 1 }, error: null };
   // Tax insert succeeds
   tableResults['tax'] = { data: null, error: null };
   // Category insert succeeds

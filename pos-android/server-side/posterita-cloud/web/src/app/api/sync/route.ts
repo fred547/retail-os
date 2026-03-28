@@ -65,6 +65,8 @@ interface SyncRequest {
   deliveries?: any[];
   // Push: shifts (clock in/out) created offline
   shifts?: any[];
+  // Push: audit events for fraud prevention
+  audit_events?: any[];
   // Integrity: SHA-256 hash of critical push data
   payload_checksum?: string;
   // Pull pagination (Phase B)
@@ -457,6 +459,7 @@ export async function POST(req: NextRequest) {
     let tablesSynced = 0;
     let inventoryEntriesSynced = 0;
     let errorLogsSynced = 0;
+    let auditEventsSynced = 0;
 
     // ========================================
     // PUSH: Error logs (before everything else — fire-and-forget)
@@ -484,6 +487,34 @@ export async function POST(req: NextRequest) {
         } catch (e: any) {
           // Don't fail sync for error log issues
           console.warn("Error log insert failed:", e.message);
+        }
+      }
+    }
+
+    // ========================================
+    // PUSH: Audit events (fraud prevention — fire-and-forget)
+    // ========================================
+    if (body.audit_events?.length) {
+      for (const evt of body.audit_events) {
+        try {
+          const { error } = await getDb().from("audit_event").insert({
+            account_id: body.account_id,
+            timestamp: evt.timestamp ?? 0,
+            user_id: evt.user_id ?? 0,
+            user_name: evt.user_name,
+            action: evt.action ?? "",
+            detail: evt.detail,
+            reason: evt.reason,
+            supervisor_id: evt.supervisor_id,
+            store_id: evt.store_id ?? body.store_id,
+            terminal_id: evt.terminal_id ?? body.terminal_id,
+            order_id: evt.order_id,
+            amount: evt.amount,
+            device_id: body.device_id,
+          });
+          if (!error) auditEventsSynced++;
+        } catch (e: any) {
+          console.warn("Audit event insert failed:", e.message);
         }
       }
     }
@@ -1499,6 +1530,7 @@ export async function POST(req: NextRequest) {
       deliveries_synced: deliveriesSynced,
       shifts_synced: shiftsSynced,
       conflicts_detected: conflictsDetected,
+      audit_events_synced: auditEventsSynced,
       errors,
     });
   } catch (error: any) {

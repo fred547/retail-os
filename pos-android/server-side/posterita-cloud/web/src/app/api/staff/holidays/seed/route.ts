@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ holidays: data, count: data?.length ?? 0 }, { status: 201 });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : JSON.stringify(e));
     await logToErrorDb(accountId, `Holiday seed error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

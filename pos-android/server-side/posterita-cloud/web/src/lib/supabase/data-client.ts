@@ -65,7 +65,12 @@ export async function dataQueryMulti<T = any>(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(queries),
   });
-  return res.json();
+  const json = await res.json();
+  // If the API returned an error object instead of an array, wrap it
+  if (!Array.isArray(json)) {
+    return queries.map(() => ({ data: [], error: json?.error || "Unexpected response", count: null }));
+  }
+  return json;
 }
 
 /**

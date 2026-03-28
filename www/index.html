@@ -36,10 +36,10 @@
     "description": "Cloud-based point of sale system for retail stores, restaurants, and warehouses. Offline-first, multi-platform, with inventory management, loyalty programs, kitchen display, and accounting integrations.",
     "url": "https://www.posterita.com",
     "offers": [
-      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free Plan", "description": "2 users, 2 terminals, 1 store. Unlimited products, orders, customers. Full offline POS with 7-day history." },
-      { "@type": "Offer", "price": "7", "priceCurrency": "USD", "name": "Starter Plan", "description": "5 users, 3 terminals per store. Unlimited everything. From $7/mo (regional pricing). Full inventory, customers, shifts, 1-year history." },
-      { "@type": "Offer", "price": "19", "priceCurrency": "USD", "name": "Growth Plan", "description": "15 users, 10 terminals per store. From $19/mo (regional pricing). Adds loyalty, promotions, restaurant, KDS, suppliers, quotations." },
-      { "@type": "Offer", "price": "39", "priceCurrency": "USD", "name": "Business Plan", "description": "50 users, 30 terminals per store. From $39/mo (regional pricing). Adds warehouse, Xero, serialized items, staff scheduling, tower control." }
+      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free Plan", "description": "1 user, 1 terminal, 1 store. Unlimited products, orders, customers. Offline POS with modifiers, CSV export, customer management, kitchen printing. 7-day history. Powered by Posterita on receipts." },
+      { "@type": "Offer", "price": "7", "priceCurrency": "USD", "name": "Starter Plan", "description": "3 users, 2 terminals per store. Unlimited everything. From $7/mo (regional pricing). Full inventory, customers, shifts, 1-year history." },
+      { "@type": "Offer", "price": "19", "priceCurrency": "USD", "name": "Growth Plan", "description": "8 users, 5 terminals per store. From $19/mo (regional pricing). Adds loyalty, promotions, restaurant, KDS, suppliers, quotations." },
+      { "@type": "Offer", "price": "39", "priceCurrency": "USD", "name": "Business Plan", "description": "20 users, 15 terminals per store. From $39/mo (regional pricing). Adds warehouse, Xero, serialized items, staff scheduling, tower control." }
     ],
     "aggregateRating": {
       "@type": "AggregateRating",
@@ -67,7 +67,7 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      { "@type": "Question", "name": "Can I use Posterita POS for free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! Posterita offers a lifetime Free Plan with 1 user, 1 terminal, 1 store, 50 orders/month, and 100 products. All features included. Paid plans start from $3/month with regional pricing for developing economies." }},
+      { "@type": "Question", "name": "Can I use Posterita POS for free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! Posterita offers a lifetime Free Plan with 1 user, 1 terminal, 1 store, unlimited products, unlimited orders, and unlimited customers. You get POS with offline mode, customer management, modifiers, CSV export, kitchen printing, and basic inventory and loyalty — with 7-day sales history. No credit card required. Paid plans start from $7/month with regional pricing. No per-user fees, no transaction fees." }},
       { "@type": "Question", "name": "Does Posterita work offline?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. Every POS operation works without internet — on Android and the Desktop PWA. Transactions sync automatically when connectivity returns." }},
       { "@type": "Question", "name": "What platforms does Posterita run on?", "acceptedAnswer": { "@type": "Answer", "text": "Posterita runs on Android (tablets/phones), Windows, Mac, and Linux as an installable PWA, and any modern browser for the web console. KDS works on dedicated Android tablets over LAN." }},
       { "@type": "Question", "name": "How does Posterita ensure security?", "acceptedAnswer": { "@type": "Answer", "text": "Posterita uses blind till reconciliation, role-based access control, audit trails for every transaction, PIN-based device locking, terminal device locking, and encrypted cloud storage." }}
@@ -635,33 +635,34 @@
 <section id="pricing" class="py-20 bg-gray-50">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-8">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">Simple, Transparent Pricing</h2>
-      <p class="text-gray-500 text-lg max-w-2xl mx-auto">Unlimited products, orders &amp; customers on every paid plan. Add stores to scale &mdash; each store = your plan price.</p>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4">Simple, Per-Store Pricing</h2>
+      <p class="text-gray-500 text-lg max-w-2xl mx-auto">All features included at each tier. Pay per store, scale as you grow. No hidden fees.</p>
       <p class="text-sm text-brand-600 font-semibold mt-3">$0 transaction fees. Ever. We don't take a cut of your sales.</p>
     </div>
 
-    <!-- Region Selector -->
+    <!-- Region Selector (view-only after geo detection) -->
     <div class="flex justify-center mb-4">
       <div class="inline-flex bg-white rounded-xl border border-gray-200 p-1 shadow-sm" id="region-selector">
-        <button onclick="setRegion('developing')" data-region="developing" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white">
-          Developing
+        <button data-region="developing" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white pointer-events-none">
+          Africa &amp; South Asia
         </button>
-        <button onclick="setRegion('emerging')" data-region="emerging" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">
-          Emerging
+        <button data-region="emerging" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">
+          Emerging Markets
         </button>
-        <button onclick="setRegion('developed')" data-region="developed" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">
-          Developed
+        <button data-region="developed" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">
+          Developed Markets
         </button>
       </div>
     </div>
-    <p class="text-center text-xs text-gray-400 mb-12" id="region-description">Sub-Saharan Africa, South Asia, Southeast Asia</p>
+    <p class="text-center text-xs text-gray-400 mb-1" id="region-description">Mauritius, Sub-Saharan Africa, South Asia, Southeast Asia</p>
+    <p class="text-center text-xs text-brand-600 font-medium mb-12 h-4" id="geo-detected"></p>
 
     <!-- Pricing Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <!-- Free -->
       <div class="pricing-card bg-white rounded-2xl p-7 border border-gray-200">
         <h3 class="text-lg font-bold mb-1">Free</h3>
-        <p class="text-gray-400 text-xs mb-4">Micro-business starter</p>
+        <p class="text-gray-400 text-xs mb-4">Solo operator starter</p>
         <div class="mb-1">
           <span class="text-4xl font-black">$0</span>
           <span class="text-gray-400 text-sm">/mo</span>
@@ -670,14 +671,16 @@
         <a href="https://web.posterita.com/customer/signup" class="block w-full text-center border-2 border-gray-200 text-gray-700 px-3 py-2.5 rounded-xl font-semibold text-sm hover:border-brand-300 hover:text-brand-600 transition mb-6">Get Started</a>
         <p class="text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-3">Includes:</p>
         <ul class="space-y-2 text-xs text-gray-600">
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 2 users / 2 terminals / 1 store</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 1 user / 1 terminal / 1 store</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Unlimited products &amp; orders</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Unlimited customers</li>
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> POS + full offline mode</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Basic inventory &amp; loyalty</li>
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Kitchen printing</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Kitchen printing + modifiers</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> CSV export</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Receipt printing &amp; barcode scan</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Offline mode</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 7-day sales history</li>
+          <li class="flex items-start gap-1.5"><span class="text-gray-400 text-sm italic">&#8226;</span> <span class="text-gray-400 italic">&ldquo;Powered by Posterita&rdquo; on receipts</span></li>
         </ul>
       </div>
 
@@ -693,13 +696,11 @@
         <a href="https://web.posterita.com/customer/signup" class="block w-full text-center border-2 border-gray-200 text-gray-700 px-3 py-2.5 rounded-xl font-semibold text-sm hover:border-brand-300 hover:text-brand-600 transition mb-6">Start Free Trial</a>
         <p class="text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-3">Everything in Free, plus:</p>
         <ul class="space-y-2 text-xs text-gray-600">
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 5 users / 3 terminals per store</li>
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Unlimited products &amp; orders</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 3 users / 2 terminals per store</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Multi-user roles &amp; permissions</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Full inventory tracking</li>
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Customer management</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Shift clock in/out</li>
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Modifiers, variants, CSV export</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> No receipt watermark</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 1-year cloud history</li>
         </ul>
       </div>
@@ -717,7 +718,7 @@
         <a href="https://web.posterita.com/customer/signup" class="block w-full text-center bg-brand-600 text-white px-3 py-2.5 rounded-xl font-semibold text-sm hover:bg-brand-700 transition mb-6">Start Free Trial</a>
         <p class="text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-3">Everything in Starter, plus:</p>
         <ul class="space-y-2 text-xs text-gray-600">
-          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 15 users / 10 terminals per store</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> 8 users / 5 terminals per store</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Loyalty points &amp; promotions</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> Restaurant: tables, KDS, stations</li>
           <li class="flex items-start gap-1.5"><span class="text-green-500 text-sm">&#10003;</span> AI product import</li>
@@ -740,7 +741,7 @@
         <a href="https://web.posterita.com/customer/signup" class="block w-full text-center bg-white text-gray-900 px-3 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-100 transition mb-6">Start Free Trial</a>
         <p class="text-[10px] font-bold uppercase text-gray-500 tracking-wider mb-3">Everything in Growth, plus:</p>
         <ul class="space-y-2 text-xs text-gray-300">
-          <li class="flex items-start gap-1.5"><span class="text-green-400 text-sm">&#10003;</span> 50 users / 30 terminals per store</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-400 text-sm">&#10003;</span> 20 users / 15 terminals per store</li>
           <li class="flex items-start gap-1.5"><span class="text-green-400 text-sm">&#10003;</span> Serialized items (VIN/IMEI)</li>
           <li class="flex items-start gap-1.5"><span class="text-green-400 text-sm">&#10003;</span> Warehouse zones &amp; shelf labels</li>
           <li class="flex items-start gap-1.5"><span class="text-green-400 text-sm">&#10003;</span> Xero accounting integration</li>
@@ -752,24 +753,9 @@
       </div>
     </div>
 
-    <!-- Add-ons -->
-    <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-      <h4 class="font-bold text-sm text-gray-700 mb-3 text-center">Fine-tune with add-ons (available on all plans)</h4>
-      <div class="grid sm:grid-cols-3 gap-4 text-center">
-        <div class="p-3 rounded-lg bg-gray-50">
-          <div class="text-xs text-gray-400 mb-1">Extra terminal</div>
-          <div class="font-bold text-gray-700"><span data-addon="terminal">$1</span>/mo</div>
-        </div>
-        <div class="p-3 rounded-lg bg-gray-50">
-          <div class="text-xs text-gray-400 mb-1">Extra user</div>
-          <div class="font-bold text-gray-700"><span data-addon="user">$0.50</span>/mo</div>
-        </div>
-        <div class="p-3 rounded-lg bg-gray-50">
-          <div class="text-xs text-gray-400 mb-1">Extra store (Free plan)</div>
-          <div class="font-bold text-gray-700"><span data-store-addon="free">$1</span>/mo</div>
-        </div>
-      </div>
-      <p class="text-xs text-gray-400 mt-3 text-center">No hidden fees, no transaction fees, no contracts. Cancel anytime.</p>
+    <div class="mt-8 text-center">
+      <p class="text-sm text-gray-500">Need more capacity? Each additional store doubles your users &amp; terminals.</p>
+      <p class="text-xs text-gray-400 mt-2">No add-ons, no per-user fees, no transaction fees. Just your plan + stores.</p>
     </div>
   </div>
 </section>
@@ -803,9 +789,10 @@
           <tr><td class="px-4 py-2.5 font-medium">Sales history (1yr)</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$5/store/mo</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Employee management</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$5/employee/mo</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Advanced inventory</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$25/store/mo</td><td class="text-center text-green-500">Paid plan</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">POS Pro</td></tr>
-          <tr><td class="px-4 py-2.5 font-medium">1 store, 5 staff, full features</td><td class="text-center font-bold text-brand-600">$7-19/mo</td><td class="text-center text-gray-500">$55/mo</td><td class="text-center text-gray-500">$60/mo + fees</td><td class="text-center text-gray-500">$89/mo</td><td class="text-center text-gray-500">$128/mo</td></tr>
+          <tr><td class="px-4 py-2.5 font-medium">1 store, full features</td><td class="text-center font-bold text-brand-600">$7-19/mo</td><td class="text-center text-gray-500">$55/mo</td><td class="text-center text-gray-500">$60/mo + fees</td><td class="text-center text-gray-500">$89/mo</td><td class="text-center text-gray-500">$128/mo</td></tr>
 
           <tr class="bg-gray-50"><td colspan="6" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Features</td></tr>
+          <tr><td class="px-4 py-2.5 font-medium">Free plan includes</td><td class="text-center text-green-500 font-bold">Customers, modifiers, CSV, offline, loyalty, kitchen print</td><td class="text-center text-gray-500">Basic POS only</td><td class="text-center text-gray-500">Basic POS only</td><td class="text-center text-gray-500">N/A ($89+)</td><td class="text-center text-gray-500">N/A ($39+)</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Offline mode</td><td class="text-center text-green-500 font-bold">&#10003; Full</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Restaurant &amp; KDS</td><td class="text-center text-green-500 font-bold">&#10003;</td><td class="text-center text-green-500">Basic KDS</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-red-400">&#10007;</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Loyalty &amp; promotions</td><td class="text-center text-green-500 font-bold">&#10003;</td><td class="text-center text-gray-500">Basic</td><td class="text-center text-green-500">Paid add-on</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-red-400">&#10007;</td></tr>
@@ -840,9 +827,9 @@
       <!-- Calculator Region -->
       <div class="flex justify-center mb-6">
         <div class="inline-flex bg-gray-50 rounded-xl border border-gray-200 p-1" id="calc-region-selector">
-          <button onclick="setCalcRegion('developing')" data-calc-region="developing" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white">Developing</button>
-          <button onclick="setCalcRegion('emerging')" data-calc-region="emerging" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">Emerging</button>
-          <button onclick="setCalcRegion('developed')" data-calc-region="developed" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">Developed</button>
+          <button data-calc-region="developing" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white pointer-events-none">Developing</button>
+          <button data-calc-region="emerging" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">Emerging</button>
+          <button data-calc-region="developed" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">Developed</button>
         </div>
       </div>
 
@@ -854,7 +841,7 @@
         <button onclick="setCalcPlan('business')" data-calc-plan="business" class="calc-plan-btn px-4 py-2 rounded-lg text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-brand-300 transition">Business</button>
       </div>
 
-      <div class="grid sm:grid-cols-3 gap-8 mb-8">
+      <div class="max-w-md mx-auto mb-8">
         <div>
           <label class="flex items-center justify-between mb-2">
             <span class="text-sm font-semibold text-gray-700">Stores</span>
@@ -862,22 +849,6 @@
           </label>
           <input type="range" id="calc-stores" min="1" max="50" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-600" oninput="updateCalc()">
           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>50</span></div>
-        </div>
-        <div>
-          <label class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-gray-700">Extra Terminals</span>
-            <span class="text-sm font-black text-brand-600" id="calc-terminals-val">0</span>
-          </label>
-          <input type="range" id="calc-terminals" min="0" max="50" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-600" oninput="updateCalc()">
-          <div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>50</span></div>
-        </div>
-        <div>
-          <label class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-gray-700">Extra Users</span>
-            <span class="text-sm font-black text-brand-600" id="calc-users-val">0</span>
-          </label>
-          <input type="range" id="calc-users" min="0" max="100" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-600" oninput="updateCalc()">
-          <div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100</span></div>
         </div>
       </div>
 
@@ -892,11 +863,9 @@
             <div class="text-xs text-gray-500 space-y-0.5" id="calc-breakdown">
               <p>Base plan (1 store): $19/mo</p>
               <p>Extra stores (0): $0/mo</p>
-              <p>Extra terminals (0): $0/mo</p>
-              <p>Extra users (0): $0/mo</p>
             </div>
             <div class="mt-2 text-xs text-gray-400" id="calc-totals-label">
-              Total capacity: 15 users, 10 terminals &mdash; unlimited orders &amp; products
+              Total: 8 users, 5 terminals &mdash; unlimited orders &amp; products
             </div>
           </div>
           <div class="text-center sm:text-right">
@@ -929,8 +898,8 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr class="bg-gray-50"><td colspan="5" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Limits (per store &mdash; each store doubles these)</td></tr>
-          <tr><td class="px-4 py-2.5">Users</td><td class="text-center text-gray-500">2</td><td class="text-center text-gray-500">5</td><td class="text-center text-gray-500">15</td><td class="text-center text-gray-500">50</td></tr>
-          <tr><td class="px-4 py-2.5">Terminals</td><td class="text-center text-gray-500">2</td><td class="text-center text-gray-500">3</td><td class="text-center text-gray-500">10</td><td class="text-center text-gray-500">30</td></tr>
+          <tr><td class="px-4 py-2.5">Users</td><td class="text-center text-gray-500">1</td><td class="text-center text-gray-500">3</td><td class="text-center text-gray-500">8</td><td class="text-center text-gray-500">20</td></tr>
+          <tr><td class="px-4 py-2.5">Terminals</td><td class="text-center text-gray-500">1</td><td class="text-center text-gray-500">2</td><td class="text-center text-gray-500">5</td><td class="text-center text-gray-500">15</td></tr>
           <tr><td class="px-4 py-2.5">Products</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td></tr>
           <tr><td class="px-4 py-2.5">Orders</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td></tr>
           <tr><td class="px-4 py-2.5">Customers</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td><td class="text-center text-green-500 font-semibold">Unlimited</td></tr>
@@ -941,10 +910,13 @@
           <tr><td class="px-4 py-2.5">Offline Mode</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
           <tr><td class="px-4 py-2.5">Receipt + Kitchen Printing</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
           <tr><td class="px-4 py-2.5">Basic Inventory &amp; Loyalty</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">Customer Management</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">Modifiers &amp; Variants</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">CSV Export</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">Multi-Payment Types</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
           <tr><td class="px-4 py-2.5">Multi-User &amp; Roles</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
-          <tr><td class="px-4 py-2.5">Customer Management</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
-          <tr><td class="px-4 py-2.5">Full Inventory &amp; Shifts</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
-          <tr><td class="px-4 py-2.5">Modifiers, Variants, CSV Export</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">Full Inventory Tracking</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
+          <tr><td class="px-4 py-2.5">Shift Clock In/Out</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
 
           <tr class="bg-gray-50"><td colspan="5" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Growth Features</td></tr>
           <tr><td class="px-4 py-2.5">Loyalty Points (advanced) &amp; Promotions</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
@@ -1220,7 +1192,7 @@
           Can I use Posterita POS for free?
           <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
-        <p class="px-6 pb-4 text-sm text-gray-500">Yes! Posterita offers a generous Free Plan with 2 users, 2 terminals, 1 store, unlimited products, unlimited orders, and unlimited customers. You get full POS with offline mode, basic inventory, basic loyalty, and kitchen printing &mdash; with 7-day sales history. No credit card required. Paid plans start from $7/mo with regional pricing.</p>
+        <p class="px-6 pb-4 text-sm text-gray-500">Yes! Posterita offers a generous Free Plan with 1 user, 1 terminal, 1 store, unlimited products, unlimited orders, and unlimited customers. You get POS with offline mode, customer management, modifiers, CSV export, kitchen printing, and basic inventory &amp; loyalty &mdash; with 7-day sales history. Receipts show &ldquo;Powered by Posterita.&rdquo; No credit card required. Paid plans start from $7/mo with regional pricing.</p>
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
@@ -1231,17 +1203,17 @@
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
-          Can I add extra users or terminals?
+          How do I get more users or terminals?
           <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
-        <p class="px-6 pb-4 text-sm text-gray-500">Yes! Each plan includes a base number of users, terminals, and stores. You can add more with affordable add-ons: extra users from $0.50/mo, terminals from $0.50/mo, and stores from $1/mo (prices vary by region). Use our pricing calculator to estimate your exact monthly cost.</p>
+        <p class="px-6 pb-4 text-sm text-gray-500">Each additional store doubles your users and terminals. No per-user or per-terminal add-ons &mdash; just add stores as you grow. Use our pricing calculator to estimate your exact monthly cost.</p>
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
           What happens when I reach plan limits?
           <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
-        <p class="px-6 pb-4 text-sm text-gray-500">Products, orders, and customers are unlimited on every plan &mdash; even Free. The only scaling limits are users and terminals per store. Need more? Add extra stores (each store = your plan price and doubles your users &amp; terminals), or buy individual add-ons for extra terminals or users. Cloud retention: Free (7 days), Starter (1 year), Growth (3 years), Business (5 years).</p>
+        <p class="px-6 pb-4 text-sm text-gray-500">Products, orders, and customers are unlimited on every plan &mdash; even Free. The only scaling limits are users and terminals per store. Need more? Add extra stores &mdash; each store doubles your users &amp; terminals. No per-user or per-terminal fees. Cloud retention: Free (7 days), Starter (1 year), Growth (3 years), Business (5 years).</p>
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
@@ -1402,30 +1374,27 @@
       description: 'Sub-Saharan Africa, South Asia, Southeast Asia',
       plans: { free: 0, starter: 7, growth: 19, business: 39 },
       storeAddon: { free: 1, starter: 7, growth: 19, business: 39 },
-      addons: { user: 0.50, terminal: 1, orders: 0.50 },
     },
     emerging: {
       label: 'Emerging',
       description: 'Mauritius, South Africa, Latin America, Eastern Europe, Middle East, China',
       plans: { free: 0, starter: 12, growth: 29, business: 59 },
       storeAddon: { free: 2, starter: 12, growth: 29, business: 59 },
-      addons: { user: 1, terminal: 2, orders: 1 },
     },
     developed: {
       label: 'Developed',
       description: 'North America, Western Europe, Australia & New Zealand, Japan, Singapore',
       plans: { free: 0, starter: 19, growth: 49, business: 99 },
       storeAddon: { free: 3, starter: 19, growth: 49, business: 99 },
-      addons: { user: 1.50, terminal: 3, orders: 1.50 },
     },
   };
 
   // Per-store limits (multiply by number of stores)
   const PLAN_LIMITS = {
-    free:     { users: 2,  terminals: 2  },
-    starter:  { users: 5,  terminals: 3  },
-    growth:   { users: 15, terminals: 10 },
-    business: { users: 50, terminals: 30 },
+    free:     { users: 1,  terminals: 1  },
+    starter:  { users: 3,  terminals: 2  },
+    growth:   { users: 8,  terminals: 5  },
+    business: { users: 20, terminals: 15 },
   };
 
   let currentRegion = 'developing';
@@ -1446,11 +1415,6 @@
     document.querySelectorAll('[data-store-addon]').forEach(el => {
       const plan = el.dataset.storeAddon;
       if (data.storeAddon[plan] !== undefined) el.textContent = '$' + data.storeAddon[plan];
-    });
-    // Individual addon prices
-    document.querySelectorAll('[data-addon]').forEach(el => {
-      const addon = el.dataset.addon;
-      if (data.addons[addon] !== undefined) el.textContent = '$' + fmt(data.addons[addon]);
     });
   }
 
@@ -1500,12 +1464,8 @@
 
   function updateCalc() {
     const stores = parseInt(document.getElementById('calc-stores').value);
-    const extraTerminals = parseInt(document.getElementById('calc-terminals').value);
-    const extraUsers = parseInt(document.getElementById('calc-users').value);
 
     document.getElementById('calc-stores-val').textContent = stores;
-    document.getElementById('calc-terminals-val').textContent = extraTerminals;
-    document.getElementById('calc-users-val').textContent = extraUsers;
 
     const data = PRICING[calcRegion];
     const plan = calcPlan;
@@ -1514,12 +1474,10 @@
     const baseCost = data.plans[plan];
     const extraStores = Math.max(0, stores - 1);
     const storeCost = extraStores * data.storeAddon[plan];
-    const terminalCost = extraTerminals * data.addons.terminal;
-    const userCost = extraUsers * data.addons.user;
-    const total = baseCost + storeCost + terminalCost + userCost;
+    const total = baseCost + storeCost;
 
-    const totalUsers = lim.users * stores + extraUsers;
-    const totalTerminals = lim.terminals * stores + extraTerminals;
+    const totalUsers = lim.users * stores;
+    const totalTerminals = lim.terminals * stores;
 
     const planNames = { free: 'Free', starter: 'Starter', growth: 'Growth', business: 'Business' };
     document.getElementById('calc-plan-name').textContent = planNames[plan];
@@ -1527,16 +1485,103 @@
     const breakdown = document.getElementById('calc-breakdown');
     breakdown.innerHTML =
       '<p>Base plan (1 store): $' + baseCost + '/mo</p>' +
-      '<p>Extra stores (' + extraStores + '): $' + fmt(storeCost) + '/mo</p>' +
-      '<p>Extra terminals (' + extraTerminals + '): $' + fmt(terminalCost) + '/mo</p>' +
-      '<p>Extra users (' + extraUsers + '): $' + fmt(userCost) + '/mo</p>';
+      '<p>Extra stores (' + extraStores + '): $' + fmt(storeCost) + '/mo</p>';
 
     document.getElementById('calc-totals-label').textContent =
-      'Total capacity: ' + totalUsers.toLocaleString() + ' users, ' +
+      'Total: ' + totalUsers.toLocaleString() + ' users, ' +
       totalTerminals.toLocaleString() + ' terminals \u2014 unlimited orders & products';
 
     document.getElementById('calc-total').textContent = '$' + fmt(total);
   }
+
+  // ============================================================
+  // GEO-BASED REGION DETECTION
+  // ============================================================
+  const COUNTRY_REGIONS = {
+    // Developing (Tier 1)
+    'AF':'developing','BD':'developing','BJ':'developing','BF':'developing','BI':'developing',
+    'KH':'developing','CM':'developing','CF':'developing','TD':'developing','KM':'developing',
+    'CD':'developing','CI':'developing','DJ':'developing','ET':'developing','GA':'developing',
+    'GM':'developing','GH':'developing','GN':'developing','HT':'developing','IN':'developing',
+    'ID':'developing','KE':'developing','LA':'developing','LR':'developing','MG':'developing',
+    'MW':'developing','ML':'developing','MR':'developing','MZ':'developing','MM':'developing',
+    'NP':'developing','NE':'developing','NG':'developing','PK':'developing','PH':'developing',
+    'RW':'developing','SN':'developing','SL':'developing','SO':'developing','LK':'developing',
+    'TZ':'developing','TG':'developing','UG':'developing','VN':'developing','ZM':'developing',
+    'ZW':'developing',
+    // Emerging (Tier 2)
+    'DZ':'emerging','AR':'emerging','AM':'emerging','AZ':'emerging','BH':'emerging',
+    'BY':'emerging','BA':'emerging','BR':'emerging','BG':'emerging','CL':'emerging',
+    'CN':'emerging','CO':'emerging','CR':'emerging','HR':'emerging','CZ':'emerging',
+    'DO':'emerging','EC':'emerging','EG':'emerging','GE':'emerging','HU':'emerging',
+    'IR':'emerging','IQ':'emerging','JO':'emerging','KZ':'emerging','KW':'emerging',
+    'LB':'emerging','LT':'emerging','MY':'emerging','MU':'emerging','MX':'emerging',
+    'MA':'emerging','OM':'emerging','PA':'emerging','PE':'emerging','PL':'emerging',
+    'QA':'emerging','RO':'emerging','RU':'emerging','SA':'emerging','RS':'emerging',
+    'ZA':'emerging','TH':'emerging','TN':'emerging','TR':'emerging','UA':'emerging',
+    'UY':'emerging','UZ':'emerging','VE':'emerging',
+    // Developed (Tier 3)
+    'AU':'developed','AT':'developed','BE':'developed','CA':'developed','DK':'developed',
+    'FI':'developed','FR':'developed','DE':'developed','GR':'developed','HK':'developed',
+    'IS':'developed','IE':'developed','IL':'developed','IT':'developed','JP':'developed',
+    'KR':'developed','LU':'developed','NL':'developed','NZ':'developed','NO':'developed',
+    'PT':'developed','SG':'developed','ES':'developed','SE':'developed','CH':'developed',
+    'TW':'developed','AE':'developed','GB':'developed','US':'developed',
+  };
+
+  const COUNTRY_NAMES = {
+    'AF':'Afghanistan','BD':'Bangladesh','BJ':'Benin','BF':'Burkina Faso','BI':'Burundi',
+    'KH':'Cambodia','CM':'Cameroon','CF':'Central African Republic','TD':'Chad','KM':'Comoros',
+    'CD':'Congo DR','CI':"Côte d'Ivoire",'DJ':'Djibouti','ET':'Ethiopia','GA':'Gabon',
+    'GM':'Gambia','GH':'Ghana','GN':'Guinea','HT':'Haiti','IN':'India',
+    'ID':'Indonesia','KE':'Kenya','LA':'Laos','LR':'Liberia','MG':'Madagascar',
+    'MW':'Malawi','ML':'Mali','MR':'Mauritania','MZ':'Mozambique','MM':'Myanmar',
+    'NP':'Nepal','NE':'Niger','NG':'Nigeria','PK':'Pakistan','PH':'Philippines',
+    'RW':'Rwanda','SN':'Senegal','SL':'Sierra Leone','SO':'Somalia','LK':'Sri Lanka',
+    'TZ':'Tanzania','TG':'Togo','UG':'Uganda','VN':'Vietnam','ZM':'Zambia','ZW':'Zimbabwe',
+    'DZ':'Algeria','AR':'Argentina','AM':'Armenia','AZ':'Azerbaijan','BH':'Bahrain',
+    'BY':'Belarus','BA':'Bosnia','BR':'Brazil','BG':'Bulgaria','CL':'Chile',
+    'CN':'China','CO':'Colombia','CR':'Costa Rica','HR':'Croatia','CZ':'Czech Republic',
+    'DO':'Dominican Republic','EC':'Ecuador','EG':'Egypt','GE':'Georgia','HU':'Hungary',
+    'IR':'Iran','IQ':'Iraq','JO':'Jordan','KZ':'Kazakhstan','KW':'Kuwait',
+    'LB':'Lebanon','LT':'Lithuania','MY':'Malaysia','MU':'Mauritius','MX':'Mexico',
+    'MA':'Morocco','OM':'Oman','PA':'Panama','PE':'Peru','PL':'Poland',
+    'QA':'Qatar','RO':'Romania','RU':'Russia','SA':'Saudi Arabia','RS':'Serbia',
+    'ZA':'South Africa','TH':'Thailand','TN':'Tunisia','TR':'Turkey','UA':'Ukraine',
+    'UY':'Uruguay','UZ':'Uzbekistan','VE':'Venezuela',
+    'AU':'Australia','AT':'Austria','BE':'Belgium','CA':'Canada','DK':'Denmark',
+    'FI':'Finland','FR':'France','DE':'Germany','GR':'Greece','HK':'Hong Kong',
+    'IS':'Iceland','IE':'Ireland','IL':'Israel','IT':'Italy','JP':'Japan',
+    'KR':'South Korea','LU':'Luxembourg','NL':'Netherlands','NZ':'New Zealand','NO':'Norway',
+    'PT':'Portugal','SG':'Singapore','ES':'Spain','SE':'Sweden','CH':'Switzerland',
+    'TW':'Taiwan','AE':'UAE','GB':'United Kingdom','US':'United States',
+  };
+
+  function applyGeoRegion(code) {
+    const region = COUNTRY_REGIONS[code] || 'developed';
+    const name = COUNTRY_NAMES[code] || code;
+    setRegion(region);
+    const el = document.getElementById('geo-detected');
+    if (el) {
+      const regionLabels = { developing: 'Africa & South Asia', emerging: 'Emerging Markets', developed: 'Developed Markets' };
+      el.textContent = 'Detected: ' + name + ' \u2014 ' + regionLabels[region] + ' pricing';
+    }
+  }
+
+  // Detect visitor country on page load
+  fetch('https://ipapi.co/country_code/')
+    .then(function(r) { return r.text(); })
+    .then(function(code) {
+      code = (code || '').trim().toUpperCase();
+      if (code && code.length === 2) {
+        applyGeoRegion(code);
+      } else {
+        applyGeoRegion('US');
+      }
+    })
+    .catch(function() {
+      applyGeoRegion('US');
+    });
 
   // Initialize
   updateCalc();

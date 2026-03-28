@@ -18,7 +18,8 @@ class AuditLogger @Inject constructor(
         detail: String? = null,
         reason: String? = null,
         supervisorId: Int? = null,
-        orderId: String? = null
+        orderId: String? = null,
+        amount: Double? = null
     ) {
         withContext(Dispatchers.IO) {
             val event = AuditEvent(
@@ -30,7 +31,8 @@ class AuditLogger @Inject constructor(
                 supervisorId = supervisorId,
                 storeId = prefsManager.storeId,
                 terminalId = prefsManager.terminalId,
-                orderId = orderId
+                orderId = orderId,
+                amount = amount
             )
             db.auditEventDao().insert(event)
         }
@@ -53,6 +55,12 @@ class AuditLogger @Inject constructor(
         const val TILL_ADJUST = "till.adjust"
         const val DRAWER_OPEN = "drawer.open"
         const val DISCOUNT_APPLY = "discount.apply"
+        const val PRICE_OVERRIDE = "price.override"
+        const val DISCOUNT_LIMIT_EXCEEDED = "discount.limit_exceeded"
+        const val PIN_FAILED = "pin.failed"
+        const val PIN_LOCKOUT = "pin.lockout"
+        const val SUPERVISOR_PIN_OK = "supervisor.pin_ok"
+        const val SUPERVISOR_PIN_FAIL = "supervisor.pin_fail"
         const val CUSTOMER_SET = "customer.set"
         const val CUSTOMER_CREATE = "customer.create"
     }
