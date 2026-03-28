@@ -123,6 +123,9 @@ export const TEST_SUITES = {
       { name: "pos/escpos.test.ts", tests: 14, area: "ESC/POS: init/text/align/bold/cut/drawer/receipt/BRN" },
       { name: "pos/barcode-listener.test.ts", tests: 5, area: "USB barcode scanner: scan detect, min length, input ignore" },
       { name: "pos/print-relay.test.ts", tests: 5, area: "Print relay: SSRF IP validation (private/public ranges)" },
+      { name: "store-layout.test.ts", tests: 3, area: "Store layout zone CRUD, validation" },
+      { name: "tags-advanced.test.ts", tests: 8, area: "Tag assign (product/customer/order), report, validation" },
+      { name: "enroll.test.ts", tests: 7, area: "Device enrollment, terminal lock, re-enroll, 409 rejection" },
     ],
   },
   scenarios: {

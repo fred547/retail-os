@@ -82,6 +82,7 @@ const phases: Phase[] = [
           { name: "Bulk assign/remove tags", status: "done", detail: "POST /api/tags/assign with entity_type + entity_ids" },
           { name: "Sales by tag report", status: "done", detail: "Revenue/qty/orders breakdown by tag with date range" },
           { name: "Tag sync to Android", status: "done", detail: "TagGroup, Tag, ProductTag Room entities + CloudSync pull" },
+          { name: "Auto-tag rules engine", status: "done", detail: "Category/price/keyword rules — bulk apply, zero manual tagging" },
         ],
       },
       {

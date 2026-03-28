@@ -90,7 +90,7 @@ These are the column names that get confused most often. **Always verify against
 | `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
 | `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
 | `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00049) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00051) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
@@ -223,7 +223,7 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **loyalty** | earn/redeem/adjust, config, wallets, transactions | Points system |
 | **suppliers** | CRUD, purchase-orders/*, purchase-orders/[id]/receive (GRN) | Supply chain |
 | **operations** | promotions/*, deliveries/*, shifts, menu-schedules/*, reports/z-report | Daily ops |
-| **tags** | groups (CRUD), tags (CRUD), assign (bulk), report (sales by tag) | Product/customer/order classification |
+| **tags** | groups (CRUD), tags (CRUD), assign (bulk), report (sales by tag), auto-rules (CRUD), auto-apply (execute engine) | Product/customer/order classification + auto-tagging |
 | **store-layout** | GET/POST/DELETE zones (shelf ranges + height labels) | Warehouse shelf configuration |
 | **stock** | GET (multi-store overview), POST (manual adjustment + journal) | Warehouse stock management |
 | **platform** | create-account, delete-test-brands, super-admin/*, account-manager/* | Admin portal |
@@ -453,7 +453,7 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification), Peach Payments.
 
-**Phase 4 completed:** Product tagging (groups + many-to-many + reports), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, 27 UI issues fixed, 39 API routes with DB error logging, Dexie v3 versioning, rate limiting, GitHub Actions CI/CD, 1,569 automated tests.
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app, terminal device locking, large data volume handling (batch sync + paginated pull), 556+ automated tests.
 
 **Phase 4+ roadmap:** Self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In, Peach Payments, QuickBooks/Shopify integrations, webhook framework.
 
@@ -472,11 +472,18 @@ OAuth 2.0 accounting integration. Customers connect their Xero org via the web c
 
 Flexible cross-cutting classification beyond categories. Tags are grouped (e.g., "Season" → Summer/Winter, "Margin" → High/Low) and many-to-many with products, customers, and orders.
 
-**Tables:** `tag_group`, `tag`, `product_tag`, `customer_tag`, `order_tag`
-**API:** `/api/tags/groups` (CRUD), `/api/tags` (CRUD), `/api/tags/assign` (bulk), `/api/tags/report` (sales by tag)
-**Web:** `/tags` page — accordion groups with colored chips, inline add
+**Tables:** `tag_group`, `tag`, `product_tag`, `customer_tag`, `order_tag`, `auto_tag_rule`
+**API:** `/api/tags/groups` (CRUD), `/api/tags` (CRUD), `/api/tags/assign` (bulk), `/api/tags/report` (sales by tag), `/api/tags/auto-rules` (CRUD), `/api/tags/auto-apply` (execute engine)
+**Web:** `/tags` page — accordion groups with colored chips, inline add. `/tags/auto-rules` — rule-based auto-tagging
 **Android:** `TagGroup`, `Tag`, `ProductTag` Room entities — pull-only via sync
 **Reports:** Tag-based revenue/qty/order breakdown with date range filtering
+
+**Auto-Tag Rules:** Define rules to automatically tag products — no manual 1-by-1 tagging.
+- **By Category:** products in selected categories get specified tags
+- **By Price Range:** products in [min, max] price range get tags
+- **By Keyword:** products whose name/description contains a word get tags
+- **Engine:** `POST /api/tags/auto-apply` evaluates all rules against all products, bulk upserts with ignoreDuplicates (safe to run repeatedly)
+- **Web UI:** `/tags/auto-rules` — create rules, toggle active/inactive, "Run All Rules" button
 
 ## QR Scan Actions
 
