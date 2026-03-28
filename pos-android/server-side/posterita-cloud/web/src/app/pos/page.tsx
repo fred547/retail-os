@@ -61,6 +61,7 @@ export default function PosPage() {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [showTillHistory, setShowTillHistory] = useState(false);
   const [refundComplete, setRefundComplete] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const [allPromotions, setAllPromotions] = useState<any[]>([]);
   const [activePromo, setActivePromo] = useState<AppliedPromotion | null>(null);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
@@ -394,7 +395,7 @@ export default function PosPage() {
       </div>
 
       {/* Main content: products (left) + cart (right) */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left: Products */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Search + category */}
@@ -422,11 +423,14 @@ export default function PosPage() {
             <ProductGrid products={filteredProducts} qtyMap={qtyMap}
               onProductClick={(p) => {
                 // Check for modifiers (product-specific first, then category)
-                const productMods = allModifiers.filter((m: any) => m.product_id === p.product_id);
+                const productMods = allModifiers.filter((m: any) => m.product_id > 0 && m.product_id === p.product_id);
                 const categoryMods = productMods.length === 0
-                  ? allModifiers.filter((m: any) =>
-                      m.productcategories?.split(",").map(Number).includes(p.productcategory_id)
-                    )
+                  ? allModifiers.filter((m: any) => {
+                      if (!m.productcategories) return false;
+                      try {
+                        return String(m.productcategories).split(",").map(Number).filter(Boolean).includes(p.productcategory_id);
+                      } catch { return false; }
+                    })
                   : [];
                 const mods = productMods.length > 0 ? productMods : categoryMods;
                 if (mods.length > 0) {
@@ -440,8 +444,30 @@ export default function PosPage() {
           </div>
         </div>
 
-        {/* Right: Cart (fixed width) */}
-        <div className="w-80 lg:w-96 border-l border-gray-800 flex flex-col">
+        {/* Mobile: floating cart button */}
+        <button
+          onClick={() => setShowMobileCart(!showMobileCart)}
+          className="md:hidden fixed bottom-4 right-4 z-30 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center"
+        >
+          <div className="relative">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            {cart.qty_total > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {Math.round(cart.qty_total)}
+              </span>
+            )}
+          </div>
+        </button>
+
+        {/* Mobile cart overlay backdrop */}
+        {showMobileCart && (
+          <div className="md:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setShowMobileCart(false)} />
+        )}
+
+        {/* Right: Cart — sidebar on desktop, slide-over on mobile */}
+        <div className={`${
+          showMobileCart ? "fixed inset-y-0 right-0 z-40 w-80" : "hidden"
+        } md:relative md:block md:w-80 lg:w-96 border-l border-gray-800 flex flex-col bg-gray-900`}>
           {/* Promotion banner */}
           {activePromo && (
             <div className="px-3 py-2 bg-green-900/30 border-b border-green-800/50 flex items-center gap-2">

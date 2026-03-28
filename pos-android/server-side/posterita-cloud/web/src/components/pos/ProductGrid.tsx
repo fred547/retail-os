@@ -14,7 +14,7 @@ export default function ProductGrid({
   onProductClick: (product: Product) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
       {products.map((p) => {
         const qty = qtyMap[p.product_id] ?? 0;
         const outOfStock = p.track_stock && p.quantity_on_hand <= 0;

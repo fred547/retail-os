@@ -68,11 +68,13 @@ export interface Modifier {
   modifier_id: number;
   account_id: string;
   name: string | null;
+  description: string | null;        // group name for walkthrough ("Sauce", "Size")
   sellingprice: number;
   costprice: number;
   taxamount: number;
   tax_id: number;
   productcategory_id: number;
+  productcategories: string | null;   // comma-separated category IDs
   product_id: number;
   image: string | null;
   isactive: string | null;
