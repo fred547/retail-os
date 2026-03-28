@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.posterita.pos.android.R
@@ -30,8 +31,24 @@ class CartProductAdapter(
     private var cartItems: List<CartItem> = emptyList()
 
     fun setProductList(list: List<CartItem>) {
+        val oldList = cartItems
         cartItems = list
-        notifyDataSetChanged()
+        DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldList.size
+            override fun getNewListSize() = list.size
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+                oldList[oldPos].lineNo == list[newPos].lineNo
+            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+                val old = oldList[oldPos]
+                val new = list[newPos]
+                return old.lineNo == new.lineNo &&
+                    old.qty == new.qty &&
+                    old.priceEntered == new.priceEntered &&
+                    old.discountAmt == new.discountAmt &&
+                    old.note == new.note &&
+                    old.modifiers == new.modifiers
+            }
+        }).dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartProductViewHolder {

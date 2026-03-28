@@ -21,6 +21,7 @@ import {
   Plus,
   Lock,
   Unlock,
+  Globe,
 } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -54,6 +55,7 @@ const TERMINAL_TYPES = [
   { value: "mobile_staff", label: "Staff Device", icon: Smartphone, color: "bg-purple-100 text-purple-700" },
   { value: "customer_display", label: "Customer Display", icon: Monitor, color: "bg-gray-100 text-gray-600" },
   { value: "self_service", label: "Self-Service Kiosk", icon: Monitor, color: "bg-teal-100 text-teal-700" },
+  { value: "web_console", label: "Web Terminal", icon: Globe, color: "bg-sky-100 text-sky-700" },
 ];
 
 const typeInfo = (type: string) => TERMINAL_TYPES.find((t) => t.value === type) ?? TERMINAL_TYPES[0];

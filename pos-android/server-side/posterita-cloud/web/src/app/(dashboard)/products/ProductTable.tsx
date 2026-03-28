@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Package, Pencil, X, Save, Trash2, CheckCircle, Tag } from "lucide-react";
-import { dataUpdate } from "@/lib/supabase/data-client";
+import { Package, Pencil, X, Save, Trash2, CheckCircle, Tag, Download } from "lucide-react";
+import { dataUpdate, dataDelete } from "@/lib/supabase/data-client";
+import { formatCurrency } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SortableHeader from "@/components/SortableHeader";
@@ -56,6 +58,7 @@ export default function ProductTable({
   tagGroups = [],
   allTags = [],
   productTagMap = {},
+  currency = "MUR",
 }: {
   products: Product[];
   categories: Category[];
@@ -63,6 +66,7 @@ export default function ProductTable({
   tagGroups?: TagGroupInfo[];
   allTags?: TagInfo[];
   productTagMap?: Record<number, number[]>;
+  currency?: string;
 }) {
   const router = useRouter();
   const [sort, setSort] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -72,6 +76,11 @@ export default function ProductTable({
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [editTagIds, setEditTagIds] = useState<Set<number>>(new Set());
   const [savingTags, setSavingTags] = useState(false);
+  const [editingPrice, setEditingPrice] = useState<{ id: number; value: string } | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [confirmBulkDeactivate, setConfirmBulkDeactivate] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkActing, setBulkActing] = useState(false);
 
   // Escape key to close edit modal
   const handleKeyDown = useCallback(
@@ -177,6 +186,18 @@ export default function ProductTable({
     router.refresh();
   };
 
+  const saveInlinePrice = async (productId: number) => {
+    if (!editingPrice) return;
+    const newPrice = parseFloat(editingPrice.value);
+    if (isNaN(newPrice) || newPrice < 0) {
+      setEditingPrice(null);
+      return;
+    }
+    await dataUpdate("product", { column: "product_id", value: productId }, { sellingprice: newPrice });
+    setEditingPrice(null);
+    router.refresh();
+  };
+
   const handleSort = (key: string) => {
     setSort((prev) => {
       if (!prev || prev.key !== key) return { key, direction: "asc" };
@@ -221,12 +242,102 @@ export default function ProductTable({
     return sorted;
   }, [products, sort]);
 
+  const allSelected = sortedProducts.length > 0 && sortedProducts.every((p) => selected.has(p.product_id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(sortedProducts.map((p) => p.product_id)));
+    }
+  };
+
+  const toggleSelect = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const bulkDeactivate = async () => {
+    setBulkActing(true);
+    const ids = [...selected];
+    await Promise.all(
+      ids.map((id) =>
+        dataUpdate("product", { column: "product_id", value: id }, { isactive: "N" })
+      )
+    );
+    setBulkActing(false);
+    setConfirmBulkDeactivate(false);
+    setSelected(new Set());
+    router.refresh();
+  };
+
+  const bulkDelete = async () => {
+    setBulkActing(true);
+    const ids = [...selected];
+    await Promise.all(
+      ids.map((id) =>
+        dataDelete("product", { column: "product_id", value: id })
+      )
+    );
+    setBulkActing(false);
+    setConfirmBulkDelete(false);
+    setSelected(new Set());
+    router.refresh();
+  };
+
+  const handleExportCsv = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    downloadCsv(
+      sortedProducts.map((p) => ({
+        name: p.name,
+        upc: p.upc ?? "",
+        category: p.productcategory?.name ?? "",
+        price: p.sellingprice ?? 0,
+        cost: p.costprice ?? 0,
+        stock_qty: p.quantity_on_hand ?? 0,
+        status: p.isactive === "Y" ? "Active" : "Inactive",
+      })),
+      `products-export-${today}.csv`,
+      [
+        { key: "name", label: "Product Name" },
+        { key: "upc", label: "UPC" },
+        { key: "category", label: "Category" },
+        { key: "price", label: "Price" },
+        { key: "cost", label: "Cost" },
+        { key: "stock_qty", label: "Stock Qty" },
+        { key: "status", label: "Status" },
+      ]
+    );
+  };
+
   return (
     <>
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={handleExportCsv}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
+        >
+          <Download size={15} />
+          Export CSV
+        </button>
+      </div>
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <table className="data-table">
           <thead>
             <tr>
+              <th className="w-10">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="rounded border-gray-300 text-posterita-blue focus:ring-posterita-blue/30 cursor-pointer"
+                />
+              </th>
               <th className="w-16">Image</th>
               <SortableHeader label="Name" sortKey="name" currentSort={sort} onSort={handleSort} />
               <SortableHeader label="Category" sortKey="category" currentSort={sort} onSort={handleSort} />
@@ -244,9 +355,18 @@ export default function ProductTable({
             {sortedProducts?.map((p: any) => (
               <tr
                 key={p.product_id}
-                className="cursor-pointer hover:bg-blue-50/50 transition"
+                className={`cursor-pointer hover:bg-blue-50/50 transition ${selected.has(p.product_id) ? "bg-blue-50/70" : ""}`}
                 onClick={() => openEdit(p)}
               >
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(p.product_id)}
+                    onChange={() => {/* handled by onClick */}}
+                    onClick={(e) => toggleSelect(p.product_id, e)}
+                    className="rounded border-gray-300 text-posterita-blue focus:ring-posterita-blue/30 cursor-pointer"
+                  />
+                </td>
                 <td>
                   {p.image && p.image.startsWith("http") ? (
                     <Image
@@ -301,10 +421,36 @@ export default function ProductTable({
                   {p.upc ?? "—"}
                 </td>
                 <td className="text-right text-gray-500">
-                  {formatCurrency(p.costprice)}
+                  {formatCurrency(p.costprice, currency)}
                 </td>
                 <td className="text-right font-medium">
-                  {formatCurrency(p.sellingprice)}
+                  {editingPrice !== null && editingPrice.id === p.product_id ? (
+                    <input
+                      type="number"
+                      value={editingPrice.value}
+                      onChange={(e) => setEditingPrice({ id: p.product_id, value: e.target.value })}
+                      onBlur={() => saveInlinePrice(p.product_id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveInlinePrice(p.product_id);
+                        if (e.key === "Escape") setEditingPrice(null);
+                      }}
+                      autoFocus
+                      step="0.01"
+                      className="w-24 px-2 py-1 text-right rounded border border-blue-300 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <span
+                      className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingPrice({ id: p.product_id, value: String(p.sellingprice) });
+                      }}
+                      title="Click to edit price"
+                    >
+                      {formatCurrency(p.sellingprice, currency)}
+                    </span>
+                  )}
                   {p.needs_price_review === "Y" && (
                     <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-orange-100 text-orange-700">
                       Review
@@ -571,14 +717,39 @@ export default function ProductTable({
         onConfirm={handleDeactivate}
         onCancel={() => setConfirmDeactivate(false)}
       />
+
+      {/* Bulk Action Floating Bar */}
+      {selected.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4 z-40">
+          <span className="text-sm font-medium">{selected.size} selected</span>
+          <button onClick={() => setConfirmBulkDeactivate(true)} disabled={bulkActing} className="text-sm px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg disabled:opacity-50">Deactivate</button>
+          <button onClick={() => setConfirmBulkDelete(true)} disabled={bulkActing} className="text-sm px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg disabled:opacity-50">Delete</button>
+          <button onClick={() => setSelected(new Set())} className="text-sm text-gray-400 hover:text-white">Clear</button>
+        </div>
+      )}
+
+      {/* Confirm Bulk Deactivate */}
+      <ConfirmDialog
+        open={confirmBulkDeactivate}
+        title="Deactivate Products"
+        message={`Deactivate ${selected.size} products?`}
+        confirmText={bulkActing ? "Deactivating..." : "Deactivate"}
+        confirmVariant="danger"
+        onConfirm={bulkDeactivate}
+        onCancel={() => setConfirmBulkDeactivate(false)}
+      />
+
+      {/* Confirm Bulk Delete */}
+      <ConfirmDialog
+        open={confirmBulkDelete}
+        title="Delete Products"
+        message={`Delete ${selected.size} products? This cannot be undone.`}
+        confirmText={bulkActing ? "Deleting..." : "Delete"}
+        confirmVariant="danger"
+        onConfirm={bulkDelete}
+        onCancel={() => setConfirmBulkDelete(false)}
+      />
     </>
   );
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "MUR",
-    minimumFractionDigits: 2,
-  }).format(amount ?? 0);
-}

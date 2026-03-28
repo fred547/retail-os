@@ -5,6 +5,7 @@ import {
   Truck, Plus, Search, Phone, Mail, MapPin,
   Edit2, Trash2, X, RefreshCw, ChevronRight,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Supplier {
   supplier_id: number;
@@ -135,6 +136,7 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Suppliers" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -229,6 +231,7 @@ export default function SuppliersPage() {
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center">
           <div className="bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[85vh] overflow-y-auto p-6">
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editing ? "Edit Supplier" : "Add Supplier"}

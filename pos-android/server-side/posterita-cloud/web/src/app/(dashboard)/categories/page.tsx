@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { dataQuery, dataUpdate, dataInsert } from "@/lib/supabase/data-client";
-import { FolderTree, Plus, Pencil, Search, X, ChevronRight, AlertTriangle } from "lucide-react";
+import { FolderTree, Plus, Pencil, Search, X, ChevronRight, AlertTriangle, GripVertical } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -84,6 +84,8 @@ export default function CategoriesPage() {
   const [form, setForm] = useState<CategoryFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState<Category | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -251,6 +253,25 @@ export default function CategoriesPage() {
     await fetchCategories();
   };
 
+  const handleReorder = async () => {
+    if (dragIndex === null || dragOverIndex === null || dragIndex === dragOverIndex) return;
+
+    const reordered = [...filtered];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(dragOverIndex, 0, moved);
+
+    for (let i = 0; i < reordered.length; i++) {
+      if (reordered[i].position !== i) {
+        await dataUpdate("productcategory",
+          { column: "productcategory_id", value: reordered[i].productcategory_id },
+          { position: i }
+        );
+      }
+    }
+
+    fetchCategories();
+  };
+
   const levelColors = [
     "text-posterita-blue bg-blue-50",
     "text-purple-600 bg-purple-50",
@@ -307,7 +328,8 @@ export default function CategoriesPage() {
       ) : (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           {/* Header row */}
-          <div className="grid grid-cols-[1fr_100px_100px_80px_80px_40px] gap-2 px-5 py-2.5 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <div className="grid grid-cols-[24px_1fr_100px_100px_80px_80px_40px] gap-2 px-5 py-2.5 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <div />
             <div>Name</div>
             <div>Tax</div>
             <div>Station</div>
@@ -317,14 +339,22 @@ export default function CategoriesPage() {
           </div>
 
           {/* Category rows */}
-          {filtered.map((c) => {
+          {filtered.map((c, index) => {
             const hasChildren = (c.children ?? []).length > 0;
             return (
               <div
                 key={c.productcategory_id}
-                className="grid grid-cols-[1fr_100px_100px_80px_80px_40px] gap-2 px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50/50 transition cursor-pointer items-center"
+                draggable
+                onDragStart={() => setDragIndex(index)}
+                onDragOver={(e) => { e.preventDefault(); setDragOverIndex(index); }}
+                onDragEnd={() => { handleReorder(); setDragIndex(null); setDragOverIndex(null); }}
+                className={`group grid grid-cols-[24px_1fr_100px_100px_80px_80px_40px] gap-2 px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50/50 transition cursor-pointer items-center ${dragOverIndex === index ? "border-t-2 border-posterita-blue" : ""} ${dragIndex === index ? "opacity-40" : ""}`}
                 onClick={() => openEditModal(c)}
               >
+                {/* Drag handle */}
+                <div className="flex items-center justify-center">
+                  <GripVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab" />
+                </div>
                 {/* Name with tree indentation */}
                 <div className="flex items-center gap-2 min-w-0" style={{ paddingLeft: `${c.level * 24}px` }}>
                   {c.level > 0 && (
@@ -408,15 +438,16 @@ export default function CategoriesPage() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={closeModal}>
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end md:items-center justify-center p-4" onClick={closeModal}>
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="category-modal-title"
-            className="bg-white rounded-xl shadow-lg w-full max-w-md"
+            className="bg-white rounded-t-2xl md:rounded-2xl shadow-lg w-full max-w-md max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => { if (e.key === "Escape") closeModal(); }}
           >
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
             <div className="flex items-center justify-between px-6 pt-6 pb-2">
               <h2 id="category-modal-title" className="text-lg font-semibold text-gray-900">
                 {modalMode === "create" ? "Add Category" : "Edit Category"}

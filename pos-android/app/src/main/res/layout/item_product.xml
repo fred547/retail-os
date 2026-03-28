@@ -27,7 +27,7 @@
             android:layout_height="0dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_product_placeholder"
-            android:contentDescription="@string/app_name"
+            android:contentDescription="Product image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/stockBar" />
@@ -111,7 +111,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_done"
             android:visibility="gone"
-            android:contentDescription="@string/app_name"
+            android:contentDescription="Product selected"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 

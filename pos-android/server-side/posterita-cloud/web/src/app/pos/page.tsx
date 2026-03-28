@@ -91,14 +91,15 @@ export default function PosPage() {
     async function init() {
       const accountId = await getSyncMeta("account_id");
       if (!accountId) {
-        // Not set up yet — redirect to setup
-        window.location.href = "/pos/setup";
+        // Not configured — show setup link, never auto-redirect
+        setReady(true);
         return;
       }
 
       const seeded = await isSeeded(accountId);
       if (!seeded) {
-        window.location.href = "/pos/setup";
+        // Has account but no data — show setup link, never auto-redirect
+        setReady(true);
         return;
       }
 
@@ -259,6 +260,35 @@ export default function PosPage() {
         <div className="text-center">
           <RefreshCw size={32} className="text-blue-400 animate-spin mx-auto mb-4" />
           <p className="text-gray-400 text-sm">Loading POS...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show setup prompt if no products loaded
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span className="text-white text-3xl font-bold">P</span>
+          </div>
+          <h1 className="text-xl font-bold text-white mb-2">POS Not Set Up</h1>
+          <p className="text-gray-400 text-sm mb-6">
+            Connect this terminal to your store and sync your product catalogue to start selling.
+          </p>
+          <a
+            href="/pos/setup"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition"
+          >
+            Set Up POS
+          </a>
+          <a
+            href="/customer/products"
+            className="block text-gray-500 text-sm mt-4 hover:text-gray-300 transition"
+          >
+            Back to Console
+          </a>
         </div>
       </div>
     );

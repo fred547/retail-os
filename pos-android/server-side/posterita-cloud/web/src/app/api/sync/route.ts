@@ -1366,7 +1366,7 @@ export async function POST(req: NextRequest) {
         : db.from("preparation_station").select("*").eq("account_id", body.account_id).gte("updated_at", lastSync),
       db.from("category_station_mapping").select("*").eq("account_id", body.account_id),
       db.from("store").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
-      db.from("terminal").select("*").eq("account_id", body.account_id).eq("is_deleted", false).gte("updated_at", lastSync),
+      db.from("terminal").select("*").eq("account_id", body.account_id).eq("is_deleted", false).neq("terminal_type", "web_console").gte("updated_at", lastSync),
       db.from("account").select("owner_id").eq("account_id", body.account_id).single(),
       db.from("inventory_count_session").select("*").eq("account_id", body.account_id).in("status", ["created", "active"]).gte("updated_at", lastSync),
       body.store_id > 0

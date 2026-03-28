@@ -113,6 +113,38 @@ describe("Sync schema guard — shift push", () => {
     expect(res.status).toBe(200);
   });
 
+  it("treats empty-string UUID as null (da1f25e fix)", async () => {
+    tableResults["account"] = { data: { account_id: "acc1" }, error: null };
+    seedPullTables();
+    tableResults["shift"] = { data: null, error: null };
+
+    const { POST } = await importSyncRoute();
+    const res = await POST(mockRequest({
+      account_id: "acc1",
+      terminal_id: 1,
+      store_id: 1,
+      last_sync_at: "2024-01-01T00:00:00Z",
+      shifts: [{
+        user_id: 1,
+        user_name: "Alice",
+        clock_in: "2024-01-15T08:00:00Z",
+        status: "active",
+        uuid: "",  // empty string — should be treated as null, not cause duplicate key error
+      }],
+    }));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.success).toBeDefined();
+
+    // Verify the shift was inserted (not upserted via insertOrUpdate) since uuid is empty
+    // The empty UUID should fall through to the insert path, not the insertOrUpdate path
+    const shiftInsert = supabaseOps.find(o => o.table === "shift" && o.op === "insert");
+    expect(shiftInsert).toBeDefined();
+    // The uuid field should be null, not empty string
+    expect(shiftInsert!.data.uuid).toBeNull();
+  });
+
   it("pushes shifts without uuid field (legacy clients)", async () => {
     tableResults["account"] = { data: { account_id: "acc1" }, error: null };
     seedPullTables();

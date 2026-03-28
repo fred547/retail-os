@@ -41,11 +41,11 @@
 
             <ImageView
                 android:id="@+id/btn_minus"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:padding="8dp"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:padding="14dp"
                 android:src="@drawable/ic_minus"
-                android:contentDescription="Decrease"
+                android:contentDescription="Decrease denomination count"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 app:tint="@color/posterita_muted" />
 
@@ -61,11 +61,11 @@
 
             <ImageView
                 android:id="@+id/btn_plus"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:padding="8dp"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:padding="14dp"
                 android:src="@drawable/ic_plus"
-                android:contentDescription="Increase"
+                android:contentDescription="Increase denomination count"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 app:tint="@color/posterita_primary" />
         </LinearLayout>

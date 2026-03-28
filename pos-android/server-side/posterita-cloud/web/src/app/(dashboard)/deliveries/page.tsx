@@ -8,6 +8,8 @@ import {
   Car, ArrowDownLeft, ArrowUpRight, ArrowLeftRight,
   Camera, PenTool, KeyRound, ScanBarcode, CreditCard, Banknote,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Delivery {
   id: number;
@@ -93,6 +95,15 @@ export default function DeliveriesPage() {
   const [summary, setSummary] = useState({ pending: 0, in_transit: 0, delivered: 0, outbound: 0, inbound: 0, transfers: 0 });
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState<number | null>(null);
+  const [confirmDelivered, setConfirmDelivered] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const showFeedback = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   // Create form
   const [formType, setFormType] = useState("package");
@@ -119,7 +130,7 @@ export default function DeliveriesPage() {
       const data = await res.json();
       setDeliveries(data.deliveries || []);
       setSummary(data.summary || { pending: 0, in_transit: 0, delivered: 0, outbound: 0, inbound: 0, transfers: 0 });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); setError("Failed to load deliveries. Please try again."); }
     finally { setLoading(false); }
   }, [statusFilter, directionFilter]);
 
@@ -184,7 +195,8 @@ export default function DeliveriesPage() {
       setShowCreate(false);
       resetForm();
       loadDeliveries();
-    } catch (e) { console.error(e); }
+      showFeedback("Delivery created");
+    } catch (e) { console.error(e); setError("Failed to create delivery. Please try again."); }
     finally { setSaving(false); }
   };
 
@@ -195,6 +207,7 @@ export default function DeliveriesPage() {
       body: JSON.stringify({ status: newStatus }),
     });
     loadDeliveries();
+    showFeedback(`Delivery ${newStatus.replace("_", " ")}`);
   };
 
   const isInbound = ["supplier_pickup", "return_pickup", "cash_collection"].includes(formType);
@@ -202,6 +215,21 @@ export default function DeliveriesPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Deliveries" }]} />
+      {feedback && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">
+          {feedback}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle size={20} className="text-red-600 shrink-0" />
+          <p className="text-sm text-red-800">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -220,7 +248,7 @@ export default function DeliveriesPage() {
             <Truck size={14} /> Driver
           </button>
           <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors">
+            className="flex items-center gap-2 px-4 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors">
             <Plus size={16} /> New
           </button>
         </div>
@@ -329,8 +357,8 @@ export default function DeliveriesPage() {
                 </div>
                 <div className="text-right text-xs text-gray-400 space-y-0.5">
                   {d.estimated_time && <p><Clock size={12} className="inline" /> ~{d.estimated_time}min</p>}
-                  {d.delivery_fee > 0 && <p className="font-medium text-gray-600">{d.delivery_fee.toFixed(2)} fee</p>}
-                  {d.cod_amount > 0 && <p className="text-orange-600"><Banknote size={12} className="inline" /> COD {d.cod_amount.toFixed(2)}</p>}
+                  {d.delivery_fee > 0 && <p className="font-medium text-gray-600">{formatCurrency(d.delivery_fee)} fee</p>}
+                  {d.cod_amount > 0 && <p className="text-orange-600"><Banknote size={12} className="inline" /> COD {formatCurrency(d.cod_amount)}</p>}
                   {ProofIcon && <p><ProofIcon size={12} className="inline" /> {d.proof_type}{d.proof_verified ? " ✓" : ""}</p>}
                   {d.order_id && <p>Order #{d.order_id}</p>}
                 </div>
@@ -343,11 +371,11 @@ export default function DeliveriesPage() {
               <div className="mt-3 flex items-center justify-between text-xs">
                 <span className="text-gray-400">{new Date(d.created_at).toLocaleString()}</span>
                 <div className="flex gap-2">
-                  {d.status === "pending" && <button onClick={() => updateStatus(d.id, "assigned")} className="text-blue-600 hover:text-blue-700 font-medium">Assign</button>}
-                  {d.status === "assigned" && <button onClick={() => updateStatus(d.id, "picked_up")} className="text-orange-600 hover:text-orange-700 font-medium">Picked Up</button>}
-                  {["picked_up", "assigned"].includes(d.status) && <button onClick={() => updateStatus(d.id, "in_transit")} className="text-purple-600 hover:text-purple-700 font-medium">In Transit</button>}
-                  {d.status === "in_transit" && <button onClick={() => updateStatus(d.id, "delivered")} className="text-green-600 hover:text-green-700 font-medium">Delivered</button>}
-                  {!["delivered", "cancelled", "failed", "returned"].includes(d.status) && <button onClick={() => updateStatus(d.id, "cancelled")} className="text-red-600 hover:text-red-700 font-medium">Cancel</button>}
+                  {d.status === "pending" && <button onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "assigned"); }} className="text-blue-600 hover:text-blue-700 font-medium">Assign</button>}
+                  {d.status === "assigned" && <button onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "picked_up"); }} className="text-orange-600 hover:text-orange-700 font-medium">Picked Up</button>}
+                  {["picked_up", "assigned"].includes(d.status) && <button onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "in_transit"); }} className="text-purple-600 hover:text-purple-700 font-medium">In Transit</button>}
+                  {d.status === "in_transit" && <button onClick={(e) => { e.stopPropagation(); setConfirmDelivered(d.id); }} className="text-green-600 hover:text-green-700 font-medium">Delivered</button>}
+                  {!["delivered", "cancelled", "failed", "returned"].includes(d.status) && <button onClick={(e) => { e.stopPropagation(); setConfirmCancel(d.id); }} className="text-red-600 hover:text-red-700 font-medium">Cancel</button>}
                 </div>
               </div>
             </div>
@@ -356,9 +384,40 @@ export default function DeliveriesPage() {
       </div>
 
       {deliveries.length === 0 && !loading && (
-        <div className="text-center py-12 text-gray-400">
-          <Truck size={40} className="mx-auto mb-3 text-gray-300" />
-          <p>No deliveries yet</p>
+        <div className="text-center py-16">
+          <Truck size={48} className="mx-auto text-gray-300" />
+          <h3 className="text-lg font-medium text-gray-700 mt-4">No deliveries yet</h3>
+          <p className="text-gray-500 mt-1">
+            Delivery orders will appear here when customers choose delivery at checkout. You can also create deliveries manually.
+          </p>
+        </div>
+      )}
+
+      {/* Cancel Delivery Confirmation */}
+      {confirmCancel && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="font-semibold text-gray-900">Cancel Delivery?</h3>
+            <p className="text-sm text-gray-500 mt-2">This will cancel the delivery. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setConfirmCancel(null)} className="px-4 py-2 text-sm text-gray-600">Go Back</button>
+              <button onClick={() => { updateStatus(confirmCancel, "cancelled"); setConfirmCancel(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">Cancel Delivery</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mark Delivered Confirmation */}
+      {confirmDelivered && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="font-semibold text-gray-900">Mark as Delivered?</h3>
+            <p className="text-sm text-gray-500 mt-2">This will mark the delivery as completed. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setConfirmDelivered(null)} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { updateStatus(confirmDelivered, "delivered"); setConfirmDelivered(null); }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium">Confirm Delivered</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -409,7 +468,7 @@ export default function DeliveriesPage() {
 
               {formDestType === "store" ? (
                 <select value={formDestStoreId} onChange={(e) => setFormDestStoreId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20">
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20">
                   <option value="">Select store...</option>
                   {stores.map((s) => (
                     <option key={s.store_id} value={s.store_id}>{s.name}{s.city ? ` — ${s.city}` : ""}</option>
@@ -418,15 +477,15 @@ export default function DeliveriesPage() {
               ) : (
                 <div className="space-y-3">
                   <input type="text" value={formAddress} onChange={(e) => setFormAddress(e.target.value)}
-                    placeholder="Address *" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                    placeholder="Address *" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                   <div className="grid grid-cols-2 gap-3">
                     <input type="text" value={formCity} onChange={(e) => setFormCity(e.target.value)}
-                      placeholder="City" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                      placeholder="City" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                     <input type="text" value={formCustomerPhone} onChange={(e) => setFormCustomerPhone(e.target.value)}
-                      placeholder="Phone" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                      placeholder="Phone" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                   </div>
                   <input type="text" value={formCustomerName} onChange={(e) => setFormCustomerName(e.target.value)}
-                    placeholder="Contact name" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                    placeholder="Contact name" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                 </div>
               )}
             </div>
@@ -437,17 +496,17 @@ export default function DeliveriesPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Est. Time</label>
                   <input type="number" value={formEstTime} onChange={(e) => setFormEstTime(parseInt(e.target.value) || 0)} min={0}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Fee</label>
                   <input type="number" value={formFee} onChange={(e) => setFormFee(parseFloat(e.target.value) || 0)} step="0.01" min={0}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">COD Amount</label>
                   <input type="number" value={formCodAmount} onChange={(e) => setFormCodAmount(parseFloat(e.target.value) || 0)} step="0.01" min={0}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
                 </div>
               </div>
               <div>
@@ -464,17 +523,17 @@ export default function DeliveriesPage() {
                 </div>
               </div>
               <textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} rows={2}
-                placeholder="Delivery notes..." className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                placeholder="Delivery notes..." className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
               {["heavy", "document"].includes(formType) && (
                 <textarea value={formSpecialInstructions} onChange={(e) => setFormSpecialInstructions(e.target.value)} rows={2}
-                  placeholder="Special handling instructions..." className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                  placeholder="Special handling instructions..." className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20" />
               )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
               <button onClick={createDelivery} disabled={saving || (formDestType === "customer" && !formAddress.trim()) || (formDestType === "store" && !formDestStoreId)}
-                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50">
+                className="px-6 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50">
                 {saving ? "Creating..." : "Create Delivery"}
               </button>
             </div>

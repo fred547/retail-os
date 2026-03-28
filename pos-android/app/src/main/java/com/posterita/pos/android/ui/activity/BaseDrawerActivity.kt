@@ -119,6 +119,60 @@ abstract class BaseDrawerActivity : BaseActivity() {
         expandTouchArea(dot, extraPaddingDp = 12)
     }
 
+    private var offlineBannerDismissed = false
+    private var offlineBannerView: View? = null
+
+    /**
+     * Sets up a persistent offline banner that is dynamically injected into the
+     * content area. Shows when device goes offline, hides when back online or dismissed.
+     * Automatically called after setContentViewWithDrawer() or initExistingDrawer().
+     */
+    private fun setupOfflineBanner() {
+        // Find the main content root (first non-drawer child of DrawerLayout)
+        val contentRoot = (0 until drawerLayout.childCount)
+            .map { drawerLayout.getChildAt(it) }
+            .firstOrNull { child ->
+                val lp = child.layoutParams as? DrawerLayout.LayoutParams
+                lp == null || lp.gravity == android.view.Gravity.NO_GRAVITY || lp.gravity == 0
+            } as? ViewGroup ?: return
+
+        // Inflate the banner and add it to the content root
+        val banner = LayoutInflater.from(this).inflate(R.layout.banner_offline, contentRoot, false)
+        offlineBannerView = banner
+
+        // For ConstraintLayout, position below the top bar
+        if (contentRoot is androidx.constraintlayout.widget.ConstraintLayout) {
+            val params = banner.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                ?: androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            params.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+            banner.layoutParams = params
+            // Elevated so it overlays content
+            banner.elevation = 8f * resources.displayMetrics.density
+            contentRoot.addView(banner)
+        } else {
+            // LinearLayout/FrameLayout: insert at position 0 or 1 (after header)
+            contentRoot.addView(banner, 0.coerceAtMost(contentRoot.childCount))
+        }
+
+        val dismissBtn = banner.findViewById<View>(R.id.btn_dismiss_offline)
+        dismissBtn?.setOnClickListener {
+            offlineBannerDismissed = true
+            banner.visibility = View.GONE
+        }
+
+        connectivityMonitor.isConnected.observe(this) { connected ->
+            if (connected) {
+                banner.visibility = View.GONE
+                offlineBannerDismissed = false // reset for next offline event
+            } else if (!offlineBannerDismissed) {
+                banner.visibility = View.VISIBLE
+            }
+        }
+    }
+
     /**
      * Call this instead of setContentView() to wrap your layout in the drawer.
      */
@@ -141,8 +195,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
         setContentView(drawerLayout)
 
-        // Auto-setup connectivity dot for all drawer screens
+        // Auto-setup connectivity dot + offline banner for all drawer screens
         setupConnectivityDot()
+        setupOfflineBanner()
     }
 
     /**
@@ -161,8 +216,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
             addNavDrawerPanel(drawerLayout)
         }
 
-        // Auto-setup connectivity dot for all drawer screens
+        // Auto-setup connectivity dot + offline banner for all drawer screens
         setupConnectivityDot()
+        setupOfflineBanner()
     }
 
     private fun findNavPanel(drawer: DrawerLayout): View? {
@@ -455,7 +511,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
                             if (status.pendingOrders > 0) parts.add("${status.pendingOrders} orders")
                             if (status.pendingTills > 0) parts.add("${status.pendingTills} tills")
                             syncProgressText?.text = "Pending: ${parts.joinToString(", ")}"
-                            syncProgressText?.setTextColor(0xFFF57F17.toInt()) // amber
+                            syncProgressText?.setTextColor(resources.getColor(R.color.posterita_warning, theme)) // amber
                             syncProgressBar?.visibility = View.GONE
                         } else {
                             syncProgressContainer?.visibility = View.GONE
@@ -463,10 +519,10 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
                         if (status.lastSyncTime > 0) {
                             syncStatus.text = formatLastSyncTime(status.lastSyncTime)
-                            syncStatus.setTextColor(0xFF999999.toInt())
+                            syncStatus.setTextColor(resources.getColor(R.color.posterita_muted, theme))
                         } else {
                             syncStatus.text = "Never synced \u2014 tap to sync"
-                            syncStatus.setTextColor(0xFF999999.toInt())
+                            syncStatus.setTextColor(resources.getColor(R.color.posterita_muted, theme))
                         }
                     }
 
@@ -479,9 +535,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         else
                             "Sync failed \u2014 tap to retry"
                         syncStatus.text = failMsg
-                        syncStatus.setTextColor(0xFFE53935.toInt())
+                        syncStatus.setTextColor(resources.getColor(R.color.posterita_error, theme))
                         syncProgressText?.text = status.errorMessage ?: "Unknown error"
-                        syncProgressText?.setTextColor(0xFFE53935.toInt())
+                        syncProgressText?.setTextColor(resources.getColor(R.color.posterita_error, theme))
                         syncProgressBar?.visibility = View.GONE
                     }
 
@@ -495,12 +551,12 @@ abstract class BaseDrawerActivity : BaseActivity() {
                             // Show errors prominently
                             syncProgressContainer?.visibility = View.VISIBLE
                             syncProgressText?.text = "${summary.errors.size} error(s): ${summary.errors.first()}"
-                            syncProgressText?.setTextColor(0xFFE65100.toInt()) // orange
+                            syncProgressText?.setTextColor(resources.getColor(R.color.posterita_orange, theme)) // orange
                             syncProgressBar?.visibility = View.GONE
                         } else if (summary != null && (summary.totalPushed > 0 || summary.totalPulled > 0)) {
                             syncProgressContainer?.visibility = View.VISIBLE
                             syncProgressText?.text = summary.toDisplayString()
-                            syncProgressText?.setTextColor(0xFF2E7D32.toInt())
+                            syncProgressText?.setTextColor(resources.getColor(R.color.posterita_secondary, theme))
                             syncProgressBar?.visibility = View.GONE
                         } else {
                             syncProgressContainer?.visibility = View.GONE
@@ -508,7 +564,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
                         if (status.lastSyncTime > 0) {
                             syncStatus.text = formatLastSyncTime(status.lastSyncTime)
-                            syncStatus.setTextColor(0xFF999999.toInt())
+                            syncStatus.setTextColor(resources.getColor(R.color.posterita_muted, theme))
                         }
 
                         // Auto-dismiss the summary after 10 seconds
@@ -524,14 +580,14 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         // Syncing in progress
                         syncSpinner?.visibility = View.VISIBLE
                         syncLabel?.text = "Syncing..."
-                        syncLabel?.setTextColor(0xFF1565C0.toInt())
+                        syncLabel?.setTextColor(resources.getColor(R.color.posterita_primary_dark, theme))
                         syncStatus.text = status.message
-                        syncStatus.setTextColor(0xFF1565C0.toInt())
+                        syncStatus.setTextColor(resources.getColor(R.color.posterita_primary_dark, theme))
 
                         if (status.progressDetail.isNotBlank()) {
                             syncProgressContainer?.visibility = View.VISIBLE
                             syncProgressText?.text = status.progressDetail
-                            syncProgressText?.setTextColor(0xFF1565C0.toInt())
+                            syncProgressText?.setTextColor(resources.getColor(R.color.posterita_primary_dark, theme))
                             syncProgressBar?.visibility = View.VISIBLE
                             if (status.progressPercent >= 0) {
                                 syncProgressBar?.isIndeterminate = false
@@ -616,7 +672,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
         if (importRunning) {
             // ── In progress — show detailed status ──
-            banner.setBackgroundColor(0xFFFFF3E0.toInt()) // light orange
+            banner.setBackgroundColor(resources.getColor(R.color.posterita_orange_light, theme)) // light orange
 
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -633,7 +689,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val label = TextView(this).apply {
                 text = "Creating ${importStoreName.ifBlank { "your store" }}..."
                 textSize = 13f
-                setTextColor(0xFFE65100.toInt())
+                setTextColor(resources.getColor(R.color.posterita_orange, theme))
                 setTypeface(null, Typeface.BOLD)
             }
             row.addView(label)
@@ -645,7 +701,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val statusText = TextView(this).apply {
                 text = importStatus.ifBlank { "Starting up..." }
                 textSize = 12f
-                setTextColor(0xFF795548.toInt())
+                setTextColor(resources.getColor(R.color.posterita_brown, theme))
                 setPadding(0, (4 * density).toInt(), 0, 0)
             }
             banner.addView(statusText)
@@ -656,7 +712,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 val statsText = TextView(this).apply {
                     text = importStats
                     textSize = 11f
-                    setTextColor(0xFF999999.toInt())
+                    setTextColor(resources.getColor(R.color.posterita_muted, theme))
                     setPadding(0, (2 * density).toInt(), 0, 0)
                 }
                 banner.addView(statsText)
@@ -666,7 +722,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val cancelBtn = TextView(this).apply {
                 text = "Cancel"
                 textSize = 12f
-                setTextColor(0xFFD32F2F.toInt())
+                setTextColor(resources.getColor(R.color.posterita_danger, theme))
                 setTypeface(null, Typeface.BOLD)
                 setPadding((4 * density).toInt(), (8 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
                 setOnClickListener {
@@ -718,12 +774,12 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
         } else if (completedAccountId.isNotBlank()) {
             // ── Completed — show "Ready to switch" with summary ──
-            banner.setBackgroundColor(0xFFE8F5E9.toInt()) // light green
+            banner.setBackgroundColor(resources.getColor(R.color.posterita_secondary_light, theme)) // light green
 
             val label = TextView(this).apply {
                 text = "${importStoreName.ifBlank { "Your store" }} is ready!"
                 textSize = 14f
-                setTextColor(0xFF2E7D32.toInt())
+                setTextColor(resources.getColor(R.color.posterita_secondary, theme))
                 setTypeface(null, Typeface.BOLD)
             }
             banner.addView(label)
@@ -734,7 +790,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
                 val statsLabel = TextView(this).apply {
                     text = finalStats
                     textSize = 12f
-                    setTextColor(0xFF388E3C.toInt())
+                    setTextColor(resources.getColor(R.color.posterita_secondary, theme))
                     setPadding(0, (2 * density).toInt(), 0, 0)
                 }
                 banner.addView(statsLabel)
@@ -743,7 +799,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val switchBtn = TextView(this).apply {
                 text = "Tap here to switch \u2192"
                 textSize = 13f
-                setTextColor(0xFF1565C0.toInt())
+                setTextColor(resources.getColor(R.color.posterita_primary_dark, theme))
                 setPadding(0, (4 * density).toInt(), 0, 0)
             }
             banner.addView(switchBtn)
@@ -768,14 +824,14 @@ abstract class BaseDrawerActivity : BaseActivity() {
 
         } else if (canResume) {
             // ── Interrupted — show resume button ──
-            banner.setBackgroundColor(0xFFFCE4EC.toInt()) // light red/pink
+            banner.setBackgroundColor(resources.getColor(R.color.posterita_error_light, theme)) // light red/pink
 
             val resumeName = prefsManager.getString(AiImportService.PREF_RESUME_NAME)
 
             val label = TextView(this).apply {
                 text = "Import interrupted"
                 textSize = 14f
-                setTextColor(0xFFC62828.toInt())
+                setTextColor(resources.getColor(R.color.posterita_error, theme))
                 setTypeface(null, Typeface.BOLD)
             }
             banner.addView(label)
@@ -783,7 +839,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val detail = TextView(this).apply {
                 text = "${resumeName.ifBlank { "Store" }} setup was interrupted"
                 textSize = 12f
-                setTextColor(0xFF999999.toInt())
+                setTextColor(resources.getColor(R.color.posterita_muted, theme))
                 setPadding(0, (2 * density).toInt(), 0, 0)
             }
             banner.addView(detail)
@@ -791,7 +847,7 @@ abstract class BaseDrawerActivity : BaseActivity() {
             val resumeBtn = TextView(this).apply {
                 text = "Tap to resume \u2192"
                 textSize = 13f
-                setTextColor(0xFF1565C0.toInt())
+                setTextColor(resources.getColor(R.color.posterita_primary_dark, theme))
                 setTypeface(null, Typeface.BOLD)
                 setPadding(0, (6 * density).toInt(), 0, 0)
             }

@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.posterita.pos.android.R
@@ -30,8 +31,23 @@ class ProductAdapter(
     private var productList: List<Product> = emptyList()
 
     fun setProductList(list: List<Product>) {
+        val oldList = productList
         productList = list
-        notifyDataSetChanged()
+        DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldList.size
+            override fun getNewListSize() = list.size
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+                oldList[oldPos].product_id == list[newPos].product_id
+            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+                val old = oldList[oldPos]
+                val new = list[newPos]
+                return old.product_id == new.product_id &&
+                    old.name == new.name &&
+                    old.sellingprice == new.sellingprice &&
+                    old.image == new.image &&
+                    old.quantity_on_hand == new.quantity_on_hand
+            }
+        }).dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {

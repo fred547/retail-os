@@ -5,6 +5,7 @@ import {
   Clock, Plus, Sun, Sunset, Moon, Coffee,
   X, Trash2, Edit2, RefreshCw, ToggleLeft, ToggleRight,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Schedule {
   id: number;
@@ -141,6 +142,7 @@ export default function MenuSchedulesPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Menu Schedules" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">

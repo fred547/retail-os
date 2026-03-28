@@ -50,6 +50,11 @@ const ALLOWED_TABLES = new Set([
   "table_section", "preparation_station", "category_station_mapping",
   "inventory_count_session", "inventory_count_entry",
   "error_logs", "sync_inbox",
+  "account_tax_config", "loyalty_config", "loyalty_wallet", "loyalty_transaction",
+  "promotion", "menu_schedule", "shift", "delivery", "driver_shift",
+  "serial_item", "supplier", "purchase_order", "purchase_order_line",
+  "tag_group", "tag", "product_tag", "customer_tag", "order_tag",
+  "quotation", "quotation_line",
   // SECURITY: "owner" removed — contains all owners' emails/phones, must go through /api/owner/[id]
 ]);
 

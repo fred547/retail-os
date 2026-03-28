@@ -115,6 +115,17 @@ export default async function ProductsPage({
     return `/customer/products?${p.toString()}`;
   };
 
+  // Build pagination URL preserving all current params
+  const buildUrl = ({ page: pg }: { page: number }) => {
+    const p = new URLSearchParams();
+    p.set("page", String(pg));
+    p.set("status", statusTab);
+    if (params.search) p.set("search", params.search);
+    if (params.category) p.set("category", params.category);
+    if (params.filter) p.set("filter", params.filter);
+    return `/customer/products?${p.toString()}`;
+  };
+
   // Build per-product tag ID set
   function buildProductTagMap(pts: any[]): Record<number, number[]> {
     const m: Record<number, number[]> = {};
@@ -238,27 +249,20 @@ export default async function ProductsPage({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-gray-500">
-            Showing {offset + 1}&ndash;{Math.min(offset + perPage, count ?? 0)} of {count ?? 0} products
-          </p>
-          <div className="flex gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <Link
-              key={p}
-              href={`/customer/products?page=${p}&status=${statusTab}${
-                params.search ? `&search=${params.search}` : ""
-              }${params.category ? `&category=${params.category}` : ""}`}
-              className={`px-3 py-2 rounded-lg text-sm ${
-                p === page
-                  ? "bg-posterita-blue text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {p}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {page > 1 && (
+            <Link href={buildUrl({ page: page - 1 })} className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm text-gray-600 hover:bg-gray-200">
+              Previous
             </Link>
-          ))}
-          </div>
+          )}
+          <span className="text-sm text-gray-500">
+            Page {page} of {totalPages}
+          </span>
+          {page < totalPages && (
+            <Link href={buildUrl({ page: page + 1 })} className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm text-gray-600 hover:bg-gray-200">
+              Next
+            </Link>
+          )}
         </div>
       )}
     </div>

@@ -24,7 +24,7 @@
             android:layout_width="50dp"
             android:layout_height="60dp"
             android:scaleType="centerCrop"
-            android:contentDescription="@string/app_name"
+            android:contentDescription="Product image"
             android:src="@drawable/ic_product_placeholder"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

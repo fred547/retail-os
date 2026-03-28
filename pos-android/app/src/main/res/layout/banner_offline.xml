@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/banner_offline"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="@dimen/space_lg"
+    android:paddingEnd="@dimen/space_lg"
+    android:paddingTop="@dimen/space_sm"
+    android:paddingBottom="@dimen/space_sm"
+    android:background="@color/posterita_warning_light"
+    android:visibility="gone">
+
+    <View
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/bg_internet_dot"
+        android:backgroundTint="@color/posterita_error"
+        android:contentDescription="Offline indicator" />
+
+    <TextView
+        android:id="@+id/text_offline_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="@dimen/space_sm"
+        android:text="You\u2019re offline \u2014 changes will sync when connected"
+        android:textColor="@color/posterita_warning"
+        android:textSize="12sp"
+        android:fontFamily="@font/lexend_medium" />
+
+    <ImageView
+        android:id="@+id/btn_dismiss_offline"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:padding="14dp"
+        android:src="@drawable/ic_del"
+        android:contentDescription="Dismiss offline banner"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:tint="@color/posterita_warning" />
+
+</LinearLayout>

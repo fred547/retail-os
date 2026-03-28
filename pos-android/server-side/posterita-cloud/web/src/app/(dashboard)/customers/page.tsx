@@ -405,16 +405,17 @@ export default function CustomersPage() {
       {/* Edit Modal */}
       {editingCustomer && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-4"
           onClick={closeEdit}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-customer-title"
-            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">

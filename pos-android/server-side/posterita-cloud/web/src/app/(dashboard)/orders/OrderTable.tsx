@@ -7,8 +7,11 @@ import {
   ShoppingCart,
   Package,
   Receipt,
+  Download,
 } from "lucide-react";
 import { dataQuery } from "@/lib/supabase/data-client";
+import { formatCurrency } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 import { SkeletonOrderLines } from "@/components/Skeleton";
 
 interface Order {
@@ -38,7 +41,7 @@ interface OrderLine {
   costamt: number;
 }
 
-export default function OrderTable({ orders }: { orders: Order[] }) {
+export default function OrderTable({ orders, currency = "MUR" }: { orders: Order[]; currency?: string }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [orderLines, setOrderLines] = useState<OrderLine[]>([]);
   const [linesLoading, setLinesLoading] = useState(false);
@@ -62,7 +65,42 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
     setLinesLoading(false);
   };
 
+  const handleExportCsv = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    downloadCsv(
+      orders.map((o) => ({
+        order_no: o.document_no || `#${o.order_id}`,
+        date: new Date(o.date_ordered).toLocaleString(),
+        store: o.store?.name ?? "",
+        items: o.qty_total,
+        grand_total: o.grand_total,
+        status: o.is_paid ? "Paid" : "Pending",
+        type: o.order_type ?? "Sale",
+      })),
+      `orders-export-${today}.csv`,
+      [
+        { key: "order_no", label: "Order #" },
+        { key: "date", label: "Date" },
+        { key: "store", label: "Store" },
+        { key: "items", label: "Items" },
+        { key: "grand_total", label: "Grand Total" },
+        { key: "status", label: "Status" },
+        { key: "type", label: "Payment Type" },
+      ]
+    );
+  };
+
   return (
+    <>
+    <div className="flex justify-end mb-2">
+      <button
+        onClick={handleExportCsv}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
+      >
+        <Download size={15} />
+        Export CSV
+      </button>
+    </div>
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       <table className="data-table">
         <thead>
@@ -107,10 +145,10 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                   </td>
                   <td className="text-right text-gray-500">{o.qty_total}</td>
                   <td className="text-right text-gray-500">
-                    {formatCurrency(o.tax_total)}
+                    {formatCurrency(o.tax_total, currency)}
                   </td>
                   <td className="text-right font-bold">
-                    {formatCurrency(o.grand_total)}
+                    {formatCurrency(o.grand_total, currency)}
                   </td>
                   <td>
                     <span
@@ -214,19 +252,19 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                                       {line.productname}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {formatCurrency(line.priceentered)}
+                                      {formatCurrency(line.priceentered, currency)}
                                     </td>
                                     <td className="py-2 text-right text-gray-600">
                                       {line.qtyentered}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {formatCurrency(line.lineamt)}
+                                      {formatCurrency(line.lineamt, currency)}
                                     </td>
                                     <td className="py-2 text-right text-gray-500">
-                                      {formatCurrency(line.linenetamt - line.lineamt)}
+                                      {formatCurrency(line.linenetamt - line.lineamt, currency)}
                                     </td>
                                     <td className="py-2 text-right font-medium text-gray-800">
-                                      {formatCurrency(line.linenetamt)}
+                                      {formatCurrency(line.linenetamt, currency)}
                                     </td>
                                   </tr>
                                 ))}
@@ -240,7 +278,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                                     Order Total:
                                   </td>
                                   <td className="py-2 text-right font-bold text-gray-900">
-                                    {formatCurrency(o.grand_total)}
+                                    {formatCurrency(o.grand_total, currency)}
                                   </td>
                                 </tr>
                               </tfoot>
@@ -265,13 +303,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "MUR",
-    minimumFractionDigits: 2,
-  }).format(amount ?? 0);
-}

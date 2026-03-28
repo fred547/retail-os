@@ -10,7 +10,7 @@
         android:id="@+id/imgLogo"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:contentDescription="@string/app_name"
+        android:contentDescription="Posterita logo"
         android:src="@drawable/ic_splash"
         android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"

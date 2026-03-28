@@ -2,4 +2,29 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="product_grid_item_width">160dp</dimen>
     <dimen name="discount_code_margin_end">40dp</dimen>
+
+    <!-- Spacing scale -->
+    <dimen name="space_xxs">2dp</dimen>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_xxl">24dp</dimen>
+
+    <!-- Touch targets (Android 48dp minimum) -->
+    <dimen name="touch_min">48dp</dimen>
+    <dimen name="touch_comfortable">52dp</dimen>
+
+    <!-- Icon sizes -->
+    <dimen name="icon_sm">22dp</dimen>
+    <dimen name="icon_md">44dp</dimen>
+    <dimen name="icon_lg">64dp</dimen>
+    <dimen name="icon_stepper">20dp</dimen>
+
+    <!-- Corner radius -->
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">10dp</dimen>
+    <dimen name="radius_lg">14dp</dimen>
+    <dimen name="radius_xl">20dp</dimen>
 </resources>

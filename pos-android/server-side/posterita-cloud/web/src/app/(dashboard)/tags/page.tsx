@@ -3,8 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Tag, Plus, ChevronDown, ChevronRight, X, Edit2, Trash2,
-  RefreshCw, Palette,
+  RefreshCw, Palette, AlertCircle,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface TagItem {
   tag_id: number;
@@ -35,6 +36,15 @@ export default function TagsPage() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [showTagForm, setShowTagForm] = useState<number | null>(null); // group_id
   const [saving, setSaving] = useState(false);
+  const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<number | null>(null);
+  const [confirmDeleteTag, setConfirmDeleteTag] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const showFeedback = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   // Group form
   const [gName, setGName] = useState("");
@@ -53,7 +63,7 @@ export default function TagsPage() {
       setGroups(data.groups || []);
       // Auto-expand all
       setExpanded(new Set((data.groups || []).map((g: TagGroup) => g.tag_group_id)));
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); setError("Failed to load tags. Please try again."); }
     finally { setLoading(false); }
   }, []);
 
@@ -79,7 +89,8 @@ export default function TagsPage() {
       setShowGroupForm(false);
       setGName(""); setGDesc(""); setGColor("#3B82F6");
       load();
-    } catch (e) { console.error(e); }
+      showFeedback("Tag group created");
+    } catch (e) { console.error(e); setError("Failed to create tag group. Please try again."); }
     finally { setSaving(false); }
   };
 
@@ -95,18 +106,21 @@ export default function TagsPage() {
       setShowTagForm(null);
       setTName(""); setTColor("");
       load();
-    } catch (e) { console.error(e); }
+      showFeedback("Tag created");
+    } catch (e) { console.error(e); setError("Failed to create tag. Please try again."); }
     finally { setSaving(false); }
   };
 
   const deleteGroup = async (id: number) => {
     await fetch(`/api/tags/groups/${id}`, { method: "DELETE" });
     load();
+    showFeedback("Tag group deleted");
   };
 
   const deleteTag = async (id: number) => {
     await fetch(`/api/tags/${id}`, { method: "DELETE" });
     load();
+    showFeedback("Tag deleted");
   };
 
   if (loading && groups.length === 0) {
@@ -120,6 +134,21 @@ export default function TagsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Tags" }]} />
+      {feedback && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">
+          {feedback}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle size={20} className="text-red-600 shrink-0" />
+          <p className="text-sm text-red-800">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -133,7 +162,7 @@ export default function TagsPage() {
         </div>
         <button
           onClick={() => setShowGroupForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
         >
           <Plus size={16} /> New Group
         </button>
@@ -163,7 +192,7 @@ export default function TagsPage() {
               </div>
               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                 <button
-                  onClick={() => deleteGroup(g.tag_group_id)}
+                  onClick={() => setConfirmDeleteGroup(g.tag_group_id)}
                   className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   <Trash2 size={14} />
@@ -183,7 +212,7 @@ export default function TagsPage() {
                     >
                       {t.name}
                       <button
-                        onClick={() => deleteTag(t.tag_id)}
+                        onClick={() => setConfirmDeleteTag(t.tag_id)}
                         className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
                       >
                         <X size={12} />
@@ -201,7 +230,7 @@ export default function TagsPage() {
                         onKeyDown={(e) => e.key === "Enter" && createTag(g.tag_group_id)}
                         placeholder="Tag name"
                         autoFocus
-                        className="px-3 py-1.5 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-32"
+                        className="px-3 py-1.5 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue w-32"
                       />
                       <button
                         onClick={() => createTag(g.tag_group_id)}
@@ -240,6 +269,34 @@ export default function TagsPage() {
         </div>
       )}
 
+      {/* Delete Group Confirmation */}
+      {confirmDeleteGroup && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="font-semibold text-gray-900">Delete Tag Group?</h3>
+            <p className="text-sm text-gray-500 mt-2">This will permanently remove this tag group and all its tags. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setConfirmDeleteGroup(null)} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { deleteGroup(confirmDeleteGroup); setConfirmDeleteGroup(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Tag Confirmation */}
+      {confirmDeleteTag && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="font-semibold text-gray-900">Delete Tag?</h3>
+            <p className="text-sm text-gray-500 mt-2">This will permanently remove this tag. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setConfirmDeleteTag(null)} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { deleteTag(confirmDeleteTag); setConfirmDeleteTag(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Group Modal */}
       {showGroupForm && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center">
@@ -254,14 +311,14 @@ export default function TagsPage() {
                 <input
                   type="text" value={gName} onChange={(e) => setGName(e.target.value)}
                   placeholder="e.g., Season, Margin Tier, Dietary"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <input
                   type="text" value={gDesc} onChange={(e) => setGDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue"
                 />
               </div>
               <div>
@@ -283,7 +340,7 @@ export default function TagsPage() {
               <button
                 onClick={createGroup}
                 disabled={saving || !gName.trim()}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
               >
                 {saving ? "Creating..." : "Create Group"}
               </button>

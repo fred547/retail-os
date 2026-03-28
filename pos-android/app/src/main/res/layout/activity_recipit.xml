@@ -11,7 +11,7 @@
         android:id="@+id/back"
         android:layout_width="@dimen/_20sdp"
         android:layout_height="@dimen/_20sdp"
-        android:contentDescription="@string/app_name"
+        android:contentDescription="Navigate back"
         android:src="@drawable/ic_back_cart"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -26,7 +26,7 @@
             android:layout_height="60dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_product_placeholder"
-            android:contentDescription="@string/app_name"
+            android:contentDescription="Product image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -62,11 +62,11 @@
         <!-- Remove/delete button (top-right, separated from qty) -->
         <ImageView
             android:id="@+id/button_remove_line"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:padding="8dp"
+            android:layout_width="@dimen/touch_min"
+            android:layout_height="@dimen/touch_min"
+            android:padding="12dp"
             android:src="@drawable/ic_del"
-            android:contentDescription="Remove item"
+            android:contentDescription="Remove item from cart"
             android:background="@drawable/btn_outline_rounded"
             app:tint="@color/posterita_error"
             android:layout_marginEnd="2dp"
@@ -86,16 +86,17 @@
 
             <FrameLayout
                 android:id="@+id/cons_remove"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/circle_drawable">
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="@drawable/circle_drawable"
+                android:contentDescription="Decrease quantity">
 
                 <ImageView
                     android:id="@+id/button_decrease_qty"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="@dimen/icon_stepper"
+                    android:layout_height="@dimen/icon_stepper"
                     android:layout_gravity="center"
-                    android:contentDescription="Decrease quantity"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/ic_remove"
                     app:tint="@color/posterita_ink" />
             </FrameLayout>
@@ -111,16 +112,17 @@
 
             <FrameLayout
                 android:id="@+id/cons_add"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/circle_drawable">
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="@drawable/circle_drawable"
+                android:contentDescription="Increase quantity">
 
                 <ImageView
                     android:id="@+id/button_increase_qty"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="@dimen/icon_stepper"
+                    android:layout_height="@dimen/icon_stepper"
                     android:layout_gravity="center"
-                    android:contentDescription="Increase quantity"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/ic_add"
                     app:tint="@color/posterita_ink" />
             </FrameLayout>

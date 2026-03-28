@@ -6,6 +6,7 @@ import {
   Settings, Users, TrendingUp, Search, ChevronRight,
   Gift, Star, RefreshCw,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface LoyaltyConfig {
   account_id: string;
@@ -144,6 +145,7 @@ export default function LoyaltyPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Loyalty" }]} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

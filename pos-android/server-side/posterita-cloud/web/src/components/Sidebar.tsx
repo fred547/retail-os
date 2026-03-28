@@ -40,6 +40,7 @@ import {
   Link2,
   Download,
   Smartphone,
+  Percent,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -76,7 +77,7 @@ const sections: NavSection[] = [
       { name: "Loyalty", href: "/loyalty", icon: Heart },
       { name: "Shifts", href: "/shifts", icon: Clock },
       { name: "Deliveries", href: "/deliveries", icon: Truck },
-      { name: "Promotions", href: "/promotions", icon: Tag },
+      { name: "Promotions", href: "/promotions", icon: Percent },
       { name: "Reports", href: "/reports", icon: BarChart3 },
     ],
   },
@@ -134,6 +135,13 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [brandContext, setBrandContext] = useState<{ brand: string; store: string; terminal: string } | null>(null);
+  const [features, setFeatures] = useState<Record<string, boolean>>({
+    restaurant: true,
+    serialItems: true,
+    suppliers: true,
+    deliveries: true,
+  });
+  const [showAll, setShowAll] = useState(false);
 
   // Collapsible sections — open the section that contains the current page
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
@@ -176,6 +184,7 @@ export default function Sidebar({
   useEffect(() => {
     checkSuperAdmin().finally(() => setAuthChecked(true));
     fetchBrandContext();
+    fetchFeatureFlags();
   }, []);
 
   const fetchBrandContext = async () => {
@@ -206,6 +215,31 @@ export default function Sidebar({
 
       if (brand) setBrandContext({ brand, store, terminal });
     } catch (_) {}
+  };
+
+  const fetchFeatureFlags = async () => {
+    try {
+      const checks = await Promise.all([
+        fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table: "restaurant_table", select: "table_id", limit: 1 }) }).then(r => r.json()),
+        fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table: "serial_item", select: "id", limit: 1 }) }).then(r => r.json()),
+        fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table: "supplier", select: "supplier_id", limit: 1 }) }).then(r => r.json()),
+        fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table: "delivery", select: "id", limit: 1 }) }).then(r => r.json()),
+      ]);
+
+      setFeatures({
+        restaurant: (checks[0].data?.length ?? 0) > 0,
+        serialItems: (checks[1].data?.length ?? 0) > 0,
+        suppliers: (checks[2].data?.length ?? 0) > 0,
+        deliveries: (checks[3].data?.length ?? 0) > 0,
+      });
+    } catch (_) {
+      // If checks fail, show everything
+      setFeatures({ restaurant: true, serialItems: true, suppliers: true, deliveries: true });
+    }
   };
 
   // Close mobile sidebar on route change
@@ -276,6 +310,28 @@ export default function Sidebar({
           })),
         }))
       : sections;
+
+  const filteredSections = showAll
+    ? portalSections
+    : portalSections.map(section => ({
+        ...section,
+        items: section.items.filter(item => {
+          // Hide Restaurant section items if no tables configured
+          if (!features.restaurant && (item.name === "Tables" || item.name === "Stations" || item.name === "Menu Schedules")) return false;
+          // Hide Serial Items if none exist
+          if (!features.serialItems && item.name === "Serial Items") return false;
+          // Hide Deliveries if none exist
+          if (!features.deliveries && item.name === "Deliveries") return false;
+          // Hide Suppliers if none exist
+          if (!features.suppliers && (item.name === "Suppliers" || item.name === "Purchase Orders")) return false;
+          // Always show everything else
+          return true;
+        }),
+      })).filter(section => {
+        // Remove sections that have no visible items (except the unlabeled top section)
+        if (!section.label) return true;
+        return section.items.length > 0;
+      });
 
   const sidebarContent = (
     <>
@@ -354,7 +410,7 @@ export default function Sidebar({
           </>
         )}
 
-        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && portalSections.map((section) => {
+        {(portal !== "manager" && authChecked && (!superAdmin || impersonating)) && filteredSections.map((section) => {
           const isOpen = openSections.has(section.label);
           const hasLabel = !!section.label;
 
@@ -411,6 +467,18 @@ export default function Sidebar({
           </div>
         )}
       </nav>
+
+      {/* Show all toggle */}
+      {!showAll && (
+        <div className="px-4 pb-1">
+          <button
+            onClick={() => setShowAll(true)}
+            className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            Show all menu items
+          </button>
+        </div>
+      )}
 
       {/* POS + Download + Sign Out */}
       <div className="border-t border-white/10">

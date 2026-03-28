@@ -6,6 +6,7 @@ import {
   Link2, Unlink, Settings, RefreshCw, ExternalLink,
   CheckCircle, XCircle, AlertCircle, Clock, Send,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Connection {
   id: number;
@@ -169,6 +170,7 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Integrations" }]} />
       {/* Flash messages */}
       {success === "xero" && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
@@ -266,7 +268,7 @@ export default function IntegrationsPage() {
                   ) : (
                     <a
                       href={`/api/integrations/${provider.key}/connect`}
-                      className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors w-full justify-center"
+                      className="flex items-center gap-2 px-4 py-2 bg-posterita-blue hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors w-full justify-center"
                     >
                       <ExternalLink size={14} /> Connect to {provider.name}
                     </a>
@@ -443,7 +445,7 @@ export default function IntegrationsPage() {
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
               <button onClick={() => setShowSettings(null)} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
               <button onClick={saveSettings} disabled={saving}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50">
+                className="px-6 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50">
                 {saving ? "Saving..." : "Save Configuration"}
               </button>
             </div>

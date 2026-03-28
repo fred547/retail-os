@@ -6,6 +6,7 @@ import {
   Check, Clock, X, AlertCircle, RefreshCw,
   ChevronRight, FileText,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface PO {
   po_id: number;
@@ -139,6 +140,7 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Purchase Orders" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -234,6 +236,7 @@ export default function PurchaseOrdersPage() {
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center">
           <div className="bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[85vh] overflow-y-auto p-6">
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Create Purchase Order</h2>
               <button onClick={() => setShowCreate(false)} className="p-1 text-gray-400 hover:text-gray-600">

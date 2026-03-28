@@ -9,7 +9,7 @@
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/app_name"
+        android:contentDescription="Navigate back"
         android:src="@drawable/ic_back_cart"
         android:layout_marginStart="@dimen/_15sdp"
         app:layout_constraintTop_toTopOf="@id/txt_order"

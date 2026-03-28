@@ -5,6 +5,7 @@ import {
   Clock, LogIn, LogOut, Users, Timer,
   RefreshCw, Calendar, ChevronRight,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Shift {
   id: number;
@@ -63,6 +64,7 @@ export default function ShiftsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Shifts" }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -162,8 +164,12 @@ export default function ShiftsPage() {
             </div>
           ))}
           {completedShifts.length === 0 && (
-            <div className="px-6 py-8 text-center text-gray-400 text-sm">
-              No completed shifts for this date.
+            <div className="px-6 py-12 text-center">
+              <Clock size={40} className="mx-auto text-gray-300" />
+              <h3 className="text-base font-medium text-gray-700 mt-3">No completed shifts</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                No staff members have clocked out for this date. Completed shifts will appear here once a shift ends.
+              </p>
             </div>
           )}
         </div>

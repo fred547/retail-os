@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  MapPin, Plus, Trash2, X, RefreshCw, Grid3X3, Package, ChevronDown, ChevronRight,
+  MapPin, Plus, Trash2, X, RefreshCw, Grid3X3, Package, ChevronDown, ChevronRight, AlertCircle, GripVertical,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Zone {
   zone_id: number;
@@ -35,6 +36,16 @@ export default function StoreLayoutPage() {
   const [expandedZone, setExpandedZone] = useState<number | null>(null);
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmDeleteZone, setConfirmDeleteZone] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const showFeedback = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   // Zone form
   const [fName, setFName] = useState("");
@@ -52,7 +63,7 @@ export default function StoreLayoutPage() {
       setProducts(data.products || []);
       setLocationCounts(data.location_counts || {});
       setUnassignedCount(data.unassigned_count || 0);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); setError("Failed to load store layout. Please try again."); }
     finally { setLoading(false); }
   }, []);
 
@@ -76,12 +87,42 @@ export default function StoreLayoutPage() {
       setShowAddZone(false);
       setFName(""); setFStart(1); setFEnd(20); setFHeights([...DEFAULT_HEIGHTS]);
       load();
-    } catch (e) { console.error(e); }
+      showFeedback("Zone created");
+    } catch (e) { console.error(e); setError("Failed to create zone. Please try again."); }
     finally { setSaving(false); }
   };
 
   const deleteZone = async (zoneId: number) => {
     await fetch(`/api/store-layout?zone_id=${zoneId}`, { method: "DELETE" });
+    load();
+    showFeedback("Zone deleted");
+  };
+
+  const handleZoneReorder = async () => {
+    if (dragIndex === null || dragOverIndex === null || dragIndex === dragOverIndex) return;
+
+    const reordered = [...zones];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(dragOverIndex, 0, moved);
+
+    for (let i = 0; i < reordered.length; i++) {
+      if (reordered[i].position !== i) {
+        const zone = reordered[i];
+        await fetch("/api/store-layout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            zone_id: zone.zone_id,
+            name: zone.name,
+            shelf_start: zone.shelf_start,
+            shelf_end: zone.shelf_end,
+            height_labels: zone.height_labels,
+            position: i,
+          }),
+        });
+      }
+    }
+
     load();
   };
 
@@ -113,6 +154,21 @@ export default function StoreLayoutPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Store Layout" }]} />
+      {feedback && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">
+          {feedback}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle size={20} className="text-red-600 shrink-0" />
+          <p className="text-sm text-red-800">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -126,25 +182,33 @@ export default function StoreLayoutPage() {
         </div>
         <button
           onClick={() => setShowAddZone(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors"
         >
           <Plus size={16} /> Add Zone
         </button>
       </div>
 
       {/* Zones */}
-      {zones.map((zone) => {
+      {zones.map((zone, index) => {
         const shelfCount = zone.shelf_end - zone.shelf_start + 1;
         const isExpanded = expandedZone === zone.zone_id;
 
         return (
-          <div key={zone.zone_id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div
+            key={zone.zone_id}
+            draggable
+            onDragStart={() => setDragIndex(index)}
+            onDragOver={(e) => { e.preventDefault(); setDragOverIndex(index); }}
+            onDragEnd={() => { handleZoneReorder(); setDragIndex(null); setDragOverIndex(null); }}
+            className={`group bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden ${dragOverIndex === index ? "border-t-2 border-posterita-blue" : ""} ${dragIndex === index ? "opacity-40" : ""}`}
+          >
             {/* Zone Header */}
             <div
               className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => setExpandedZone(isExpanded ? null : zone.zone_id)}
             >
               <div className="flex items-center gap-3">
+                <GripVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab" />
                 {isExpanded ? <ChevronDown size={18} className="text-gray-400" /> : <ChevronRight size={18} className="text-gray-400" />}
                 <MapPin size={18} className="text-teal-500" />
                 <div>
@@ -158,7 +222,7 @@ export default function StoreLayoutPage() {
               </div>
               <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <button
-                  onClick={() => deleteZone(zone.zone_id)}
+                  onClick={() => setConfirmDeleteZone(zone.zone_id)}
                   className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   <Trash2 size={14} />
@@ -260,6 +324,20 @@ export default function StoreLayoutPage() {
         </div>
       )}
 
+      {/* Delete Zone Confirmation */}
+      {confirmDeleteZone && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="font-semibold text-gray-900">Delete Zone?</h3>
+            <p className="text-sm text-gray-500 mt-2">This will permanently remove this zone and all its shelf locations. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setConfirmDeleteZone(null)} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { deleteZone(confirmDeleteZone); setConfirmDeleteZone(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Zone Modal */}
       {showAddZone && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center">
@@ -274,7 +352,7 @@ export default function StoreLayoutPage() {
                 <input
                   type="text" value={fName} onChange={e => setFName(e.target.value)}
                   placeholder="e.g., Main Floor, Back Room"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -282,14 +360,14 @@ export default function StoreLayoutPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Shelf Start</label>
                   <input
                     type="number" value={fStart} onChange={e => setFStart(parseInt(e.target.value) || 0)} min={0} max={999}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Shelf End</label>
                   <input
                     type="number" value={fEnd} onChange={e => setFEnd(parseInt(e.target.value) || 0)} min={0} max={999}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20 focus:border-posterita-blue"
                   />
                 </div>
               </div>
@@ -309,7 +387,7 @@ export default function StoreLayoutPage() {
                     onKeyDown={e => e.key === "Enter" && addHeight()}
                     placeholder="Add height (e.g., H)"
                     maxLength={3}
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-posterita-blue/20"
                   />
                   <button onClick={addHeight} className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg text-sm font-medium hover:bg-teal-200">Add</button>
                 </div>
@@ -324,7 +402,7 @@ export default function StoreLayoutPage() {
               <button
                 onClick={createZone}
                 disabled={saving || fStart > fEnd || fHeights.length === 0}
-                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 bg-posterita-blue hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
               >
                 {saving ? "Creating..." : "Create Zone"}
               </button>

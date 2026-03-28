@@ -11,7 +11,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="12dp"
-        android:contentDescription="@string/app_name"
+        android:contentDescription="Navigate back"
         android:src="@drawable/ic_back_cart"
         android:background="?attr/selectableItemBackgroundBorderless"
         app:layout_constraintTop_toTopOf="parent"
