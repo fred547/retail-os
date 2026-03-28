@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json({ pick: data });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
     await logToErrorDb(accountId, `Pick update error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -65,7 +65,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({ cancelled: true });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
     await logToErrorDb(accountId, `Pick cancel error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }

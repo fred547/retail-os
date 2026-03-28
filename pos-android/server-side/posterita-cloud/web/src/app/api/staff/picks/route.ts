@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ picks: data ?? [] });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
     await logToErrorDb(accountId, `Picks GET error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ pick: data }, { status: 201 });
   } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
+    const err = e instanceof Error ? e : new Error(e instanceof Error ? e.message : (e?.message || JSON.stringify(e)));
     await logToErrorDb(accountId, `Pick create error: ${err.message}`, err.stack);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
