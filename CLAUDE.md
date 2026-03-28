@@ -90,7 +90,7 @@ These are the column names that get confused most often. **Always verify against
 | `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
 | `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
 | `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00045) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00049) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
@@ -145,6 +145,8 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 
 **Supabase migrations:** Run via Management API (see `reference_supabase.md`). Reload cache: `NOTIFY pgrst, 'reload schema'`
 
+**CI/CD:** GitHub Actions (`.github/workflows/test.yml`) runs web tests + Android tests + E2E on every push to `main`.
+
 **Never** `createClient()` at module scope — use `function getDb() { return createClient(...) }` or `force-dynamic`
 
 ## Testing
@@ -154,7 +156,9 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Verify field names and enum cases match the actual schema/API response BEFORE writing test assertions.
 - After any fix, keep running and fixing until ALL tests pass with zero failures. Do not stop at partial success.
 
-**Android instrumented tests MUST run on Firebase Test Lab** — never locally. Use `gcloud firebase test android run` with project `posterita-retail-os`. Unit tests (`testDebugUnitTest`) can still run locally.
+**Test counts (1,569 total):** 583 Android unit + 522 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
+
+**Android instrumented tests MUST run on Firebase Test Lab** — never locally. Use `gcloud firebase test android run` with project `posterita-retail-os`. Unit tests (`testDebugUnitTest`) can still run locally. Firebase has 10 test classes (2 DAO + 8 UI).
 
 ```bash
 # Build APKs
@@ -225,6 +229,8 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **platform** | create-account, delete-test-brands, super-admin/*, account-manager/* | Admin portal |
 | **quotations** | GET/POST (list/create), [id] (GET/PATCH/DELETE), [id]/send, [id]/convert, [id]/pdf, templates | Quote lifecycle + 5 PDF templates |
 | **print** | POST (TCP relay: base64 ESC/POS bytes → printer IP) | PWA receipt printing (SSRF-protected: private IPs only) |
+| **integrations** | list, xero/connect, xero/callback, xero/disconnect, xero/settings, xero/push, xero/refresh | Xero OAuth + invoice/payment push |
+| **download** | GET /api/download/android → GitHub Releases latest APK | Sidebar download link |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
 **Render Backend** (`posterita-backend.onrender.com`): `/health`, `/webhook/whatsapp`, `/monitor/errors`, `/monitor/sync`, `/monitor/accounts`
@@ -427,7 +433,7 @@ All errors go to the **same `error_logs` table** in Supabase.
 
 Account manager / super admin view. 14 tabs: brands, owners, errors, sync, mra, tests, benchmark, changelog, roadmap, specs, infra, legacy, claude, docs.
 
-Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Tests** (~1,362 tests across Android/web/scenario/E2E/Firebase), **Infra** (live service status + DB row counts).
+Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Tests** (~1,569 tests across Android/web/scenario/E2E/Firebase), **Infra** (live service status + DB row counts).
 
 ## Current Phase
 
@@ -447,9 +453,20 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification), Peach Payments.
 
-**Phase 4 in progress:** Product tagging system (groups + many-to-many + reports + web assignment UI), store layout zones (shelf ranges + height labels), store types (retail/warehouse), shelf browser (Android), shelf label printing, 7-app Android dashboard (POS/Warehouse/CRM/Logistics/Staff/Admin/Sync), large data volume handling (batch sync, paginated pull, Room Paging 3), QR scan actions (55 actions across 8 domains — spec complete), **PWA offline POS for Windows/Mac** (IndexedDB, sync engine, network printing, PIN lock — 40 stores).
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, 27 UI issues fixed, 39 API routes with DB error logging, Dexie v3 versioning, rate limiting, GitHub Actions CI/CD, 1,569 automated tests.
 
-**Phase 4+ roadmap:** Self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In, Peach Payments.
+**Phase 4+ roadmap:** Self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In, Peach Payments, QuickBooks/Shopify integrations, webhook framework.
+
+## Xero Integration
+
+OAuth 2.0 accounting integration. Customers connect their Xero org via the web console (/integrations).
+
+**Tables:** `integration_connection` (OAuth tokens), `integration_event_log` (audit trail)
+**Scopes:** Granular (post-March 2026): `accounting.invoices`, `accounting.payments`, `accounting.manualjournals`, `accounting.settings.read`
+**Flow:** Connect button → Xero OAuth → callback stores tokens → auto-refresh (30min expiry)
+**Push:** Order → Invoice (AUTHORISED) + Payment (cash/card routed to mapped accounts) + Credit Note (refunds) + Journal Entry (cash variance)
+**Config:** 7 account mappings + tax mappings fetched from customer's Xero Chart of Accounts
+**Env vars:** `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `XERO_REDIRECT_URI`
 
 ## Product Tags
 
