@@ -29,7 +29,10 @@ import CustomerPicker from "@/components/pos/CustomerPicker";
 import ModifierDialog from "@/components/pos/ModifierDialog";
 import RefundDialog from "@/components/pos/RefundDialog";
 import PosDrawer from "@/components/pos/PosDrawer";
+import OrderHistory from "@/components/pos/OrderHistory";
+import TillHistory from "@/components/pos/TillHistory";
 import ConnectivityDot from "@/components/pos/ConnectivityDot";
+import { findBestPromotion, type AppliedPromotion } from "@/lib/pos/promotions";
 
 /**
  * POS Checkout — mirrors Android TillActivity.
@@ -54,7 +57,11 @@ export default function PosPage() {
   const [allModifiers, setAllModifiers] = useState<any[]>([]);
   const [showRefund, setShowRefund] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [showTillHistory, setShowTillHistory] = useState(false);
   const [refundComplete, setRefundComplete] = useState(false);
+  const [allPromotions, setAllPromotions] = useState<any[]>([]);
+  const [activePromo, setActivePromo] = useState<AppliedPromotion | null>(null);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
   const [holdComplete, setHoldComplete] = useState(false);
   const [quoteComplete, setQuoteComplete] = useState<{ documentNo: string } | null>(null);
@@ -68,6 +75,16 @@ export default function PosPage() {
     for (const item of cart.items) m[item.product_id] = item.qty;
     return m;
   }, [cart.items]);
+
+  // Auto-apply promotions when cart changes
+  useEffect(() => {
+    if (cart.items.length > 0 && allPromotions.length > 0) {
+      const promo = findBestPromotion(allPromotions, cart.items, cart.subtotal);
+      setActivePromo(promo);
+    } else {
+      setActivePromo(null);
+    }
+  }, [cart.items, cart.subtotal, allPromotions]);
 
   // Load data from IndexedDB on mount
   useEffect(() => {
@@ -88,13 +105,15 @@ export default function PosPage() {
       const db = getOfflineDb();
 
       // Load products and categories from IndexedDB
-      const [prods, cats, taxes, mods] = await Promise.all([
+      const [prods, cats, taxes, mods, promos] = await Promise.all([
         db.product.where("isactive").equals("Y").toArray(),
         db.productcategory.where("isactive").equals("Y").toArray(),
         db.tax.toArray(),
         db.modifier.where("isactive").equals("Y").toArray(),
+        db.promotion.where("is_active").equals(1).toArray(),
       ]);
       setAllModifiers(mods);
+      setAllPromotions(promos);
 
       setProducts(prods.sort((a, b) => (a.name || "").localeCompare(b.name || "")));
       setCategories(cats.sort((a, b) => (a.position || 0) - (b.position || 0)));
@@ -181,6 +200,8 @@ export default function PosPage() {
       if (e.key === "F5") { e.preventDefault(); setShowCustomerPicker(true); }
       if (e.key === "F6") { e.preventDefault(); setShowRefund(true); }
       if (e.key === "F7") { e.preventDefault(); setShowDrawer(!showDrawer); }
+      if (e.key === "F8") { e.preventDefault(); setShowOrderHistory(true); }
+      if (e.key === "F9") { e.preventDefault(); setShowTillHistory(true); }
       if (e.key === "Escape") {
         e.preventDefault();
         if (showPayment) setShowPayment(false);
@@ -188,6 +209,8 @@ export default function PosPage() {
         else if (showHoldOrders) setShowHoldOrders(false);
         else if (showCustomerPicker) setShowCustomerPicker(false);
         else if (showRefund) setShowRefund(false);
+        else if (showOrderHistory) setShowOrderHistory(false);
+        else if (showTillHistory) setShowTillHistory(false);
         else if (showDrawer) setShowDrawer(false);
       }
       if (e.key === "F1") { e.preventDefault(); document.getElementById("pos-search")?.focus(); }
@@ -365,6 +388,14 @@ export default function PosPage() {
 
         {/* Right: Cart (fixed width) */}
         <div className="w-80 lg:w-96 border-l border-gray-800 flex flex-col">
+          {/* Promotion banner */}
+          {activePromo && (
+            <div className="px-3 py-2 bg-green-900/30 border-b border-green-800/50 flex items-center gap-2">
+              <span className="text-xs text-green-400 font-medium flex-1 truncate">
+                {activePromo.name}: {activePromo.description} (-{activePromo.discount.toFixed(2)})
+              </span>
+            </div>
+          )}
           <Cart
             onPay={() => setShowPayment(true)}
             onCustomerClick={() => setShowCustomerPicker(true)}
@@ -392,7 +423,25 @@ export default function PosPage() {
         onTill={() => setShowTill(true)}
         onPrinter={() => setShowPrinter(true)}
         onHoldOrders={() => setShowHoldOrders(true)}
+        onOrderHistory={() => setShowOrderHistory(true)}
+        onTillHistory={() => setShowTillHistory(true)}
       />
+
+      {/* Order history */}
+      {showOrderHistory && (
+        <OrderHistory
+          onClose={() => setShowOrderHistory(false)}
+          onRefund={(orderId) => {
+            setShowOrderHistory(false);
+            setShowRefund(true);
+          }}
+        />
+      )}
+
+      {/* Till history */}
+      {showTillHistory && (
+        <TillHistory onClose={() => setShowTillHistory(false)} />
+      )}
 
       {/* Refund dialog */}
       {showRefund && (

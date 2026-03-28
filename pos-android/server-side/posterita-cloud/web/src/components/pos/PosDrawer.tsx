@@ -15,6 +15,8 @@ export default function PosDrawer({
   onTill,
   onPrinter,
   onHoldOrders,
+  onOrderHistory,
+  onTillHistory,
 }: {
   open: boolean;
   onClose: () => void;
@@ -22,6 +24,8 @@ export default function PosDrawer({
   onTill: () => void;
   onPrinter: () => void;
   onHoldOrders: () => void;
+  onOrderHistory?: () => void;
+  onTillHistory?: () => void;
 }) {
   const sync = useSyncStatus();
   const [drawerOpening, setDrawerOpening] = useState(false);
@@ -66,13 +70,14 @@ export default function PosDrawer({
 
           <div className="border-t border-gray-800 my-2 mx-4" />
 
-          <DrawerItem icon={ShoppingCart} label="Till" onClick={() => { onTill(); onClose(); }} shortcut="F3" />
-          <DrawerItem icon={Printer} label="Printer" onClick={() => { onPrinter(); onClose(); }} />
-          <DrawerItem icon={Tag} label="Promotions" onClick={() => window.open("/customer/promotions", "_blank")} external />
+          <DrawerItem icon={ShoppingCart} label="Order History" onClick={() => { onOrderHistory?.(); onClose(); }} shortcut="F8" />
+          <DrawerItem icon={DollarSign} label="Till History" onClick={() => { onTillHistory?.(); onClose(); }} shortcut="F9" />
 
           <div className="border-t border-gray-800 my-2 mx-4" />
 
-          <DrawerItem icon={ShoppingCart} label="Orders" onClick={() => window.open("/customer/orders", "_blank")} external />
+          <DrawerItem icon={ShoppingCart} label="Till Open/Close" onClick={() => { onTill(); onClose(); }} shortcut="F3" />
+          <DrawerItem icon={Printer} label="Printer" onClick={() => { onPrinter(); onClose(); }} />
+          <DrawerItem icon={Tag} label="Promotions" onClick={() => window.open("/customer/promotions", "_blank")} external />
           <DrawerItem icon={Settings} label="Settings" onClick={() => window.open("/customer/settings", "_blank")} external />
         </nav>
 
