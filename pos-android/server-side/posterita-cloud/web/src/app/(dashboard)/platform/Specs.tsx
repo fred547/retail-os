@@ -48,8 +48,10 @@ const stackLayers = [
   { layer: "Auth", tech: "Supabase Auth + OTT + PIN", responsibility: "Web login, Android login, WebView OTT, device PIN unlock" },
   { layer: "Media", tech: "Cloudinary", responsibility: "Product images (800x800, auto-transform w_400,h_400,c_fill)" },
   { layer: "AI", tech: "Claude Haiku 4.5 + Sonnet 4.6", responsibility: "AI product import/discovery, intake processing" },
-  { layer: "Payments", tech: "Blink SDK", responsibility: "QR code payment integration at POS" },
-  { layer: "CI/Testing", tech: "Firebase Test Lab", responsibility: "Android instrumented tests on real devices" },
+  { layer: "Payments", tech: "Blink + MauCAS QR", responsibility: "QR code payment, MCB Juice, Pop, MyT Money (via Peach Payments)" },
+  { layer: "Accounting", tech: "Xero + QuickBooks (planned)", responsibility: "Invoice/payment push, credit notes, journal entries, account mapping" },
+  { layer: "Compliance", tech: "MRA EBS + CBRIS", responsibility: "e-Invoicing (IRN+QR), BRN lookup, DPA 2017 data protection" },
+  { layer: "CI/Testing", tech: "Firebase Test Lab + GitHub Actions", responsibility: "Android instrumented tests, web unit tests, E2E, scenario tests" },
 ];
 
 const keyBoundaries = [
@@ -229,6 +231,9 @@ const apiDomains = [
   { domain: "enroll", routes: ["POST (device enrollment)"], notes: "QR-based device setup" },
   { domain: "blink", routes: ["create-payment", "check-status"], notes: "QR payment integration" },
   { domain: "debug", routes: ["session"], notes: "Debug session info" },
+  { domain: "stock-count", routes: ["GET/POST (sessions)", "[id] (CRUD)", "[id]/dashboard", "[id]/scans"], notes: "Full stock count with variance tracking" },
+  { domain: "webhooks", routes: ["GET/POST (CRUD)", "[id] (GET/PATCH/DELETE)", "[id]/test", "logs"], notes: "Webhook subscriptions + firing + test" },
+  { domain: "staff", routes: ["schedule (CRUD)", "schedule/copy-week", "timesheets", "leave (CRUD)", "leave/balance", "leave-types", "breaks", "payroll-export"], notes: "Staff & workforce management" },
 ];
 
 // ── Architecture Rules Data ────────────────────────────────

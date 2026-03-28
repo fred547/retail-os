@@ -30,6 +30,7 @@ object DateUtils {
                 .replace("Z", "")                    // remove trailing Z
             val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
                 timeZone = java.util.TimeZone.getTimeZone("UTC")
+                isLenient = false
             }
             fmt.parse(cleaned)?.time
         } catch (_: Exception) {

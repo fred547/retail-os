@@ -449,13 +449,44 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 | 2.8 | ✅ | Sync hardening — errors, retry, receipt, context, conflicts, checksum |
 | 3 | ✅ | Compliance, loyalty, suppliers, promotions, delivery, shifts, analytics (10/12, 2 blocked) |
 | 3.5 | ✅ | Android POS integration — loyalty, promotions, menus, shifts sync + UI |
-| **4** | **CURRENT** | **Scale, integrations, advanced features** |
+| 4 | ✅ | Scale, integrations, advanced features |
+| **4.5** | **CURRENT** | **Mauritius market integrations + web signup + marketing site** |
 
-**Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification), Peach Payments.
+**Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification).
 
-**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app, terminal device locking, large data volume handling (batch sync + paginated pull), 556+ automated tests.
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app, terminal device locking, large data volume handling (batch sync + paginated pull), 556+ automated tests, www.posterita.com redesign, web customer signup page.
 
-**Phase 4+ roadmap:** Self-checkout kiosks, franchise/multi-store analytics, segment extensions (pharmacy, salon, freelancers), Google Sign-In, Peach Payments, QuickBooks/Shopify integrations, webhook framework.
+**Phase 4.5 — Mauritius Market (CURRENT):**
+| # | Feature | Priority | Status | Notes |
+|---|---------|----------|--------|-------|
+| 1 | **CBRIS integration** (BRN lookup) | HIGH | TODO | APIMall REST API, BRN verification for B2B customers/suppliers (Rs 3,800/yr) |
+| 2 | **Peach Payments gateway** | HIGH | BLOCKED | Single integration for MCB Juice + blink + MauCAS QR + cards. Needs SDK access |
+| 3 | **MRA e-invoicing certification** | CRITICAL | IN PROGRESS | Backend code exists. JSON → IFP → IRN + QR. Mandatory >40M MUR by Sep 2026 |
+| 4 | **MauCAS QR payments** | HIGH | TODO | National interoperable QR standard. Via Peach Payments or blink device API |
+| 5 | **blink Dynamic QR** | HIGH | PARTIAL | POS → amount → QR device → customer scans. Live at Super U. Blink API exists |
+| 6 | **MCB Juice** | HIGH | TODO | 420K+ subscribers. Via MCB Mastercard Gateway (REST-JSON) or Peach Payments |
+| 7 | **QuickBooks Online** | MEDIUM | TODO | Most popular accounting software in Mauritius. Via QuickBooks API |
+| 8 | **CSG/NSF/PAYE payroll export** | MEDIUM | TODO | Monthly MRA return from staff/shift data. CSG + NSF (2.5%) + Training Levy (1.5%) |
+| 9 | **Pop (Bank One)** | MEDIUM | TODO | NFC "Tap & Pop" + QR via MiPS PayStation |
+| 10 | **MyT Money** | MEDIUM | TODO | Mauritius Telecom wallet, MauCAS-compatible |
+| 11 | **Data Protection (DPA 2017)** | MEDIUM | TODO | GDPR-aligned audit: consent, retention, breach notification |
+| 12 | **India UPI/RuPay** | LOW | TODO | Indian tourist payments at Mauritius merchants (BoM + RBI linkage) |
+| 13 | **TradeNet (Customs)** | LOW | TODO | EDI import declarations, duty calc — wholesale/distribution only |
+| 14 | **Local delivery APIs** | LOW | TODO | Bongeni, NU Livrer, DeliveryPlus — fragmented market, no dominant API |
+
+**Phase 5 roadmap:**
+| # | Feature | Notes |
+|---|---------|-------|
+| 1 | Self-checkout kiosks | terminal_type = self_service |
+| 2 | Franchise/multi-store analytics | Cross-brand reporting, benchmarking |
+| 3 | Segment extensions | Pharmacy (Rx tracking), salon (appointments), field sales |
+| 4 | Google Sign-In | Supabase OAuth — already on customer login page |
+| 5 | Shopify integration | Sync products and inventory between POS and online store |
+| 6 | WhatsApp receipts/support | Needs dedicated phone + Meta Business verification |
+| 7 | eShops.mu marketplace | Multi-vendor digital mall integration |
+| 8 | Payroll integration | Export to Payroll Mauritius / Ursula / CISL |
+| 9 | MIPS PayStation | All-in-one POS terminal platform |
+| 10 | Customer-facing display | terminal_type = customer_display, real-time cart mirror |
 
 ## Xero Integration
 

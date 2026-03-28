@@ -1,9 +1,9 @@
 export const TEST_SUITES = {
   android: {
-    totalTests: 583,
+    totalTests: 587,
     totalFiles: 29,
     allPassed: true,
-    lastVerified: "2026-03-27",
+    lastVerified: "2026-03-29",
     version: "Room v30, Kotlin, multi-module",
     files: [
       { name: "CartItemTest", tests: 12, area: "Tax calc, discount, clone" },
@@ -11,7 +11,7 @@ export const TEST_SUITES = {
       { name: "CartSerializationTest", tests: 24, area: "JSON serialize/restore, modifiers" },
       { name: "CloudSyncFieldMappingTest", tests: 17, area: "Camel→snake field mapping" },
       { name: "CloudSyncIntegrationTest", tests: 6, area: "Full sync round-trip" },
-      { name: "DateUtilsTest", tests: 7, area: "Date formatting, parsing" },
+      { name: "DateUtilsTest", tests: 11, area: "UTC parsing, timezone-independence (Mauritius UTC+4), hoursElapsedSinceUtc, hoursBetweenUtc" },
       { name: "DeliveryEntityTest", tests: 15, area: "Status lifecycle, customer/driver fields, cart JSON" },
       { name: "DiscountCalculationTest", tests: 11, area: "Percentage, fixed, stacking" },
       { name: "HoldOrderFlowTest", tests: 19, area: "Hold/recall/delete, table assignment" },

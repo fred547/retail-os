@@ -9,6 +9,7 @@ export default function CustomerLoginPage() {
       redirectPath="/customer"
       alternateHref="/manager/login"
       alternateLabel="Posterita team? Use the account manager portal."
+      signupHref="/customer/signup"
     />
   );
 }
