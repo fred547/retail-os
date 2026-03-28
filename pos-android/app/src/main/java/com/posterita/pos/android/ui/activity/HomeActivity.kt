@@ -445,6 +445,7 @@ class HomeActivity : BaseActivity() {
         // Orders, Tills, Customers live inside POS drawer — not on dashboard.
         val tiles = listOf(
             AppTile("pos", "POS", R.drawable.pos, 0xFF1976D2.toInt(), true, TillActivity::class.java, TileVisibility.ALL),
+            AppTile("restaurant", "Restaurant", R.drawable.ic_check_circle, 0xFFE65100.toInt(), true, RestaurantHomeActivity::class.java, TileVisibility.ALL),
             AppTile("warehouse", "Warehouse", R.drawable.ic_search, 0xFFF57F17.toInt(), true, WarehouseHomeActivity::class.java, TileVisibility.SUPERVISOR_PLUS),
             AppTile("crm", "CRM", R.drawable.ic_check_circle, 0xFF8B5CF6.toInt(), true, CrmHomeActivity::class.java, TileVisibility.ALL),
             AppTile("logistics", "Logistics", R.drawable.ic_check_circle, 0xFF0891B2.toInt(), true, LogisticsHomeActivity::class.java, TileVisibility.SUPERVISOR_PLUS),

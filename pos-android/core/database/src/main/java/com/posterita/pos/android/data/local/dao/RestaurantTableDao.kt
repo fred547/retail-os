@@ -34,4 +34,7 @@ interface RestaurantTableDao {
 
     @Query("SELECT COUNT(*) FROM restaurant_table WHERE store_id = :storeId")
     suspend fun getTableCount(storeId: Int): Int
+
+    @Query("SELECT COUNT(*) FROM restaurant_table WHERE store_id = :storeId AND is_occupied = 1")
+    suspend fun getOccupiedCount(storeId: Int): Int
 }

@@ -27,6 +27,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "start_date and end_date are required" }, { status: 400 });
     }
 
+    // Fetch staff names
+    const { data: staffList } = await getDb()
+      .from("pos_user")
+      .select("user_id, username, firstname, lastname")
+      .eq("account_id", accountId);
+    const staffMap = new Map<number, string>((staffList ?? []).map((u: any) => [
+      u.user_id as number,
+      (u.firstname ? `${u.firstname} ${u.lastname || ""}`.trim() : u.username || `User ${u.user_id}`) as string,
+    ]));
+
     // Fetch shifts for date range
     let shiftQuery = getDb()
       .from("shift")
@@ -67,11 +77,14 @@ export async function GET(req: NextRequest) {
     // Group by user_id and compute totals
     const userMap: Record<number, {
       user_id: number;
+      user_name: string;
       total_hours: number;
       overtime_hours: number;
       break_hours: number;
       net_hours: number;
       shift_count: number;
+      days_worked: Set<string>;
+      late_count: number;
     }> = {};
 
     const STANDARD_HOURS_PER_DAY = 8;
@@ -79,37 +92,62 @@ export async function GET(req: NextRequest) {
     for (const shift of (shifts ?? [])) {
       const uid = shift.user_id;
       if (!userMap[uid]) {
-        userMap[uid] = { user_id: uid, total_hours: 0, overtime_hours: 0, break_hours: 0, net_hours: 0, shift_count: 0 };
+        userMap[uid] = {
+          user_id: uid,
+          user_name: staffMap.get(uid) || shift.user_name || `User ${uid}`,
+          total_hours: 0, overtime_hours: 0, break_hours: 0, net_hours: 0,
+          shift_count: 0, days_worked: new Set(), late_count: 0,
+        };
       }
 
       if (shift.clock_in && shift.clock_out) {
         const hours = (new Date(shift.clock_out).getTime() - new Date(shift.clock_in).getTime()) / (1000 * 60 * 60);
         userMap[uid].total_hours += hours;
         userMap[uid].shift_count += 1;
+        userMap[uid].days_worked.add(shift.clock_in.slice(0, 10));
 
         const overtime = Math.max(0, hours - STANDARD_HOURS_PER_DAY);
         userMap[uid].overtime_hours += overtime;
+      }
+
+      if (shift.is_late) {
+        userMap[uid].late_count += 1;
       }
     }
 
     for (const b of (breaks ?? [])) {
       const uid = b.user_id;
       if (!userMap[uid]) {
-        userMap[uid] = { user_id: uid, total_hours: 0, overtime_hours: 0, break_hours: 0, net_hours: 0, shift_count: 0 };
+        userMap[uid] = {
+          user_id: uid, user_name: staffMap.get(uid) ?? `User ${uid}`,
+          total_hours: 0, overtime_hours: 0, break_hours: 0, net_hours: 0,
+          shift_count: 0, days_worked: new Set(), late_count: 0,
+        };
       }
       if (b.duration_minutes) {
         userMap[uid].break_hours += b.duration_minutes / 60;
       }
     }
 
-    // Compute net hours
-    const summary = Object.values(userMap).map((u) => ({
-      ...u,
-      total_hours: Math.round(u.total_hours * 100) / 100,
-      overtime_hours: Math.round(u.overtime_hours * 100) / 100,
-      break_hours: Math.round(u.break_hours * 100) / 100,
-      net_hours: Math.round((u.total_hours - u.break_hours) * 100) / 100,
-    }));
+    // Compute net hours + regular hours
+    const summary = Object.values(userMap).map((u) => {
+      const totalH = Math.round(u.total_hours * 100) / 100;
+      const overtimeH = Math.round(u.overtime_hours * 100) / 100;
+      const breakH = Math.round(u.break_hours * 100) / 100;
+      const netH = Math.round((u.total_hours - u.break_hours) * 100) / 100;
+      return {
+        user_id: u.user_id,
+        user_name: u.user_name,
+        days_worked: u.days_worked.size,
+        total_hours: totalH,
+        regular_hours: Math.round((totalH - overtimeH) * 100) / 100,
+        overtime_hours: overtimeH,
+        break_hours: breakH,
+        net_hours: netH,
+        shift_count: u.shift_count,
+        late_count: u.late_count,
+      };
+    });
 
     return NextResponse.json({ timesheets: summary });
   } catch (e: any) {

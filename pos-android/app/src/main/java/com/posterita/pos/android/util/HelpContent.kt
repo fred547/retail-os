@@ -99,6 +99,16 @@ object HelpContent {
             "Points are earned automatically when customers make purchases",
         )),
 
+        // ── Restaurant ──
+        "restaurant_home" to HelpPage("Restaurant Hub", listOf(
+            "Summary shows total, occupied, and available tables",
+            "Tables: manage table layout, sections, and occupancy",
+            "Kitchen: view and manage kitchen orders by station",
+            "KDS: set up Kitchen Display System on a dedicated tablet",
+            "Stations: configure kitchen/bar/dessert prep stations (opens web console)",
+            "Menu Schedules: set time-based menus like breakfast/lunch/dinner",
+        )),
+
         // ── Logistics ──
         "logistics_home" to HelpPage("Delivery Tracking", listOf(
             "Monitor all delivery orders and their status",
