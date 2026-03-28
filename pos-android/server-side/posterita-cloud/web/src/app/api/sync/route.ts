@@ -1232,13 +1232,13 @@ export async function POST(req: NextRequest) {
             hours_worked: s.hours_worked ?? s.hoursWorked ?? null,
             notes: s.notes ?? null,
             status: s.status ?? "active",
-            uuid: s.uuid ?? null,
+            uuid: s.uuid || null,  // treat empty string as null
             created_at: s.created_at ?? s.createdAt ?? null,
           };
 
           // Reuse insertOrUpdate — handles race conditions and duplicate pushes via UUID
           const shiftUuid = dbShift.uuid;
-          if (shiftUuid) {
+          if (shiftUuid && shiftUuid.length > 1) {
             const { error } = await insertOrUpdate("shift", dbShift, shiftUuid);
             if (error) errors.push(`Shift ${shiftUuid}: ${error.message}`);
             else shiftsSynced++;
