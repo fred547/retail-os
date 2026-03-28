@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import {
   Clock, Plus, Sun, Sunset, Moon, Coffee,
   X, Trash2, Edit2, RefreshCw, ToggleLeft, ToggleRight,
+  FolderTree, Check,
 } from "lucide-react";
+import { dataQuery } from "@/lib/supabase/data-client";
 import Breadcrumb from "@/components/Breadcrumb";
 
 interface Schedule {
@@ -49,6 +51,9 @@ export default function MenuSchedulesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Schedule | null>(null);
 
+  // Categories (for picker)
+  const [categories, setCategories] = useState<{ productcategory_id: number; name: string }[]>([]);
+
   // Form
   const [formName, setFormName] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -56,6 +61,7 @@ export default function MenuSchedulesPage() {
   const [formEnd, setFormEnd] = useState("11:00");
   const [formDays, setFormDays] = useState([1, 2, 3, 4, 5, 6, 7]);
   const [formPriority, setFormPriority] = useState(0);
+  const [formCategoryIds, setFormCategoryIds] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
 
   const loadSchedules = useCallback(async () => {
@@ -71,11 +77,18 @@ export default function MenuSchedulesPage() {
     }
   }, []);
 
-  useEffect(() => { loadSchedules(); }, [loadSchedules]);
+  useEffect(() => {
+    loadSchedules();
+    dataQuery<{ productcategory_id: number; name: string }>("productcategory", {
+      select: "productcategory_id, name",
+      filters: [{ column: "isactive", op: "eq", value: "Y" }],
+      order: { column: "name" },
+    }).then((res) => setCategories(res.data ?? []));
+  }, [loadSchedules]);
 
   const resetForm = () => {
     setFormName(""); setFormDesc(""); setFormStart("06:00"); setFormEnd("11:00");
-    setFormDays([1, 2, 3, 4, 5, 6, 7]); setFormPriority(0);
+    setFormDays([1, 2, 3, 4, 5, 6, 7]); setFormPriority(0); setFormCategoryIds([]);
   };
 
   const openCreate = () => { resetForm(); setEditing(null); setShowCreate(true); };
@@ -83,11 +96,16 @@ export default function MenuSchedulesPage() {
     setFormName(s.name); setFormDesc(s.description || "");
     setFormStart(s.start_time); setFormEnd(s.end_time);
     setFormDays(s.days_of_week); setFormPriority(s.priority);
+    setFormCategoryIds(s.category_ids || []);
     setEditing(s); setShowCreate(true);
   };
 
   const toggleDay = (day: number) => {
     setFormDays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort());
+  };
+
+  const toggleCategory = (catId: number) => {
+    setFormCategoryIds((prev) => prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]);
   };
 
   const saveSchedule = async () => {
@@ -97,6 +115,7 @@ export default function MenuSchedulesPage() {
       const payload = {
         name: formName, description: formDesc, start_time: formStart,
         end_time: formEnd, days_of_week: formDays, priority: formPriority,
+        category_ids: formCategoryIds,
       };
       if (editing) {
         await fetch(`/api/menu-schedules/${editing.id}`, {
@@ -235,9 +254,20 @@ export default function MenuSchedulesPage() {
                   </span>
                 ))}
                 {s.category_ids.length > 0 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    {s.category_ids.length} categories
-                  </span>
+                  <div className="ml-2 flex items-center gap-1 flex-wrap">
+                    <FolderTree size={12} className="text-gray-400" />
+                    {s.category_ids.slice(0, 4).map((cid) => {
+                      const cat = categories.find((c) => c.productcategory_id === cid);
+                      return (
+                        <span key={cid} className="text-[10px] bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded">
+                          {cat?.name || `#${cid}`}
+                        </span>
+                      );
+                    })}
+                    {s.category_ids.length > 4 && (
+                      <span className="text-[10px] text-gray-400">+{s.category_ids.length - 4}</span>
+                    )}
+                  </div>
                 )}
                 {s.priority > 0 && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
@@ -315,6 +345,43 @@ export default function MenuSchedulesPage() {
                 <input type="number" value={formPriority} onChange={(e) => setFormPriority(parseInt(e.target.value) || 0)} min={0}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
                 <p className="text-xs text-gray-400 mt-1">Higher priority takes precedence when schedules overlap</p>
+              </div>
+
+              {/* Category picker */}
+              <div>
+                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-2">
+                  <FolderTree size={14} /> Categories
+                  <span className="text-xs text-gray-400 font-normal ml-1">
+                    ({formCategoryIds.length === 0 ? "all shown" : `${formCategoryIds.length} selected`})
+                  </span>
+                </label>
+                {categories.length === 0 ? (
+                  <p className="text-xs text-gray-400">No categories found</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+                    {categories.map((cat) => {
+                      const selected = formCategoryIds.includes(cat.productcategory_id);
+                      return (
+                        <button
+                          key={cat.productcategory_id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.productcategory_id)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                            selected
+                              ? "bg-orange-100 border-orange-300 text-orange-700"
+                              : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                          }`}
+                        >
+                          {selected && <Check size={10} />}
+                          {cat.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  Leave empty to show all categories. Selected categories will be the only ones visible on POS during this schedule.
+                </p>
               </div>
             </div>
 
