@@ -21,6 +21,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     const { data: quotation } = await getDb().from("quotation").select("quotation_id, status")
       .eq("quotation_id", quotationId).eq("account_id", accountId).eq("is_deleted", false).single();
@@ -42,6 +45,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: true, sent_at: now });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation send error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

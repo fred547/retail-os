@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const { data: promotions, error } = await query;
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch promotions for validation: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     const now = new Date();
@@ -135,6 +135,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Promotion validation error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

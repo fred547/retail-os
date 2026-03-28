@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import SignaturePad from "@/components/SignaturePad";
 import PhotoUpload from "@/components/PhotoUpload";
+import { logError } from "@/lib/error-logger";
 
 interface Delivery {
   id: number;
@@ -67,7 +68,7 @@ export default function DeliveryDetailPage() {
       const data = await res.json();
       setDelivery(data.delivery);
       setDriverNotes(data.delivery?.driver_notes || "");
-    } catch (_) {}
+    } catch (e: any) { logError("DeliveryDetail", `Failed to load delivery ${id}: ${e.message}`); }
     finally { setLoading(false); }
   }, [id]);
 
@@ -82,7 +83,7 @@ export default function DeliveryDetailPage() {
         body: JSON.stringify(body),
       });
       await load();
-    } catch (_) {}
+    } catch (e: any) { logError("DeliveryDetail", `Failed to patch delivery ${id}: ${e.message}`); }
     finally { setSaving(false); }
   };
 

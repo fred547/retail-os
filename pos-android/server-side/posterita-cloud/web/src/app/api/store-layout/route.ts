@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Store layout GET error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ zone: data }, { status: zone_id ? 200 : 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Store layout POST error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -134,17 +134,21 @@ export async function DELETE(req: NextRequest) {
   try {
     const zoneId = new URL(req.url).searchParams.get("zone_id");
     if (!zoneId) return NextResponse.json({ error: "zone_id required" }, { status: 400 });
+    const zoneIdNum = parseInt(zoneId);
+    if (isNaN(zoneIdNum)) {
+      return NextResponse.json({ error: "Invalid zone_id" }, { status: 400 });
+    }
 
     const { error } = await getDb()
       .from("store_layout_zone")
       .delete()
-      .eq("zone_id", parseInt(zoneId))
+      .eq("zone_id", zoneIdNum)
       .eq("account_id", accountId);
 
     if (error) throw error;
     return NextResponse.json({ deleted: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Store layout DELETE error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

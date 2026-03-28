@@ -6,6 +6,7 @@ import {
   Edit2, Trash2, X, RefreshCw, ChevronRight,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Supplier {
   supplier_id: number;
@@ -48,7 +49,8 @@ export default function SuppliersPage() {
       const res = await fetch(`/api/suppliers?search=${encodeURIComponent(search)}`);
       const data = await res.json();
       setSuppliers(data.suppliers || []);
-    } catch (e) {
+    } catch (e: any) {
+      logError("Suppliers", `Failed to load suppliers: ${e.message}`);
       console.error(e);
     } finally {
       setLoading(false);
@@ -109,7 +111,8 @@ export default function SuppliersPage() {
       }
       setShowCreate(false);
       loadSuppliers();
-    } catch (e) {
+    } catch (e: any) {
+      logError("Suppliers", `Failed to save supplier: ${e.message}`);
       console.error(e);
     } finally {
       setSaving(false);
@@ -120,7 +123,8 @@ export default function SuppliersPage() {
     try {
       await fetch(`/api/suppliers/${id}`, { method: "DELETE" });
       loadSuppliers();
-    } catch (e) {
+    } catch (e: any) {
+      logError("Suppliers", `Failed to delete supplier: ${e.message}`, { id });
       console.error(e);
     }
   };

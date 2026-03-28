@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ quotations: data ?? [], total: count ?? 0 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -149,6 +149,6 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

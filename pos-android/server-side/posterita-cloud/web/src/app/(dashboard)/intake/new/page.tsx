@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, FileText, ShoppingCart, Receipt, Search, Upload, Loader2, ArrowRight } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 type Source = "website" | "catalogue" | "purchase_order" | "invoice" | "ai_search";
 
@@ -54,7 +55,8 @@ export default function NewIntakePage() {
       } else {
         setError("Upload failed. Please try again.");
       }
-    } catch {
+    } catch (e: any) {
+      logError("IntakeNew", `File upload failed: ${e.message}`);
       setError("Upload failed. Please try again.");
     } finally {
       setUploading(false);
@@ -95,6 +97,7 @@ export default function NewIntakePage() {
       // Navigate to batch review page
       router.push(`/customer/intake/${batch.batch_id}`);
     } catch (e: any) {
+      logError("IntakeNew", `Failed to create intake batch: ${e.message}`);
       setError(e.message || "Failed to create intake batch");
       setCreating(false);
     }

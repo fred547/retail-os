@@ -60,6 +60,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message ?? null });
   } catch (e: any) {
     await logToErrorDb("system", `Data update failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

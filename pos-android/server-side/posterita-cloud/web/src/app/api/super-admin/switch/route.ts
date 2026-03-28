@@ -32,6 +32,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, account_id });
   } catch (e: any) {
     await logToErrorDb("system", `Super admin switch failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

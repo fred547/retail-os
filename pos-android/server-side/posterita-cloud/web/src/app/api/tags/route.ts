@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tags: data ?? [] });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tags list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -73,6 +73,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ tag: data }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

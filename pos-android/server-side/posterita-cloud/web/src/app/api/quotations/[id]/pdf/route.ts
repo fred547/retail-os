@@ -4,6 +4,27 @@ import { getDb } from "@/lib/supabase/admin";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { renderQuotePdf } from "@/lib/pdf/quote-templates";
 
+// ════════════════════════════════════════════════════════
+// Rate limiting — 30 requests per hour per account
+// ════════════════════════════════════════════════════════
+const pdfRateLimiter = new Map<string, { count: number; firstAttempt: number }>();
+const PDF_MAX = 30;
+const PDF_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkPdfRate(key: string): { allowed: boolean; retryAfterSec?: number } {
+  const now = Date.now();
+  const entry = pdfRateLimiter.get(key);
+  if (!entry || now - entry.firstAttempt > PDF_WINDOW_MS) {
+    pdfRateLimiter.set(key, { count: 1, firstAttempt: now });
+    return { allowed: true };
+  }
+  if (entry.count >= PDF_MAX) {
+    return { allowed: false, retryAfterSec: Math.ceil((entry.firstAttempt + PDF_WINDOW_MS - now) / 1000) };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
 async function logToErrorDb(accountId: string, message: string, stackTrace?: string) {
   try {
     await getDb().from("error_logs").insert({
@@ -21,9 +42,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const accountId = await getSessionAccountId();
   if (!accountId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
+  // Rate limit check
+  const rateCheck = checkPdfRate(accountId);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: "PDF generation rate limit exceeded. Max 30 per hour." },
+      { status: 429, headers: { "Retry-After": String(rateCheck.retryAfterSec) } }
+    );
+  }
+
   try {
     const { id } = await params;
     const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const url = new URL(req.url);
     const templateOverride = url.searchParams.get("template");
 
@@ -63,6 +96,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation PDF error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

@@ -20,6 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 type Mode = "search" | "website" | "images";
 type Step = "input" | "discover" | "processing" | "review";
@@ -154,6 +155,7 @@ export default function AiImportPage() {
 
       await consumeSSEStream(response);
     } catch (e: any) {
+      logError("AiImport", `Smart search failed: ${e.message}`);
       setError(e.message);
       setStep("input");
     } finally {
@@ -202,6 +204,7 @@ export default function AiImportPage() {
         );
       }
     } catch (e: any) {
+      logError("AiImport", `Discovery failed: ${e.message}`);
       setError(e.message);
     } finally {
       setLoading(false);
@@ -237,6 +240,7 @@ export default function AiImportPage() {
 
       await consumeSSEStream(response);
     } catch (e: any) {
+      logError("AiImport", `URL import failed: ${e.message}`);
       setError(e.message);
       setStep("discover");
     } finally {
@@ -275,6 +279,7 @@ export default function AiImportPage() {
 
       await consumeSSEStream(response);
     } catch (e: any) {
+      logError("AiImport", `Direct URL import failed: ${e.message}`);
       setError(e.message);
       setStep("input");
     } finally {

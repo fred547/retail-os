@@ -18,6 +18,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const tagId = parseInt(id);
+    if (isNaN(tagId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
     const update: Record<string, any> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) update.name = body.name;
@@ -28,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("tag")
       .update(update)
-      .eq("tag_id", parseInt(id))
+      .eq("tag_id", tagId)
       .eq("account_id", accountId)
       .select()
       .single();
@@ -37,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ tag: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -48,23 +52,27 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
+    const tagId = parseInt(id);
+    if (isNaN(tagId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const now = new Date().toISOString();
 
     // Remove junction rows for this tag
-    await getDb().from("product_tag").delete().eq("tag_id", parseInt(id)).eq("account_id", accountId);
-    await getDb().from("customer_tag").delete().eq("tag_id", parseInt(id)).eq("account_id", accountId);
-    await getDb().from("order_tag").delete().eq("tag_id", parseInt(id)).eq("account_id", accountId);
+    await getDb().from("product_tag").delete().eq("tag_id", tagId).eq("account_id", accountId);
+    await getDb().from("customer_tag").delete().eq("tag_id", tagId).eq("account_id", accountId);
+    await getDb().from("order_tag").delete().eq("tag_id", tagId).eq("account_id", accountId);
 
     const { error } = await getDb()
       .from("tag")
       .update({ is_deleted: true, is_active: false, deleted_at: now, updated_at: now })
-      .eq("tag_id", parseInt(id))
+      .eq("tag_id", tagId)
       .eq("account_id", accountId);
 
     if (error) throw error;
     return NextResponse.json({ deleted: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag delete error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

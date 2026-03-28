@@ -7,6 +7,7 @@ import {
   Gift, Star, RefreshCw,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface LoyaltyConfig {
   account_id: string;
@@ -80,7 +81,8 @@ export default function LoyaltyPage() {
       setWallets(walletsData.wallets || []);
       setWalletSummary(walletsData.summary || { total_members: 0, total_points_outstanding: 0 });
       setTransactions(txData.transactions || []);
-    } catch (e) {
+    } catch (e: any) {
+      logError("Loyalty", `Failed to load loyalty data: ${e.message}`);
       console.error("Failed to load loyalty data", e);
     } finally {
       setLoading(false);
@@ -105,7 +107,8 @@ export default function LoyaltyPage() {
       });
       const data = await res.json();
       if (data.config) setConfig(data.config);
-    } catch (e) {
+    } catch (e: any) {
+      logError("Loyalty", `Failed to save config: ${e.message}`);
       console.error("Failed to save config", e);
     } finally {
       setSaving(false);

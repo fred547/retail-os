@@ -23,6 +23,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const terminalId = parseInt(id);
+    if (isNaN(terminalId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     // Get current lock info for audit log
     const { data: terminal } = await getDb()
@@ -65,6 +68,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Terminal unlock error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

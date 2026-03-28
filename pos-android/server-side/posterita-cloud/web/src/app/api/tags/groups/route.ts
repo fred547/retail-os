@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ groups: enriched });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag groups list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -86,6 +86,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ group: data }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag group create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

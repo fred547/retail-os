@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     const { data, count, error } = await query;
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch deliveries: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     const all = data || [];
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Deliveries list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -185,12 +185,12 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to create delivery: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ delivery: data }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Delivery create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

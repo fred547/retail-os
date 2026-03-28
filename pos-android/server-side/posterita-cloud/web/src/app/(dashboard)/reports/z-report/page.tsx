@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Calendar, Download, FileText, Clock, CreditCard, Banknote, ReceiptText, XCircle } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface ZReport {
   summary: {
@@ -55,6 +56,7 @@ export default function ZReportPage() {
       if (!res.ok) throw new Error(await res.text());
       setReport(await res.json());
     } catch (e: any) {
+      logError("ZReport", `Failed to fetch Z-report: ${e.message}`);
       setError(e.message);
     } finally {
       setLoading(false);

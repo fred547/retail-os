@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Gauge, Play, Zap, Globe, Database, Server, RefreshCw, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { RENDER_BACKEND_URL } from "@/lib/constants";
+import { logError } from "@/lib/error-logger";
 
 interface BenchmarkResult {
   name: string;
@@ -86,7 +87,9 @@ export default function Benchmark() {
             message: `${category}/${name}: ${detail} (${ms}ms)`,
           }),
         });
-      } catch (_) {}
+      } catch (e: any) {
+        logError("Platform.Benchmark", "Failed to log benchmark error to API", { error: e?.message });
+      }
     };
 
     const bench = async (name: string, category: string, fn: () => Promise<string | undefined>) => {
@@ -103,6 +106,7 @@ export default function Benchmark() {
       } catch (e: any) {
         const ms = Math.round(performance.now() - start);
         await logBenchmarkError(name, category, ms, e.message);
+        logError("Platform.Benchmark", `Benchmark "${name}" failed`, { category, ms, error: e?.message });
         res.push({ name, category, ms, status: "fail", detail: e.message });
         setResults([...res]);
       }

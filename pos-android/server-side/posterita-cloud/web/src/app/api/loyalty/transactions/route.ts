@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch loyalty transactions: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Resolve customer names
@@ -78,6 +78,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Loyalty transactions error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

@@ -95,7 +95,7 @@ export async function GET() {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Xero settings GET error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -141,6 +141,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ connection: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Xero settings error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

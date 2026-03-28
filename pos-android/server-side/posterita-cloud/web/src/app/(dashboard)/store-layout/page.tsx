@@ -5,6 +5,7 @@ import {
   MapPin, Plus, Trash2, X, RefreshCw, Grid3X3, Package, ChevronDown, ChevronRight, AlertCircle, GripVertical,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Zone {
   zone_id: number;
@@ -63,7 +64,7 @@ export default function StoreLayoutPage() {
       setProducts(data.products || []);
       setLocationCounts(data.location_counts || {});
       setUnassignedCount(data.unassigned_count || 0);
-    } catch (e) { console.error(e); setError("Failed to load store layout. Please try again."); }
+    } catch (e: any) { logError("StoreLayout", `Failed to load store layout: ${e.message}`); console.error(e); setError("Failed to load store layout. Please try again."); }
     finally { setLoading(false); }
   }, []);
 
@@ -88,7 +89,7 @@ export default function StoreLayoutPage() {
       setFName(""); setFStart(1); setFEnd(20); setFHeights([...DEFAULT_HEIGHTS]);
       load();
       showFeedback("Zone created");
-    } catch (e) { console.error(e); setError("Failed to create zone. Please try again."); }
+    } catch (e: any) { logError("StoreLayout", `Failed to create zone: ${e.message}`); console.error(e); setError("Failed to create zone. Please try again."); }
     finally { setSaving(false); }
   };
 

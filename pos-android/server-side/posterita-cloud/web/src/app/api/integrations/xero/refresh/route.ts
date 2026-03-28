@@ -47,6 +47,6 @@ export async function POST() {
     return NextResponse.json({ refreshed: true, expires_at: expiresAt });
   } catch (e: any) {
     await logToErrorDb(accountId, `Xero refresh error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

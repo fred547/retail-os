@@ -72,7 +72,7 @@ export async function PATCH(req: NextRequest) {
       .eq("account_id", account_id);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Log the transition
@@ -87,7 +87,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ success: true, from: currentStatus, to: status });
   } catch (e: any) {
     await logToErrorDb("system", `Lifecycle transition failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -113,6 +113,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: data ?? [] });
   } catch (e: any) {
     await logToErrorDb("system", `Lifecycle history fetch failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import {
   RefreshCw, Calendar, ChevronRight,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Shift {
   id: number;
@@ -33,7 +34,8 @@ export default function ShiftsPage() {
       const data = await res.json();
       setShifts(data.shifts || []);
       setSummary(data.summary || { total_hours: 0, active_shifts: 0 });
-    } catch (e) {
+    } catch (e: any) {
+      logError("Shifts", `Failed to load shifts: ${e.message}`);
       console.error(e);
     } finally {
       setLoading(false);

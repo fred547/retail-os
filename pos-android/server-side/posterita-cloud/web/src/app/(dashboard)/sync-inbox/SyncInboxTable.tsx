@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw, ChevronDown, ChevronUp, Play, Clock, CheckCircle, XCircle, AlertTriangle, Copy, Check } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface InboxEntry {
   id: number;
@@ -50,6 +51,7 @@ export default function SyncInboxTable({ entries }: { entries: InboxEntry[] }) {
         alert(`Retry failed: ${body.error || "Unknown error"}`);
       }
     } catch (e: any) {
+      logError("SyncInbox", `Retry failed for inbox ${id}: ${e.message}`);
       alert(`Retry error: ${e.message}`);
     } finally {
       setReplaying(null);

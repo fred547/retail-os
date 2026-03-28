@@ -45,6 +45,12 @@ export async function POST(req: NextRequest) {
     const currency = body.currency?.trim() || "MUR";
     const businessName = body.businessname?.trim() || `${firstname}'s Store`;
 
+    if (firstname.length > 100) return NextResponse.json({ error: "First name too long" }, { status: 400 });
+    if (lastname.length > 100) return NextResponse.json({ error: "Last name too long" }, { status: 400 });
+    if (businessName.length > 200) return NextResponse.json({ error: "Business name too long" }, { status: 400 });
+    if (email.length > 254) return NextResponse.json({ error: "Email too long" }, { status: 400 });
+    if (password.length > 128) return NextResponse.json({ error: "Password too long" }, { status: 400 });
+
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
@@ -59,14 +65,11 @@ export async function POST(req: NextRequest) {
     // Check if owner already exists (by email or phone)
     const { owner: existingOwner } = await findOwnerByIdentity(supabase, { phone, email });
     if (existingOwner?.id) {
-      // Determine which field matched
-      const matchedOn = existingOwner.email === email ? "email" : "phone";
+      // Generic message — don't reveal which field matched or the existing email
       return NextResponse.json(
         {
-          error: "An account with this email already exists. Please sign in instead, or use a different email.",
+          error: "An account with these details already exists. Please sign in instead.",
           code: "ACCOUNT_EXISTS",
-          matched_on: matchedOn,
-          existing_email: existingOwner.email,
         },
         { status: 409 }
       );
@@ -110,7 +113,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (ownerErr) {
-      return NextResponse.json({ error: `Owner creation failed: ${ownerErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     const ownerId = owner.id;
@@ -125,7 +128,7 @@ export async function POST(req: NextRequest) {
       currency,
     });
     if (liveAccErr) {
-      return NextResponse.json({ error: `Live account failed: ${liveAccErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // 3. Create DEMO brand (playground)
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest) {
       currency,
     });
     if (demoAccErr) {
-      return NextResponse.json({ error: `Demo account failed: ${demoAccErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // 4. Create owner-account sessions for both
@@ -209,7 +212,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb("system", `Signup failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Shield, CheckCircle, Clock, AlertTriangle, MinusCircle, Building2, Activity } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface BrandMraStatus {
   account_id: string;
@@ -101,13 +102,18 @@ export default function MraDashboard() {
       try {
         const pingRes = await fetch("https://posterita-backend.onrender.com/health", { signal: AbortSignal.timeout(5000) });
         mraReachable = pingRes.ok;
-      } catch (_) { mraReachable = false; }
+      } catch (e: any) {
+        mraReachable = false;
+        logError("Platform.MraDashboard", "MRA server health check failed", { error: e?.message });
+      }
 
       const brands = Object.values(brandMap).sort((a, b) => (b.filed + b.pending + b.failed) - (a.filed + a.pending + a.failed));
       const enabledBrands = brands.filter(b => b.is_enabled).length;
 
       setHealth({ brands, totals, enabledBrands, totalBrands: brands.length, mraServerReachable: mraReachable });
-    } catch (_) {}
+    } catch (e: any) {
+      logError("Platform.MraDashboard", "Failed to load MRA health data", { error: e?.message });
+    }
     setLoading(false);
   };
 

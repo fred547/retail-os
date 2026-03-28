@@ -15,11 +15,15 @@ export async function GET(
   }
 
   const { id } = await params;
+  const serialItemId = parseInt(id);
+  if (isNaN(serialItemId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const { data, error } = await getDb()
     .from("serial_item")
     .select("*")
-    .eq("serial_item_id", parseInt(id))
+    .eq("serial_item_id", serialItemId)
     .eq("account_id", accountId)
     .single();
 
@@ -43,6 +47,10 @@ export async function PATCH(
   }
 
   const { id } = await params;
+  const serialItemId = parseInt(id);
+  if (isNaN(serialItemId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
   const body = await req.json();
 
   // Only allow updating specific fields
@@ -77,13 +85,13 @@ export async function PATCH(
   const { data, error } = await getDb()
     .from("serial_item")
     .update(updates)
-    .eq("serial_item_id", parseInt(id))
+    .eq("serial_item_id", serialItemId)
     .eq("account_id", accountId)
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 
   return NextResponse.json({ data });

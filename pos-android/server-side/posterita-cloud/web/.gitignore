@@ -1,5 +1,6 @@
 .vercel
 .env*.local
+.env.production
 
 # Playwright
 e2e/.auth/

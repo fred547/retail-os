@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import SignaturePad from "@/components/SignaturePad";
 import PhotoUpload from "@/components/PhotoUpload";
+import { logError } from "@/lib/error-logger";
 
 interface Delivery {
   id: number;
@@ -75,7 +76,7 @@ export default function DriverModePage() {
       const order: Record<string, number> = { in_transit: 0, picked_up: 1, assigned: 2 };
       all.sort((a: Delivery, b: Delivery) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
       setDeliveries(all);
-    } catch (_) {}
+    } catch (e: any) { logError("DriverMode", `Failed to load deliveries: ${e.message}`); }
     finally { setLoading(false); }
   }, []);
 
@@ -90,7 +91,7 @@ export default function DriverModePage() {
         body: JSON.stringify(body),
       });
       await load();
-    } catch (_) {}
+    } catch (e: any) { logError("DriverMode", `Failed to patch delivery ${id}: ${e.message}`); }
     finally { setSaving(null); }
   };
 

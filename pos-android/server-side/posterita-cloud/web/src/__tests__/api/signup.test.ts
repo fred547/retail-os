@@ -267,7 +267,7 @@ describe('POST /api/auth/signup', () => {
     const res = await POST(makeRequest(validBody));
     expect(res.status).toBe(500);
     const json = await res.json();
-    expect(json.error).toContain('Owner creation failed');
+    expect(json.error).toBe('Operation failed');
   });
 
   it('defaults businessname to firstname when not provided', async () => {

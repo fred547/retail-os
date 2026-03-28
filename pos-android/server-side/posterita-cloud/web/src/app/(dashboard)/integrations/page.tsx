@@ -7,6 +7,7 @@ import {
   CheckCircle, XCircle, AlertCircle, Clock, Send,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Connection {
   id: number;
@@ -106,7 +107,7 @@ export default function IntegrationsPage() {
         setVarianceCode(s.cash_variance_account_code || "480");
         setTaxMappings(s.tax_mappings || {});
       }
-    } catch (e) { console.error(e); }
+    } catch (e: any) { logError("Integrations", `Failed to load integrations: ${e.message}`); }
     finally { setLoading(false); }
   }, []);
 
@@ -130,7 +131,7 @@ export default function IntegrationsPage() {
         setXeroTaxRates(data.xero_tax_rates || []);
         setLocalTaxes(data.local_taxes || []);
       }
-    } catch (e) { console.error(e); }
+    } catch (e: any) { logError("Integrations", `Failed to load Xero settings: ${e.message}`); }
     finally { setLoadingSettings(false); }
   };
 
@@ -155,7 +156,7 @@ export default function IntegrationsPage() {
       });
       setShowSettings(null);
       load();
-    } catch (e) { console.error(e); }
+    } catch (e: any) { logError("Integrations", `Failed to save settings: ${e.message}`); }
     finally { setSaving(false); }
   };
 

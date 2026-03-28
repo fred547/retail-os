@@ -5,6 +5,7 @@ import {
   GitCommit, Calendar, Server, Globe, Database, Smartphone,
   TestTube, Bug, Wrench, Sparkles, RefreshCw,
 } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface Commit {
   sha: string;
@@ -47,7 +48,7 @@ export default function Changelog() {
         setVersion(data.version || null);
         if (data.error) setError(data.error);
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => { setError(e.message); logError("Platform.Changelog", "Failed to load changelog", { error: e?.message }); })
       .finally(() => setLoading(false));
   }, []);
 

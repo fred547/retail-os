@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (accountError) {
-    return NextResponse.json({ error: accountError.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 
   return NextResponse.json({

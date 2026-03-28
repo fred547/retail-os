@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Clock, Plus, CheckCircle, AlertTriangle, Banknote, User, X, RefreshCw } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface DriverShift {
   id: number;
@@ -45,7 +46,7 @@ export default function ShiftsPage() {
       const res = await fetch("/api/deliveries/shifts");
       const data = await res.json();
       setShifts(data.shifts || []);
-    } catch (_) {}
+    } catch (e: any) { logError("DriverShifts", `Failed to load shifts: ${e.message}`); }
     finally { setLoading(false); }
   }, []);
 
@@ -67,7 +68,7 @@ export default function ShiftsPage() {
       setShowStart(false);
       setFormDriverId(""); setFormDriverName(""); setFormFloat(0);
       load();
-    } catch (_) {}
+    } catch (e: any) { logError("DriverShifts", `Failed to start shift: ${e.message}`); }
     finally { setSaving(false); }
   };
 
@@ -97,7 +98,7 @@ export default function ShiftsPage() {
       setShowReconcile(null);
       setReconCash(""); setReconNotes("");
       load();
-    } catch (_) {}
+    } catch (e: any) { logError("DriverShifts", `Failed to reconcile shift: ${e.message}`); }
     finally { setSaving(false); }
   };
 

@@ -294,8 +294,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (accountError) {
+      await logToErrorDb("system", `Account creation failed: ${accountError.message}`);
       return NextResponse.json(
-        { error: `Account creation failed: ${accountError.message}` },
+        { error: "Operation failed" },
         { status: 500 }
       );
     }

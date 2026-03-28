@@ -6,6 +6,7 @@ import {
   ToggleLeft, ToggleRight, Edit2, Trash2, X, RefreshCw, AlertCircle,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Promotion {
   id: number;
@@ -70,7 +71,8 @@ export default function PromotionsPage() {
       const res = await fetch("/api/promotions");
       const data = await res.json();
       setPromotions(data.promotions || []);
-    } catch (e) {
+    } catch (e: any) {
+      logError("Promotions", `Failed to load promotions: ${e.message}`);
       console.error(e);
       setError("Failed to load promotions. Please try again.");
     } finally {
@@ -106,7 +108,8 @@ export default function PromotionsPage() {
       resetForm();
       loadPromotions();
       showFeedback("Promotion created");
-    } catch (e) {
+    } catch (e: any) {
+      logError("Promotions", `Failed to create promotion: ${e.message}`);
       console.error(e);
       setError("Failed to create promotion. Please try again.");
     } finally {

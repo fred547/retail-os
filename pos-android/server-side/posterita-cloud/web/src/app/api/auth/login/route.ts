@@ -13,6 +13,32 @@ async function logToErrorDb(accountId: string, message: string, stackTrace?: str
   } catch (_) { /* swallow */ }
 }
 
+// ── Brute force protection ──
+// In-memory rate limiter: max 5 attempts per email per 15 minutes.
+// Resets on server restart (acceptable for serverless — Vercel cold starts are frequent).
+const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkRateLimit(email: string): { allowed: boolean; retryAfterSec?: number } {
+  const now = Date.now();
+  const entry = loginAttempts.get(email);
+  if (!entry || now - entry.firstAttempt > WINDOW_MS) {
+    loginAttempts.set(email, { count: 1, firstAttempt: now });
+    return { allowed: true };
+  }
+  if (entry.count >= MAX_ATTEMPTS) {
+    const retryAfterSec = Math.ceil((entry.firstAttempt + WINDOW_MS - now) / 1000);
+    return { allowed: false, retryAfterSec };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
+function resetRateLimit(email: string) {
+  loginAttempts.delete(email);
+}
+
 /**
  * POST /api/auth/login
  *
@@ -35,6 +61,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Brute force protection
+    const rateCheck = checkRateLimit(email);
+    if (!rateCheck.allowed) {
+      await logToErrorDb("system", `Login rate limit exceeded for ${email}`);
+      return NextResponse.json(
+        { error: "Too many login attempts. Please try again later.", retry_after_sec: rateCheck.retryAfterSec },
+        { status: 429 }
+      );
+    }
+
     const supabase = getDb();
 
     // Authenticate via Supabase Auth
@@ -49,10 +85,13 @@ export async function POST(req: NextRequest) {
 
     if (authErr || !authData.user) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }
+
+    // Success — reset rate limit for this email
+    resetRateLimit(email);
 
     // Find owner by email
     const { data: owner } = await supabase
@@ -137,6 +176,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb("system", `Login failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

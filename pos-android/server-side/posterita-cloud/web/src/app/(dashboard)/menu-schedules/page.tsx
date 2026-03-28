@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { dataQuery } from "@/lib/supabase/data-client";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Schedule {
   id: number;
@@ -70,7 +71,8 @@ export default function MenuSchedulesPage() {
       const res = await fetch("/api/menu-schedules");
       const data = await res.json();
       setSchedules(data.schedules || []);
-    } catch (e) {
+    } catch (e: any) {
+      logError("MenuSchedules", `Failed to load schedules: ${e.message}`);
       console.error(e);
     } finally {
       setLoading(false);
@@ -130,7 +132,8 @@ export default function MenuSchedulesPage() {
       }
       setShowCreate(false);
       loadSchedules();
-    } catch (e) {
+    } catch (e: any) {
+      logError("MenuSchedules", `Failed to save schedule: ${e.message}`);
       console.error(e);
     } finally {
       setSaving(false);

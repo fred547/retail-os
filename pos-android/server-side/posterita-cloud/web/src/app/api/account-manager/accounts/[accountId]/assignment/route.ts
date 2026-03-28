@@ -35,7 +35,7 @@ export async function PATCH(
     .eq("id", account.owner_id);
 
   if (ownerError) {
-    return NextResponse.json({ error: ownerError.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, account_id: accountId, account_manager_id: accountManagerId });

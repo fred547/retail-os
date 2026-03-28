@@ -18,10 +18,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     const { id } = await params;
+    const deliveryId = parseInt(id);
+    if (isNaN(deliveryId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const { data, error } = await getDb()
       .from("delivery")
       .select("*")
-      .eq("id", parseInt(id))
+      .eq("id", deliveryId)
       .eq("account_id", accountId)
       .single();
 
@@ -29,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ delivery: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Delivery detail error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -40,6 +44,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const deliveryId = parseInt(id);
+    if (isNaN(deliveryId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
     const update: any = { updated_at: new Date().toISOString() };
 
@@ -75,7 +83,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const { data: existing } = await getDb()
           .from("delivery")
           .select("proof_photos")
-          .eq("id", parseInt(id))
+          .eq("id", deliveryId)
           .eq("account_id", accountId)
           .single();
         const current = (existing?.proof_photos as string[]) || [];
@@ -96,7 +104,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const { data: delivery } = await getDb()
         .from("delivery")
         .select("proof_pin")
-        .eq("id", parseInt(id))
+        .eq("id", deliveryId)
         .eq("account_id", accountId)
         .single();
       if (delivery?.proof_pin && delivery.proof_pin === body.verify_pin) {
@@ -119,19 +127,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("delivery")
       .update(update)
-      .eq("id", parseInt(id))
+      .eq("id", deliveryId)
       .eq("account_id", accountId)
       .select()
       .single();
 
     if (error) {
       await logToErrorDb(accountId, `Failed to update delivery ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ delivery: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Delivery update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

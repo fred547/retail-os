@@ -30,7 +30,7 @@ export async function GET() {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch loyalty config: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Return default config if none exists
@@ -46,7 +46,7 @@ export async function GET() {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Loyalty config error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -77,12 +77,12 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to save loyalty config: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ config: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Loyalty config save error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

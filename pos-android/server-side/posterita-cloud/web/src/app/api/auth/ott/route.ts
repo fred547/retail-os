@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
           user_role, store_id, terminal_id, expires_at,
         });
       } else {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Operation failed" }, { status: 500 });
       }
     }
 
@@ -111,6 +111,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ token, expires_in: 60 });
   } catch (e: any) {
     await logToErrorDb("system", `OTT generation failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

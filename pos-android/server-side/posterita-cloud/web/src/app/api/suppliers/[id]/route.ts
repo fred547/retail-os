@@ -18,10 +18,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     const { id } = await params;
+    const supplierId = parseInt(id);
+    if (isNaN(supplierId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const { data, error } = await getDb()
       .from("supplier")
       .select("*")
-      .eq("supplier_id", parseInt(id))
+      .eq("supplier_id", supplierId)
       .eq("account_id", accountId)
       .single();
 
@@ -29,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ supplier: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Supplier detail error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -40,6 +44,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const supplierId = parseInt(id);
+    if (isNaN(supplierId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
 
     const update: Record<string, any> = { updated_at: new Date().toISOString() };
@@ -58,19 +66,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("supplier")
       .update(update)
-      .eq("supplier_id", parseInt(id))
+      .eq("supplier_id", supplierId)
       .eq("account_id", accountId)
       .select()
       .single();
 
     if (error) {
       await logToErrorDb(accountId, `Failed to update supplier ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
     return NextResponse.json({ supplier: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Supplier update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -81,19 +89,23 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
+    const supplierId = parseInt(id);
+    if (isNaN(supplierId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const { error } = await getDb()
       .from("supplier")
       .update({ is_deleted: true, deleted_at: new Date().toISOString(), is_active: false })
-      .eq("supplier_id", parseInt(id))
+      .eq("supplier_id", supplierId)
       .eq("account_id", accountId);
 
     if (error) {
       await logToErrorDb(accountId, `Failed to delete supplier ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
     return NextResponse.json({ deleted: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Supplier delete error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

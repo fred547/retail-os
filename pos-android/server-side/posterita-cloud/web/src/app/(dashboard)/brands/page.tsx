@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Store, Plus, ChevronRight, Users, Monitor, Package } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function BrandsPage() {
     accountId = await getSessionAccountId();
   } catch (e: any) {
     console.error("[brands] getSessionAccountId failed:", e.message);
+    logError("BrandsPage", "getSessionAccountId failed", { error: e?.message });
   }
   if (!accountId) redirect("/manager/platform");
 

@@ -25,6 +25,6 @@ export async function GET() {
     return NextResponse.redirect(url);
   } catch (e: any) {
     await logToErrorDb(accountId, `Xero connect error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

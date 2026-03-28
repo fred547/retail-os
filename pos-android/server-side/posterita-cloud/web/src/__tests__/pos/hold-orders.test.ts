@@ -1,7 +1,23 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+// Ensure localStorage is available in jsdom
+if (typeof localStorage === "undefined" || !localStorage.removeItem) {
+  const store: Record<string, string> = {};
+  Object.defineProperty(globalThis, "localStorage", {
+    value: {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => { store[k] = v; },
+      removeItem: (k: string) => { delete store[k]; },
+      clear: () => { for (const k in store) delete store[k]; },
+      get length() { return Object.keys(store).length; },
+      key: (i: number) => Object.keys(store)[i] ?? null,
+    },
+    writable: true,
+  });
+}
 import {
   addProduct, clearCart, setCustomer, setNote, setTips,
   holdCurrentCart, listHeldOrders, recallHeldOrder, deleteHeldOrder,

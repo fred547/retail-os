@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     const { data, count, error } = await query;
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch shifts: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Summary: total hours for the filtered period
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Shifts list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         await logToErrorDb(accountId, `Failed to clock in user ${user_id}: ${error.message}`);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Operation failed" }, { status: 500 });
       }
 
       return NextResponse.json({ shift: data, action: "clocked_in" }, { status: 201 });
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         await logToErrorDb(accountId, `Failed to clock out user ${user_id}: ${error.message}`);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Operation failed" }, { status: 500 });
       }
 
       return NextResponse.json({ shift: data, action: "clocked_out", hours_worked: Math.round(hoursWorked * 100) / 100 });
@@ -165,6 +165,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "action must be clock_in or clock_out" }, { status: 400 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Shift operation error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

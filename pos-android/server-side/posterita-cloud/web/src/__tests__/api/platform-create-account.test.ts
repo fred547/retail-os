@@ -219,7 +219,7 @@ describe('/api/platform/create-account POST – success', () => {
     const json = await res.json();
 
     expect(res.status).toBe(500);
-    expect(json.error).toContain('User creation failed');
+    expect(json.error).toBe('Operation failed');
 
     // Verify a delete was issued to clean up the account
     const deleteOps = supabaseOps.filter(
@@ -243,6 +243,6 @@ describe('/api/platform/create-account POST – success', () => {
     const json = await res.json();
 
     expect(res.status).toBe(500);
-    expect(json.error).toContain('Account creation failed');
+    expect(json.error).toBe('Operation failed');
   });
 });

@@ -6,6 +6,7 @@ import {
   RefreshCw, Palette, AlertCircle,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface TagItem {
   tag_id: number;
@@ -63,7 +64,7 @@ export default function TagsPage() {
       setGroups(data.groups || []);
       // Auto-expand all
       setExpanded(new Set((data.groups || []).map((g: TagGroup) => g.tag_group_id)));
-    } catch (e) { console.error(e); setError("Failed to load tags. Please try again."); }
+    } catch (e: any) { logError("Tags", `Failed to load tags: ${e.message}`); console.error(e); setError("Failed to load tags. Please try again."); }
     finally { setLoading(false); }
   }, []);
 
@@ -90,7 +91,7 @@ export default function TagsPage() {
       setGName(""); setGDesc(""); setGColor("#3B82F6");
       load();
       showFeedback("Tag group created");
-    } catch (e) { console.error(e); setError("Failed to create tag group. Please try again."); }
+    } catch (e: any) { logError("Tags", `Failed to create tag group: ${e.message}`); console.error(e); setError("Failed to create tag group. Please try again."); }
     finally { setSaving(false); }
   };
 
@@ -107,7 +108,7 @@ export default function TagsPage() {
       setTName(""); setTColor("");
       load();
       showFeedback("Tag created");
-    } catch (e) { console.error(e); setError("Failed to create tag. Please try again."); }
+    } catch (e: any) { logError("Tags", `Failed to create tag: ${e.message}`); console.error(e); setError("Failed to create tag. Please try again."); }
     finally { setSaving(false); }
   };
 

@@ -7,6 +7,7 @@ import {
   ChevronRight, FileText,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface PO {
   po_id: number;
@@ -63,7 +64,8 @@ export default function PurchaseOrdersPage() {
       const supData = await supRes.json();
       setOrders(poData.orders || []);
       setSuppliers(supData.suppliers || []);
-    } catch (e) {
+    } catch (e: any) {
+      logError("PurchaseOrders", `Failed to load data: ${e.message}`);
       console.error(e);
     } finally {
       setLoading(false);
@@ -105,7 +107,8 @@ export default function PurchaseOrdersPage() {
         setFormLines([{ product_name: "", quantity_ordered: 1, unit_cost: 0 }]);
         loadData();
       }
-    } catch (e) {
+    } catch (e: any) {
+      logError("PurchaseOrders", `Failed to create PO: ${e.message}`);
       console.error(e);
     } finally {
       setSaving(false);
@@ -120,7 +123,8 @@ export default function PurchaseOrdersPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       loadData();
-    } catch (e) {
+    } catch (e: any) {
+      logError("PurchaseOrders", `Failed to update status: ${e.message}`, { poId, newStatus });
       console.error(e);
     }
   };

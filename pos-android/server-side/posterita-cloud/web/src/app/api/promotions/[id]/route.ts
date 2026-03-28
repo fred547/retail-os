@@ -18,6 +18,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const promotionId = parseInt(id);
+    if (isNaN(promotionId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
 
     const update: Record<string, any> = { updated_at: new Date().toISOString() };
@@ -45,19 +49,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("promotion")
       .update(update)
-      .eq("id", parseInt(id))
+      .eq("id", promotionId)
       .eq("account_id", accountId)
       .select()
       .single();
 
     if (error) {
       await logToErrorDb(accountId, `Failed to update promotion ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
     return NextResponse.json({ promotion: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Promotion update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -68,19 +72,23 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
+    const promotionId = parseInt(id);
+    if (isNaN(promotionId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const { error } = await getDb()
       .from("promotion")
       .update({ is_deleted: true, is_active: false, updated_at: new Date().toISOString() })
-      .eq("id", parseInt(id))
+      .eq("id", promotionId)
       .eq("account_id", accountId);
 
     if (error) {
       await logToErrorDb(accountId, `Failed to delete promotion ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
     return NextResponse.json({ deleted: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Promotion delete error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

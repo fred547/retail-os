@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Plus, Trash2, ChevronRight, FileText, Send } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface Line {
   product_name: string;
@@ -52,7 +53,7 @@ export default function CreateQuotationPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ table: "product", select: "product_id, name, sellingprice, tax_id", filters: [{ column: "isactive", op: "eq", value: "Y" }], limit: 500 }),
-    }).then((r) => r.json()).then((d) => setProducts(d.data ?? [])).catch(() => {});
+    }).then((r) => r.json()).then((d) => setProducts(d.data ?? [])).catch((e: any) => { logError("CreateQuotation", `Failed to load products: ${e.message}`); });
 
     // Load default terms from template config
     fetch("/api/quotations/templates").then((r) => r.json()).then((d) => {
@@ -62,7 +63,7 @@ export default function CreateQuotationPage() {
         if (defaultTpl.config.default_valid_days) setValidDays(defaultTpl.config.default_valid_days);
         setTemplateId(defaultTpl.id);
       }
-    }).catch(() => {});
+    }).catch((e: any) => { logError("CreateQuotation", `Failed to load templates: ${e.message}`); });
   }, []);
 
   const updateLine = (i: number, field: keyof Line, value: any) => {

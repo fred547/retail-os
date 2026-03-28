@@ -18,6 +18,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const groupId = parseInt(id);
+    if (isNaN(groupId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
     const update: Record<string, any> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) update.name = body.name;
@@ -28,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("tag_group")
       .update(update)
-      .eq("tag_group_id", parseInt(id))
+      .eq("tag_group_id", groupId)
       .eq("account_id", accountId)
       .select()
       .single();
@@ -37,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ group: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag group update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -48,8 +52,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
-    const now = new Date().toISOString();
     const groupId = parseInt(id);
+    if (isNaN(groupId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+    const now = new Date().toISOString();
 
     // Soft-delete all tags in the group
     await getDb()
@@ -69,6 +76,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ deleted: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag group delete error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

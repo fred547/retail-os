@@ -38,11 +38,15 @@ export async function performSync(): Promise<{
     let lastSyncAt = await getSyncMeta(`last_sync_at_${accountId}`) || EPOCH;
 
     // Integrity check: if 0 products but non-epoch timestamp, reset for full pull
+    // But only do this ONCE per session to prevent infinite loops when the brand is genuinely empty
+    const integrityKey = `integrity_check_${accountId}`;
     if (lastSyncAt !== EPOCH) {
       const productCount = await db.product.where("account_id").equals(accountId).count();
-      if (productCount === 0) {
+      const alreadyChecked = await getSyncMeta(integrityKey);
+      if (productCount === 0 && !alreadyChecked) {
         lastSyncAt = EPOCH;
         await setSyncMeta(`last_sync_at_${accountId}`, EPOCH);
+        await setSyncMeta(integrityKey, "1"); // Only reset once
       }
     }
 
@@ -176,6 +180,11 @@ export async function performSync(): Promise<{
     await savePullData(data, accountId);
     result.productsPulled = data.products?.length ?? 0;
 
+    // Clear integrity flag if we received products (so the check can run again if data is lost)
+    if (result.productsPulled > 0) {
+      await setSyncMeta(integrityKey, "");
+    }
+
     // ── PAGINATED PULL (if more pages available) ──
 
     let page = data.pull_page ?? 0;
@@ -230,8 +239,16 @@ export async function performSync(): Promise<{
 
     return result;
   } catch (e: any) {
-    syncError(e.message || "Sync failed");
-    return { ...result, errors: [e.message || "Unknown error"] };
+    const msg = e.message || "Sync failed";
+    syncError(msg);
+    // Log to server for debugging
+    try {
+      fetch("/api/errors/log", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: "POS_SYNC", message: `Sync engine crash: ${msg}`, stack_trace: e.stack, severity: "ERROR" }),
+      });
+    } catch (_) {}
+    return { ...result, errors: [msg] };
   }
 }
 

@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     const { data, count, error } = await query;
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch POs: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Resolve supplier names
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ orders: enriched, total: count || 0, page });
   } catch (e: any) {
     await logToErrorDb(accountId, `PO list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     if (poErr || !po) {
       await logToErrorDb(accountId, `Failed to create PO: ${poErr?.message}`);
-      return NextResponse.json({ error: poErr?.message || "Failed to create PO" }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Insert lines
@@ -131,12 +131,12 @@ export async function POST(req: NextRequest) {
 
     if (lineErr) {
       await logToErrorDb(accountId, `Failed to insert PO lines for ${poNumber}: ${lineErr.message}`);
-      return NextResponse.json({ error: `PO created but line items failed: ${lineErr.message}`, order: po }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed", order: po }, { status: 500 });
     }
 
     return NextResponse.json({ order: po, po_number: poNumber }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `PO create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

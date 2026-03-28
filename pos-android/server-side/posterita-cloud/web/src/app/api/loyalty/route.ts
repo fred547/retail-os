@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     if (updateErr) {
       await logToErrorDb(accountId, `Failed to update loyalty points for customer ${customer_id}: ${updateErr.message}`);
-      return NextResponse.json({ error: updateErr.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Log transaction
@@ -121,6 +121,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Loyalty operation error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

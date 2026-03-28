@@ -22,6 +22,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     // Fetch quotation + lines
     const [{ data: quotation }, { data: lines }] = await Promise.all([
@@ -106,6 +109,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation convert error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

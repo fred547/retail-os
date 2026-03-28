@@ -48,7 +48,17 @@ function isLegacyCustomerPath(pathname: string): boolean {
 
 export async function updateSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  const pathname = request.nextUrl.pathname;
+  requestHeaders.set("x-pathname", pathname);
+
+  // CSRF protection: verify Origin on mutations
+  if (pathname.startsWith("/api/") && ["POST", "PATCH", "PUT", "DELETE"].includes(request.method)) {
+    const origin = request.headers.get("origin");
+    // Allow: same-origin, mobile apps (no origin), and server-to-server (no origin)
+    if (origin && !origin.endsWith(".posterita.com") && origin !== "http://localhost:3000" && origin !== "http://localhost:3001") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
 
   let supabaseResponse = NextResponse.next({
     request: {
@@ -57,7 +67,7 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Skip auth check for API routes — they handle auth themselves
-  if (request.nextUrl.pathname.startsWith("/api")) {
+  if (pathname.startsWith("/api")) {
     return supabaseResponse;
   }
 
@@ -147,18 +157,18 @@ export async function updateSession(request: NextRequest) {
   if (
     !user &&
     !hasOttCookie &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/customer/login") &&
-    !request.nextUrl.pathname.startsWith("/manager/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api") &&
-    !request.nextUrl.pathname.startsWith("/pos") &&
-    request.nextUrl.pathname !== "/docs"
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/customer/login") &&
+    !pathname.startsWith("/manager/login") &&
+    !pathname.startsWith("/auth") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/pos") &&
+    pathname !== "/docs"
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = request.nextUrl.pathname.startsWith("/manager")
+    url.pathname = pathname.startsWith("/manager")
       ? "/manager/login"
-      : request.nextUrl.pathname.startsWith("/customer")
+      : pathname.startsWith("/customer")
       ? "/customer/login"
       : "/login";
     return NextResponse.redirect(url);

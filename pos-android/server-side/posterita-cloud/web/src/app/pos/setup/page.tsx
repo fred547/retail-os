@@ -180,16 +180,26 @@ export default function PosSetupPage() {
       if (result.error) {
         setErrorMsg(result.error);
         setStep("error");
+        // Log to DB
+        fetch("/api/errors/log", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: "POS_SETUP", message: `Sync error: ${result.error}`, severity: "ERROR" }),
+        }).catch(() => {});
         return;
       }
 
       setProductCount(result.productCount);
-      // Clear the loop-prevention flag so next visit can re-setup if needed
       try { sessionStorage.removeItem(`pos_setup_${accountId}`); } catch (_) {}
       setStep("done");
     } catch (e: any) {
-      setErrorMsg(e.message || "Sync failed");
+      const msg = e.message || "Sync failed";
+      setErrorMsg(msg);
       setStep("error");
+      // Log to DB so we can debug
+      fetch("/api/errors/log", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: "POS_SETUP", message: `Setup crash: ${msg}`, stack_trace: e.stack, severity: "ERROR" }),
+      }).catch(() => {});
     }
   };
 

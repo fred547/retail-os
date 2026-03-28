@@ -28,6 +28,27 @@ async function logToErrorDb(accountId: string, message: string, stackTrace?: str
  *  4. "images"    — Analyze uploaded product images
  */
 
+// ════════════════════════════════════════════════════════
+// Rate limiting — 10 requests per hour per account
+// ════════════════════════════════════════════════════════
+const aiImportRateLimiter = new Map<string, { count: number; firstAttempt: number }>();
+const AI_IMPORT_MAX = 10;
+const AI_IMPORT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkAiImportRate(key: string): { allowed: boolean; retryAfterSec?: number } {
+  const now = Date.now();
+  const entry = aiImportRateLimiter.get(key);
+  if (!entry || now - entry.firstAttempt > AI_IMPORT_WINDOW_MS) {
+    aiImportRateLimiter.set(key, { count: 1, firstAttempt: now });
+    return { allowed: true };
+  }
+  if (entry.count >= AI_IMPORT_MAX) {
+    return { allowed: false, retryAfterSec: Math.ceil((entry.firstAttempt + AI_IMPORT_WINDOW_MS - now) / 1000) };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
 const MODEL = "claude-haiku-4-5";
 function getClaudeApiKey() { return process.env.CLAUDE_API_KEY!; }
 function getCloudinaryCloudName() { return process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dp2u3pwiy"; }
@@ -260,6 +281,14 @@ export async function POST(req: NextRequest) {
         writer.sendError(
           "Could not determine your account. Please select an account first."
         );
+        writer.close();
+        return;
+      }
+
+      // Rate limit check
+      const rateCheck = checkAiImportRate(accountId);
+      if (!rateCheck.allowed) {
+        writer.sendError("AI import rate limit exceeded. Max 10 per hour.");
         writer.close();
         return;
       }

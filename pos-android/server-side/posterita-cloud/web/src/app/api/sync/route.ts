@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getDb } from "@/lib/supabase/admin";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -199,6 +200,16 @@ async function tenantUpsert(
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 30 sync requests per minute per IP
+  const ip = getClientIp(req.headers);
+  const rl = checkRateLimit(`sync:${ip}`, 30);
+  if (rl.limited) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again in a minute." },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
   try {
     const body: SyncRequest = await req.json();
 

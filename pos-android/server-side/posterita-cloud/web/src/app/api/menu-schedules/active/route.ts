@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch active menu schedules: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Filter by time and day
@@ -68,6 +68,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `Active menu schedule error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

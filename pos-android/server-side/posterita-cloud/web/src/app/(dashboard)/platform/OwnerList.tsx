@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Users, Building2, Pencil, X, Save, KeyRound, Search } from "lucide-react";
 import { dataUpdate } from "@/lib/supabase/data-client";
+import { logError } from "@/lib/error-logger";
 
 interface Owner {
   id: number;
@@ -77,7 +78,9 @@ export default function OwnerList({ owners }: { owners: Owner[] }) {
         setResetSent(true);
         setTimeout(() => setResetSent(false), 5000);
       }
-    } catch (_) {}
+    } catch (e: any) {
+      logError("Platform.OwnerList", "Failed to send password reset", { email: form.email, error: e?.message });
+    }
   };
 
   return (

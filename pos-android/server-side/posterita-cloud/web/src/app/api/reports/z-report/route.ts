@@ -182,6 +182,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(report);
   } catch (e: any) {
     await logError(accountId, `Z-report generation failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

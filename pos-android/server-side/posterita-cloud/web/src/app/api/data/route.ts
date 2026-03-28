@@ -72,6 +72,9 @@ const SOFT_DELETE_TABLES = new Set([
   "product", "store", "terminal", "pos_user", "customer", "productcategory", "orders",
 ]);
 
+// Sensitive tables where is_deleted=false is ALWAYS enforced (client cannot query deleted records)
+const FORCE_SOFT_DELETE_TABLES = new Set(["pos_user", "orders"]);
+
 export async function POST(req: NextRequest) {
   try {
     // Resolve session account_id for security scoping
@@ -82,6 +85,10 @@ export async function POST(req: NextRequest) {
 
     const queries: DataQuery[] = await req.json();
     const queryList = Array.isArray(queries) ? queries : [queries];
+
+    if (queryList.length > 20) {
+      return NextResponse.json({ error: "Max 20 queries per batch" }, { status: 400 });
+    }
 
     const results = await Promise.all(
       queryList.map(async (q) => {
@@ -114,9 +121,14 @@ export async function POST(req: NextRequest) {
 
         // Auto-filter soft-deleted records (unless client explicitly filters is_deleted)
         if (SOFT_DELETE_TABLES.has(q.table)) {
-          const hasDeletedFilter = q.filters?.some((f) => f.column === "is_deleted");
-          if (!hasDeletedFilter) {
+          if (FORCE_SOFT_DELETE_TABLES.has(q.table)) {
+            // Always enforce — client cannot query deleted users or orders
             query = query.eq("is_deleted", false);
+          } else {
+            const hasDeletedFilter = q.filters?.some((f) => f.column === "is_deleted");
+            if (!hasDeletedFilter) {
+              query = query.eq("is_deleted", false);
+            }
           }
         }
 
@@ -174,6 +186,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(results);
   } catch (e: any) {
     await logToErrorDb("system", `Data proxy failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

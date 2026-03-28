@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       currency,
     });
     if (accErr) {
-      return NextResponse.json({ error: `Account creation failed: ${accErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Store + Terminal
@@ -159,6 +159,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb("system", `Create demo brand failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

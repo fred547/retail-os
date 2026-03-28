@@ -9,6 +9,7 @@ import {
   Pencil, Archive, X, Check, AlertTriangle,
 } from "lucide-react";
 import AccountSwitcher from "./AccountSwitcher";
+import { logError } from "@/lib/error-logger";
 
 type AccountManager = { id: number; email: string; name: string };
 
@@ -187,7 +188,8 @@ export default function ManagerPortfolio({
         setModal(null);
         router.refresh();
       }
-    } catch {
+    } catch (e: any) {
+      logError("Platform.ManagerPortfolio", "Failed to delete test brands", { error: e?.message });
       alert("Failed to delete test brands");
     }
     setBulkDeleting(false);

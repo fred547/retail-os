@@ -19,6 +19,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const poId = parseInt(id);
+    if (isNaN(poId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     const [{ data: po, error: poErr }, { data: lines, error: lineErr }] = await Promise.all([
       getDb().from("purchase_order").select("*").eq("po_id", poId).eq("account_id", accountId).single(),
@@ -41,7 +44,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (e: any) {
     await logToErrorDb(accountId, `PO detail error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -52,6 +55,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
+    const poId = parseInt(id);
+    if (isNaN(poId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
     const { status, notes } = body;
 
@@ -62,19 +69,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data, error } = await getDb()
       .from("purchase_order")
       .update(update)
-      .eq("po_id", parseInt(id))
+      .eq("po_id", poId)
       .eq("account_id", accountId)
       .select()
       .single();
 
     if (error) {
       await logToErrorDb(accountId, `Failed to update PO ${id}: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ order: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `PO update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

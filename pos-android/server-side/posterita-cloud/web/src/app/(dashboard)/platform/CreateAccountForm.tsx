@@ -13,6 +13,7 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 type CreateAccountResult = {
   account_id: string;
@@ -74,7 +75,8 @@ export default function CreateAccountForm() {
       setTimeout(() => {
         router.refresh();
       }, 1000);
-    } catch {
+    } catch (e: any) {
+      logError("Platform.CreateAccountForm", "Failed to create account", { businessname: form.businessname, error: e?.message });
       setError("Network error. Please try again.");
       setLoading(false);
     }

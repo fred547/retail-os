@@ -13,6 +13,10 @@ export async function POST(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+  const sessionIdNum = parseInt(sessionId);
+  if (isNaN(sessionIdNum)) {
+    return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+  }
   const accountId = await getSessionAccountId();
   if (!accountId) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -23,6 +27,9 @@ export async function POST(
 
   if (!entries || !Array.isArray(entries) || entries.length === 0) {
     return NextResponse.json({ error: "entries array is required" }, { status: 400 });
+  }
+  if (entries.length > 1000) {
+    return NextResponse.json({ error: "Max 1000 entries per request" }, { status: 400 });
   }
 
   // Verify session exists and belongs to this account
@@ -99,7 +106,7 @@ export async function POST(
       const { error } = await getDb()
         .from("inventory_count_entry")
         .insert({
-          session_id: parseInt(sessionId),
+          session_id: sessionIdNum,
           account_id: accountId,
           product_id,
           product_name: product_name || null,

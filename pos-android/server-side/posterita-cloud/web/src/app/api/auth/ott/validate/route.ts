@@ -19,21 +19,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "token required" }, { status: 400 });
     }
 
-    // Find and validate
+    // Atomically mark as used and return the row — prevents race conditions
     const { data, error } = await supabase
       .from("ott_tokens")
-      .select("*")
+      .update({ used: true })
       .eq("token", token)
       .eq("used", false)
       .gt("expires_at", new Date().toISOString())
+      .select()
       .single();
 
     if (error || !data) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
-
-    // Mark as used
-    await supabase.from("ott_tokens").update({ used: true }).eq("id", data.id);
 
     return NextResponse.json({
       valid: true,
@@ -45,6 +43,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb("system", `OTT validation failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

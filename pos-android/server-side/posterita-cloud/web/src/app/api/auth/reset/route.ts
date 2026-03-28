@@ -175,6 +175,6 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     console.error("[reset] Error:", e.message);
     await logToErrorDb("system", `Account reset failed: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

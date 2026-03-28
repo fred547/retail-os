@@ -34,13 +34,13 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
     if (error) {
       await logToErrorDb(accountId, `Failed to fetch menu schedules: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ schedules: data || [] });
   } catch (e: any) {
     await logToErrorDb(accountId, `Menu schedules list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -75,12 +75,12 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       await logToErrorDb(accountId, `Failed to create menu schedule: ${error.message}`);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ schedule: data }, { status: 201 });
   } catch (e: any) {
     await logToErrorDb(accountId, `Menu schedule create error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

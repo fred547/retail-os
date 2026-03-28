@@ -21,6 +21,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     const [{ data: quotation, error: qErr }, { data: lines, error: lErr }] = await Promise.all([
       getDb().from("quotation").select("*")
@@ -36,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ quotation: { ...quotation, lines: lines ?? [] } });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation get error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -50,6 +53,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
 
     // Verify ownership
@@ -123,7 +129,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ quotation: { ...updated, lines: updatedLines ?? [] } });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation update error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -136,16 +142,20 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   try {
     const { id } = await params;
+    const quotationId = parseInt(id);
+    if (isNaN(quotationId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const { error } = await getDb().from("quotation").update({
       is_deleted: true,
       deleted_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }).eq("quotation_id", parseInt(id)).eq("account_id", accountId);
+    }).eq("quotation_id", quotationId).eq("account_id", accountId);
 
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (e: any) {
     await logToErrorDb(accountId, `Quotation delete error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

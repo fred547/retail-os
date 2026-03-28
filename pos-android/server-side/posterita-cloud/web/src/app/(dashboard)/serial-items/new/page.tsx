@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
 import { dataQuery } from "@/lib/supabase/data-client";
+import { logError } from "@/lib/error-logger";
 
 interface Product {
   product_id: number;
@@ -128,7 +129,8 @@ export default function ReceiveSerialItemsPage() {
         router.push("/customer/serial-items");
         router.refresh();
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
+      logError("SerialItemCreate", `Failed to save: ${err.message}`);
       setError("Network error. Please try again.");
       setSubmitting(false);
     }

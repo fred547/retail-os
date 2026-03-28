@@ -75,8 +75,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (accountError) {
+      await logToErrorDb("system", `Account creation failed: ${accountError.message}`);
       return NextResponse.json(
-        { error: `Account creation failed: ${accountError.message}` },
+        { error: "Operation failed" },
         { status: 500 }
       );
     }
@@ -115,9 +116,10 @@ export async function POST(req: NextRequest) {
         });
 
       if (authError || !authUser?.user?.id) {
+        await logToErrorDb("system", `User creation failed: ${authError?.message || "Unknown error"}`);
         await admin.from("account").delete().eq("account_id", accountId);
         return NextResponse.json(
-          { error: `User creation failed: ${authError?.message || "Unknown error"}` },
+          { error: "Operation failed" },
           { status: 500 }
         );
       }

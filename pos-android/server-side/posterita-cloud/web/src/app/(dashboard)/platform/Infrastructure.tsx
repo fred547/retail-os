@@ -6,6 +6,7 @@ import {
   DollarSign, RefreshCw, CheckCircle, XCircle, AlertTriangle,
   ExternalLink, TrendingUp, ArrowUpCircle, Info,
 } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface Recommendation {
   service: string;
@@ -74,7 +75,9 @@ export default function Infrastructure() {
     try {
       const res = await fetch("/api/infrastructure");
       setData(await res.json());
-    } catch (_) {}
+    } catch (e: any) {
+      logError("Platform.Infrastructure", "Failed to load infrastructure data", { error: e?.message });
+    }
     setLoading(false);
   };
 

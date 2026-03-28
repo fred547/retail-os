@@ -14,6 +14,7 @@ import {
   FileText,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 type Template = "grid" | "list" | "price-list" | "loyalty-card";
 type PageSize = "a4" | "a5" | "a6" | "dl" | "business-card" | "square";
@@ -119,6 +120,7 @@ export default function CataloguePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e: any) {
+      logError("Catalogue", `Failed to generate catalogue: ${e.message}`);
       setError(e.message || "Failed to generate");
     } finally {
       setGenerating(false);

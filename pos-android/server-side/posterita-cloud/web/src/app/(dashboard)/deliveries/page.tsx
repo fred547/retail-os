@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import Breadcrumb from "@/components/Breadcrumb";
+import { logError } from "@/lib/error-logger";
 
 interface Delivery {
   id: number;
@@ -130,7 +131,7 @@ export default function DeliveriesPage() {
       const data = await res.json();
       setDeliveries(data.deliveries || []);
       setSummary(data.summary || { pending: 0, in_transit: 0, delivered: 0, outbound: 0, inbound: 0, transfers: 0 });
-    } catch (e) { console.error(e); setError("Failed to load deliveries. Please try again."); }
+    } catch (e: any) { logError("Deliveries", `Failed to load deliveries: ${e.message}`); console.error(e); setError("Failed to load deliveries. Please try again."); }
     finally { setLoading(false); }
   }, [statusFilter, directionFilter]);
 
@@ -143,7 +144,7 @@ export default function DeliveriesPage() {
       });
       const data = await res.json();
       setStores(data.data || []);
-    } catch (_) {}
+    } catch (e: any) { logError("Deliveries", `Failed to load stores: ${e.message}`); }
   }, []);
 
   useEffect(() => { loadDeliveries(); loadStores(); }, [loadDeliveries, loadStores]);
@@ -196,7 +197,7 @@ export default function DeliveriesPage() {
       resetForm();
       loadDeliveries();
       showFeedback("Delivery created");
-    } catch (e) { console.error(e); setError("Failed to create delivery. Please try again."); }
+    } catch (e: any) { logError("Deliveries", `Failed to create delivery: ${e.message}`); console.error(e); setError("Failed to create delivery. Please try again."); }
     finally { setSaving(false); }
   };
 

@@ -35,6 +35,12 @@ export async function POST(req: NextRequest) {
     if (!entity_ids?.length) {
       return NextResponse.json({ error: "entity_ids required" }, { status: 400 });
     }
+    if ((entity_ids?.length || 0) > 500) {
+      return NextResponse.json({ error: "Max 500 entities per request" }, { status: 400 });
+    }
+    if ((add_tag_ids?.length || 0) + (remove_tag_ids?.length || 0) > 50) {
+      return NextResponse.json({ error: "Max 50 tags per request" }, { status: 400 });
+    }
 
     const { table, idCol } = ENTITY_TABLES[entity_type];
     let added = 0;
@@ -72,6 +78,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ added, removed });
   } catch (e: any) {
     await logToErrorDb(accountId, `Tag assign error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

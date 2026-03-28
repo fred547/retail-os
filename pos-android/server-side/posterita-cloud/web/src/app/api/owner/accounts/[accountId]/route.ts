@@ -101,7 +101,7 @@ export async function PATCH(
     .single();
 
   if (error || !account) {
-    return NextResponse.json({ error: error?.message || "Update failed" }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -152,7 +152,7 @@ export async function DELETE(
       .single();
 
     if (ownerUserError && ownerUserError.code !== "PGRST116") {
-      return NextResponse.json({ error: ownerUserError.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
     if (!ownerUser?.pin || ownerUser.pin !== ownerPin) {
       return NextResponse.json({ error: "Owner PIN verification failed" }, { status: 403 });
@@ -168,7 +168,7 @@ export async function DELETE(
     .eq("account_id", accountId);
 
   if (archiveError) {
-    return NextResponse.json({ error: archiveError.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 
   const { data: fallbackAccount } = await getDb()

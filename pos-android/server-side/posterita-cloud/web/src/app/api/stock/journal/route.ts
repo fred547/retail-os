@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
           app_version: "web",
         });
       } catch (_) { /* swallow */ }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     return NextResponse.json({ data, count });
@@ -66,6 +66,6 @@ export async function GET(req: NextRequest) {
         app_version: "web",
       });
     } catch (_) { /* swallow */ }
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

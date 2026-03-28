@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ products: data ?? [], store_stock: storeStock });
   } catch (e: any) {
     await logToErrorDb(accountId, "STOCK", `Stock query error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
 
     if (updateErr) {
       await logToErrorDb(accountId, "STOCK", `Stock update failed for product ${product_id}: ${updateErr.message}`);
-      return NextResponse.json({ error: updateErr.message }, { status: 500 });
+      return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 
     // Journal entry
@@ -154,6 +154,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     await logToErrorDb(accountId, "STOCK", `Stock adjustment error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

@@ -270,7 +270,7 @@ describe('/api/sync/register POST – new account', () => {
     const json = await res.json();
 
     expect(res.status).toBe(500);
-    expect(json.error).toContain('Account creation failed');
+    expect(json.error).toBe('Operation failed');
   });
 });
 

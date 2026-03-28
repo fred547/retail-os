@@ -18,7 +18,7 @@ export async function GET(
     ]);
 
   if (batchErr) return NextResponse.json({ error: batchErr.message }, { status: 404 });
-  if (itemsErr) return NextResponse.json({ error: itemsErr.message }, { status: 500 });
+  if (itemsErr) return NextResponse.json({ error: "Operation failed" }, { status: 500 });
 
   // Fetch matched products for items that have a match
   const matchedIds = (items ?? [])

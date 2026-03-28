@@ -41,35 +41,41 @@ class PosteritaDB extends Dexie {
   constructor() {
     super("posterita-pos");
 
+    // Version 1: initial schema
     this.version(1).stores({
-      // Products & catalogue
       product: "product_id, productcategory_id, upc, name, isactive, product_status, account_id, shelf_location",
       productcategory: "productcategory_id, name, isactive, account_id, parent_category_id",
       tax: "tax_id, account_id",
       modifier: "modifier_id, product_id, productcategory_id, account_id",
-      // Customers
       customer: "customer_id, name, phone1, email, account_id, isactive",
-      // Transactions (auto-increment PKs for locally-created records)
       order: "++order_id, uuid, till_id, is_sync, account_id, store_id, date_ordered",
       orderline: "++orderline_id, order_id, product_id",
       payment: "++payment_id, order_id",
       till: "++till_id, uuid, is_sync, account_id, store_id, terminal_id",
-      // Users & config
       pos_user: "user_id, username, pin, account_id",
       store: "store_id, account_id",
       terminal: "terminal_id, store_id, account_id",
       preference: "preference_id, account_id",
       discountcode: "discountcode_id, account_id",
-      // Phase 3 entities
       loyalty_config: "id, account_id",
       promotion: "id, account_id, is_active",
       menu_schedule: "id, account_id, store_id",
-      // Tags
       tag_group: "tag_group_id, account_id",
       tag: "tag_id, tag_group_id, account_id",
       product_tag: "[product_id+tag_id], product_id, tag_id, account_id",
-      // Sync metadata
       sync_meta: "key",
+    });
+
+    // Version 2: add isactive index to modifier, account_id to orderline/payment
+    this.version(2).stores({
+      modifier: "modifier_id, product_id, productcategory_id, account_id, isactive",
+      orderline: "++orderline_id, order_id, product_id, account_id",
+      payment: "++payment_id, order_id, account_id",
+    });
+
+    // Version 3: add is_serialized index to product
+    this.version(3).stores({
+      product: "product_id, productcategory_id, upc, name, isactive, product_status, account_id, shelf_location, is_serialized",
     });
   }
 }

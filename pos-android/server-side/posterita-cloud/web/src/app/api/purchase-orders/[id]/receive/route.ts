@@ -23,6 +23,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const poId = parseInt(id);
+    if (isNaN(poId)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
     const body = await req.json();
     const { lines } = body;
 
@@ -124,6 +127,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ po_id: poId, status: newStatus, lines_received: results });
   } catch (e: any) {
     await logToErrorDb(accountId, `GRN error for PO ${(await params).id}: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }

@@ -45,7 +45,7 @@ export async function GET() {
     return NextResponse.json({ templates });
   } catch (e: any) {
     await logToErrorDb(accountId, `Template list error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
 
@@ -98,6 +98,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ config: data });
   } catch (e: any) {
     await logToErrorDb(accountId, `Template save error: ${e.message}`, e.stack);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
 }
