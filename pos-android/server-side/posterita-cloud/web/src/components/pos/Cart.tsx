@@ -90,9 +90,12 @@ export default function Cart({
                 </button>
               </div>
 
-              {/* Name + price */}
+              {/* Name + modifiers + price */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-200 truncate">{item.name}</p>
+                {item.modifiers && (
+                  <p className="text-[10px] text-blue-400 truncate">{item.modifiers}</p>
+                )}
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <span>{formatPrice(item.price)} ea</span>
                   {item.discount_percent > 0 && (

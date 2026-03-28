@@ -5,7 +5,7 @@ import { Search, Home, RefreshCw, DollarSign, Printer } from "lucide-react";
 import { getOfflineDb, getSyncMeta } from "@/lib/offline/db";
 import { isSeeded } from "@/lib/offline/seed";
 import { startSyncWorker } from "@/lib/offline/sync-worker";
-import { setTaxMap, addProduct, restoreCart, holdCurrentCart } from "@/lib/pos/cart-store";
+import { setTaxMap, addProduct, addProductWithModifiers, restoreCart, holdCurrentCart } from "@/lib/pos/cart-store";
 import { useCart } from "@/lib/pos/use-cart";
 import { useSyncStatus } from "@/lib/offline/use-sync";
 import { completeOrder } from "@/lib/pos/complete-order";
@@ -26,6 +26,7 @@ import PrinterSetup from "@/components/pos/PrinterSetup";
 import LockScreen from "@/components/pos/LockScreen";
 import HoldOrdersDialog from "@/components/pos/HoldOrdersDialog";
 import CustomerPicker from "@/components/pos/CustomerPicker";
+import ModifierDialog from "@/components/pos/ModifierDialog";
 import ConnectivityDot from "@/components/pos/ConnectivityDot";
 
 /**
@@ -46,6 +47,9 @@ export default function PosPage() {
   const [sessionUser, setSessionUser] = useState<string | undefined>(undefined);
   const [showHoldOrders, setShowHoldOrders] = useState(false);
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+  const [modifierProduct, setModifierProduct] = useState<Product | null>(null);
+  const [modifierList, setModifierList] = useState<any[]>([]);
+  const [allModifiers, setAllModifiers] = useState<any[]>([]);
   const [orderComplete, setOrderComplete] = useState<{ orderId: number; uuid: string } | null>(null);
   const [holdComplete, setHoldComplete] = useState(false);
   const [quoteComplete, setQuoteComplete] = useState<{ documentNo: string } | null>(null);
@@ -79,11 +83,13 @@ export default function PosPage() {
       const db = getOfflineDb();
 
       // Load products and categories from IndexedDB
-      const [prods, cats, taxes] = await Promise.all([
+      const [prods, cats, taxes, mods] = await Promise.all([
         db.product.where("isactive").equals("Y").toArray(),
         db.productcategory.where("isactive").equals("Y").toArray(),
         db.tax.toArray(),
+        db.modifier.where("isactive").equals("Y").toArray(),
       ]);
+      setAllModifiers(mods);
 
       setProducts(prods.sort((a, b) => (a.name || "").localeCompare(b.name || "")));
       setCategories(cats.sort((a, b) => (a.position || 0) - (b.position || 0)));
@@ -327,7 +333,24 @@ export default function PosPage() {
 
           {/* Product grid */}
           <div className="flex-1 overflow-y-auto px-4 pb-4">
-            <ProductGrid products={filteredProducts} qtyMap={qtyMap} />
+            <ProductGrid products={filteredProducts} qtyMap={qtyMap}
+              onProductClick={(p) => {
+                // Check for modifiers (product-specific first, then category)
+                const productMods = allModifiers.filter((m: any) => m.product_id === p.product_id);
+                const categoryMods = productMods.length === 0
+                  ? allModifiers.filter((m: any) =>
+                      m.productcategories?.split(",").map(Number).includes(p.productcategory_id)
+                    )
+                  : [];
+                const mods = productMods.length > 0 ? productMods : categoryMods;
+                if (mods.length > 0) {
+                  setModifierProduct(p);
+                  setModifierList(mods);
+                } else {
+                  addProduct(p);
+                }
+              }}
+            />
           </div>
         </div>
 
@@ -351,6 +374,20 @@ export default function PosPage() {
           />
         </div>
       </div>
+
+      {/* Modifier walkthrough */}
+      {modifierProduct && (
+        <ModifierDialog
+          product={modifierProduct}
+          modifiers={modifierList}
+          onConfirm={(selected) => {
+            addProductWithModifiers(modifierProduct, selected);
+            setModifierProduct(null);
+            setModifierList([]);
+          }}
+          onCancel={() => { setModifierProduct(null); setModifierList([]); }}
+        />
+      )}
 
       {/* Customer picker */}
       {showCustomerPicker && (

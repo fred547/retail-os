@@ -2,15 +2,16 @@
 
 import Image from "next/image";
 import type { Product } from "@/lib/offline/schema";
-import { addProduct } from "@/lib/pos/cart-store";
 import { Package } from "lucide-react";
 
 export default function ProductGrid({
   products,
   qtyMap,
+  onProductClick,
 }: {
   products: Product[];
   qtyMap: Record<number, number>;
+  onProductClick: (product: Product) => void;
 }) {
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
@@ -20,7 +21,7 @@ export default function ProductGrid({
         return (
           <button
             key={p.product_id}
-            onClick={() => addProduct(p)}
+            onClick={() => onProductClick(p)}
             className={`relative flex flex-col bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-750 hover:ring-1 hover:ring-blue-500/50 transition text-left group ${
               outOfStock ? "opacity-60" : ""
             }`}

@@ -21,6 +21,8 @@ export interface CartItem {
   upc: string | null;
   productcategory_id: number;
   serial_item_id?: number | null;
+  modifiers?: string | null;       // comma-separated modifier names
+  modifier_total?: number;         // sum of modifier prices included in price
 }
 
 export interface HeldOrder {
@@ -152,6 +154,38 @@ export function addProduct(product: Product, qty: number = 1, priceOverride?: nu
       productcategory_id: product.productcategory_id,
     });
   }
+  recalcTotals();
+  notify();
+}
+
+/** Add product with modifiers (price = base + modifier total, modifiers stored as string) */
+export function addProductWithModifiers(
+  product: Product,
+  selectedModifiers: { name: string; price: number }[],
+) {
+  const modifierTotal = selectedModifiers.reduce((sum, m) => sum + m.price, 0);
+  const finalPrice = product.sellingprice + modifierTotal;
+  const modifierNames = selectedModifiers.map((m) => m.name).join(", ");
+
+  // Products with modifiers are always added as new lines (not merged)
+  state.items.push({
+    product_id: product.product_id,
+    name: product.name || "Product",
+    qty: 1,
+    price: finalPrice,
+    cost: product.costprice,
+    tax_id: product.tax_id,
+    tax_rate: taxMap[product.tax_id] ?? 0,
+    tax_amount: 0,
+    line_total: 0,
+    line_net: 0,
+    discount_percent: 0,
+    image: product.image,
+    upc: product.upc,
+    productcategory_id: product.productcategory_id,
+    modifiers: modifierNames || null,
+    modifier_total: modifierTotal,
+  });
   recalcTotals();
   notify();
 }
