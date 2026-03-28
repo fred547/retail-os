@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ArrowRight,
 } from "lucide-react";
+import { RevenueTrendChart, TopProductsChart } from "@/components/DashboardCharts";
 
 // Revalidate dashboard data every 60 seconds (ISR)
 export const dynamic = "force-dynamic";
@@ -343,6 +344,12 @@ export default async function DashboardPage() {
           trend={monthlyTrend}
           trendLabel="vs prev 30 days"
         />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <RevenueTrendChart data={data.monthlySales} />
+        <TopProductsChart data={data.topProducts} />
       </div>
 
       {/* Two-column layout */}
