@@ -43,9 +43,11 @@ import com.posterita.pos.android.data.local.entity.*
         StaffBreak::class,
         LeaveType::class,
         LeaveRequest::class,
-        LeaveBalance::class
+        LeaveBalance::class,
+        CountPlan::class,
+        CountScan::class
     ],
-    version = 39,
+    version = 40,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, JSONConverter::class)
@@ -98,6 +100,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun leaveTypeDao(): LeaveTypeDao
     abstract fun leaveRequestDao(): LeaveRequestDao
     abstract fun leaveBalanceDao(): LeaveBalanceDao
+    abstract fun countPlanDao(): CountPlanDao
+    abstract fun countScanDao(): CountScanDao
 
     companion object {
         const val DATABASE_NAME = "POSTERITA_LITE_DB"
@@ -149,7 +153,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_35_36,
                         MIGRATION_36_37,
                         MIGRATION_37_38,
-                        MIGRATION_38_39
+                        MIGRATION_38_39,
+                        MIGRATION_39_40
                     )
                     .fallbackToDestructiveMigration()
                     .build()
@@ -203,7 +208,9 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_34_35,
                     MIGRATION_35_36,
                     MIGRATION_36_37,
-                    MIGRATION_37_38
+                    MIGRATION_37_38,
+                    MIGRATION_38_39,
+                    MIGRATION_39_40
                 )
                 .fallbackToDestructiveMigration()
                 .build()
@@ -784,6 +791,13 @@ abstract class AppDatabase : RoomDatabase() {
                 // Terminal lock modes
                 db.execSQL("ALTER TABLE terminal ADD COLUMN lock_mode TEXT NOT NULL DEFAULT 'exploration'")
                 db.execSQL("ALTER TABLE terminal ADD COLUMN locked_device_id TEXT")
+            }
+        }
+
+        private val MIGRATION_39_40 = object : Migration(39, 40) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `count_plan` (`id` INTEGER NOT NULL PRIMARY KEY, `account_id` TEXT NOT NULL, `store_id` INTEGER NOT NULL DEFAULT 0, `name` TEXT NOT NULL, `status` TEXT NOT NULL DEFAULT 'draft', `notes` TEXT, `started_at` TEXT, `completed_at` TEXT, `created_by` INTEGER NOT NULL DEFAULT 0, `is_deleted` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT, `updated_at` TEXT)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `count_scan` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `plan_id` INTEGER NOT NULL DEFAULT 0, `account_id` TEXT NOT NULL, `user_id` INTEGER NOT NULL DEFAULT 0, `user_name` TEXT, `shelf` INTEGER NOT NULL DEFAULT 0, `height` TEXT NOT NULL DEFAULT 'A', `product_id` INTEGER, `barcode` TEXT, `product_name` TEXT, `quantity` INTEGER NOT NULL DEFAULT 1, `is_unknown` INTEGER NOT NULL DEFAULT 0, `is_synced` INTEGER NOT NULL DEFAULT 0, `notes` TEXT, `scanned_at` TEXT)")
             }
         }
     }
