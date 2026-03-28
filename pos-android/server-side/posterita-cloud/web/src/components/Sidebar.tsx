@@ -94,7 +94,8 @@ const sections: NavSection[] = [
   {
     label: "Inventory",
     items: [
-      { name: "Stock Counts", href: "/inventory", icon: ClipboardList },
+      { name: "Spot Checks", href: "/inventory", icon: ClipboardList },
+      { name: "Full Count", href: "/stock-count", icon: ClipboardList },
       { name: "Serial Items", href: "/serial-items", icon: Tag },
       { name: "Suppliers", href: "/suppliers", icon: Truck },
       { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
