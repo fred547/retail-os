@@ -3,10 +3,11 @@
 import { useState } from "react";
 import {
   X, ShoppingCart, RotateCcw, DollarSign, Printer, Settings,
-  ClipboardList, Menu, Lock, ExternalLink, Tag,
+  ClipboardList, Menu, Lock, ExternalLink, Tag, Home,
 } from "lucide-react";
 import { openCashDrawer, getPrinterConfig } from "@/lib/pos/network-print";
 import { useSyncStatus } from "@/lib/offline/use-sync";
+import { useRouter } from "next/navigation";
 
 export default function PosDrawer({
   open,
@@ -28,6 +29,7 @@ export default function PosDrawer({
   onTillHistory?: () => void;
 }) {
   const sync = useSyncStatus();
+  const router = useRouter();
   const [drawerOpening, setDrawerOpening] = useState(false);
 
   const handleOpenDrawer = async () => {
@@ -64,6 +66,10 @@ export default function PosDrawer({
 
         {/* Menu items */}
         <nav className="flex-1 py-2 overflow-y-auto">
+          <DrawerItem icon={Home} label="Home" onClick={() => { onClose(); router.push("/pos/home"); }} />
+
+          <div className="border-t border-gray-800 my-2 mx-4" />
+
           <DrawerItem icon={ClipboardList} label="Hold Orders" onClick={() => { onHoldOrders(); onClose(); }} shortcut="F4" />
           <DrawerItem icon={RotateCcw} label="Refund" onClick={() => { onRefund(); onClose(); }} color="text-red-400" />
           <DrawerItem icon={DollarSign} label="Open Cash Drawer" onClick={handleOpenDrawer} loading={drawerOpening} />

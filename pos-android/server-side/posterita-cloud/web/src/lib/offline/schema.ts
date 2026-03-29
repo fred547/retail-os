@@ -349,6 +349,23 @@ export interface ProductTag {
   account_id: string;
 }
 
+export interface Shift {
+  shift_id: number;
+  account_id: string;
+  store_id: number;
+  user_id: number;
+  clock_in: string;
+  clock_out: string | null;
+  hours_worked: number;
+  status: string; // "active" | "completed"
+  break_start: string | null;
+  break_end: string | null;
+  break_minutes: number;
+  note: string | null;
+  is_sync: boolean;
+  created_at: string | null;
+}
+
 /** Sync metadata stored in IndexedDB */
 export interface SyncMeta {
   key: string;

@@ -3,7 +3,7 @@ import type {
   Product, ProductCategory, Tax, Modifier, Customer,
   Order, OrderLine, Payment, Till, PosUser, Store, Terminal,
   Preference, DiscountCode, LoyaltyConfig, Promotion, MenuSchedule,
-  TagGroup, Tag, ProductTag, SyncMeta,
+  TagGroup, Tag, ProductTag, Shift, SyncMeta,
 } from "./schema";
 
 /**
@@ -36,6 +36,7 @@ class PosteritaDB extends Dexie {
   tag_group!: EntityTable<TagGroup, "tag_group_id">;
   tag!: EntityTable<Tag, "tag_id">;
   product_tag!: EntityTable<ProductTag, "product_id">;
+  shift!: EntityTable<Shift, "shift_id">;
   sync_meta!: EntityTable<SyncMeta, "key">;
 
   constructor() {
@@ -76,6 +77,11 @@ class PosteritaDB extends Dexie {
     // Version 3: add is_serialized index to product
     this.version(3).stores({
       product: "product_id, productcategory_id, upc, name, isactive, product_status, account_id, shelf_location, is_serialized",
+    });
+
+    // Version 4: add shift table for PWA clock in/out
+    this.version(4).stores({
+      shift: "++shift_id, user_id, account_id, store_id, status, is_sync, clock_in",
     });
   }
 }
