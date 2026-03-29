@@ -284,10 +284,23 @@
                 android:textSize="13sp"
                 app:cornerRadius="10dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSerialItems"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="Serial Items"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
-                android:layout_weight="2"
+                android:layout_weight="1"
                 android:layout_marginStart="4dp" />
         </LinearLayout>
     </LinearLayout>

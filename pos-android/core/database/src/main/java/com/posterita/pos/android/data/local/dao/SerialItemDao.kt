@@ -43,6 +43,10 @@ interface SerialItemDao {
     @Query("SELECT * FROM serial_item WHERE serial_item_id = :id")
     suspend fun getById(id: Int): SerialItem?
 
+    /** Get all serial items for an account (not deleted) */
+    @Query("SELECT * FROM serial_item WHERE account_id = :accountId AND is_deleted = 0 ORDER BY serial_number")
+    suspend fun getAllByAccount(accountId: String): List<SerialItem>
+
     /** Delete all for account (used during sync reset) */
     @Query("DELETE FROM serial_item WHERE account_id = :accountId")
     suspend fun deleteByAccount(accountId: String)

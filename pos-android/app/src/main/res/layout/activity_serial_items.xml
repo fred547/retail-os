@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/posterita_bg">
+
+    <!-- Top bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Serial Items"
+            android:textSize="20sp"
+            android:fontFamily="@font/lexend_semibold"
+            android:textColor="@color/posterita_ink"
+            android:layout_marginStart="8dp" />
+
+        <ImageButton
+            android:id="@+id/buttonHelp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_help_outline"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Help"
+            android:layout_marginEnd="4dp" />
+
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_internet_dot" />
+    </LinearLayout>
+
+    <!-- Summary cards -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginEnd="4dp" app:cardCornerRadius="12dp" app:cardElevation="0dp"
+            app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="12dp">
+                <TextView android:id="@+id/textTotalItems" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textSize="24sp"
+                    android:fontFamily="@font/lexend_bold" android:textColor="@color/posterita_ink" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Total" android:textSize="12sp" android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="4dp" android:layout_marginEnd="4dp" app:cardCornerRadius="12dp"
+            app:cardElevation="0dp" app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="12dp">
+                <TextView android:id="@+id/textInStock" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textSize="24sp"
+                    android:fontFamily="@font/lexend_bold" android:textColor="#10B981" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="In Stock" android:textSize="12sp" android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="4dp" android:layout_marginEnd="4dp" app:cardCornerRadius="12dp"
+            app:cardElevation="0dp" app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="12dp">
+                <TextView android:id="@+id/textSold" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textSize="24sp"
+                    android:fontFamily="@font/lexend_bold" android:textColor="#3B82F6" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Sold" android:textSize="12sp" android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="4dp" app:cardCornerRadius="12dp" app:cardElevation="0dp"
+            app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="12dp">
+                <TextView android:id="@+id/textDelivered" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textSize="24sp"
+                    android:fontFamily="@font/lexend_bold" android:textColor="#8B5CF6" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Delivered" android:textSize="12sp" android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Search bar -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/posterita_line"
+        app:hintEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editSearch"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:hint="Search serial number or product..."
+            android:textSize="14sp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:background="@android:color/transparent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Filter tabs -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabTextAppearance="@style/TextAppearance.Posterita.Tiny"
+        app:tabIndicatorColor="@color/posterita_primary">
+        <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="All" />
+        <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="In Stock" />
+        <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sold" />
+        <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Delivered" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- Serial item list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSerialItems"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/layoutEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="No serial items" android:textSize="16sp" android:textColor="@color/posterita_muted" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="VIN/IMEI tracked items will appear here" android:textSize="13sp"
+            android:textColor="@color/posterita_muted" android:layout_marginTop="4dp" />
+    </LinearLayout>
+</LinearLayout>

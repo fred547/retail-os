@@ -1621,7 +1621,8 @@
 
   function updatePriceCards(region) {
     const data = PRICING[region];
-    document.getElementById('region-description').textContent = data.description;
+    const descEl = document.getElementById('region-description');
+    if (descEl) descEl.textContent = data.description;
     // Base plan prices
     document.querySelectorAll('[data-price]').forEach(el => {
       const plan = el.dataset.price;

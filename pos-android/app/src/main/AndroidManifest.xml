@@ -307,6 +307,9 @@
             android:name=".ui.activity.LogisticsHomeActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.SerialItemsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.BulkProductImportActivity"
             android:exported="false" />
 

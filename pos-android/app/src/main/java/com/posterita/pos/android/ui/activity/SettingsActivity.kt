@@ -55,12 +55,34 @@ class SettingsActivity : BaseDrawerActivity() {
         binding.tagsOption.setOnClickListener { openWebConsole("/customer/tags", "Tags") }
         binding.billingOption.setOnClickListener { openWebConsole("/customer/billing", "Billing") }
 
+        // Restaurant — WebView links (restaurant mode only)
+        binding.menuSchedulesOption.setOnClickListener { openWebConsole("/customer/menu-schedules", "Menu Schedules") }
+        binding.prepStationsOption.setOnClickListener { openWebConsole("/customer/stations", "Prep Stations") }
+
+        // Catalogue — WebView links
+        binding.priceReviewOption.setOnClickListener { openWebConsole("/customer/price-review", "Price Review") }
+        binding.aiImportOption.setOnClickListener { openWebConsole("/customer/ai-import", "AI Import") }
+        binding.pdfCatalogueOption.setOnClickListener { openWebConsole("/customer/catalogue", "PDF Catalogue") }
+
+        // Inventory — WebView links
+        binding.inventorySessionsOption.setOnClickListener { openWebConsole("/customer/inventory", "Inventory Sessions") }
+        binding.serialItemsOption.setOnClickListener { openWebConsole("/customer/serial-items", "Serial Items") }
+        binding.storeLayoutOption.setOnClickListener { openWebConsole("/customer/store-layout", "Store Layout") }
+
+        // Setup — WebView links
+        binding.integrationsOption.setOnClickListener { openWebConsole("/customer/integrations", "Integrations") }
+        binding.deliveriesOption.setOnClickListener { openWebConsole("/customer/deliveries", "Deliveries") }
+
         // Restaurant tables — only visible in restaurant mode
         if (prefsManager.isRestaurant) {
             binding.tablesOption.visibility = View.VISIBLE
             binding.tablesOption.setOnClickListener {
                 startActivity(Intent(this, ManageTablesActivity::class.java))
             }
+            // Show restaurant section
+            findViewById<TextView>(R.id.tv_restaurant_header)?.visibility = View.VISIBLE
+            binding.menuSchedulesOption.visibility = View.VISIBLE
+            binding.prepStationsOption.visibility = View.VISIBLE
         }
 
         // Device — local config only
@@ -85,6 +107,9 @@ class SettingsActivity : BaseDrawerActivity() {
             // Show/hide restaurant-specific options
             binding.tablesOption.visibility = if (isChecked) View.VISIBLE else View.GONE
             binding.kdsOption.visibility = if (isChecked) View.VISIBLE else View.GONE
+            findViewById<TextView>(R.id.tv_restaurant_header)?.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.menuSchedulesOption.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.prepStationsOption.visibility = if (isChecked) View.VISIBLE else View.GONE
             // Update terminal in DB
             lifecycleScope.launch(Dispatchers.IO) {
                 val terminalId = prefsManager.terminalId

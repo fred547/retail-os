@@ -897,6 +897,626 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- RESTAURANT section (restaurant mode only, hidden by default) -->
+            <TextView
+                android:id="@+id/tv_restaurant_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="RESTAURANT"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- Menu Schedules -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_schedules_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="@color/posterita_orange"
+                        android:contentDescription="Menu Schedules" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Menu Schedules"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Breakfast, lunch, dinner availability"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Prep Stations -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/prep_stations_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/posterita_orange"
+                        android:contentDescription="Prep Stations" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Prep Stations"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Kitchen, bar, dessert station routing"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- CATALOGUE section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CATALOGUE"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Price Review -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/price_review_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/posterita_teal"
+                        android:contentDescription="Price Review" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Price Review"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Track price changes over time"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- AI Import -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/ai_import_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/posterita_purple"
+                        android:contentDescription="AI Import" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="AI Import"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="AI-powered product discovery"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- PDF Catalogue -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdf_catalogue_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/posterita_secondary"
+                        android:contentDescription="PDF Catalogue" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="PDF Catalogue"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Generate product catalogues"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- INVENTORY section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="INVENTORY"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Inventory Sessions -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/inventory_sessions_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="@color/posterita_secondary"
+                        android:contentDescription="Inventory Sessions" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Inventory Sessions"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Stock count sessions"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Serial Items -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/serial_items_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_barcode_scan"
+                        app:tint="@color/posterita_purple"
+                        android:contentDescription="Serial Items" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Serial Items"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="VIN/IMEI tracking &amp; warranty"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Store Layout -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/store_layout_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_drawer"
+                        app:tint="@color/posterita_teal"
+                        android:contentDescription="Store Layout" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Store Layout"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Shelf zones &amp; height labels"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SETUP section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SETUP"
+                style="@style/TextAppearance.Posterita.Label"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Integrations -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/integrations_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="6dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_cloud_sync"
+                        app:tint="@color/posterita_primary"
+                        android:contentDescription="Integrations" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Integrations"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Xero, QuickBooks, webhooks"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Deliveries -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/deliveries_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/posterita_line"
+                app:cardBackgroundColor="@color/posterita_paper"
+                android:layout_marginBottom="16dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="14dp"
+                        android:src="@drawable/ic_shopping_cart"
+                        app:tint="@color/posterita_secondary"
+                        android:contentDescription="Deliveries" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Deliveries"
+                            style="@style/TextAppearance.Posterita.Body"
+                            android:fontFamily="@font/lexend_medium" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Delivery tracking dashboard"
+                            style="@style/TextAppearance.Posterita.Tiny"
+                            android:textColor="@color/posterita_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textSize="20sp"
+                        android:textColor="@color/posterita_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- DEVICE section -->
             <TextView
                 android:layout_width="match_parent"

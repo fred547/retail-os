@@ -70,6 +70,9 @@ class WarehouseHomeActivity : BaseActivity() {
         binding.buttonShelfBrowser.setOnClickListener {
             startActivity(Intent(this, ShelfBrowserActivity::class.java))
         }
+        binding.buttonSerialItems.setOnClickListener {
+            startActivity(Intent(this, SerialItemsActivity::class.java))
+        }
 
         setupStockAlertClicks()
 
