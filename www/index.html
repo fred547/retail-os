@@ -159,10 +159,6 @@
         </div>
         <a href="https://web.posterita.com/customer/login" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.login">Login</a>
         <a href="https://web.posterita.com/customer/signup" class="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition" data-i18n="nav.startfree">Start Free</a>
-        <button onclick="toggleCart()" class="relative p-2 text-gray-500 hover:text-brand-600 transition" aria-label="Shopping Cart">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-          <span class="cart-badge absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center" style="display:none">0</span>
-        </button>
       </div>
       <button class="lg:hidden p-2" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -754,10 +750,10 @@
         <p class="text-gray-400 text-xs">Blink QR, MauCAS terminals, MCB Juice. Coming: Peach Payments integrated card terminals.</p>
       </div>
     </div>
-    <!-- Hardware Store -->
-    <div class="mt-12">
-      <h3 class="text-xl font-bold text-center mb-2">Shop Hardware</h3>
-      <p class="text-center text-xs text-gray-400 mb-6">Add items to your cart and checkout. Free shipping in Mauritius.</p>
+    <!-- Hardware Products — Mauritius: prices + quote, International: AliExpress links -->
+    <div class="mt-12" id="hardware-products">
+      <h3 class="text-xl font-bold text-center mb-2">Recommended Hardware</h3>
+      <p class="text-center text-xs text-gray-400 mb-6" id="hardware-subtitle">Prices shown for Mauritius. Free delivery island-wide.</p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
           <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e801502d706adc32cc994_AIO-1331_3.jpg" alt="13-inch Desktop POS Android terminal" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
@@ -765,8 +761,9 @@
             <h4 class="font-bold text-sm">13&rdquo; Desktop POS (Android)</h4>
             <p class="text-gray-400 text-xs mt-1">All-in-one touchscreen POS terminal</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$489</p>
-              <button onclick="addToCart('desktop-pos')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$489</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%2013%22%20Desktop%20POS&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%2013%22%20Desktop%20POS%20Android%20terminal." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-android-pos-terminal-touchscreen.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -776,8 +773,9 @@
             <h4 class="font-bold text-sm">Platform Barcode Scanner</h4>
             <p class="text-gray-400 text-xs mt-1">Wireless 2D, USB + Bluetooth</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$160</p>
-              <button onclick="addToCart('barcode-scanner')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$160</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%20Barcode%20Scanner&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%20Platform%20Barcode%20Scanner." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-wireless-barcode-scanner-2d-bluetooth.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -787,8 +785,9 @@
             <h4 class="font-bold text-sm">Mobile Thermal Printer</h4>
             <p class="text-gray-400 text-xs mt-1">Portable 58mm Bluetooth receipt printer</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$145</p>
-              <button onclick="addToCart('thermal-printer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$145</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%20Thermal%20Printer&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%20Mobile%20Thermal%20Printer." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-58mm-bluetooth-thermal-receipt-printer.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -798,8 +797,9 @@
             <h4 class="font-bold text-sm">Mini Cash Drawer</h4>
             <p class="text-gray-400 text-xs mt-1">Compact RJ11, 4 bill / 5 coin slots</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$62</p>
-              <button onclick="addToCart('cash-drawer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$62</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%20Cash%20Drawer&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%20Mini%20Cash%20Drawer." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-mini-cash-drawer-rj11-pos.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -809,8 +809,9 @@
             <h4 class="font-bold text-sm">All-in-One Desktop POS</h4>
             <p class="text-gray-400 text-xs mt-1">Windows POS with built-in printer</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$599</p>
-              <button onclick="addToCart('all-in-one')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$599</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%20All-in-One%20POS&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%20All-in-One%20Desktop%20POS." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-all-in-one-pos-terminal-windows.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -820,8 +821,9 @@
             <h4 class="font-bold text-sm">Zebra Label Printer</h4>
             <p class="text-gray-400 text-xs mt-1">ZPL thermal label printer for shelf tags</p>
             <div class="flex items-center justify-between mt-3">
-              <p class="text-brand-600 font-bold text-lg">$320</p>
-              <button onclick="addToCart('label-printer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+              <p class="text-brand-600 font-bold text-lg hw-price">$320</p>
+              <a href="mailto:support@posterita.com?subject=Hardware%20Quote%20-%20Label%20Printer&body=Hi%2C%20I%27d%20like%20a%20quote%20for%20the%20Zebra%20Label%20Printer." class="hw-quote bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Get Quote</a>
+              <a href="https://www.aliexpress.com/w/wholesale-zebra-zpl-thermal-label-printer.html" class="hw-aliexpress hidden text-brand-600 text-xs font-semibold hover:underline" target="_blank" rel="noopener">Find on AliExpress &rarr;</a>
             </div>
           </div>
         </div>
@@ -1808,6 +1810,25 @@
         el.textContent = 'Prices in USD';
       }
     }
+    // Hardware section: Mauritius = show prices + Get Quote, International = show AliExpress
+    applyHardwareRegion(code);
+  }
+
+  function applyHardwareRegion(code) {
+    var isMauritius = (code === 'MU');
+    var subtitle = document.getElementById('hardware-subtitle');
+    if (subtitle) {
+      subtitle.textContent = isMauritius
+        ? 'Prices shown for Mauritius. Free delivery island-wide. Email us for a quote.'
+        : 'Source compatible hardware from AliExpress or any local supplier. Any Android/Windows device works.';
+    }
+    // Toggle price vs AliExpress link visibility
+    document.querySelectorAll('.hw-price').forEach(function(el) { el.style.display = isMauritius ? '' : 'none'; });
+    document.querySelectorAll('.hw-quote').forEach(function(el) { el.style.display = isMauritius ? '' : 'none'; });
+    document.querySelectorAll('.hw-aliexpress').forEach(function(el) {
+      el.style.display = isMauritius ? 'none' : '';
+      el.classList.remove('hidden');
+    });
   }
 
   // Detect visitor country on page load
@@ -1830,61 +1851,6 @@
 </script>
 
 <!-- ============================================================ -->
-<!-- CART SIDEBAR OVERLAY -->
-<!-- ============================================================ -->
-<div id="cart-overlay" class="hidden fixed inset-0 z-50">
-  <div class="absolute inset-0 bg-black/40" onclick="toggleCart()"></div>
-  <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
-    <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-      <h3 class="text-lg font-bold">Shopping Cart</h3>
-      <button onclick="toggleCart()" class="p-1 text-gray-400 hover:text-gray-600 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <!-- Empty state -->
-    <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center px-6">
-      <svg class="w-16 h-16 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-      <p class="text-gray-400 font-medium">Your cart is empty</p>
-      <p class="text-gray-300 text-sm mt-1">Browse our hardware to get started</p>
-      <button onclick="toggleCart(); document.getElementById('hardware').scrollIntoView({behavior:'smooth'})" class="mt-4 text-brand-600 text-sm font-semibold hover:underline">Shop Hardware</button>
-    </div>
-    <!-- Items -->
-    <div id="cart-items" class="flex-1 overflow-y-auto px-6"></div>
-    <!-- Footer -->
-    <div class="border-t border-gray-100 px-6 py-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-sm font-semibold text-gray-500">Total</span>
-        <span id="cart-total" class="text-2xl font-black text-gray-900">$0</span>
-      </div>
-      <button id="cart-checkout-btn" onclick="proceedToCheckout()" class="hidden w-full bg-brand-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-700 transition flex items-center justify-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
-        Pay with Card
-      </button>
-      <p class="text-[10px] text-gray-400 text-center mt-2">Secure payment via Paddle. Credit card, PayPal, Apple Pay, Google Pay accepted.</p>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
-<script>
-  Paddle.Initialize({
-    token: 'live_8b5cd0d5a8daf5befb144eb86d4',
-    eventCallback: function(event) {
-      console.log('[Paddle Event]', event.name, event);
-      if (event.name === 'checkout.error') {
-        console.error('[Paddle Checkout Error]', event.data);
-        if (typeof logCheckoutError === 'function') {
-          logCheckoutError('Paddle overlay error: ' + JSON.stringify(event.data), { event_name: event.name });
-        }
-      }
-      if (event.name === 'checkout.completed') {
-        console.log('[Paddle] Checkout completed!', event.data);
-      }
-    }
-  });
-</script>
-<script src="/cart.js"></script>
 <script src="/i18n.js"></script>
 </body>
 </html>

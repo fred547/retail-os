@@ -71,7 +71,7 @@ class StaffHomeActivity : BaseActivity() {
             openWebConsole("/orders", "Orders")
         }
         binding.buttonRoster.setOnClickListener {
-            openWebConsole("/staff/roster/pick", "Pick Shifts")
+            startActivity(Intent(this, ShiftPickingActivity::class.java))
         }
 
         // Shifts list

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/posterita_bg">
+
+    <!-- Top bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pick Shifts"
+            android:textSize="20sp"
+            android:fontFamily="@font/lexend_semibold"
+            android:textColor="@color/posterita_ink"
+            android:layout_marginStart="8dp" />
+
+        <ImageButton
+            android:id="@+id/buttonHelp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_help_outline"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Help"
+            android:layout_marginEnd="4dp" />
+
+        <View
+            android:id="@+id/connectivity_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_internet_dot" />
+    </LinearLayout>
+
+    <!-- Period info card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardPeriod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/posterita_line">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/textPeriodName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Roster Period"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:textColor="@color/posterita_ink" />
+
+                <TextView
+                    android:id="@+id/textPeriodStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Picking"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:textColor="#10B981"
+                    android:background="@drawable/bg_rounded_teal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textPeriodDates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jan 1 - Jan 7, 2026"
+                android:textSize="13sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/textPeriodDeadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Deadline: —"
+                android:textSize="12sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Loading indicator -->
+    <ProgressBar
+        android:id="@+id/progressLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:visibility="gone" />
+
+    <!-- Slot list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSlots"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+
+    <!-- Empty state: no period in picking status -->
+    <LinearLayout
+        android:id="@+id/layoutEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textEmptyTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No open roster period"
+            android:textSize="16sp"
+            android:textColor="@color/posterita_muted" />
+
+        <TextView
+            android:id="@+id/textEmptySubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shifts will appear here when a period is open for picking"
+            android:textSize="13sp"
+            android:textColor="@color/posterita_muted"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp" />
+    </LinearLayout>
+</LinearLayout>

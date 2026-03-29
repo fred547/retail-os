@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardSlot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginTop="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/posterita_line">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Color stripe on left -->
+        <View
+            android:id="@+id/viewColorStripe"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:background="@color/posterita_primary" />
+
+        <!-- Slot info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/textSlotName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Morning Shift"
+                android:textSize="14sp"
+                android:fontFamily="@font/lexend_medium"
+                android:textColor="@color/posterita_ink" />
+
+            <TextView
+                android:id="@+id/textSlotTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="09:00 - 17:00"
+                android:textSize="13sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/textSlotDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7.5h"
+                    android:textSize="12sp"
+                    android:textColor="@color/posterita_muted" />
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="4dp"
+                    android:background="@drawable/bg_internet_dot"
+                    android:backgroundTint="@color/posterita_muted"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:id="@+id/textSlotBreak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30min break"
+                    android:textSize="12sp"
+                    android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textSlotRole"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="cashier"
+                android:textSize="11sp"
+                android:textColor="@color/posterita_primary"
+                android:fontFamily="@font/lexend_medium"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/textPickStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="11sp"
+                android:textColor="@color/posterita_muted"
+                android:layout_marginTop="2dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Action button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonPick"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="8dp"
+            android:text="Pick"
+            android:textSize="13sp"
+            android:textAllCaps="false"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

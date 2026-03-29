@@ -301,6 +301,9 @@
             android:name=".ui.activity.StaffHomeActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.ShiftPickingActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.FullCountActivity"
             android:exported="false" />
         <activity
