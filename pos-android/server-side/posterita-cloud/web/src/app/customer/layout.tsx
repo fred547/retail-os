@@ -13,7 +13,7 @@ export default async function CustomerPortalLayout({
   const headerList = await headers();
   const pathname = headerList.get("x-pathname") || "";
 
-  if (pathname === "/customer/login") {
+  if (pathname === "/customer/login" || pathname === "/customer/signup") {
     return <>{children}</>;
   }
 

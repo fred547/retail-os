@@ -469,19 +469,15 @@ export async function POST(req: NextRequest) {
         try {
           const { error } = await getDb().from("error_logs").insert({
             account_id: body.account_id,
-            timestamp: log.timestamp ?? 0,
             severity: log.severity ?? "ERROR",
             tag: log.tag ?? "",
             message: log.message ?? "",
-            stacktrace: log.stacktrace,
-            screen: log.screen,
+            stack_trace: log.stacktrace ?? log.stack_trace ?? null,
             user_id: log.user_id ?? 0,
-            user_name: log.user_name,
             store_id: log.store_id ?? body.store_id,
             terminal_id: log.terminal_id ?? body.terminal_id,
-            device_id: log.device_id,
-            app_version: log.app_version,
-            os_version: log.os_version,
+            device_info: log.device_id ?? log.device_info ?? `terminal:${body.terminal_id}`,
+            app_version: log.app_version ?? body.app_version ?? "android",
           });
           if (!error) errorLogsSynced++;
         } catch (e: any) {

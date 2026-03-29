@@ -52,7 +52,7 @@ export default function DemoPage() {
         if (!res.ok) return;
         const data = await res.json();
         if (data.current_session && data.current_session.time_remaining_seconds > 0) {
-          router.push("/customer");
+          window.location.href = "/customer";
         }
       } catch (_) {
         /* ignore */
