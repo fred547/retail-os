@@ -348,6 +348,9 @@ abstract class BaseDrawerActivity : BaseActivity() {
                         kotlinx.coroutines.withContext(Dispatchers.IO) {
                             printerManager.openCashDrawer()
                         }
+                        (this@BaseDrawerActivity as? ProductActivity)?.auditLogger?.let { logger ->
+                            launch { logger.log(com.posterita.pos.android.util.AuditLogger.Actions.DRAWER_OPEN, detail = "No-sale cash drawer open") }
+                        }
                         Toast.makeText(this@BaseDrawerActivity, "Cash drawer opened", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@BaseDrawerActivity, "Printer not available", Toast.LENGTH_SHORT).show()

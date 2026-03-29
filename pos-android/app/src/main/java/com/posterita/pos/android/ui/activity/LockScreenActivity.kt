@@ -30,10 +30,12 @@ class LockScreenActivity : BaseActivity() {
     @Inject lateinit var accountRegistry: LocalAccountRegistry
     @Inject lateinit var prefsManager: SharedPreferencesManager
     @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
+    @Inject lateinit var auditLogger: com.posterita.pos.android.util.AuditLogger
 
     private var pinBuffer = ""
     private var correctPin = ""
     private var attempts = 0
+    private var lockoutUntil = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -173,6 +175,17 @@ class LockScreenActivity : BaseActivity() {
     }
 
     private fun checkPin() {
+        // Rate limiting: 5-min lockout after 5 failed attempts
+        val now = System.currentTimeMillis()
+        if (now < lockoutUntil) {
+            val remaining = ((lockoutUntil - now) / 1000).toInt()
+            binding.textError.text = "Locked for ${remaining}s"
+            binding.textError.visibility = View.VISIBLE
+            pinBuffer = ""
+            updateDots()
+            return
+        }
+
         if (pinBuffer == correctPin) {
             // Success — unlock
             SessionTimeoutManager.unlock()
@@ -198,7 +211,18 @@ class LockScreenActivity : BaseActivity() {
             pinBuffer = ""
             updateDots()
 
-            binding.textError.text = if (attempts >= 3) {
+            lifecycleScope.launch {
+                if (attempts >= 5) {
+                    lockoutUntil = System.currentTimeMillis() + 5 * 60 * 1000L
+                    auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PIN_LOCKOUT, detail = "PIN lockout after $attempts attempts")
+                } else {
+                    auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PIN_FAILED, detail = "Wrong PIN attempt #$attempts")
+                }
+            }
+
+            binding.textError.text = if (attempts >= 5) {
+                "Locked for 5 minutes"
+            } else if (attempts >= 3) {
                 "Wrong PIN ($attempts attempts)"
             } else {
                 "Incorrect PIN"

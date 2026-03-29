@@ -11,11 +11,14 @@ import androidx.activity.viewModels
 import com.posterita.pos.android.R
 import com.posterita.pos.android.databinding.ActivityTillScreenBinding
 import com.posterita.pos.android.ui.viewmodel.TillViewModel
+import com.posterita.pos.android.util.AuditLogger
 import com.posterita.pos.android.util.NumberUtils
 import com.posterita.pos.android.util.SessionManager
 import com.posterita.pos.android.util.SharedPreferencesManager
 import com.posterita.pos.android.worker.CloudSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,6 +30,7 @@ class TillActivity : BaseActivity() {
 
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var prefsManager: SharedPreferencesManager
+    @Inject lateinit var auditLogger: AuditLogger
 
     // Denomination data: label, value, isNote
     private data class Denomination(val label: String, val value: Double, val isNote: Boolean)
@@ -162,6 +166,7 @@ class TillActivity : BaseActivity() {
             val openingAmount = getTotal()
             binding.buttonOpenTill.isEnabled = false
             binding.buttonOpenTill.text = "Opening..."
+            lifecycleScope.launch { auditLogger.log(AuditLogger.Actions.TILL_OPEN, detail = "Opening amount: $openingAmount", amount = openingAmount) }
             tillViewModel.openTill(openingAmount)
         }
     }

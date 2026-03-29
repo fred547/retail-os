@@ -47,6 +47,7 @@ class CloseTillActivity : BaseActivity() {
     @Inject lateinit var printerManager: PrinterManager
     @Inject lateinit var tillService: TillService
     @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
+    @Inject lateinit var auditLogger: com.posterita.pos.android.util.AuditLogger
 
     private var currentTill: Till? = null
     private var denominationTotal: Double = 0.0
@@ -720,6 +721,9 @@ class CloseTillActivity : BaseActivity() {
                 }
 
                 val closedDetails = tillService.closeTill(user, till, cashAmt, cardAmt)
+
+                val variance = cashAmt - (closedDetails.expectedCash ?: 0.0)
+                auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.TILL_CLOSE, detail = "Cash: $cashAmt, Card: $cardAmt, Variance: ${String.format("%.2f", variance)}", amount = variance)
 
                 // Print close till receipt
                 val printers = db.printerDao().getAllPrinters()

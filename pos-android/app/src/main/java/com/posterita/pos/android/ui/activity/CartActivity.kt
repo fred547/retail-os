@@ -110,6 +110,9 @@ class CartActivity : BaseDrawerActivity() {
     @Inject
     lateinit var deliveryDao: com.posterita.pos.android.data.local.dao.DeliveryDao
 
+    @Inject
+    lateinit var auditLogger: com.posterita.pos.android.util.AuditLogger
+
     private lateinit var cartAdapter: CartProductAdapter
 
     /** Currently applied auto-promotion (best one) */
@@ -245,7 +248,9 @@ class CartActivity : BaseDrawerActivity() {
                 .setTitle("Clear Cart")
                 .setMessage("Are you sure you want to clear all items?")
                 .setPositiveButton("Clear") { _, _ ->
+                    val cartTotal = shoppingCartViewModel.shoppingCart.grandTotalAmount
                     shoppingCartViewModel.clearCart()
+                    lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.CART_CLEAR, detail = "Cart cleared", amount = cartTotal) }
                     Toast.makeText(this, "Cart cleared", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("Cancel", null)
@@ -2081,16 +2086,39 @@ class CartActivity : BaseDrawerActivity() {
                 return@setOnClickListener
             }
 
-            val updatedItem = cartItem.copy(
-                priceEntered = newPrice,
-                qty = newQty,
-                originalDiscountPercentage = newDiscount,
-                note = newNote.ifEmpty { null },
-                discountCodeId = selectedDiscountCodeId,
-                isWholeSalePriceApplied = isWholesaleApplied
-            )
-            shoppingCartViewModel.addOrUpdateLine(updatedItem)
-            dialog.dismiss()
+            val originalPrice = cartItem.product.sellingprice
+            val priceChanged = Math.abs(newPrice - originalPrice) > 0.01
+
+            val applyChanges = {
+                val updatedItem = cartItem.copy(
+                    priceEntered = newPrice,
+                    qty = newQty,
+                    originalDiscountPercentage = newDiscount,
+                    note = newNote.ifEmpty { null },
+                    discountCodeId = selectedDiscountCodeId,
+                    isWholeSalePriceApplied = isWholesaleApplied
+                )
+                shoppingCartViewModel.addOrUpdateLine(updatedItem)
+                if (priceChanged) {
+                    lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PRICE_OVERRIDE, detail = "${cartItem.product.name}: $originalPrice → $newPrice", amount = newPrice - originalPrice) }
+                }
+                dialog.dismiss()
+            }
+
+            // Cashiers need supervisor PIN for price overrides
+            if (priceChanged && sessionManager.user?.isCashier == true) {
+                val pinHelper = com.posterita.pos.android.util.SupervisorPinHelper(this@CartActivity, db, auditLogger)
+                pinHelper.show(
+                    title = "Price Override",
+                    message = "Price change from ${NumberUtils.formatPrice(originalPrice)} to ${NumberUtils.formatPrice(newPrice)} requires supervisor approval.",
+                    onApproved = { supervisor ->
+                        lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PRICE_OVERRIDE, detail = "${cartItem.product.name}: $originalPrice → $newPrice, approved by ${supervisor.firstname ?: supervisor.username}", supervisorId = supervisor.user_id, amount = newPrice - originalPrice) }
+                        applyChanges()
+                    },
+                )
+            } else {
+                applyChanges()
+            }
         }
 
         // ======= MODIFIER TAB =======
@@ -2356,9 +2384,30 @@ class CartActivity : BaseDrawerActivity() {
         dialogView.findViewById<View>(R.id.button_apply).setOnClickListener {
             val pct = NumberUtils.parseDouble(editPercentage.text.toString())
             val amt = NumberUtils.parseDouble(editAmount.text.toString())
-            shoppingCartViewModel.setDiscountOnTotal(amt, pct)
-            Toast.makeText(this, "Discount applied", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
+            val effectivePct = if (pct > 0) pct else if (amt > 0 && shoppingCartViewModel.shoppingCart.grandTotalAmount > 0) (amt / shoppingCartViewModel.shoppingCart.grandTotalAmount * 100) else 0.0
+            val userLimit = sessionManager.user?.discountlimit ?: 0.0
+
+            val applyDiscount = {
+                shoppingCartViewModel.setDiscountOnTotal(amt, pct)
+                lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.DISCOUNT_APPLY, detail = "Discount ${if (pct > 0) "${pct}%" else "$amt"} on total", amount = if (amt > 0) amt else (shoppingCartViewModel.shoppingCart.grandTotalAmount * pct / 100)) }
+                Toast.makeText(this, "Discount applied", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+
+            // Enforce discount limit: if user has a limit and discount exceeds it, require supervisor PIN
+            if (userLimit > 0 && effectivePct > userLimit && sessionManager.user?.isCashier == true) {
+                val pinHelper = com.posterita.pos.android.util.SupervisorPinHelper(this, db, auditLogger)
+                pinHelper.show(
+                    title = "Discount Limit Exceeded",
+                    message = "Discount of ${String.format("%.1f", effectivePct)}% exceeds your limit of ${String.format("%.1f", userLimit)}%. Supervisor approval required.",
+                    onApproved = { supervisor ->
+                        lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.DISCOUNT_LIMIT_EXCEEDED, detail = "Discount ${String.format("%.1f", effectivePct)}% > limit ${String.format("%.1f", userLimit)}%, approved by ${supervisor.firstname ?: supervisor.username}", supervisorId = supervisor.user_id, amount = if (amt > 0) amt else (shoppingCartViewModel.shoppingCart.grandTotalAmount * pct / 100)) }
+                        applyDiscount()
+                    },
+                )
+            } else {
+                applyDiscount()
+            }
         }
 
         // Promo code button (if layout has it, otherwise add programmatically)

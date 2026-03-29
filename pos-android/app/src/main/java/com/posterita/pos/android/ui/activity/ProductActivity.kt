@@ -76,6 +76,9 @@ class ProductActivity : BaseDrawerActivity() {
     lateinit var printerManager: PrinterManager
 
     @Inject
+    lateinit var auditLogger: com.posterita.pos.android.util.AuditLogger
+
+    @Inject
     lateinit var db: AppDatabase
 
     @Inject

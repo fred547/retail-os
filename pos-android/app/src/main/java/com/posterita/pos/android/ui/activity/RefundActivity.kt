@@ -41,6 +41,7 @@ class RefundActivity : BaseActivity(), RefundCartAdapter.OnRefundSelectionListen
     @Inject lateinit var orderService: OrderService
     @Inject lateinit var db: AppDatabase
     @Inject lateinit var connectivityMonitor: com.posterita.pos.android.util.ConnectivityMonitor
+    @Inject lateinit var auditLogger: com.posterita.pos.android.util.AuditLogger
 
     private var orderDetails: OrderDetails? = null
     private var allCartItems: List<CartItem> = emptyList()
@@ -219,10 +220,14 @@ class RefundActivity : BaseActivity(), RefundCartAdapter.OnRefundSelectionListen
                 val supervisors = db.userDao().getAllUsers().filter { it.isSupervisor }
                 val match = supervisors.any { it.pin == enteredPin }
 
+                val matchedSupervisor = supervisors.find { it.pin == enteredPin }
+
                 withContext(Dispatchers.Main) {
-                    if (match) {
+                    if (matchedSupervisor != null) {
+                        lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.SUPERVISOR_PIN_OK, detail = "Supervisor ${matchedSupervisor.firstname ?: matchedSupervisor.username} approved refund", supervisorId = matchedSupervisor.user_id) }
                         processRefund(reason)
                     } else {
+                        lifecycleScope.launch { auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.SUPERVISOR_PIN_FAIL, detail = "Invalid supervisor PIN for refund") }
                         Toast.makeText(
                             this@RefundActivity,
                             "Invalid supervisor PIN",
@@ -289,6 +294,8 @@ class RefundActivity : BaseActivity(), RefundCartAdapter.OnRefundSelectionListen
                 val order = orderService.createOrder(
                     uuid, refundCart, customer, user, account, store, terminal, till, payments
                 )
+
+                auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.ORDER_REFUND, detail = "Refund for order ${details.documentno}: $reason", reason = reason, orderId = uuid, amount = refundCart.grandTotalAmount)
 
                 val refundOrderDetails = order.json?.let { OrderDetails.fromJson(it.toString()) }
 

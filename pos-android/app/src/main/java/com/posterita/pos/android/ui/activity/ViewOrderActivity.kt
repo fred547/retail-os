@@ -14,6 +14,7 @@ import com.posterita.pos.android.service.OrderService
 import com.posterita.pos.android.ui.adapter.ViewOrderAdapter
 import com.posterita.pos.android.ui.viewmodel.OrdersViewModel
 import com.posterita.pos.android.util.NumberUtils
+import com.posterita.pos.android.util.AuditLogger
 import com.posterita.pos.android.util.SessionManager
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +28,7 @@ class ViewOrderActivity : BaseActivity() {
 
     private lateinit var binding: ActivityViewOrderBinding
 
+    @Inject lateinit var auditLogger: AuditLogger
     private val ordersViewModel: OrdersViewModel by viewModels()
 
     @Inject
@@ -127,6 +129,7 @@ class ViewOrderActivity : BaseActivity() {
             .setTitle("Void Order")
             .setMessage("Are you sure you want to void order ${details.documentno}?")
             .setPositiveButton("Void") { _, _ ->
+                lifecycleScope.launch { auditLogger.log(AuditLogger.Actions.ORDER_VOID, detail = "Voided order ${details.documentno}", orderId = uuid, amount = details.grandtotal) }
                 ordersViewModel.voidOrder(uuid)
             }
             .setNegativeButton("Cancel", null)
