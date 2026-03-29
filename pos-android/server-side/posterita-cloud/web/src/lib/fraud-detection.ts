@@ -166,21 +166,23 @@ async function detectDiscountOutlier(ctx: DetectionContext): Promise<FraudSignal
 
   if (!events || events.length < 5) return [];
 
-  // Compute store averages
+  // Compute per-store averages and per-user-per-store breakdowns
   const storeDiscounts: Record<number, number[]> = {};
-  const userDiscounts: Record<number, { name: string; amounts: number[]; store_id: number }> = {};
+  // Track per-user-per-store so we compare user's average at EACH store they worked
+  const userStoreDiscounts: Record<string, { userId: number; name: string; amounts: number[]; store_id: number }> = {};
 
   for (const e of events) {
     const sid = e.store_id || 0;
     const amt = Math.abs(e.amount || 0);
     if (!storeDiscounts[sid]) storeDiscounts[sid] = [];
     storeDiscounts[sid].push(amt);
-    if (!userDiscounts[e.user_id]) userDiscounts[e.user_id] = { name: e.user_name || `User ${e.user_id}`, amounts: [], store_id: sid };
-    userDiscounts[e.user_id].amounts.push(amt);
+    const key = `${e.user_id}_${sid}`;
+    if (!userStoreDiscounts[key]) userStoreDiscounts[key] = { userId: e.user_id, name: e.user_name || `User ${e.user_id}`, amounts: [], store_id: sid };
+    userStoreDiscounts[key].amounts.push(amt);
   }
 
   const signals: FraudSignal[] = [];
-  for (const [userId, data] of Object.entries(userDiscounts)) {
+  for (const [, data] of Object.entries(userStoreDiscounts)) {
     if (data.amounts.length < 3) continue;
     const userAvg = data.amounts.reduce((s, v) => s + v, 0) / data.amounts.length;
     const storeAmounts = storeDiscounts[data.store_id] || [];
@@ -190,7 +192,7 @@ async function detectDiscountOutlier(ctx: DetectionContext): Promise<FraudSignal
     if (ratio > multiplierThreshold) {
       signals.push({
         account_id: ctx.accountId,
-        user_id: parseInt(userId),
+        user_id: data.userId,
         store_id: data.store_id,
         signal_type: "discount_outlier",
         severity: ratio > 3 ? "critical" : "warning",

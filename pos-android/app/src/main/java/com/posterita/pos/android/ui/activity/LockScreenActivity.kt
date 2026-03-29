@@ -39,6 +39,16 @@ class LockScreenActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Restore lockout state from prefs (survives app kill)
+        lockoutUntil = prefsManager.getString("pin_lockout_until", "0").toLongOrNull() ?: 0L
+        attempts = prefsManager.getString("pin_lockout_attempts", "0").toIntOrNull() ?: 0
+        // Reset if lockout has expired
+        if (lockoutUntil > 0 && System.currentTimeMillis() >= lockoutUntil) {
+            lockoutUntil = 0L
+            attempts = 0
+            prefsManager.setString("pin_lockout_until", "0")
+            prefsManager.setString("pin_lockout_attempts", "0")
+        }
         binding = ActivityLockScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -187,7 +197,11 @@ class LockScreenActivity : BaseActivity() {
         }
 
         if (pinBuffer == correctPin) {
-            // Success — unlock
+            // Success — unlock, clear lockout state
+            attempts = 0
+            lockoutUntil = 0L
+            prefsManager.setString("pin_lockout_attempts", "0")
+            prefsManager.setString("pin_lockout_until", "0")
             SessionTimeoutManager.unlock()
 
             val accounts = accountRegistry.getAllAccounts()
@@ -211,9 +225,11 @@ class LockScreenActivity : BaseActivity() {
             pinBuffer = ""
             updateDots()
 
+            prefsManager.setString("pin_lockout_attempts", attempts.toString())
             lifecycleScope.launch {
                 if (attempts >= 5) {
                     lockoutUntil = System.currentTimeMillis() + 5 * 60 * 1000L
+                    prefsManager.setString("pin_lockout_until", lockoutUntil.toString())
                     auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PIN_LOCKOUT, detail = "PIN lockout after $attempts attempts")
                 } else {
                     auditLogger.log(com.posterita.pos.android.util.AuditLogger.Actions.PIN_FAILED, detail = "Wrong PIN attempt #$attempts")

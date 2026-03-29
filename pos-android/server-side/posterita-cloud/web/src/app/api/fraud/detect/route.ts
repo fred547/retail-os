@@ -20,10 +20,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
 
-    // Default period: last 7 days
+    // Default period: last 7 days. Validate dates if provided.
     const now = new Date();
     const periodEnd = body.period_end || now.toISOString();
     const periodStart = body.period_start || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    if (isNaN(Date.parse(periodStart)) || isNaN(Date.parse(periodEnd))) {
+      return NextResponse.json({ error: "Invalid period_start or period_end date" }, { status: 400 });
+    }
 
     const db = getDb();
     const signals = await runFraudDetection(db, accountId, periodStart, periodEnd);
