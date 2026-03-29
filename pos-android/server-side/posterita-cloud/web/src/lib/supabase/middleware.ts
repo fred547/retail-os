@@ -153,17 +153,23 @@ export async function updateSession(request: NextRequest) {
 
   // Check if user has a valid OTT cookie (Android WebView session)
   const hasOttCookie = request.cookies.has(OTT_COOKIE);
+  // Check if user has a demo session cookie (public demo)
+  const hasDemoCookie = request.cookies.has("posterita_demo_session");
 
   // Redirect unauthenticated users to login
   if (
     !user &&
     !hasOttCookie &&
+    !hasDemoCookie &&
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/customer/login") &&
     !pathname.startsWith("/manager/login") &&
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/api") &&
     !pathname.startsWith("/pos") &&
+    !pathname.startsWith("/demo") &&
+    !pathname.startsWith("/download") &&
+    !pathname.startsWith("/offline") &&
     pathname !== "/docs"
   ) {
     const url = request.nextUrl.clone();
