@@ -3,11 +3,11 @@
  */
 
 const PRODUCTS = [
-  { id: 'desktop-pos', name: '13" Desktop POS (Android)', price: 489, priceId: 'pri_01kmw4hqyn7smfvyafsz2qq14n', image: '/assets/hardware/desktop-pos.jpg', desc: 'All-in-one touchscreen POS terminal' },
-  { id: 'barcode-scanner', name: 'Platform Barcode Scanner', price: 160, priceId: 'pri_01kmw4hrbfprj8891zw8z7x2c5', image: '/assets/hardware/wireless-scanner.jpg', desc: 'Wireless 2D, USB + Bluetooth' },
-  { id: 'thermal-printer', name: 'Mobile Thermal Printer', price: 145, priceId: 'pri_01kmw4hrq7xghh5kf7vh310z1s', image: '/assets/hardware/thermal-printer.jpg', desc: 'Portable 58mm Bluetooth receipt printer' },
-  { id: 'cash-drawer', name: 'Mini Cash Drawer', price: 62, priceId: 'pri_01kmw4hs44195d793m21dygtw2', image: '/assets/hardware/cash-drawer.png', desc: 'Compact RJ11, 4 bill / 5 coin slots' },
-  { id: 'all-in-one', name: 'All-in-One Desktop POS', price: 599, priceId: 'pri_01kmw4hskgeygbtp47c8stawwm', image: '/assets/hardware/all-in-one-pos.png', desc: 'Windows POS with built-in printer' },
+  { id: 'desktop-pos', name: '13" Desktop POS (Android)', price: 489, priceId: 'pri_01kmw4hqyn7smfvyafsz2qq14n', image: 'https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e801502d706adc32cc994_AIO-1331_3.jpg', desc: 'All-in-one touchscreen POS terminal' },
+  { id: 'barcode-scanner', name: 'Platform Barcode Scanner', price: 160, priceId: 'pri_01kmw4hrbfprj8891zw8z7x2c5', image: 'https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/67e68d7206f72cb6bd50910a_Picture11.jpg', desc: 'Wireless 2D, USB + Bluetooth' },
+  { id: 'thermal-printer', name: 'Mobile Thermal Printer', price: 145, priceId: 'pri_01kmw4hrq7xghh5kf7vh310z1s', image: 'https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e7a3c39ecefbfd750f18d_CP-P29_2.jpg', desc: 'Portable 58mm Bluetooth receipt printer' },
+  { id: 'cash-drawer', name: 'Mini Cash Drawer', price: 62, priceId: 'pri_01kmw4hs44195d793m21dygtw2', image: 'https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e8283f4fa4f494e025f09_20250214_134309.png', desc: 'Compact RJ11, 4 bill / 5 coin slots' },
+  { id: 'all-in-one', name: 'All-in-One Desktop POS', price: 599, priceId: 'pri_01kmw4hskgeygbtp47c8stawwm', image: 'https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e801502d706adc32cc994_AIO-1331_3.jpg', desc: 'Windows POS with built-in printer' },
   { id: 'label-printer', name: 'Zebra Label Printer', price: 320, priceId: 'pri_01kmw4ht082y779ba99vg587ae', image: '/assets/hardware/product-2.png', desc: 'ZPL thermal label printer for shelf tags' },
 ];
 
@@ -134,34 +134,55 @@ function showToast(message) {
 function proceedToCheckout() {
   if (cart.length === 0) return;
 
-  // Build Paddle checkout items (Paddle v2 uses price_id)
+  // Build Paddle checkout items
   const items = cart.map(item => {
     const product = PRODUCTS.find(p => p.id === item.id);
     if (!product) return null;
-    return { price_id: product.priceId, quantity: item.qty };
+    return { priceId: product.priceId, quantity: item.qty };
   }).filter(Boolean);
 
-  // Open Paddle checkout overlay
-  if (window.Paddle) {
+  console.log('[Paddle Checkout] Items:', JSON.stringify(items));
+
+  if (!window.Paddle) {
+    alert('Payment system is loading. Please try again in a moment.');
+    logCheckoutError('Paddle.js not loaded', { items });
+    return;
+  }
+
+  try {
     window.Paddle.Checkout.open({
       items: items,
       settings: {
         displayMode: 'overlay',
         theme: 'light',
-        locale: document.documentElement.lang || 'en',
+        locale: 'en',
         successUrl: window.location.origin + '/?order=success',
       },
-      customData: {
-        source: 'www-hardware-store',
-        cart_items: JSON.stringify(cart),
-      },
     });
-    // Close cart sidebar
     toggleCart();
-  } else {
-    // Fallback if Paddle.js not loaded
-    alert('Payment system is loading. Please try again in a moment.');
+  } catch (err) {
+    console.error('[Paddle Checkout] Error:', err);
+    alert('Checkout failed: ' + (err.message || 'Unknown error') + '. Please try again.');
+    logCheckoutError(err.message || String(err), { items });
   }
+}
+
+// Log checkout errors to our error API for debugging
+function logCheckoutError(message, context) {
+  try {
+    fetch('https://web.posterita.com/api/errors/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        severity: 'ERROR',
+        tag: 'WWW_CHECKOUT',
+        message: 'Paddle checkout error: ' + message,
+        screen: window.location.pathname,
+        device_info: navigator.userAgent,
+        context: JSON.stringify(context),
+      }),
+    }).catch(function() {});
+  } catch (_) {}
 }
 
 // Check for success return

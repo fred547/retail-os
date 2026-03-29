@@ -1171,7 +1171,17 @@ export async function POST(req: NextRequest) {
             delivery_address: d.delivery_address ?? null,
             delivery_city: d.delivery_city ?? null,
             delivery_notes: d.delivery_notes ?? null,
+            driver_id: d.driver_id ?? null,
+            driver_name: d.driver_name ?? null,
             status: d.status ?? "pending",
+            estimated_time: d.estimated_time ?? null,
+            actual_delivery_at: d.actual_delivery_at ?? null,
+            assigned_at: d.assigned_at ?? null,
+            picked_up_at: d.picked_up_at ?? null,
+            distance_km: d.distance_km ?? null,
+            delivery_fee: d.delivery_fee ?? null,
+            created_at: d.created_at ?? null,
+            updated_at: d.updated_at ?? null,
           };
           const { error } = await getDb().from("delivery").insert(dbDelivery);
           if (error) {
@@ -1204,6 +1214,12 @@ export async function POST(req: NextRequest) {
             status: s.status ?? "active",
             uuid: s.uuid || null,  // treat empty string as null
             created_at: s.created_at ?? s.createdAt ?? null,
+            scheduled_start: s.scheduled_start ?? s.scheduledStart ?? null,
+            scheduled_end: s.scheduled_end ?? s.scheduledEnd ?? null,
+            overtime_minutes: s.overtime_minutes ?? s.overtimeMinutes ?? 0,
+            is_late: s.is_late ?? s.isLate ?? false,
+            late_minutes: s.late_minutes ?? s.lateMinutes ?? 0,
+            total_break_minutes: s.total_break_minutes ?? s.totalBreakMinutes ?? 0,
           };
 
           // Reuse insertOrUpdate — handles race conditions and duplicate pushes via UUID

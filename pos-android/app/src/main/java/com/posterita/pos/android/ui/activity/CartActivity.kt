@@ -2377,6 +2377,9 @@ class CartActivity : BaseDrawerActivity() {
         dialogView.findViewById<View>(R.id.button_remove).setOnClickListener {
             shoppingCartViewModel.setDiscountOnTotal(0.0, 0.0)
             appliedPromotion = null
+            clearPromotionOnCart()
+            updatePromoBanner(null)
+            updateDiscountLabel(null)
             Toast.makeText(this, "Discount removed", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
@@ -2450,6 +2453,8 @@ class CartActivity : BaseDrawerActivity() {
                     if (result != null) {
                         appliedPromotion = result
                         setPromotionOnCart(result)
+                        updatePromoBanner(result)
+                        updateDiscountLabel(result.description)
                         shoppingCartViewModel.setDiscountOnTotal(result.discountAmount, 0.0)
                         Toast.makeText(
                             this@CartActivity,
@@ -3177,7 +3182,7 @@ class CartActivity : BaseDrawerActivity() {
         val cartItems = shoppingCartViewModel.cartItems.value ?: return
         if (cartItems.isEmpty()) {
             appliedPromotion = null
-            binding.textViewOrderNote?.let { /* promotion display handled below */ }
+            updatePromoBanner(null)
             return
         }
 
@@ -3193,6 +3198,7 @@ class CartActivity : BaseDrawerActivity() {
                 val best = applicable.first()
                 appliedPromotion = best
                 setPromotionOnCart(best)
+                updatePromoBanner(best)
                 // Apply promotion as discount on total (auto-apply, no user action needed)
                 val currentDiscount = shoppingCartViewModel.shoppingCart.discountOnTotalAmount
                 val currentPct = shoppingCartViewModel.shoppingCart.discountOnTotalPercentage
@@ -3200,11 +3206,33 @@ class CartActivity : BaseDrawerActivity() {
                 if (currentDiscount == 0.0 && currentPct == 0.0) {
                     shoppingCartViewModel.setDiscountOnTotal(best.discountAmount, 0.0)
                 }
+                // Update discount label to show promo name
+                updateDiscountLabel(best.description)
             } else {
                 appliedPromotion = null
                 clearPromotionOnCart()
+                updatePromoBanner(null)
+                updateDiscountLabel(null)
             }
         }
+    }
+
+    /** Show or hide the green promotion banner above the cart items. */
+    private fun updatePromoBanner(promo: com.posterita.pos.android.service.PromotionService.AppliedPromotion?) {
+        val banner = binding.textViewPromoBanner ?: return
+        if (promo != null) {
+            val currency = sessionManager.account?.currency ?: ""
+            banner.text = "${promo.description} (-$currency ${NumberUtils.formatPrice(promo.discountAmount)})"
+            banner.visibility = View.VISIBLE
+        } else {
+            banner.visibility = View.GONE
+        }
+    }
+
+    /** Update the discount label text to show the promotion name instead of generic "Discount". */
+    private fun updateDiscountLabel(promoDescription: String?) {
+        val label = binding.txtDiscountTotal ?: return
+        label.text = if (promoDescription != null) "Promo" else "Discount"
     }
 
     private fun setPromotionOnCart(promo: com.posterita.pos.android.service.PromotionService.AppliedPromotion) {

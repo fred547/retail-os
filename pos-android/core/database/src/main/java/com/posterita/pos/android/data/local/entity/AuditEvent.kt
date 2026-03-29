@@ -17,5 +17,5 @@ data class AuditEvent(
     val terminalId: Int = 0,
     val orderId: String? = null, // Order UUID if applicable
     val amount: Double? = null,  // Monetary value of the action
-    val isSynced: String = "N"   // For future backend sync
+    val isSynced: String = "N"   // Local-only sync flag — used by AuditEventDao queries, not sent to Supabase
 )

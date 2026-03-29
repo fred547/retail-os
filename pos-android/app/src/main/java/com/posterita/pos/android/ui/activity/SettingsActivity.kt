@@ -46,6 +46,15 @@ class SettingsActivity : BaseDrawerActivity() {
             startActivity(Intent(this, ManageTaxActivity::class.java))
         }
 
+        // Business — WebView links to web console pages
+        binding.reportsOption.setOnClickListener { openWebConsole("/customer/reports", "Reports") }
+        binding.staffScheduleOption.setOnClickListener { openWebConsole("/customer/staff/schedule", "Staff Schedule") }
+        binding.timesheetsOption.setOnClickListener { openWebConsole("/customer/staff/timesheets", "Timesheets") }
+        binding.quotationsOption.setOnClickListener { openWebConsole("/customer/quotations", "Quotations") }
+        binding.suppliersOption.setOnClickListener { openWebConsole("/customer/suppliers", "Suppliers") }
+        binding.tagsOption.setOnClickListener { openWebConsole("/customer/tags", "Tags") }
+        binding.billingOption.setOnClickListener { openWebConsole("/customer/billing", "Billing") }
+
         // Restaurant tables — only visible in restaurant mode
         if (prefsManager.isRestaurant) {
             binding.tablesOption.visibility = View.VISIBLE

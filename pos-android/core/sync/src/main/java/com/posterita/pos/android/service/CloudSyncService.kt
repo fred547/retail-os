@@ -2217,7 +2217,17 @@ class CloudSyncService @Inject constructor(
         deliveryAddress = delivery_address,
         deliveryCity = delivery_city,
         deliveryNotes = delivery_notes,
+        driverId = driver_id,
+        driverName = driver_name,
         status = status,
+        estimatedTime = estimated_time,
+        actualDeliveryAt = actual_delivery_at,
+        assignedAt = assigned_at,
+        pickedUpAt = picked_up_at,
+        distanceKm = distance_km,
+        deliveryFee = delivery_fee,
+        createdAt = created_at,
+        updatedAt = updated_at,
     )
 
     private fun com.posterita.pos.android.data.local.entity.Shift.toSyncShift(): SyncShift = SyncShift(
@@ -2233,5 +2243,11 @@ class CloudSyncService @Inject constructor(
         notes = notes,
         status = status,
         createdAt = created_at,
+        scheduledStart = scheduled_start,
+        scheduledEnd = scheduled_end,
+        overtimeMinutes = overtime_minutes,
+        isLate = is_late,
+        lateMinutes = late_minutes,
+        totalBreakMinutes = total_break_minutes,
     )
 }

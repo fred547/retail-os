@@ -88,11 +88,28 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/image_view_search_customer" />
 
+    <!-- Promotion banner -->
+    <TextView
+        android:id="@+id/text_view_promo_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/posterita_secondary_light"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textColor="@color/posterita_secondary"
+        android:textSize="11sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/text_view_order_note" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_cart_lines"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/text_view_order_note"
+        app:layout_constraintTop_toBottomOf="@id/text_view_promo_banner"
         app:layout_constraintBottom_toTopOf="@id/constraintLayout"
         android:layout_marginStart="@dimen/_10sdp"
         android:layout_marginEnd="@dimen/_10sdp"

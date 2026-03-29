@@ -84,11 +84,17 @@ class ProductActivity : BaseDrawerActivity() {
     @Inject
     lateinit var menuScheduleService: com.posterita.pos.android.service.MenuScheduleService
 
+    @Inject
+    lateinit var promotionService: com.posterita.pos.android.service.PromotionService
+
     private lateinit var productAdapter: ProductAdapter
     private var cartAdapter: CartProductAdapter? = null
     private var categoryAdapter: ProductCategoryAdapter? = null
     private var categoryList: List<ProductCategory> = emptyList()
     private var lastAddedProduct: Product? = null
+    /** Currently applied promotion in the inline cart (tablet). */
+    private var appliedPromotion: com.posterita.pos.android.service.PromotionService.AppliedPromotion? = null
+
     /** True when the layout includes an inline cart panel (tablet landscape or tablet portrait). */
     private val isLandscapeWithCart: Boolean
         get() = binding.recyclerViewCartItems != null
@@ -2232,6 +2238,10 @@ class ProductActivity : BaseDrawerActivity() {
         shoppingCartViewModel.grandTotalAmount.observe(this) { amount ->
             val currency = sessionManager.account?.currency ?: ""
             binding.textViewGrandTotal?.text = "$currency${NumberUtils.formatPrice(amount ?: 0.0)}"
+            // Check promotions for inline cart on tablets
+            if (isLandscapeWithCart) {
+                checkInlineCartPromotions()
+            }
         }
 
         shoppingCartViewModel.customer.observe(this) { customer ->
@@ -2248,6 +2258,60 @@ class ProductActivity : BaseDrawerActivity() {
             }
         }
 
+    }
+
+    // ==================== PROMOTIONS (inline cart on tablets) ====================
+
+    /**
+     * Check for applicable promotions and show a banner in the inline cart panel.
+     * Only runs on tablet layouts that have an inline cart (isLandscapeWithCart).
+     */
+    private fun checkInlineCartPromotions() {
+        val cartItems = shoppingCartViewModel.cartItems.value ?: return
+        if (cartItems.isEmpty()) {
+            appliedPromotion = null
+            updateInlinePromoBanner(null)
+            return
+        }
+
+        val subtotal = shoppingCartViewModel.subTotalAmount.value ?: 0.0
+        val storeId = sessionManager.store?.storeId ?: 0
+
+        lifecycleScope.launch {
+            val applicable = withContext(Dispatchers.IO) {
+                promotionService.findApplicablePromotions(cartItems, subtotal, storeId)
+            }
+
+            if (applicable.isNotEmpty()) {
+                val best = applicable.first()
+                appliedPromotion = best
+                // Set promotion on the cart model so it flows to CartActivity/order
+                val cart = shoppingCartViewModel.shoppingCart
+                cart.promotionName = best.promotion.name
+                cart.promotionId = best.promotion.id
+                cart.promotionDiscount = best.discountAmount
+                updateInlinePromoBanner(best)
+            } else {
+                appliedPromotion = null
+                val cart = shoppingCartViewModel.shoppingCart
+                cart.promotionName = null
+                cart.promotionId = null
+                cart.promotionDiscount = 0.0
+                updateInlinePromoBanner(null)
+            }
+        }
+    }
+
+    /** Show or hide the promotion banner in the inline cart panel (tablets). */
+    private fun updateInlinePromoBanner(promo: com.posterita.pos.android.service.PromotionService.AppliedPromotion?) {
+        val banner = binding.textViewPromoBanner ?: return
+        if (promo != null) {
+            val currency = sessionManager.account?.currency ?: ""
+            banner.text = "${promo.description} (-$currency ${NumberUtils.formatPrice(promo.discountAmount)})"
+            banner.visibility = View.VISIBLE
+        } else {
+            banner.visibility = View.GONE
+        }
     }
 
 }

@@ -648,6 +648,16 @@ export default function Sidebar({
           <ChevronRight size={14} className="ml-auto" />
         </a>
 
+        {/* Hardware Store */}
+        <a
+          href="/hardware"
+          className="sidebar-link mx-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+        >
+          <Smartphone size={18} />
+          Buy Hardware
+          <ChevronRight size={14} className="ml-auto" />
+        </a>
+
         <div className="p-4 pt-2">
           {superAdmin && (
             <div className="text-xs text-gray-500 px-4 pb-2">

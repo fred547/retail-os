@@ -306,7 +306,17 @@ data class SyncDelivery(
     @SerializedName("delivery_address") val deliveryAddress: String? = null,
     @SerializedName("delivery_city") val deliveryCity: String? = null,
     @SerializedName("delivery_notes") val deliveryNotes: String? = null,
+    @SerializedName("driver_id") val driverId: Int? = null,
+    @SerializedName("driver_name") val driverName: String? = null,
     @SerializedName("status") val status: String = "pending",
+    @SerializedName("estimated_time") val estimatedTime: String? = null,
+    @SerializedName("actual_delivery_at") val actualDeliveryAt: String? = null,
+    @SerializedName("assigned_at") val assignedAt: String? = null,
+    @SerializedName("picked_up_at") val pickedUpAt: String? = null,
+    @SerializedName("distance_km") val distanceKm: Double? = null,
+    @SerializedName("delivery_fee") val deliveryFee: Double? = null,
+    @SerializedName("created_at") val createdAt: String? = null,
+    @SerializedName("updated_at") val updatedAt: String? = null,
 )
 
 data class SyncShift(
@@ -322,6 +332,12 @@ data class SyncShift(
     @SerializedName("notes") val notes: String? = null,
     @SerializedName("status") val status: String = "active",
     @SerializedName("created_at") val createdAt: String? = null,
+    @SerializedName("scheduled_start") val scheduledStart: String? = null,
+    @SerializedName("scheduled_end") val scheduledEnd: String? = null,
+    @SerializedName("overtime_minutes") val overtimeMinutes: Int? = null,
+    @SerializedName("is_late") val isLate: Boolean? = null,
+    @SerializedName("late_minutes") val lateMinutes: Int? = null,
+    @SerializedName("total_break_minutes") val totalBreakMinutes: Int? = null,
 )
 
 data class SyncAuditEvent(

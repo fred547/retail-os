@@ -760,7 +760,7 @@
       <p class="text-center text-xs text-gray-400 mb-6">Add items to your cart and checkout. Free shipping in Mauritius.</p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
-          <img src="/assets/hardware/desktop-pos.jpg" alt="13-inch Desktop POS Android terminal" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e801502d706adc32cc994_AIO-1331_3.jpg" alt="13-inch Desktop POS Android terminal" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
           <div class="p-4">
             <h4 class="font-bold text-sm">13&rdquo; Desktop POS (Android)</h4>
             <p class="text-gray-400 text-xs mt-1">All-in-one touchscreen POS terminal</p>
@@ -771,7 +771,7 @@
           </div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
-          <img src="/assets/hardware/wireless-scanner.jpg" alt="Wireless platform barcode scanner" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/67e68d7206f72cb6bd50910a_Picture11.jpg" alt="Wireless platform barcode scanner" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
           <div class="p-4">
             <h4 class="font-bold text-sm">Platform Barcode Scanner</h4>
             <p class="text-gray-400 text-xs mt-1">Wireless 2D, USB + Bluetooth</p>
@@ -782,7 +782,7 @@
           </div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
-          <img src="/assets/hardware/thermal-printer.jpg" alt="Mobile Bluetooth thermal receipt printer" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e7a3c39ecefbfd750f18d_CP-P29_2.jpg" alt="Mobile Bluetooth thermal receipt printer" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
           <div class="p-4">
             <h4 class="font-bold text-sm">Mobile Thermal Printer</h4>
             <p class="text-gray-400 text-xs mt-1">Portable 58mm Bluetooth receipt printer</p>
@@ -793,7 +793,7 @@
           </div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
-          <img src="/assets/hardware/cash-drawer.png" alt="Mini cash drawer for POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e8283f4fa4f494e025f09_20250214_134309.png" alt="Mini cash drawer for POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
           <div class="p-4">
             <h4 class="font-bold text-sm">Mini Cash Drawer</h4>
             <p class="text-gray-400 text-xs mt-1">Compact RJ11, 4 bill / 5 coin slots</p>
@@ -804,7 +804,7 @@
           </div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
-          <img src="/assets/hardware/all-in-one-pos.png" alt="All-in-One Windows Desktop POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/685e801502d706adc32cc994_AIO-1331_3.jpg" alt="All-in-One Windows Desktop POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
           <div class="p-4">
             <h4 class="font-bold text-sm">All-in-One Desktop POS</h4>
             <p class="text-gray-400 text-xs mt-1">Windows POS with built-in printer</p>
@@ -1867,7 +1867,21 @@
 
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
-  Paddle.Initialize({ token: 'live_8b5cd0d5a8daf5befb144eb86d4' });
+  Paddle.Initialize({
+    token: 'live_8b5cd0d5a8daf5befb144eb86d4',
+    eventCallback: function(event) {
+      console.log('[Paddle Event]', event.name, event);
+      if (event.name === 'checkout.error') {
+        console.error('[Paddle Checkout Error]', event.data);
+        if (typeof logCheckoutError === 'function') {
+          logCheckoutError('Paddle overlay error: ' + JSON.stringify(event.data), { event_name: event.name });
+        }
+      }
+      if (event.name === 'checkout.completed') {
+        console.log('[Paddle] Checkout completed!', event.data);
+      }
+    }
+  });
 </script>
 <script src="/cart.js"></script>
 <script src="/i18n.js"></script>

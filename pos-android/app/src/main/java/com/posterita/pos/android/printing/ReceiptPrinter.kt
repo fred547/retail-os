@@ -159,6 +159,9 @@ class ReceiptPrinter(
         // Totals
         out.write(formatLine("Subtotal:", NumberUtils.formatPrice(order.subtotal), lineWidth))
         out.write(formatLine("Tax:", NumberUtils.formatPrice(order.taxtotal), lineWidth))
+        if (order.promotion_name != null && order.promotion_discount > 0) {
+            out.write(formatLine("Promo (${order.promotion_name}):", "-${NumberUtils.formatPrice(order.promotion_discount)}", lineWidth))
+        }
         if (order.tipsamt > 0) {
             out.write(formatLine("Tips:", NumberUtils.formatPrice(order.tipsamt), lineWidth))
         }

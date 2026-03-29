@@ -90,7 +90,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:layout_marginStart="4dp" app:cardCornerRadius="12dp" app:cardElevation="0dp"
+            android:layout_marginStart="4dp" android:layout_marginEnd="4dp" app:cardCornerRadius="12dp" app:cardElevation="0dp"
             app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:gravity="center" android:padding="12dp">
@@ -99,6 +99,20 @@
                     android:fontFamily="@font/lexend_bold" android:textColor="#10B981" />
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Delivered" android:textSize="12sp" android:textColor="@color/posterita_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="4dp" app:cardCornerRadius="12dp" app:cardElevation="0dp"
+            app:strokeWidth="1dp" app:strokeColor="@color/posterita_line">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="12dp">
+                <TextView android:id="@+id/textTotal" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textSize="24sp"
+                    android:fontFamily="@font/lexend_bold" android:textColor="@color/posterita_ink" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Total" android:textSize="12sp" android:textColor="@color/posterita_muted" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
