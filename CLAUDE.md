@@ -90,7 +90,7 @@ These are the column names that get confused most often. **Always verify against
 | `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
 | `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
 | `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00058) |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00059) |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
@@ -156,7 +156,7 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Verify field names and enum cases match the actual schema/API response BEFORE writing test assertions.
 - After any fix, keep running and fixing until ALL tests pass with zero failures. Do not stop at partial success.
 
-**Test counts (1,617 total):** 583 Android unit + 570 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
+**Test counts (1,625 total):** 583 Android unit + 578 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
 
 **Android instrumented tests MUST run on Firebase Test Lab** — never locally. Use `gcloud firebase test android run` with project `posterita-retail-os`. Unit tests (`testDebugUnitTest`) can still run locally. Firebase has 10 test classes (2 DAO + 8 UI).
 
@@ -234,6 +234,7 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **download** | GET /api/download/android → GitHub Releases latest APK | Sidebar download link |
 | **staff/roster** | holidays (CRUD+seed), labor-config, operating-hours (+overrides), roster-slots (+[id]), staffing-requirements, roster-periods (+[id]+coverage/hours/approve), picks (+[id]+bulk) | Shift roster lifecycle |
 | **billing** | checkout, status, plan, portal, cancel, change-plan, webhook | Paddle billing |
+| **fraud** | signals (GET/PATCH), audit-trail (GET), detect (POST) | Fraud prevention |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
 **Render Backend** (`posterita-backend.onrender.com`): `/health`, `/webhook/whatsapp`, `/monitor/errors`, `/monitor/sync`, `/monitor/accounts`
@@ -457,7 +458,7 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification).
 
-**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with plan-based feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app + shift roster (self-service picking, weighted hours, store hours, holidays, labor config), Paddle billing integration (plan tiers, trials, webhook lifecycle), terminal device locking, large data volume handling (batch sync + paginated pull), 640+ automated tests, www.posterita.com redesign, web customer signup page.
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with plan-based feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app + shift roster (self-service picking, weighted hours, store hours, holidays, labor config), fraud prevention (audit logging, discount/price enforcement, anomaly detection, dashboard), Paddle billing integration (plan tiers, trials, webhook lifecycle), terminal device locking, large data volume handling (batch sync + paginated pull), 640+ automated tests, www.posterita.com redesign, web customer signup page.
 
 **Phase 4.5 — Mauritius Market (CURRENT):**
 | # | Feature | Priority | Status | Notes |
@@ -552,6 +553,25 @@ Self-service shift picking with weighted hours. Staff picks shifts from template
 **Period lifecycle:** `open → picking → review → approved → locked`. Approve generates `staff_schedule` rows from approved picks.
 
 **Android:** 6 Room entities + DAOs (v42), CloudSync pull integration, StaffHomeActivity "Roster" button (WebView) + "My Upcoming Shifts" card.
+
+## Fraud Prevention
+
+Layered fraud prevention: local enforcement on Android, server-side anomaly detection, web dashboard for visibility.
+
+**Tables:** `audit_event` (server-side mirror of Room AuditEvent, received via sync), `fraud_signal` (server-generated anomaly records with severity/status lifecycle)
+
+**Android audit logging:** AuditLogger wired into 11 high-risk flows: order void, refund (with supervisor ID), discount apply, price override, cart clear/remove, till open/close (with variance), cash drawer open, PIN failures. All events include monetary `amount` field. Pushed to server via sync (same fire-and-forget pattern as error_logs).
+
+**Local enforcement:**
+- **Discount limits:** `User.discountlimit` enforced — cashier exceeds limit → supervisor PIN required via SupervisorPinHelper
+- **Price override auth:** Cashier changes price → supervisor PIN required. Supervisors/admins override freely (still logged)
+- **PIN rate limiting:** LockScreen + SupervisorPinHelper: max 5 attempts, then 5-minute lockout
+
+**Anomaly detection (7 rules):** high_void_rate (>5%), cash_shortage (>3%), excessive_refunds (>10% per user), discount_outlier (>2x store avg), price_override_pattern (>10/day), drawer_no_sale (>3/day), pin_brute_force (>10/day). Runs via `POST /api/fraud/detect`.
+
+**API:** `/api/fraud/signals` (GET/PATCH), `/api/fraud/audit-trail` (GET), `/api/fraud/detect` (POST)
+
+**Web:** `/fraud` dashboard (summary cards, active signals with ack/resolve/dismiss, recent high-risk activity), `/fraud/audit-trail` (full searchable audit log with filters)
 
 ## PWA Offline POS (Windows/Mac/Linux)
 
