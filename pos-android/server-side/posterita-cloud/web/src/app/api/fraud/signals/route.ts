@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const status = url.searchParams.get("status");
     const signalType = url.searchParams.get("signal_type");
     const severity = url.searchParams.get("severity");
-    const limit = parseInt(url.searchParams.get("limit") || "50");
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50"), 200);
     const offset = parseInt(url.searchParams.get("offset") || "0");
 
     let query = getDb()

@@ -514,7 +514,8 @@ export async function POST(req: NextRequest) {
           });
           if (!error) auditEventsSynced++;
         } catch (e: any) {
-          console.warn("Audit event insert failed:", e.message);
+          // Don't fail sync for audit event issues — log and continue
+          try { await logToErrorDb(body.account_id, `Audit event insert failed: ${e.message}`); } catch (_) {}
         }
       }
     }

@@ -14,24 +14,11 @@ async function logToErrorDb(accountId: string, message: string, stackTrace?: str
 
 /** POST /api/fraud/detect — run anomaly detection for an account */
 export async function POST(req: NextRequest) {
-  // Support both session auth and direct account_id in body (for cron)
-  let accountId = await getSessionAccountId();
-  let fromBody = false;
-
-  if (!accountId) {
-    try {
-      const body = await req.json();
-      if (body.account_id) {
-        accountId = body.account_id;
-        fromBody = true;
-      }
-    } catch (_) {}
-  }
-
+  const accountId = await getSessionAccountId();
   if (!accountId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   try {
-    const body = fromBody ? { account_id: accountId } : await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
 
     // Default period: last 7 days
     const now = new Date();

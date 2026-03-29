@@ -21,12 +21,12 @@ class SupervisorPinHelper(
     private val db: AppDatabase,
     private val auditLogger: AuditLogger,
 ) {
-    private var failedAttempts = 0
-    private var lockoutUntil = 0L
-
     companion object {
         private const val MAX_ATTEMPTS = 5
         private const val LOCKOUT_MS = 5 * 60 * 1000L // 5 minutes
+        // Static: persist across instances so re-creating the helper doesn't reset the counter
+        private var failedAttempts = 0
+        private var lockoutUntil = 0L
     }
 
     /**
@@ -121,6 +121,7 @@ class SupervisorPinHelper(
                     }
                 }
             } catch (e: Exception) {
+                AppErrorLogger.warn(context, "SupervisorPinHelper", "PIN verification error", e)
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }

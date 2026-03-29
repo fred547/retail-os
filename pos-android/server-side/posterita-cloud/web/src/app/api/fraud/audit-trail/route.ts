@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const storeId = url.searchParams.get("store_id");
     const startDate = url.searchParams.get("start_date");
     const endDate = url.searchParams.get("end_date");
-    const limit = parseInt(url.searchParams.get("limit") || "100");
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "100"), 500);
     const offset = parseInt(url.searchParams.get("offset") || "0");
 
     let query = getDb()

@@ -129,8 +129,8 @@ describe("Fraud detection rules", () => {
       from: (table: string) => {
         if (table === "orders") {
           return createChainWithData([
-            ...Array.from({ length: 90 }, (_, i) => ({ order_id: i, is_void: false, store_id: 1 })),
-            ...Array.from({ length: 10 }, (_, i) => ({ order_id: 100 + i, is_void: true, store_id: 1 })),
+            ...Array.from({ length: 90 }, (_, i) => ({ order_id: i, doc_status: "CO", store_id: 1 })),
+            ...Array.from({ length: 10 }, (_, i) => ({ order_id: 100 + i, doc_status: "VO", store_id: 1 })),
           ]);
         }
         return createChainWithData([]);

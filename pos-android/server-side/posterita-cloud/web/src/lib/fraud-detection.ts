@@ -32,20 +32,20 @@ async function detectHighVoidRate(ctx: DetectionContext): Promise<FraudSignal[]>
   const threshold = 0.05; // 5%
   const { data: orders } = await ctx.db
     .from("orders")
-    .select("order_id, is_void, store_id")
+    .select("order_id, doc_status, store_id")
     .eq("account_id", ctx.accountId)
     .gte("date_ordered", ctx.periodStart)
     .lte("date_ordered", ctx.periodEnd);
 
   if (!orders || orders.length < 10) return []; // Need minimum sample
 
-  // Group by store
+  // Group by store — void orders have doc_status = 'VO'
   const byStore: Record<number, { total: number; voids: number }> = {};
   for (const o of orders) {
     const sid = o.store_id || 0;
     if (!byStore[sid]) byStore[sid] = { total: 0, voids: 0 };
     byStore[sid].total++;
-    if (o.is_void) byStore[sid].voids++;
+    if (o.doc_status === "VO") byStore[sid].voids++;
   }
 
   const signals: FraudSignal[] = [];
@@ -76,7 +76,7 @@ async function detectCashShortage(ctx: DetectionContext): Promise<FraudSignal[]>
   const threshold = 0.03; // 3%
   const { data: tills } = await ctx.db
     .from("till")
-    .select("till_id, store_id, cashamt, closing_amt, opening_amt, status")
+    .select("till_id, store_id, cash_amt, closing_amt, opening_amt, status")
     .eq("account_id", ctx.accountId)
     .eq("status", "closed")
     .gte("date_closed", ctx.periodStart)
@@ -86,7 +86,7 @@ async function detectCashShortage(ctx: DetectionContext): Promise<FraudSignal[]>
 
   const signals: FraudSignal[] = [];
   for (const till of tills) {
-    const expected = (till.cashamt || 0) + (till.opening_amt || 0);
+    const expected = (till.cash_amt || 0) + (till.opening_amt || 0);
     if (expected <= 0) continue;
     const actual = till.closing_amt || 0;
     const shortage = expected - actual;
@@ -352,10 +352,16 @@ export async function runFraudDetection(db: any, accountId: string, periodStart:
   ]);
 
   const signals: FraudSignal[] = [];
+  const errors: string[] = [];
   for (const result of results) {
     if (result.status === "fulfilled") {
       signals.push(...result.value);
+    } else {
+      errors.push(result.reason?.message || String(result.reason));
     }
+  }
+  if (errors.length > 0) {
+    console.warn(`Fraud detection: ${errors.length} rule(s) failed:`, errors.join("; "));
   }
   return signals;
 }
