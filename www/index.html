@@ -13,7 +13,7 @@
   <meta property="og:description" content="Move from Manual to Digital with Posterita Retail OS. Boost Sales, Track Inventory, and Get Instant Insights. Free plan, works offline." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.posterita.com" />
-  <meta property="og:image" content="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67d7b7ce6152ca19c9696c12_shutterstock_2563142383.png" />
+  <meta property="og:image" content="/assets/hero/hero-main.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:site_name" content="Posterita" />
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Posterita POS — Smarter Sales Start Here" />
   <meta name="twitter:description" content="Cloud-based POS for retail, restaurants &amp; warehouses. Free plan. Works offline on Android, Windows, Mac." />
-  <meta name="twitter:image" content="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67d7b7ce6152ca19c9696c12_shutterstock_2563142383.png" />
+  <meta name="twitter:image" content="/assets/hero/hero-main.png" />
 
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -80,8 +80,8 @@
   <link rel="apple-touch-icon" href="/img/posterita-logo-square.png" />
 
   <!-- Performance hints -->
-  <link rel="preconnect" href="https://cdn.prod.website-files.com" />
-  <link rel="dns-prefetch" href="https://cdn.prod.website-files.com" />
+  <!-- CDN preconnect removed - images served locally -->
+  
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -116,6 +116,8 @@
     @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
     [x-cloak] { display: none !important; }
     .mobile-menu { transition: max-height 0.3s ease, opacity 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease; }
   </style>
 </head>
 <body class="bg-white text-gray-900 antialiased" itemscope itemtype="https://schema.org/WebPage">
@@ -130,16 +132,37 @@
         <img src="/img/posterita-logo.png" alt="Posterita — Point of Sale Software" class="h-8" />
       </a>
       <div class="hidden lg:flex items-center gap-8">
-        <a href="#features" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Features</a>
-        <a href="#platforms" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Platforms</a>
-        <a href="#business-types" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Industries</a>
-        <a href="#pricing" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Pricing</a>
-        <a href="#customers" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Customers</a>
-        <a href="#faq" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">FAQ</a>
+        <a href="#features" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.features">Features</a>
+        <a href="#platforms" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.platforms">Platforms</a>
+        <a href="#hardware" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.hardware">Hardware</a>
+        <a href="#business-types" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.industries">Industries</a>
+        <a href="#pricing" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.pricing">Pricing</a>
+        <a href="#customers" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.customers">Customers</a>
+        <a href="#faq" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.faq">FAQ</a>
+        <a href="/blog/" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Blog</a>
       </div>
       <div class="hidden lg:flex items-center gap-3">
-        <a href="https://web.posterita.com/customer/login" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition">Login</a>
-        <a href="https://web.posterita.com/customer/signup" class="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition">Start Free</a>
+        <!-- Language Switcher -->
+        <div class="relative">
+          <button onclick="toggleLangDropdown()" id="lang-current" class="text-sm font-medium text-gray-500 hover:text-brand-600 transition flex items-center gap-1 cursor-pointer">🇬🇧 English</button>
+          <div id="lang-dropdown" class="hidden absolute right-0 top-8 bg-white rounded-xl shadow-lg border border-gray-200 py-2 w-40 z-50">
+            <button onclick="setLang('en')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇬🇧 English</button>
+            <button onclick="setLang('fr')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇫🇷 Français</button>
+            <button onclick="setLang('kr')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇲🇺 Kreol</button>
+            <button onclick="setLang('es')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇪🇸 Español</button>
+            <button onclick="setLang('pt')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇧🇷 Português</button>
+            <button onclick="setLang('hi')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇮🇳 हिन्दी</button>
+            <button onclick="setLang('ar')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇸🇦 العربية</button>
+            <button onclick="setLang('sw')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇰🇪 Kiswahili</button>
+            <button onclick="setLang('zh')" class="w-full text-left px-4 py-1.5 text-sm hover:bg-gray-50">🇨🇳 中文</button>
+          </div>
+        </div>
+        <a href="https://web.posterita.com/customer/login" class="text-sm font-medium text-gray-600 hover:text-brand-600 transition" data-i18n="nav.login">Login</a>
+        <a href="https://web.posterita.com/customer/signup" class="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition" data-i18n="nav.startfree">Start Free</a>
+        <button onclick="toggleCart()" class="relative p-2 text-gray-500 hover:text-brand-600 transition" aria-label="Shopping Cart">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          <span class="cart-badge absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center" style="display:none">0</span>
+        </button>
       </div>
       <button class="lg:hidden p-2" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -149,10 +172,12 @@
       <div class="flex flex-col gap-2">
         <a href="#features" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Features</a>
         <a href="#platforms" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Platforms</a>
+        <a href="#hardware" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Hardware</a>
         <a href="#business-types" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Industries</a>
         <a href="#pricing" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Pricing</a>
         <a href="#customers" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Customers</a>
         <a href="#faq" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">FAQ</a>
+        <a href="/blog/" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Blog</a>
         <a href="https://web.posterita.com/customer/login" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Login</a>
         <a href="https://web.posterita.com/customer/signup" class="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">Start Free</a>
       </div>
@@ -172,12 +197,12 @@
     <div class="max-w-3xl mx-auto text-center">
       <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full mb-6">
         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-        <span class="text-white/90 text-sm font-medium">Now available on Android, Windows, Mac &amp; Linux</span>
+        <span class="text-white/90 text-sm font-medium"data-i18n="hero.badge">Now available on Android, Windows, Mac &amp; Linux</span>
       </div>
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
         Smarter Sales<br />Start Here
       </h1>
-      <p class="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto leading-relaxed">
+      <p class="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto leading-relaxed" data-i18n="hero.subtitle">
         Move from Manual to Digital with Posterita Retail OS. Boost Sales, Track Inventory, and Get Instant Insights &mdash; online and offline.
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -188,12 +213,22 @@
           See Features
         </a>
       </div>
-      <p class="text-blue-200 text-sm mt-4">No credit card required. Free plan available forever.</p>
+      <p class="text-blue-200 text-sm mt-4"data-i18n="hero.nocreditcard">No credit card required. Free plan available forever.</p>
     </div>
     <!-- Hero Image -->
     <div class="max-w-4xl mx-auto mt-12 relative z-10">
-      <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67d7b7ce6152ca19c9696c12_shutterstock_2563142383.png" alt="Posterita POS in action" class="rounded-2xl shadow-2xl shadow-blue-900/30 w-full" />
+      <img src="/img/login-portal.png" alt="Posterita Cloud — dual portal for account managers and business owners" class="rounded-2xl shadow-2xl shadow-blue-900/30 w-full" />
     </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DEMO CTA BAR -->
+<!-- ============================================================ -->
+<section class="py-6 bg-brand-600 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+    <p class="text-sm font-medium">Every new account comes with a <strong>demo store</strong> pre-loaded with 15 sample products &mdash; explore risk-free.</p>
+    <a href="https://web.posterita.com/customer/signup" class="bg-white text-brand-700 px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition whitespace-nowrap"data-i18n="demo.try">Try the Demo</a>
   </div>
 </section>
 
@@ -202,42 +237,42 @@
 <!-- ============================================================ -->
 <section class="py-10 bg-gray-50 border-b border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <p class="text-center text-sm font-medium text-gray-500 mb-6 uppercase tracking-wider">Trusted by 100+ businesses across Mauritius</p>
+    <p class="text-center text-sm font-medium text-gray-500 mb-6 uppercase tracking-wider"data-i18n="trust.line">Trusted by 100+ businesses across Mauritius</p>
     <div class="overflow-hidden">
       <div class="flex items-center gap-12 logo-scroll whitespace-nowrap">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863dc950108329636e2310_adopt.png" alt="Adopt" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863ddfff65c84271bec316_attitude.png" alt="Attitude Hotels" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863de9fad6ed1d7ee98ad5_bata.png" alt="Bata" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863dfe721c6dcf9f829e43_bottegaverder.png" alt="Bottega Verde" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863e86a664a010beead92f_citadel.png" alt="Citadel" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863df391dde4146cd05b0e_bluediamond.png" alt="Blue Diamond" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869eb831a42ee8f9a952ce_livewell.png" alt="Livewell" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef0c15cb858becfa584_mayil.png" alt="Mayil" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863e7aa964d75b59026f2d_cips.png" alt="CIPS" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863ece8ed4c6db17b9a6ff_coinlumiere.png" alt="Coin Lumiere" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef11a472ff092a36e8b_thali.png" alt="Thali" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef1e129720e71ab991b_trendist.png" alt="Trendist" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef176d265496cd3a128_quickcrepe.png" alt="Quick Crepe" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863efdea1bafafce56770e_doodland.png" alt="Doodland" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863f566bda48083b636283_finefoods.png" alt="Fine Foods" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869eefa8451bb9f37ab002_luxz.png" alt="Luxz" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/adopt.png" alt="Adopt" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/attitude.png" alt="Attitude Hotels" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/bata.png" alt="Bata" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/bottegaverder.png" alt="Bottega Verde" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/citadel.png" alt="Citadel" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/bluediamond.png" alt="Blue Diamond" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/livewell.png" alt="Livewell" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/mayil.png" alt="Mayil" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/cips.png" alt="CIPS" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/coinlumiere.png" alt="Coin Lumiere" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/thali.png" alt="Thali" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/trendist.png" alt="Trendist" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/quickcrepe.png" alt="Quick Crepe" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/doodland.png" alt="Doodland" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/finefoods.png" alt="Fine Foods" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/assets/clients/luxz.png" alt="Luxz" class="h-10 object-contain opacity-60 hover:opacity-100 transition" />
         <!-- duplicate for seamless scroll -->
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863dc950108329636e2310_adopt.png" alt="Adopt" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863ddfff65c84271bec316_attitude.png" alt="Attitude Hotels" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863de9fad6ed1d7ee98ad5_bata.png" alt="Bata" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863dfe721c6dcf9f829e43_bottegaverder.png" alt="Bottega Verde" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863e86a664a010beead92f_citadel.png" alt="Citadel" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863df391dde4146cd05b0e_bluediamond.png" alt="Blue Diamond" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869eb831a42ee8f9a952ce_livewell.png" alt="Livewell" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef0c15cb858becfa584_mayil.png" alt="Mayil" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863e7aa964d75b59026f2d_cips.png" alt="CIPS" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863ece8ed4c6db17b9a6ff_coinlumiere.png" alt="Coin Lumiere" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef11a472ff092a36e8b_thali.png" alt="Thali" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef1e129720e71ab991b_trendist.png" alt="Trendist" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869ef176d265496cd3a128_quickcrepe.png" alt="Quick Crepe" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863efdea1bafafce56770e_doodland.png" alt="Doodland" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67863f566bda48083b636283_finefoods.png" alt="Fine Foods" class="h-10 object-contain opacity-60" />
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67869eefa8451bb9f37ab002_luxz.png" alt="Luxz" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/adopt.png" alt="Adopt" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/attitude.png" alt="Attitude Hotels" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/bata.png" alt="Bata" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/bottegaverder.png" alt="Bottega Verde" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/citadel.png" alt="Citadel" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/bluediamond.png" alt="Blue Diamond" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/livewell.png" alt="Livewell" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/mayil.png" alt="Mayil" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/cips.png" alt="CIPS" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/coinlumiere.png" alt="Coin Lumiere" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/thali.png" alt="Thali" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/trendist.png" alt="Trendist" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/quickcrepe.png" alt="Quick Crepe" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/doodland.png" alt="Doodland" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/finefoods.png" alt="Fine Foods" class="h-10 object-contain opacity-60" />
+        <img src="/assets/clients/luxz.png" alt="Luxz" class="h-10 object-contain opacity-60" />
       </div>
     </div>
   </div>
@@ -251,19 +286,19 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
       <div class="text-center stat-counter" style="animation-delay:0.1s">
         <div class="text-3xl sm:text-4xl font-black text-brand-600">25%</div>
-        <p class="text-sm text-gray-500 mt-1">Improvement in Inventory Turnover</p>
+        <p class="text-sm text-gray-500 mt-1"data-i18n="stat.inventory">Improvement in Inventory Turnover</p>
       </div>
       <div class="text-center stat-counter" style="animation-delay:0.2s">
         <div class="text-3xl sm:text-4xl font-black text-brand-600">10+</div>
-        <p class="text-sm text-gray-500 mt-1">Hours Saved Weekly on Manual Tasks</p>
+        <p class="text-sm text-gray-500 mt-1"data-i18n="stat.hours">Hours Saved Weekly on Manual Tasks</p>
       </div>
       <div class="text-center stat-counter" style="animation-delay:0.3s">
         <div class="text-3xl sm:text-4xl font-black text-brand-600">50+</div>
-        <p class="text-sm text-gray-500 mt-1">More Customers Served Daily</p>
+        <p class="text-sm text-gray-500 mt-1"data-i18n="stat.customers">More Customers Served Daily</p>
       </div>
       <div class="text-center stat-counter" style="animation-delay:0.4s">
         <div class="text-3xl sm:text-4xl font-black text-brand-600">99%</div>
-        <p class="text-sm text-gray-500 mt-1">Order Accuracy</p>
+        <p class="text-sm text-gray-500 mt-1"data-i18n="stat.accuracy">Order Accuracy</p>
       </div>
     </div>
   </div>
@@ -275,7 +310,7 @@
 <section id="features" class="py-20 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">Everything You Need to Run Your Business</h2>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="features.title">Everything You Need to Run Your Business</h2>
       <p class="text-gray-500 text-lg max-w-2xl mx-auto">From a single register to 50 stores &mdash; Posterita scales with you. One platform, every feature.</p>
     </div>
 
@@ -283,9 +318,9 @@
       <!-- POS Operations -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f0982f9ab60b8c9f58d89_Group.png" alt="POS" class="w-7 h-7" />
+          <img src="/assets/icons/pos-icon.png" alt="POS" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">POS Operations</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.pos">POS Operations</h3>
         <p class="text-gray-500 mb-4">Fast, seamless transactions with multi-terminal and offline support. Process sales in under 3 seconds.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Offline-first &mdash; never miss a sale</li>
@@ -300,9 +335,9 @@
       <!-- Inventory Management -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f1313cf7b1c238e29a790_inventory-management-svgrepo-com%201.png" alt="Inventory" class="w-7 h-7" />
+          <img src="/assets/icons/inventory-icon.png" alt="Inventory" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Inventory Management</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.inventory">Inventory Management</h3>
         <p class="text-gray-500 mb-4">Real-time, accurate automated stock updates across all locations with warehouse support.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Real-time tracking across all stores</li>
@@ -317,9 +352,9 @@
       <!-- Kitchen & Restaurant -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6780e33661de05260bff4b26_-icon-showing-a-kitchen-printer-printing-an-order-%20(1).png" alt="Kitchen" class="w-7 h-7" />
+          <img src="/assets/icons/6780e33661de05260bff4b26_-icon-showing-a-kitchen-printer-printing-an-order- (1).png" alt="Kitchen" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Kitchen &amp; Restaurant</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.kitchen">Kitchen &amp; Restaurant</h3>
         <p class="text-gray-500 mb-4">Kitchen Display System, table management, preparation stations, and menu scheduling.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Kitchen Display System (KDS) on tablets</li>
@@ -334,9 +369,9 @@
       <!-- Loyalty & CRM -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f131388d0f013432f554b_Group%20(1).png" alt="Loyalty" class="w-7 h-7" />
+          <img src="/assets/icons/loyalty-icon.png" alt="Loyalty" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Loyalty &amp; CRM</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.loyalty">Loyalty &amp; CRM</h3>
         <p class="text-gray-500 mb-4">Turn customers into loyal buyers with points, rewards, and targeted promotions.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Points earn, redeem &amp; adjust</li>
@@ -351,9 +386,9 @@
       <!-- Reports & Analytics -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f1314d3b7e752b260053b_Group%20240.png" alt="Reports" class="w-7 h-7" />
+          <img src="/assets/icons/reports-icon.png" alt="Reports" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Reports &amp; Analytics</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.reports">Reports &amp; Analytics</h3>
         <p class="text-gray-500 mb-4">Detailed insights for smarter business decisions with real-time dashboards.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Revenue trends &amp; top products charts</li>
@@ -368,9 +403,9 @@
       <!-- Staff & Workforce -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f13142b0e26ba751ab5b6_Group%20242.png" alt="Staff" class="w-7 h-7" />
+          <img src="/assets/icons/staff-icon.png" alt="Staff" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Staff &amp; Workforce</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.staff">Staff &amp; Workforce</h3>
         <p class="text-gray-500 mb-4">Secure transactions with role-based access, shift management, and accountability.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Clock in/out &amp; shift tracking</li>
@@ -385,9 +420,9 @@
       <!-- Integrations -->
       <div class="feature-card bg-white rounded-2xl p-8 border border-gray-100">
         <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-5">
-          <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/673f131398cb1a6ed5dfeb16_Group%20243.png" alt="Integrations" class="w-7 h-7" />
+          <img src="/assets/icons/integrations-icon.png" alt="Integrations" class="w-7 h-7" />
         </div>
-        <h3 class="text-xl font-bold mb-3">Integrations</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.integrations">Integrations</h3>
         <p class="text-gray-500 mb-4">Connect your accounting, payments, and business tools seamlessly.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Xero accounting (invoices, payments, journals)</li>
@@ -404,7 +439,7 @@
         <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-5">
           <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
-        <h3 class="text-xl font-bold mb-3">Quotations &amp; Documents</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.quotations">Quotations &amp; Documents</h3>
         <p class="text-gray-500 mb-4">Professional quotes with 5 PDF templates, convert to orders in one click.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> 5 professional PDF templates</li>
@@ -421,7 +456,7 @@
         <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center mb-5">
           <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
         </div>
-        <h3 class="text-xl font-bold mb-3">Cloud &amp; Sync</h3>
+        <h3 class="text-xl font-bold mb-3"data-i18n="feat.cloud">Cloud &amp; Sync</h3>
         <p class="text-gray-500 mb-4">Real-time synchronization with mobile access for flexibility. Hybrid cloud architecture.</p>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span> Automatic cloud sync with conflict resolution</li>
@@ -440,50 +475,80 @@
 <section class="py-20 bg-white" id="product">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">See It in Action</h2>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="demo.title">See It in Action</h2>
       <p class="text-gray-500 text-lg max-w-2xl mx-auto">Real screenshots from the Posterita web console &mdash; clean, modern, and designed for speed.</p>
     </div>
+
+    <!-- Animated Platform Tour -->
+    <div class="max-w-3xl mx-auto mb-12">
+      <div class="rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+        <img src="/demos/platform-tour.gif" alt="Posterita platform tour — animated walkthrough of Reports, Staff, Integrations, Loyalty, Tags, Stores, Suppliers, Promotions" class="w-full" loading="lazy" />
+      </div>
+      <p class="text-center text-xs text-gray-400 mt-3">Cycling through: Reports &rarr; Staff &rarr; Integrations &rarr; Loyalty &rarr; Tags &rarr; Stores &rarr; Suppliers &rarr; Promotions &rarr; Login</p>
+    </div>
+
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/reports.png" alt="Posterita Reports Dashboard — revenue, orders, tax, payment methods, busiest hours, top products" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+        <img src="/img/reports.png" alt="Posterita Reports Dashboard — revenue, orders, tax, payment methods, busiest hours, top products" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
         <div class="p-4 bg-white">
-          <h4 class="font-bold text-sm">Reports &amp; Analytics</h4>
+          <h4 class="font-bold text-sm"data-i18n="feat.reports">Reports &amp; Analytics</h4>
           <p class="text-gray-400 text-xs">Z-Report, revenue trends, payment methods, hourly heatmap</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/staff.png" alt="Posterita Staff & Workforce — total staff, shifts, hours, schedule, timesheets, leave, performance" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+        <img src="/img/loyalty.png" alt="Posterita Loyalty Program — members, points outstanding, earned, redeemed, top members" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
         <div class="p-4 bg-white">
-          <h4 class="font-bold text-sm">Staff &amp; Workforce</h4>
-          <p class="text-gray-400 text-xs">Shifts, schedules, timesheets, leave management, performance</p>
+          <h4 class="font-bold text-sm">Loyalty Program</h4>
+          <p class="text-gray-400 text-xs">Points earn/redeem, members, wallet, activity history</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/integrations.png" alt="Posterita Integrations — Xero accounting, QuickBooks, Shopify connectors" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+        <img src="/img/promotions.png" alt="Posterita Promotions — percentage off, fixed off, buy X get Y, promo codes" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
         <div class="p-4 bg-white">
-          <h4 class="font-bold text-sm">Integrations</h4>
+          <h4 class="font-bold text-sm">Promotions Engine</h4>
+          <p class="text-gray-400 text-xs">% off, fixed discount, buy-X-get-Y, promo codes</p>
+        </div>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
+        <img src="/img/staff.png" alt="Posterita Staff & Workforce — total staff, shifts, hours, schedule, timesheets, leave, performance" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
+        <div class="p-4 bg-white">
+          <h4 class="font-bold text-sm"data-i18n="feat.staff">Staff &amp; Workforce</h4>
+          <p class="text-gray-400 text-xs">Shifts, schedules, timesheets, leave, performance leaderboard</p>
+        </div>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
+        <img src="/img/suppliers.png" alt="Posterita Suppliers — vendor management, purchase orders, goods receipt" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
+        <div class="p-4 bg-white">
+          <h4 class="font-bold text-sm">Suppliers &amp; Purchase Orders</h4>
+          <p class="text-gray-400 text-xs">Vendor directory, POs, goods receipt, delivery tracking</p>
+        </div>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
+        <img src="/img/integrations.png" alt="Posterita Integrations — Xero accounting, QuickBooks, Shopify connectors" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
+        <div class="p-4 bg-white">
+          <h4 class="font-bold text-sm"data-i18n="feat.integrations">Integrations</h4>
           <p class="text-gray-400 text-xs">Xero, QuickBooks (coming soon), Shopify (coming soon)</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/loyalty.png" alt="Posterita Loyalty Program — members, points outstanding, earned, redeemed, top members" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+        <img src="/img/tags.png" alt="Posterita Tags — product tagging with auto-tag rules, groups, categories" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
         <div class="p-4 bg-white">
-          <h4 class="font-bold text-sm">Loyalty Program</h4>
-          <p class="text-gray-400 text-xs">Points earn/redeem, members, activity history</p>
-        </div>
-      </div>
-      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/tags.png" alt="Posterita Tags — product tagging with auto-tag rules, groups, categories" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
-        <div class="p-4 bg-white">
-          <h4 class="font-bold text-sm">Product Tags</h4>
+          <h4 class="font-bold text-sm">Product Tags &amp; Auto-Rules</h4>
           <p class="text-gray-400 text-xs">Tag groups, auto-tag rules, AI-powered classification</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
-        <img src="/img/stores.png" alt="Posterita Stores — manage store locations, terminals, users, brands, webhooks, settings" class="w-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+        <img src="/img/stores.png" alt="Posterita Stores — manage store locations, terminals, users, brands, webhooks, settings" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
         <div class="p-4 bg-white">
           <h4 class="font-bold text-sm">Multi-Store Setup</h4>
           <p class="text-gray-400 text-xs">Stores, terminals, users, brands, integrations</p>
+        </div>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 group">
+        <img src="/img/customer-login.png" alt="Posterita customer login — business owners sign in to manage their stores" class="w-full h-52 object-cover object-top group-hover:scale-105 transition duration-300" loading="lazy" />
+        <div class="p-4 bg-white">
+          <h4 class="font-bold text-sm">Customer Login</h4>
+          <p class="text-gray-400 text-xs">Business owners sign in to manage products, stores, reports</p>
         </div>
       </div>
     </div>
@@ -495,21 +560,21 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid md:grid-cols-3 gap-6">
       <div class="rounded-2xl overflow-hidden shadow-lg">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756d8b91cd6e33c7409ad27_iStock_000055241978_Large.jpg" alt="Fast retail transactions at checkout — Posterita POS processes sales in under 3 seconds" class="w-full h-56 object-cover" loading="lazy" />
+        <img src="/assets/stock/retail-checkout.jpg" alt="Fast retail transactions at checkout — Posterita POS processes sales in under 3 seconds" class="w-full h-56 object-cover" loading="lazy" />
         <div class="p-4 bg-brand-600 text-white text-center">
           <p class="font-bold">Fast Transactions</p>
           <p class="text-blue-100 text-sm">Process sales in under 3 seconds</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756d91589e94d5f060b744a_iStock_000053686296_Large.jpg" alt="Real-time inventory tracking across multiple store locations with Posterita" class="w-full h-56 object-cover" loading="lazy" />
+        <img src="/assets/stock/inventory-tracking.jpg" alt="Real-time inventory tracking across multiple store locations with Posterita" class="w-full h-56 object-cover" loading="lazy" />
         <div class="p-4 bg-emerald-600 text-white text-center">
           <p class="font-bold">Real-Time Inventory</p>
           <p class="text-emerald-100 text-sm">Track stock across all locations</p>
         </div>
       </div>
       <div class="rounded-2xl overflow-hidden shadow-lg">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756d948bb5f1230758d3778_iStock_000030412410_Large.jpg" alt="Seamless local payment integration — MAUCAS, Juice, and Blink supported by Posterita" class="w-full h-56 object-cover" loading="lazy" />
+        <img src="/assets/stock/payment-terminal.jpg" alt="Seamless local payment integration — MAUCAS, Juice, and Blink supported by Posterita" class="w-full h-56 object-cover" loading="lazy" />
         <div class="p-4 bg-purple-600 text-white text-center">
           <p class="font-bold">Seamless Local Payments</p>
           <p class="text-purple-100 text-sm">MAUCAS, Juice &amp; Blink</p>
@@ -525,12 +590,12 @@
 <section id="platforms" class="py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">One Platform, Every Device</h2>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="platforms.title">One Platform, Every Device</h2>
       <p class="text-gray-500 text-lg max-w-2xl mx-auto">Android tablets, Windows desktops, Mac laptops, or any browser &mdash; Posterita runs everywhere your business does.</p>
     </div>
     <div class="grid md:grid-cols-3 gap-8">
       <div class="text-center p-8 rounded-2xl border border-gray-100 hover:border-brand-200 transition">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756ec5b0cd2869046b085b0_Phone.png" alt="Android POS" class="h-32 mx-auto mb-5 object-contain" />
+        <img src="/assets/hero/phone-mockup.png" alt="Android POS" class="h-32 mx-auto mb-5 object-contain" />
         <h3 class="text-xl font-bold mb-3">Android POS</h3>
         <p class="text-gray-500 text-sm">Native Android app with full offline support. Barcode scanning, thermal printing, KDS tablets, and warehouse operations. Install from Google Play or direct APK.</p>
       </div>
@@ -555,41 +620,215 @@
 <section id="business-types" class="py-20 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">Built for Your Industry</h2>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="industries.title">Built for Your Industry</h2>
       <p class="text-gray-500 text-lg max-w-2xl mx-auto">Whether you run a fashion boutique, a fast-food chain, or a warehouse &mdash; Posterita adapts to how you work.</p>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#128717;</div>
-        <h4 class="font-semibold text-sm">Retail</h4>
-        <p class="text-gray-400 text-xs mt-1">Fashion, cosmetics, hardware, electronics</p>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Retail -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">&#128717;</div>
+          <div><h4 class="font-bold text-sm">Retail Stores</h4><p class="text-gray-400 text-[10px]">Fashion, cosmetics, hardware, electronics, grocery</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Quick-access product grid + barcode scanning</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Multi-payment split, refunds &amp; store credits</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Real-time inventory across all stores</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Customer loyalty, promotions &amp; PDF catalogues</li>
+        </ul>
       </div>
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#127828;</div>
-        <h4 class="font-semibold text-sm">Fast Food &amp; QSR</h4>
-        <p class="text-gray-400 text-xs mt-1">Kitchen printing, KDS, order routing</p>
+      <!-- Fast Food -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">&#127828;</div>
+          <div><h4 class="font-bold text-sm">Fast Food &amp; QSR</h4><p class="text-gray-400 text-[10px]">Burgers, pizza, noodles, crepes, ice cream</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Kitchen printing + KDS with station routing</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Queue tickets + takeaway auto-numbering</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Modifier walkthrough (size, extras, toppings)</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> 99% order accuracy with digital kitchen flow</li>
+        </ul>
       </div>
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#127860;</div>
-        <h4 class="font-semibold text-sm">Restaurant</h4>
-        <p class="text-gray-400 text-xs mt-1">Tables, sections, menus, delivery</p>
+      <!-- Restaurant -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-xl">&#127860;</div>
+          <div><h4 class="font-bold text-sm">Restaurants &amp; Caf&eacute;s</h4><p class="text-gray-400 text-[10px]">Dine-in, takeaway, delivery, bar service</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Table sections, floor plans &amp; menu scheduling</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Prep stations (kitchen/bar/dessert) with routing</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Table transfer, order merge &amp; delivery tracking</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Split bills, MRA e-invoicing compliance</li>
+        </ul>
       </div>
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#128230;</div>
-        <h4 class="font-semibold text-sm">Warehouse</h4>
-        <p class="text-gray-400 text-xs mt-1">Zones, picking, put-away, transfers</p>
+      <!-- Warehouse -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-xl">&#128230;</div>
+          <div><h4 class="font-bold text-sm">Warehouse &amp; Distribution</h4><p class="text-gray-400 text-[10px]">Storage, wholesale, logistics centers</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Shelf zones with height labels + shelf browser</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Picking lists &amp; put-away scan workflows</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Stock transfers between locations</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Full stock count sessions &amp; label printing</li>
+        </ul>
       </div>
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#127968;</div>
-        <h4 class="font-semibold text-sm">Multi-Store</h4>
-        <p class="text-gray-400 text-xs mt-1">Centralized control, real-time sync</p>
+      <!-- Multi-Store -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-xl">&#127968;</div>
+          <div><h4 class="font-bold text-sm">Multi-Store &amp; Franchise</h4><p class="text-gray-400 text-[10px]">Chains, franchises, multi-brand</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Centralized products, pricing &amp; promotions</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Real-time sync + per-store reporting</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Multi-brand support (separate databases)</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Xero accounting, tower control &amp; terminal locking</li>
+        </ul>
       </div>
-      <div class="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
-        <div class="text-3xl mb-3">&#128666;</div>
-        <h4 class="font-semibold text-sm">Field Sales</h4>
-        <p class="text-gray-400 text-xs mt-1">Mobile POS, offline, delivery tracking</p>
+      <!-- Field Sales -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-lg transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-xl">&#128666;</div>
+          <div><h4 class="font-bold text-sm">Field Sales &amp; Events</h4><p class="text-gray-400 text-[10px]">Food trucks, markets, trade shows</p></div>
+        </div>
+        <ul class="space-y-1.5 text-xs text-gray-600">
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Full offline POS &mdash; no internet needed</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Mobile Android app + Bluetooth printer</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> QR code payments (Blink, MauCAS)</li>
+          <li class="flex items-start gap-1.5"><span class="text-green-500">&#10003;</span> Sync when back online &mdash; zero data loss</li>
+        </ul>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- HARDWARE -->
+<!-- ============================================================ -->
+<section id="hardware" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="hardware.title">Works With Your Hardware</h2>
+      <p class="text-gray-500 text-lg max-w-2xl mx-auto">No proprietary hardware. Use any Android tablet, Windows PC, or Mac &mdash; plus standard peripherals.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128187;</div>
+        <h4 class="font-bold text-sm mb-1">POS Terminals</h4>
+        <p class="text-gray-400 text-xs">Any Android tablet, Windows PC, Mac, or Linux. Native app or installable PWA.</p>
+      </div>
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128424;</div>
+        <h4 class="font-bold text-sm mb-1">Receipt Printers</h4>
+        <p class="text-gray-400 text-xs">Network thermal 80mm/58mm. ESC/POS. Bluetooth or WiFi. Epson, Star, Bixolon.</p>
+      </div>
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128270;</div>
+        <h4 class="font-bold text-sm mb-1">Barcode Scanners</h4>
+        <p class="text-gray-400 text-xs">USB, Bluetooth, or camera. HID barcode scanners. EAN-13, UPC-A, QR codes.</p>
+      </div>
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128176;</div>
+        <h4 class="font-bold text-sm mb-1">Cash Drawers</h4>
+        <p class="text-gray-400 text-xs">Standard RJ11/RJ12. Auto-open on sale via printer kick. Manual open with PIN.</p>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6 mt-6">
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128250;</div>
+        <h4 class="font-bold text-sm mb-1">Kitchen Display (KDS)</h4>
+        <p class="text-gray-400 text-xs">Dedicated Android tablet on LAN. mDNS discovery. Bump, recall, timers. No internet needed.</p>
+      </div>
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#127991;</div>
+        <h4 class="font-bold text-sm mb-1">Label Printers</h4>
+        <p class="text-gray-400 text-xs">Zebra ZPL and Epson ESC/POS for shelf labels, price tags, and product barcodes.</p>
+      </div>
+      <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+        <div class="text-3xl mb-3">&#128179;</div>
+        <h4 class="font-bold text-sm mb-1">Payment Devices</h4>
+        <p class="text-gray-400 text-xs">Blink QR, MauCAS terminals, MCB Juice. Coming: Peach Payments integrated card terminals.</p>
+      </div>
+    </div>
+    <!-- Hardware Store -->
+    <div class="mt-12">
+      <h3 class="text-xl font-bold text-center mb-2">Shop Hardware</h3>
+      <p class="text-center text-xs text-gray-400 mb-6">Add items to your cart and checkout. Free shipping in Mauritius.</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/desktop-pos.jpg" alt="13-inch Desktop POS Android terminal" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">13&rdquo; Desktop POS (Android)</h4>
+            <p class="text-gray-400 text-xs mt-1">All-in-one touchscreen POS terminal</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$489</p>
+              <button onclick="addToCart('desktop-pos')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/wireless-scanner.jpg" alt="Wireless platform barcode scanner" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">Platform Barcode Scanner</h4>
+            <p class="text-gray-400 text-xs mt-1">Wireless 2D, USB + Bluetooth</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$160</p>
+              <button onclick="addToCart('barcode-scanner')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/thermal-printer.jpg" alt="Mobile Bluetooth thermal receipt printer" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">Mobile Thermal Printer</h4>
+            <p class="text-gray-400 text-xs mt-1">Portable 58mm Bluetooth receipt printer</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$145</p>
+              <button onclick="addToCart('thermal-printer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/cash-drawer.png" alt="Mini cash drawer for POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">Mini Cash Drawer</h4>
+            <p class="text-gray-400 text-xs mt-1">Compact RJ11, 4 bill / 5 coin slots</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$62</p>
+              <button onclick="addToCart('cash-drawer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/all-in-one-pos.png" alt="All-in-One Windows Desktop POS" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">All-in-One Desktop POS</h4>
+            <p class="text-gray-400 text-xs mt-1">Windows POS with built-in printer</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$599</p>
+              <button onclick="addToCart('all-in-one')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+          <img src="/assets/hardware/product-2.png" alt="Zebra Label Printer" class="w-full h-44 object-contain bg-gray-50 p-4 group-hover:scale-105 transition duration-300" loading="lazy" />
+          <div class="p-4">
+            <h4 class="font-bold text-sm">Zebra Label Printer</h4>
+            <p class="text-gray-400 text-xs mt-1">ZPL thermal label printer for shelf tags</p>
+            <div class="flex items-center justify-between mt-3">
+              <p class="text-brand-600 font-bold text-lg">$320</p>
+              <button onclick="addToCart('label-printer')" class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700 transition">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-sm text-gray-500 mt-6">Need bulk pricing or bundles? <a href="mailto:support@posterita.com" class="text-brand-600 hover:underline font-medium">Contact us</a></p>
+    </div>
+    <p class="text-center text-xs text-gray-400 mt-8">No hardware lock-in. Use what you have, or buy any compatible device.</p>
   </div>
 </section>
 
@@ -637,25 +876,10 @@
     <div class="text-center mb-8">
       <h2 class="text-3xl sm:text-4xl font-black mb-4">Simple, Per-Store Pricing</h2>
       <p class="text-gray-500 text-lg max-w-2xl mx-auto">All features included at each tier. Pay per store, scale as you grow. No hidden fees.</p>
-      <p class="text-sm text-brand-600 font-semibold mt-3">$0 transaction fees. Ever. We don't take a cut of your sales.</p>
+      <p class="text-sm text-brand-600 font-semibold mt-3"data-i18n="pricing.zerofees">$0 transaction fees. Ever. We don't take a cut of your sales.</p>
     </div>
 
-    <!-- Region Selector (view-only after geo detection) -->
-    <div class="flex justify-center mb-4">
-      <div class="inline-flex bg-white rounded-xl border border-gray-200 p-1 shadow-sm" id="region-selector">
-        <button data-region="developing" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white pointer-events-none">
-          Africa &amp; South Asia
-        </button>
-        <button data-region="emerging" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">
-          Emerging Markets
-        </button>
-        <button data-region="developed" class="region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">
-          Developed Markets
-        </button>
-      </div>
-    </div>
-    <p class="text-center text-xs text-gray-400 mb-1" id="region-description">Mauritius, Sub-Saharan Africa, South Asia, Southeast Asia</p>
-    <p class="text-center text-xs text-brand-600 font-medium mb-12 h-4" id="geo-detected"></p>
+    <p class="text-center text-xs text-gray-400 mb-12" id="geo-detected">Prices in USD</p>
 
     <!-- Pricing Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -784,12 +1008,12 @@
         <tbody class="divide-y divide-gray-100">
           <tr class="bg-gray-50"><td colspan="6" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Pricing</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Starting price</td><td class="text-center font-bold text-brand-600">Free</td><td class="text-center text-gray-500">Free</td><td class="text-center text-gray-500">Free</td><td class="text-center text-gray-500">$89/mo</td><td class="text-center text-gray-500">$39/mo + $89/loc</td></tr>
-          <tr><td class="px-4 py-2.5 font-medium">Per additional store</td><td class="text-center font-bold text-brand-600">From $7/mo</td><td class="text-center text-gray-500">$30+/store</td><td class="text-center text-gray-500">$40-60/loc</td><td class="text-center text-gray-500">$59+/register</td><td class="text-center text-gray-500">$89/loc</td></tr>
+          <tr><td class="px-4 py-2.5 font-medium">Per additional store</td><td class="text-center font-bold text-brand-600"><span id="compare-store-price">$7</span>/mo</td><td class="text-center text-gray-500">$30+/store</td><td class="text-center text-gray-500">$40-60/loc</td><td class="text-center text-gray-500">$59+/register</td><td class="text-center text-gray-500">$89/loc</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Transaction fees</td><td class="text-center font-bold text-green-600">$0 &mdash; zero</td><td class="text-center text-gray-500">Via processor</td><td class="text-center text-red-500">2.6% + $0.10</td><td class="text-center text-red-500">2.6% + $0.10</td><td class="text-center text-red-500">2.4-2.7%</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Sales history (1yr)</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$5/store/mo</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Employee management</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$5/employee/mo</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">Included</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Advanced inventory</td><td class="text-center font-bold text-brand-600">Included</td><td class="text-center text-red-500">+$25/store/mo</td><td class="text-center text-green-500">Paid plan</td><td class="text-center text-green-500">Included</td><td class="text-center text-green-500">POS Pro</td></tr>
-          <tr><td class="px-4 py-2.5 font-medium">1 store, full features</td><td class="text-center font-bold text-brand-600">$7-19/mo</td><td class="text-center text-gray-500">$55/mo</td><td class="text-center text-gray-500">$60/mo + fees</td><td class="text-center text-gray-500">$89/mo</td><td class="text-center text-gray-500">$128/mo</td></tr>
+          <tr><td class="px-4 py-2.5 font-medium">1 store, 3 staff, full features</td><td class="text-center font-bold text-brand-600"><span id="compare-starter-price">$7</span>/mo</td><td class="text-center text-gray-500">$55/mo</td><td class="text-center text-gray-500">$60/mo + fees</td><td class="text-center text-gray-500">$89/mo</td><td class="text-center text-gray-500">$128/mo</td></tr>
 
           <tr class="bg-gray-50"><td colspan="6" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Features</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Free plan includes</td><td class="text-center text-green-500 font-bold">Customers, modifiers, CSV, offline, loyalty, kitchen print</td><td class="text-center text-gray-500">Basic POS only</td><td class="text-center text-gray-500">Basic POS only</td><td class="text-center text-gray-500">N/A ($89+)</td><td class="text-center text-gray-500">N/A ($39+)</td></tr>
@@ -801,7 +1025,6 @@
           <tr><td class="px-4 py-2.5 font-medium">Serialized items (VIN/IMEI)</td><td class="text-center text-green-500 font-bold">&#10003;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-red-400">&#10007;</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">AI product import</td><td class="text-center text-green-500 font-bold">&#10003;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Quotations &amp; PDF</td><td class="text-center text-green-500 font-bold">&#10003; 5 templates</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td></tr>
-          <tr><td class="px-4 py-2.5 font-medium">Regional pricing</td><td class="text-center text-green-500 font-bold">&#10003; 3 tiers</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td><td class="text-center text-red-400">&#10007;</td></tr>
 
           <tr class="bg-gray-50"><td colspan="6" class="px-4 py-2 font-bold text-xs uppercase text-gray-400 tracking-wider">Platforms</td></tr>
           <tr><td class="px-4 py-2.5 font-medium">Android</td><td class="text-center text-green-500 font-bold">&#10003; Native</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td><td class="text-center text-green-500">&#10003;</td></tr>
@@ -824,15 +1047,6 @@
     </div>
 
     <div class="bg-white rounded-2xl border border-gray-200 p-8 sm:p-10">
-      <!-- Calculator Region -->
-      <div class="flex justify-center mb-6">
-        <div class="inline-flex bg-gray-50 rounded-xl border border-gray-200 p-1" id="calc-region-selector">
-          <button data-calc-region="developing" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-brand-600 text-white pointer-events-none">Developing</button>
-          <button data-calc-region="emerging" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">Emerging</button>
-          <button data-calc-region="developed" class="calc-region-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 pointer-events-none">Developed</button>
-        </div>
-      </div>
-
       <!-- Plan selector -->
       <div class="flex justify-center gap-2 mb-8" id="calc-plan-selector">
         <button onclick="setCalcPlan('free')" data-calc-plan="free" class="calc-plan-btn px-4 py-2 rounded-lg text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-brand-300 transition">Free</button>
@@ -947,14 +1161,14 @@
 <section id="customers" class="py-20 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black mb-4">What Our Customers Say</h2>
+      <h2 class="text-3xl sm:text-4xl font-black mb-4"data-i18n="customers.title">What Our Customers Say</h2>
       <p class="text-gray-500 text-lg">Trusted by 100+ businesses across Mauritius and the Indian Ocean.</p>
     </div>
 
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
       <!-- Testimonial 1 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756ee2d841d802855a7faa6_citadelnew.png" alt="Bottega Verde store" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/citadel.png" alt="Bottega Verde store" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita has been a game-changer for Bottega Verde. It streamlined our inventory management, ensured seamless multi-store operations, and simplified till reconciliations. With powerful reporting and customer loyalty tools, we've improved efficiency and customer satisfaction across all our locations. Highly recommended for any growing business!&rdquo;</p>
@@ -967,7 +1181,7 @@
 
       <!-- Testimonial 2 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67e144ddb2e1a457b1508f0b_ravenala-attitude.jpg" alt="Attitude Hotels" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/ravenala-attitude.jpg" alt="Attitude Hotels" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;I would like to congratulate the Posterita team for successfully leading the integration of Posterita ERP software with the one already in use in our operations, as well as the POS implementation in each of our 8 hotels. The training of our family members was done according to our agreement and the Posterita team has dedicated the right resources for a smooth transition, well done!&rdquo;</p>
@@ -980,7 +1194,7 @@
 
       <!-- Testimonial 3 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6756ed2ef527a25bebb3340e_mayil.jpg" alt="Thali Delights" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/mayil.jpg" alt="Thali Delights" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita's mobile POS and hardware have revolutionized operations at Thali Delights. Managing inventory and accountability across multiple locations is now seamless, thanks to centralized back-office integration and real-time reporting. The mobility and efficiency of the system have significantly enhanced our service delivery. Highly recommended for distributors on the move!&rdquo;</p>
@@ -993,7 +1207,7 @@
 
       <!-- Testimonial 4 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6797502ab7e73643413f8bf8_ClubGourmand-whites.png" alt="Club Gourmand" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/club-gourmand.png" alt="Club Gourmand" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita has transformed operations at Club Gourmand. With centralized back-office management, real-time inventory tracking, and streamlined procurement, we've gained full control across all locations. The MRA integration and reporting tools have improved accountability and compliance, making our processes more efficient than ever.&rdquo;</p>
@@ -1006,7 +1220,7 @@
 
       <!-- Testimonial 5 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/678a1abc302eb7866b2d29a7_AnoushkaFamilyShops.png" alt="Anoushka Family Shop" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/anoushka.png" alt="Anoushka Family Shop" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita has completely streamlined operations at our mini market. Managing inventory is now effortless, and automated reporting has replaced time-consuming manual processes. It's been a game-changer for our efficiency and has allowed us to focus on serving our customers better.&rdquo;</p>
@@ -1019,7 +1233,7 @@
 
       <!-- Testimonial 6 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/678a183ff98af2f991e280e1_Salsabils.png" alt="Salsabil's" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/salsabils.png" alt="Salsabil's" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita has been a game-changer for Salsabil's. It has replaced our manual processes with efficient inventory and customer management, saving us time and reducing errors. The reporting tools provide valuable insights, helping us operate more effectively and serve our customers better.&rdquo;</p>
@@ -1032,7 +1246,7 @@
 
       <!-- Testimonial 7 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/678a183eddc8ff3f1e5bdbb8_nassquare.png" alt="Nas Square" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/nassquare.png" alt="Nas Square" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita has revolutionized operations at Nas Square. The kitchen printing feature has eliminated errors from manual processes, ensuring faster and more accurate order preparation. With detailed reporting tools, we now have better control and insights to grow our business effectively.&rdquo;</p>
@@ -1045,7 +1259,7 @@
 
       <!-- Testimonial 8 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/67e144edf3f7fdecaaa768e9_magicicecream.jpg" alt="Store" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/magicicecream.jpg" alt="Store" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;Posterita POS really allowed us to create a seamless customer experience for our shoppers. We highly recommend their services if you are embarking on a new retail journey.&rdquo;</p>
@@ -1058,7 +1272,7 @@
 
       <!-- Testimonial 9 -->
       <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/676189d1be0f6cb74ba52e94_WorldOfNature.jpg" alt="World of Nature" class="w-full h-40 object-cover" />
+        <img src="/assets/customers/world-of-nature.jpg" alt="World of Nature" class="w-full h-40 object-cover" />
         <div class="p-8">
           <div class="flex items-center gap-1 text-amber-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="text-gray-600 mb-6 leading-relaxed">&ldquo;With Posterita's reporting and analytics, we've gained a clear picture of our business like never before. I can easily track sales, monitor inventory, and understand customer trends &mdash; all in just a few clicks. These insights have helped us fine-tune our operations, cut down waste, and focus on what really drives our growth. It's a tool we now can't imagine working without.&rdquo;</p>
@@ -1103,7 +1317,7 @@
     </div>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e445bef62260d8c84b85b_Adopt.png" alt="Adopt" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/adopt.png" alt="Adopt" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">Retail / Large</span></div>
           <h4 class="font-bold mb-2">Adopt</h4>
@@ -1111,7 +1325,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/68c3be9fbeb485bb4d5bdf63_MasterGrilled.jpg" alt="Master Grilled" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/master-grilled.jpg" alt="Master Grilled" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">Fast Food / Small</span></div>
           <h4 class="font-bold mb-2">Master Grilled</h4>
@@ -1119,7 +1333,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e43fe78006a248eb5b9bf_CookieBijoux.jpg" alt="Cookie Bijoux" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/cookie-bijoux.jpg" alt="Cookie Bijoux" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">50% less manual tasks</span></div>
           <h4 class="font-bold mb-2">Cookie Bijoux</h4>
@@ -1127,7 +1341,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e440b9e176beea2df7dcc_MaisonDeThe.jpg" alt="Maison De The" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/maison-de-the.jpg" alt="Maison De The" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">40% faster orders</span></div>
           <h4 class="font-bold mb-2">Maison De The</h4>
@@ -1135,7 +1349,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678226605852c57895d74723_Picture5.jpg" alt="Health & Nutrition" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/health-nutrition.jpg" alt="Health & Nutrition" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">8 hours saved on reports</span></div>
           <h4 class="font-bold mb-2">Health &amp; Nutrition Retail</h4>
@@ -1143,7 +1357,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e4439c1500bf0e5f89d9a_citadelnew.png" alt="Citadel" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/citadel.png" alt="Citadel" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">20% loyalty growth</span></div>
           <h4 class="font-bold mb-2">Citadel</h4>
@@ -1151,7 +1365,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e4444bb33ad8405f8bcd6_mayil.jpg" alt="Mayil" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/mayil.jpg" alt="Mayil" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">25% faster fulfillment</span></div>
           <h4 class="font-bold mb-2">Mayil</h4>
@@ -1159,7 +1373,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/678e44504f0857826f509928_NoodleGarden.jpg" alt="Noodle Garden" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/noodle-garden.jpg" alt="Noodle Garden" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">99% order accuracy</span></div>
           <h4 class="font-bold mb-2">Noodle Garden</h4>
@@ -1167,7 +1381,7 @@
         </div>
       </div>
       <div class="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition">
-        <img src="https://cdn.prod.website-files.com/6704d9a06ff76b3cdd747af9/6878b9920aa38f00c3cbded0_attitude-hotels1.jpg" alt="Attitude Hotels" class="w-full h-40 object-cover" />
+        <img src="/assets/cases/attitude-hotels.jpg" alt="Attitude Hotels" class="w-full h-40 object-cover" />
         <div class="p-6">
           <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">Hospitality / Large</span></div>
           <h4 class="font-bold mb-2">Attitude Hotels</h4>
@@ -1184,7 +1398,7 @@
 <section id="faq" class="py-20 bg-gray-50">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
-      <h2 class="text-3xl font-black mb-4">Frequently Asked Questions</h2>
+      <h2 class="text-3xl font-black mb-4"data-i18n="faq.title">Frequently Asked Questions</h2>
     </div>
     <div class="space-y-4">
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
@@ -1196,10 +1410,10 @@
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
-          How does regional pricing work?
+          How is pricing determined?
           <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
-        <p class="px-6 pb-4 text-sm text-gray-500">We offer 3 pricing tiers based on region: Developing (Africa, South Asia, SE Asia), Emerging (Latin America, Eastern Europe, Middle East), and Developed (North America, Western Europe, ANZ). Same features everywhere &mdash; just different price points so every business can afford modern POS. Mauritius gets Tier 1 pricing (Starter from Rs 499/mo).</p>
+        <p class="px-6 pb-4 text-sm text-gray-500">Pricing is based on your business location. We adjust prices to be affordable for businesses everywhere &mdash; same features, same quality, tailored to your market. Prices are shown in USD and displayed automatically based on your location.</p>
       </details>
       <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
         <summary class="px-6 py-4 cursor-pointer font-semibold text-sm flex items-center justify-between hover:bg-gray-50">
@@ -1258,7 +1472,7 @@
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full blur-3xl"></div>
       </div>
       <div class="relative z-10">
-        <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">Ready to Transform Your Business?</h2>
+        <h2 class="text-3xl sm:text-4xl font-black text-white mb-4"data-i18n="cta.title">Ready to Transform Your Business?</h2>
         <p class="text-blue-100 text-lg mb-8 max-w-xl mx-auto">Try Posterita Retail OS for free today. No credit card required. Set up in under 5 minutes.</p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a href="https://web.posterita.com/customer/signup" class="w-full sm:w-auto bg-white text-brand-700 px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-blue-50 transition shadow-lg">
@@ -1296,12 +1510,12 @@
       <div>
         <h4 class="text-white font-semibold text-sm mb-4">Products</h4>
         <ul class="space-y-2 text-sm">
-          <li><a href="#features" class="hover:text-white transition">POS Operations</a></li>
-          <li><a href="#features" class="hover:text-white transition">Inventory Management</a></li>
+          <li><a href="#features" class="hover:text-white transition"data-i18n="feat.pos">POS Operations</a></li>
+          <li><a href="#features" class="hover:text-white transition"data-i18n="feat.inventory">Inventory Management</a></li>
           <li><a href="#features" class="hover:text-white transition">Kitchen &amp; KDS</a></li>
-          <li><a href="#features" class="hover:text-white transition">Loyalty &amp; CRM</a></li>
-          <li><a href="#features" class="hover:text-white transition">Reports &amp; Analytics</a></li>
-          <li><a href="#features" class="hover:text-white transition">Staff &amp; Workforce</a></li>
+          <li><a href="#features" class="hover:text-white transition"data-i18n="feat.loyalty">Loyalty &amp; CRM</a></li>
+          <li><a href="#features" class="hover:text-white transition"data-i18n="feat.reports">Reports &amp; Analytics</a></li>
+          <li><a href="#features" class="hover:text-white transition"data-i18n="feat.staff">Staff &amp; Workforce</a></li>
           <li><a href="#features" class="hover:text-white transition">Quotations</a></li>
           <li><a href="#features" class="hover:text-white transition">Xero Integration</a></li>
         </ul>
@@ -1327,8 +1541,10 @@
         <ul class="space-y-2 text-sm">
           <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
           <li><a href="#customers" class="hover:text-white transition">Customer Stories</a></li>
+          <li><a href="#hardware" class="hover:text-white transition">Hardware</a></li>
           <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
           <li><a href="https://web.posterita.com/customer/login" class="hover:text-white transition">POS Login</a></li>
+          <li><a href="https://web.posterita.com/download" class="hover:text-white transition">Download Apps</a></li>
           <li><a href="mailto:support@posterita.com" class="hover:text-white transition">Help Center</a></li>
         </ul>
       </div>
@@ -1337,9 +1553,9 @@
     <div class="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p class="text-sm">&copy; 2019&ndash;2026 Posterita Ltd. All rights reserved.</p>
       <div class="flex items-center gap-6">
-        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6710c623fd9dd1a9f0749a13_Group.png" alt="Facebook" class="h-5" /></a>
-        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6710c623db577767926ec726_Group%20(1).png" alt="Instagram" class="h-5" /></a>
-        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="https://cdn.prod.website-files.com/66f66bd2bd6bffd77bd17256/6710c629cc82140074ef0501_Group%20(3).png" alt="LinkedIn" class="h-5" /></a>
+        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="/assets/ui/social-facebook.png" alt="Facebook" class="h-5" /></a>
+        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="/assets/ui/social-instagram.png" alt="Instagram" class="h-5" /></a>
+        <a href="#" class="hover:opacity-100 opacity-60 transition"><img src="/assets/ui/social-linkedin.png" alt="LinkedIn" class="h-5" /></a>
         <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
         <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
       </div>
@@ -1416,6 +1632,11 @@
       const plan = el.dataset.storeAddon;
       if (data.storeAddon[plan] !== undefined) el.textContent = '$' + data.storeAddon[plan];
     });
+    // Competitor comparison — dynamic prices
+    const compareStore = document.getElementById('compare-store-price');
+    const compareStarter = document.getElementById('compare-starter-price');
+    if (compareStore) compareStore.textContent = '$' + data.plans.starter;
+    if (compareStarter) compareStarter.textContent = '$' + data.plans.starter;
   }
 
   function setRegionBtns(region, selector) {
@@ -1557,14 +1778,34 @@
     'TW':'Taiwan','AE':'UAE','GB':'United Kingdom','US':'United States',
   };
 
+  // Local currency hints (approximate exchange rates for display only)
+  const LOCAL_CURRENCY = {
+    'MU': { symbol: 'Rs', rate: 45, code: 'MUR' },
+    'IN': { symbol: '\u20B9', rate: 84, code: 'INR' },
+    'ZA': { symbol: 'R', rate: 18, code: 'ZAR' },
+    'KE': { symbol: 'KSh', rate: 130, code: 'KES' },
+    'NG': { symbol: '\u20A6', rate: 1550, code: 'NGN' },
+    'BR': { symbol: 'R$', rate: 5, code: 'BRL' },
+    'GB': { symbol: '\u00A3', rate: 0.79, code: 'GBP' },
+    'PH': { symbol: '\u20B1', rate: 56, code: 'PHP' },
+  };
+
   function applyGeoRegion(code) {
     const region = COUNTRY_REGIONS[code] || 'developed';
-    const name = COUNTRY_NAMES[code] || code;
+    const name = COUNTRY_NAMES[code] || '';
     setRegion(region);
     const el = document.getElementById('geo-detected');
     if (el) {
-      const regionLabels = { developing: 'Africa & South Asia', emerging: 'Emerging Markets', developed: 'Developed Markets' };
-      el.textContent = 'Detected: ' + name + ' \u2014 ' + regionLabels[region] + ' pricing';
+      const lc = LOCAL_CURRENCY[code];
+      if (lc && lc.code !== 'USD') {
+        const data = PRICING[region];
+        const starterLocal = Math.round(data.plans.starter * lc.rate);
+        el.innerHTML = 'Prices for ' + name + ' &mdash; Starter from <strong>' + lc.symbol + ' ' + starterLocal.toLocaleString() + '/mo</strong> (' + lc.code + ')';
+      } else if (name) {
+        el.textContent = 'Prices shown for ' + name + ' (USD)';
+      } else {
+        el.textContent = 'Prices in USD';
+      }
     }
   }
 
@@ -1587,5 +1828,48 @@
   updateCalc();
 </script>
 
+<!-- ============================================================ -->
+<!-- CART SIDEBAR OVERLAY -->
+<!-- ============================================================ -->
+<div id="cart-overlay" class="hidden fixed inset-0 z-50">
+  <div class="absolute inset-0 bg-black/40" onclick="toggleCart()"></div>
+  <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h3 class="text-lg font-bold">Shopping Cart</h3>
+      <button onclick="toggleCart()" class="p-1 text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- Empty state -->
+    <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center px-6">
+      <svg class="w-16 h-16 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+      <p class="text-gray-400 font-medium">Your cart is empty</p>
+      <p class="text-gray-300 text-sm mt-1">Browse our hardware to get started</p>
+      <button onclick="toggleCart(); document.getElementById('hardware').scrollIntoView({behavior:'smooth'})" class="mt-4 text-brand-600 text-sm font-semibold hover:underline">Shop Hardware</button>
+    </div>
+    <!-- Items -->
+    <div id="cart-items" class="flex-1 overflow-y-auto px-6"></div>
+    <!-- Footer -->
+    <div class="border-t border-gray-100 px-6 py-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-semibold text-gray-500">Total</span>
+        <span id="cart-total" class="text-2xl font-black text-gray-900">$0</span>
+      </div>
+      <button id="cart-checkout-btn" onclick="proceedToCheckout()" class="hidden w-full bg-brand-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-700 transition flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+        Pay with Card
+      </button>
+      <p class="text-[10px] text-gray-400 text-center mt-2">Secure payment via Paddle. Credit card, PayPal, Apple Pay, Google Pay accepted.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+  Paddle.Initialize({ token: 'live_8b5cd0d5a8daf5befb144eb86d4' });
+</script>
+<script src="/cart.js"></script>
+<script src="/i18n.js"></script>
 </body>
 </html>

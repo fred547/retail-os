@@ -67,6 +67,7 @@ These are the column names that get confused most often. **Always verify against
 | `terminal` | terminal_id, store_id, account_id, name, **terminal_type** | ~~type~~ |
 | `v_price_review` | product_id, product_name, sellingprice, **price_set_at** | ~~updated_at~~ |
 | `till` | till_id, uuid, documentno, **status** (open/closed — Supabase only, not in Room) | |
+| `account` | account_id, name, **plan**, **billing_region**, **paddle_customer_id**, **paddle_subscription_id**, **subscription_status**, **current_period_end**, **trial_plan**, **trial_ends_at**, **trial_granted_by**, **country_code** | ~~billing_plan, stripe_id~~ |
 
 **Additional schema notes:**
 - `account_id` is TEXT everywhere
@@ -90,7 +91,9 @@ These are the column names that get confused most often. **Always verify against
 | `pos-android/server-side/posterita-cloud/web/src/lib/offline/` | **PWA offline layer** — Dexie.js (IndexedDB), sync engine, sync worker, integrity checks |
 | `pos-android/server-side/posterita-cloud/web/src/lib/pos/` | **PWA POS** — cart store, till service, barcode listener, ESC/POS printer, session/PIN |
 | `pos-android/server-side/posterita-cloud/web/src/app/pos/` | **PWA POS UI** — checkout, setup wizard, dark standalone layout |
-| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00059) |
+| `pos-android/server-side/posterita-cloud/web/src/lib/billing.ts` | Plan limits, feature gating, Paddle price IDs, constraint cache |
+| `pos-android/server-side/posterita-cloud/supabase/migrations/` | Supabase migrations (00001–00058) |
+| `www/` | Public marketing website (Vercel) — static HTML + blog |
 | `posterita-prototype/` | UI prototype (React JSX) — design reference |
 | `specs/` | Specification files (19-kitchen, 20-terminal-types, 22-whatsapp-support, 23-qr-scan-actions) |
 
@@ -101,6 +104,7 @@ These are the column names that get confused most often. **Always verify against
 - **DB:** Supabase Postgres at `https://db.posterita.com` (custom domain). `account_id` is TEXT. **RLS enabled on all tables.** API routes use service role key (bypasses RLS). Web console reads use `createServerSupabaseAdmin()` (service role). Never use anon key for writes.
 - **Auth:** Supabase Auth (web + Android login), OTT tokens (Android WebView), PIN (device unlock). `SITE_URL` = `https://web.posterita.com`.
 - **AI:** Claude Haiku 4.5 + Sonnet 4.6 via Anthropic API — Haiku for AI import/discovery, Sonnet for intake processing
+- **Billing:** Paddle (merchant of record) — regional pricing, subscription management, global tax compliance. Seller ID: 308047
 - **Production Web:** `https://web.posterita.com` (Vercel)
 - **Production Backend:** `https://posterita-backend.onrender.com` (Render)
 - **Monitor:** `https://web.posterita.com/api/monitor` — checks all services
@@ -156,7 +160,7 @@ cd pos-android/server-side/posterita-cloud/web && rm -rf .next && npx vercel --p
 - Verify field names and enum cases match the actual schema/API response BEFORE writing test assertions.
 - After any fix, keep running and fixing until ALL tests pass with zero failures. Do not stop at partial success.
 
-**Test counts (1,625 total):** 583 Android unit + 578 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
+**Test counts (1,677 total):** 583 Android unit + 630 web unit + 413 scenario + 45 E2E + 106 Firebase. All must pass before deploy.
 
 **Android instrumented tests MUST run on Firebase Test Lab** — never locally. Use `gcloud firebase test android run` with project `posterita-retail-os`. Unit tests (`testDebugUnitTest`) can still run locally. Firebase has 10 test classes (2 DAO + 8 UI).
 
@@ -207,6 +211,7 @@ When refactoring or rewriting a file, diff against the original to ensure no exi
 | Store layout / shelf labels | Shelf browser | Native (`/store-layout`) | CRUD |
 | Quotations (create/send/convert/PDF) | PWA Quote button | Native (`/quotations`) | CRUD + PDF |
 | Warehouse (picking/put-away/transfer) | Native | — | Stock API |
+| Billing / subscriptions | — | Native (`/billing`) | Paddle webhook |
 | Account management | — | Native (`/platform`) | CRUD |
 
 ## API Routes (by domain)
@@ -227,13 +232,15 @@ Routes live in `pos-android/server-side/posterita-cloud/web/src/app/api/`. Check
 | **tags** | groups (CRUD), tags (CRUD), assign (bulk), report (sales by tag), auto-rules (CRUD), auto-apply (execute engine) | Product/customer/order classification + auto-tagging |
 | **store-layout** | GET/POST/DELETE zones (shelf ranges + height labels) | Warehouse shelf configuration |
 | **stock** | GET (multi-store overview), POST (manual adjustment + journal) | Warehouse stock management |
-| **platform** | create-account, delete-test-brands, super-admin/*, account-manager/* | Admin portal |
+| **platform** | create-account, delete-test-brands, super-admin/*, account-manager/*, plan-constraints (GET/POST), trial (POST), billing-analytics | Admin portal + plan & trial management |
 | **quotations** | GET/POST (list/create), [id] (GET/PATCH/DELETE), [id]/send, [id]/convert, [id]/pdf, templates | Quote lifecycle + 5 PDF templates |
 | **print** | POST (TCP relay: base64 ESC/POS bytes → printer IP) | PWA receipt printing (SSRF-protected: private IPs only) |
 | **integrations** | list, xero/connect, xero/callback, xero/disconnect, xero/settings, xero/push, xero/refresh | Xero OAuth + invoice/payment push |
 | **download** | GET /api/download/android → GitHub Releases latest APK | Sidebar download link |
 | **staff/roster** | holidays (CRUD+seed), labor-config, operating-hours (+overrides), roster-slots (+[id]), staffing-requirements, roster-periods (+[id]+coverage/hours/approve), picks (+[id]+bulk) | Shift roster lifecycle |
-| **billing** | checkout, status, plan, portal, cancel, change-plan, webhook | Paddle billing |
+| **billing** | status, checkout, change-plan, cancel, portal, webhook, plan | Paddle subscription management |
+| **geo** | GET (visitor country from Vercel headers) | Country detection for pricing |
+| **country-config** | GET (all 123 countries with regions) | Public endpoint for regional pricing |
 | **fraud** | signals (GET/PATCH), audit-trail (GET), detect (POST) | Fraud prevention |
 | **other** | enroll, context, catalogue, monitor, changelog, infrastructure, errors/log, blink/*, debug/session | Misc |
 
@@ -431,13 +438,14 @@ All errors go to the **same `error_logs` table** in Supabase.
 | Anthropic | Pay-as-you-go | ~$5–25 | Claude Haiku for AI import |
 | Firebase | Spark (free) | $0 | Test Lab |
 | Cloudinary | Free | $0 | Product images |
-| **Total** | | **~$44–64** | |
+| Paddle | Merchant of record | 5% + $0.50/tx | Billing, tax, invoicing |
+| **Total** | | **~$44–64 + Paddle tx fees** | |
 
 ## Web Platform Portal (`/platform`)
 
-Account manager / super admin view. 14 tabs: brands, owners, errors, sync, mra, tests, benchmark, changelog, roadmap, specs, infra, legacy, claude, docs.
+Account manager / super admin view. 16 tabs: brands, owners, errors, sync, mra, plans, billing, tests, benchmark, changelog, roadmap, specs, infra, legacy, claude, docs.
 
-Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Tests** (~1,569 tests across Android/web/scenario/E2E/Firebase), **Infra** (live service status + DB row counts).
+Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, password reset), **Errors** (filters, stack traces, status actions), **Sync Monitor** (`sync_request_log` dashboard), **MRA** (e-invoicing compliance), **Plans** (constraint editor per plan + trial manager — grant/extend/revoke), **Billing** (analytics dashboard — MRR, subscriptions, regional breakdown), **Tests** (~1,677 tests across Android/web/scenario/E2E/Firebase), **Infra** (live service status + DB row counts).
 
 ## Current Phase
 
@@ -458,7 +466,7 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 
 **Phase 3 completed:** MRA e-invoicing, stock deduction on sale, customer loyalty, Z-report, supplier & PO management (with GRN), promotions engine, catalogue PDF, menu scheduling, delivery tracking, shift clock in/out. **Blocked:** WhatsApp (needs phone + Meta verification).
 
-**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with plan-based feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app + shift roster (self-service picking, weighted hours, store hours, holidays, labor config), fraud prevention (audit logging, discount/price enforcement, anomaly detection, dashboard), Paddle billing integration (plan tiers, trials, webhook lifecycle), terminal device locking, large data volume handling (batch sync + paginated pull), 640+ automated tests, www.posterita.com redesign, web customer signup page.
+**Phase 4 completed:** Product tagging (groups + many-to-many + reports + auto-tag rules engine), store layout zones, store types (retail/warehouse), shelf browser, Xero integration (OAuth 2.0 + invoice/payment push + account mapping), contextual help system (8 Android screens), collapsible sidebar with plan-based feature gating, bulk actions + CSV export + inline editing on web, quotation system (5 PDF templates + convert to order), PWA offline POS for Windows/Mac (40 stores), Staff app + shift roster (self-service picking, weighted hours, store hours, holidays, labor config), fraud prevention (audit logging, discount/price enforcement, anomaly detection, dashboard), Paddle billing integration (regional pricing, plan gating, trial management, country detection, webhook handler, 123-country config), terminal device locking, large data volume handling (batch sync + paginated pull), 690+ automated tests, www.posterita.com redesign, web customer signup page.
 
 **Phase 4.5 — Mauritius Market (CURRENT):**
 | # | Feature | Priority | Status | Notes |
@@ -502,6 +510,36 @@ OAuth 2.0 accounting integration. Customers connect their Xero org via the web c
 **Push:** Order → Invoice (AUTHORISED) + Payment (cash/card routed to mapped accounts) + Credit Note (refunds) + Journal Entry (cash variance)
 **Config:** 7 account mappings + tax mappings fetched from customer's Xero Chart of Accounts
 **Env vars:** `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `XERO_REDIRECT_URI`
+
+## Paddle Billing
+
+Merchant-of-record billing via Paddle. Handles global tax compliance, payment collection, invoicing.
+
+**Tables:** `billing_event` (webhook audit trail), `plan_constraint` (configurable limits/features per plan), `country_config` (123 countries with region/currency/modules)
+**Account columns:** `plan`, `billing_region`, `paddle_customer_id`, `paddle_subscription_id`, `subscription_status`, `current_period_end`, `trial_plan`, `trial_ends_at`, `trial_granted_by`, `country_code`
+
+**Plans:** Free, Starter, Growth, Business (4 plans, no Enterprise)
+**Regional pricing:** Developing (T1), Emerging (T2), Developed (T3) — determined by country_code, not user choice
+**Scaling:** Each additional store = plan price, doubles users & terminals. No individual add-ons.
+
+**Per-store limits (from plan_constraint table — configurable, not hardcoded):**
+- Free: 1 user, 1 terminal, 7-day retention
+- Starter: 3 users, 2 terminals, 1-year retention
+- Growth: 8 users, 5 terminals, 3-year retention
+- Business: 20 users, 15 terminals, 5-year retention
+- Products, orders, customers: unlimited on all plans
+
+**Feature gating:** Stored in `plan_constraint` table, editable via Platform → Plans tab. Features are boolean flags (feature_loyalty, feature_restaurant, etc.). Sidebar shows locked items with upgrade badges.
+
+**Trial system:** Admin can grant/extend/revoke trials via Platform → Plans tab → Trial Manager. New signups get 14-day Growth trial automatically.
+
+**Effective plan logic:** Trial plan (if active) > paid subscription > canceled but in period > free
+
+**Env vars:** `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`, `NEXT_PUBLIC_PADDLE_ENVIRONMENT`, `NEXT_PUBLIC_PADDLE_SELLER_ID`
+
+**Webhook URL:** `https://web.posterita.com/api/billing/webhook` — handles subscription, transaction, customer, address, business, adjustment, payment_method, payout, discount events.
+
+**Anti-circumvention:** IP geolocation on website (ipapi.co), signup country lock from IP, Paddle payment country verification, region mismatch logging + alerts in billing dashboard.
 
 ## Product Tags
 
