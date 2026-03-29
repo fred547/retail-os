@@ -500,6 +500,46 @@ Key tabs: **Brands** (owner-grouped list, CRUD, assignment), **Owners** (edit, p
 | 9 | MIPS PayStation | All-in-one POS terminal platform |
 | 10 | Customer-facing display | terminal_type = customer_display, real-time cart mirror |
 
+## Website & Marketing Integrations Roadmap
+
+Third-party integrations for the public website (www) and growth.
+
+**Phase A — Do Now (free, high impact):**
+| # | Integration | Purpose | Cost | Status |
+|---|------------|---------|------|--------|
+| 1 | **Google Analytics (GA4)** | Visitor analytics, page views, conversions, demographics | Free | READY — snippet added, needs Measurement ID (`G-XXXXXXXXXX`) |
+| 2 | **Google Search Console** | SEO: search queries, index status, crawl errors, sitemap | Free | TODO — add meta verification tag |
+| 3 | **Microsoft Clarity** | Heatmaps, session recordings, scroll depth, click maps | Free | TODO — one script tag |
+| 4 | **WhatsApp Business button** | Click-to-chat widget on website (huge in MU/Africa) | Free | TODO |
+| 5 | **Meta Pixel (Facebook)** | Retargeting visitors who viewed pricing but didn't sign up | Free | TODO |
+| 6 | **Google Tag Manager** | Manage all marketing scripts centrally without deploys | Free | TODO — replaces individual script tags |
+
+**Phase B — This Month (free/cheap, medium impact):**
+| # | Integration | Purpose | Cost | Status |
+|---|------------|---------|------|--------|
+| 7 | **Tawk.to** | Live chat widget — catch leads with questions | Free | TODO |
+| 8 | **Mailchimp / Brevo** | Email list, drip campaigns, newsletter for leads not ready to sign up | Free tier | TODO |
+| 9 | **Trustpilot / Google Reviews** | Review badges on website — social proof converts | Free | TODO |
+| 10 | **OpenGraph images** | Branded preview cards when URL shared on WhatsApp/Facebook/LinkedIn | Free (code) | PARTIAL — og:image exists but uses stock photo |
+| 11 | **Schema.org enrichment** | FAQ, review stars, pricing rich snippets in Google results | Free (code) | PARTIAL — basic schema exists |
+
+**Phase C — Later (when 100+ paying customers):**
+| # | Integration | Purpose | Cost | Status |
+|---|------------|---------|------|--------|
+| 12 | **Intercom** | Advanced customer support + in-app product tours | $74/mo | TODO |
+| 13 | **PostHog / Segment** | Product analytics — track feature usage inside web console | Free tier | TODO |
+| 14 | **Sentry** | Frontend JS error tracking on website + web console | Free tier | TODO |
+| 15 | **BetterStack / UptimeRobot** | External uptime monitoring + alerting (supplements /api/monitor) | Free tier | TODO |
+| 16 | **Rewardful** | Customer referral program ("refer a friend, get 1 month free") | 14% of referral revenue | TODO |
+| 17 | **Chatwoot** | Open-source customer support (self-hosted alternative to Intercom) | Free (self-host) | TODO |
+
+**Implementation notes:**
+- All Phase A integrations are single `<script>` tags — can be added in one deploy
+- Google Tag Manager (GTM) should eventually replace individual script tags for GA4, Clarity, Meta Pixel
+- WhatsApp button: use `https://wa.me/23054233016` deep link with pre-filled message
+- Email collection: add a "Get updates" form in the website footer, connected to Mailchimp/Brevo
+- Referral program pairs well with Paddle billing — track referred subscriptions
+
 ## Xero Integration
 
 OAuth 2.0 accounting integration. Customers connect their Xero org via the web console (/integrations).

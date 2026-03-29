@@ -1,1 +1,6 @@
 .vercel
+cdn-images
+screenshots
+*.webm
+take-screenshots.js
+screenshot-auth.js

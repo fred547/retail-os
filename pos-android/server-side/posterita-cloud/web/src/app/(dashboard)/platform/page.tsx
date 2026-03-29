@@ -20,6 +20,7 @@ import LegacyReview from "./LegacyReview";
 import ClaudeConfig from "./ClaudeConfig";
 import PlanManagement from "./PlanManagement";
 import BillingDashboard from "./BillingDashboard";
+import MarketingHub from "./MarketingHub";
 
 const PAGE_SIZE = 25;
 
@@ -86,6 +87,9 @@ export default async function PlatformPage({
       )}
       {tab === "billing" && (
         <BillingDashboard />
+      )}
+      {tab === "marketing" && (
+        <MarketingHub />
       )}
       {tab === "mra" && (
         <MraDashboard />

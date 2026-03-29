@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import {
   Building2, Users, AlertTriangle, RefreshCw, FlaskConical,
   Gauge, Server, GitCommit, Map, Shield, Archive, Bot, ChevronDown, FileText,
-  CreditCard, DollarSign,
+  CreditCard, DollarSign, Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -18,6 +18,7 @@ const ALL_TABS: Tab[] = [
   { key: "sync", label: "Sync", icon: RefreshCw },
   { key: "plans", label: "Plans", icon: CreditCard },
   { key: "billing", label: "Billing", icon: DollarSign },
+  { key: "marketing", label: "Marketing", icon: Megaphone },
   { key: "mra", label: "MRA", icon: Shield },
   { key: "tests", label: "Tests", icon: FlaskConical },
   { key: "benchmark", label: "Bench", icon: Gauge },
